@@ -297,6 +297,9 @@ importers:
 
   tools/docent-index:
     dependencies:
+      '@anthropic-ai/sdk':
+        specifier: ^0.128.0
+        version: 0.128.0(zod@4.6.5)
       '@wwm/schema':
         specifier: workspace:*
         version: link:../../packages/schema

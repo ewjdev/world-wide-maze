@@ -20,7 +20,8 @@
     "fixture:texture": "pnpm --filter @wwm/fixture-capture texture",
     "ref:fetch": "pnpm --filter @wwm/ref-fetch run fetch",
     "docent:index": "node tools/docent-index/src/cli/build.ts",
-    "docent:eval": "node tools/docent-index/src/cli/eval.ts"
+    "docent:eval": "node tools/docent-index/src/cli/eval.ts",
+    "docent:bakeoff": "node tools/docent-index/src/cli/bakeoff.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

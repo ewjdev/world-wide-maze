@@ -56,11 +56,26 @@ export function expandQuery(q: string): string {
   return extra.length ? `${q} ${extra.join(' ')}` : q;
 }
 
+/** A trailing parenthesised Japanese note, like the panel's "(日本語で答えてください)" answer-language hint. */
+const LANGUAGE_HINT =
+  /\s*[(（][^()（）]*[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}][^()（）]*[)）]\s*$/u;
+
+/**
+ * The text to search for: an English question without the answer-language hint. The hint says nothing about the
+ * topic, and its CJK bigrams are rare enough in the English corpus to outrank the real matches. The model still
+ * gets the full question.
+ */
+export function searchText(question: string): string {
+  const stripped = question.replace(LANGUAGE_HINT, '');
+  return /\p{Script=Latin}/u.test(stripped) ? stripped : question;
+}
+
 /**
  * Search for `question`; when that finds little and there is an earlier user question (a follow-up such as
  * "tell me more"), search again with both.
  */
-export function retrieve(s: Searcher, question: string, previousQuestion?: string): SearchHit[] {
+export function retrieve(s: Searcher, rawQuestion: string, previousQuestion?: string): SearchHit[] {
+  const question = searchText(rawQuestion);
   const hits = s.search(expandQuery(question), TOP_K * 2);
   if (previousQuestion && (hits[0]?.score ?? 0) < 6) {
     const more = s.search(expandQuery(`${question} ${previousQuestion}`), TOP_K * 2);
