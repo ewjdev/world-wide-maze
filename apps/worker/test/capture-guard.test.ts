@@ -5,7 +5,7 @@
  */
 import { CAPTURE_DPR, MAX_STAGE_HEIGHT_PX, sliceCount } from '@wwm/schema';
 import { type Browser, chromium, type Page } from 'playwright';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { LocalChromiumCapturer } from '../node/local-chromium.ts';
 import { captureWithBrowser } from '../src/capture/core.ts';
 import { ServiceError } from '../src/errors.ts';
@@ -23,6 +23,10 @@ import {
   startCountingInternalServer,
   startFrameBypassSite,
 } from './helpers/frame-bypass-site.ts';
+
+// CI stability: real workerd/Chromium round trips; Vitest's default 5 s per test is too tight on a loaded CI
+// runner. (File-wide, so the describe line stays short.)
+vi.setConfig({ testTimeout: 30_000 });
 
 // Each capture has a 20 s budget (and the first one launches Chromium), so the tests get more than Vitest's
 // default 5 s: on a busy CI runner the long-page capture alone took over 5 s.
@@ -130,78 +134,74 @@ describe.skipIf(!HAS_CHROMIUM)('local Chromium capture + SSRF guard', { timeout:
  * The browser is launched WITHOUT `HARDENING_ARGS` (Browser Run doesn't get our Chromium flags), so only
  * the shared `core.ts` defences count.
  */
-describe.skipIf(!HAS_CHROMIUM)(
-  'SSRF guard: iframe / popup / child-realm bypasses',
-  { timeout: 30_000 },
-  () => {
-    let internal: CountingServer;
-    let fixture: Awaited<ReturnType<typeof startFrameBypassSite>>;
-    let browser: Browser;
+describe.skipIf(!HAS_CHROMIUM)('SSRF guard: iframe / popup / child-realm bypasses', () => {
+  let internal: CountingServer;
+  let fixture: Awaited<ReturnType<typeof startFrameBypassSite>>;
+  let browser: Browser;
 
-    beforeAll(async () => {
-      internal = await startCountingInternalServer();
-      fixture = await startFrameBypassSite(internal);
-      browser = await chromium.launch();
-    });
-    afterAll(async () => {
-      await browser?.close();
-      await fixture?.close();
-      await internal?.close();
-    });
+  beforeAll(async () => {
+    internal = await startCountingInternalServer();
+    fixture = await startFrameBypassSite(internal);
+    browser = await chromium.launch();
+  });
+  afterAll(async () => {
+    await browser?.close();
+    await fixture?.close();
+    await internal?.close();
+  });
 
-    const settle = () => new Promise((r) => setTimeout(r, 500));
+  const settle = () => new Promise((r) => setTimeout(r, 500));
 
-    test('control: without the capture guard, the same attacks DO reach the internal server', async () => {
-      const ctx = await browser.newContext();
-      const page: Page = await ctx.newPage();
+  test('control: without the capture guard, the same attacks DO reach the internal server', async () => {
+    const ctx = await browser.newContext();
+    const page: Page = await ctx.newPage();
+    const before = { hits: internal.hits.length, conns: internal.connections() };
+    await page.goto(`${fixture.site.origin}/case/cross`);
+    // Wait for the attacks to land (not a fixed 1 s: a loaded CI runner can take longer to run the frames).
+    const expected = ['ws:/ws-cross', 'ws:/ws-cross-blank', 'ws:/wss-cross', 'ws:/ws-worker-cross'];
+    await expect
+      .poll(() => internal.hits.slice(before.hits), { timeout: 15_000 })
+      .toEqual(expect.arrayContaining(expected));
+    // TURN over TCP is visible too: more raw connections than HTTP/WebSocket hits.
+    await expect
+      .poll(() => internal.connections() - before.conns - internal.hits.slice(before.hits).length, {
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(0);
+    await ctx.close();
+  });
+
+  test.each(FRAME_BYPASS_CASES)(
+    '%s: the internal server sees 0 requests, upgrades and connections',
+    async (name) => {
       const before = { hits: internal.hits.length, conns: internal.connections() };
-      await page.goto(`${fixture.site.origin}/case/cross`);
-      // Wait for the attacks to land (not a fixed 1 s: a loaded CI runner can take longer to run the frames).
-      const expected = ['ws:/ws-cross', 'ws:/ws-cross-blank', 'ws:/wss-cross', 'ws:/ws-worker-cross'];
-      await expect
-        .poll(() => internal.hits.slice(before.hits), { timeout: 15_000 })
-        .toEqual(expect.arrayContaining(expected));
-      // TURN over TCP is visible too: more raw connections than HTTP/WebSocket hits.
-      await expect
-        .poll(() => internal.connections() - before.conns - internal.hits.slice(before.hits).length, {
-          timeout: 15_000,
-        })
-        .toBeGreaterThan(0);
-      await ctx.close();
-    });
-
-    test.each(FRAME_BYPASS_CASES)(
-      '%s: the internal server sees 0 requests, upgrades and connections',
-      async (name) => {
-        const before = { hits: internal.hits.length, conns: internal.connections() };
-        const siteBefore = fixture.site.hits.length + fixture.cross.hits.length;
-        const out = await captureWithBrowser<Page>(
-          browser,
-          { url: `${fixture.site.origin}/case/${name}`, deadline: Date.now() + 20_000 },
-          {
-            guard: {
-              resolver: createStaticResolver({}),
-              allowHosts: [fixture.site.host, fixture.cross.host],
-            },
+      const siteBefore = fixture.site.hits.length + fixture.cross.hits.length;
+      const out = await captureWithBrowser<Page>(
+        browser,
+        { url: `${fixture.site.origin}/case/${name}`, deadline: Date.now() + 20_000 },
+        {
+          guard: {
+            resolver: createStaticResolver({}),
+            allowHosts: [fixture.site.host, fixture.cross.host],
           },
-        );
-        await settle();
-        expect(out.bundle.title).toBe(`Case ${name}`);
-        expect({
-          hits: internal.hits.slice(before.hits),
-          connections: internal.connections() - before.conns,
-        }).toEqual({
-          hits: [],
-          connections: 0,
-        });
-        // Not vacuous: the cross-site frames and popups were actually loaded.
-        const loaded = [...fixture.site.hits, ...fixture.cross.hits].length - siteBefore;
-        expect(loaded).toBeGreaterThanOrEqual(1);
-        const crossTag = { cross: 'cross', nested: 'nested-cross', object: 'object', popup: 'popup-link' }[
-          name as string
-        ];
-        if (crossTag) expect(fixture.cross.hits).toContain(`/attack?tag=${crossTag}`);
-      },
-    );
-  },
-);
+        },
+      );
+      await settle();
+      expect(out.bundle.title).toBe(`Case ${name}`);
+      expect({
+        hits: internal.hits.slice(before.hits),
+        connections: internal.connections() - before.conns,
+      }).toEqual({
+        hits: [],
+        connections: 0,
+      });
+      // Not vacuous: the cross-site frames and popups were actually loaded.
+      const loaded = [...fixture.site.hits, ...fixture.cross.hits].length - siteBefore;
+      expect(loaded).toBeGreaterThanOrEqual(1);
+      const crossTag = { cross: 'cross', nested: 'nested-cross', object: 'object', popup: 'popup-link' }[
+        name as string
+      ];
+      if (crossTag) expect(fixture.cross.hits).toContain(`/attack?tag=${crossTag}`);
+    },
+  );
+});
