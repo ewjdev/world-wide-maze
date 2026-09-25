@@ -7,18 +7,18 @@
 
 | Placeholder | Meaning |
 |---|---|
-| `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site |
-| `{{CONTACT_EMAIL}}` | Contact address for questions and notices |
+| `EWJ Dev LLC` | Legal name of the person or entity running the site |
+| `ewjdev@gmail.com` | Contact address for questions and notices |
 | `wwm.ewj.dev` | The site's domain |
-| `{{JURISDICTION}}` | Governing law and courts |
-| `{{EFFECTIVE_DATE}}` | Date these terms take effect / were last updated |
+| `the State of California, USA` | Governing law and courts |
+| `September 25, 2026` | Date these terms take effect / were last updated |
 | `https://github.com/ewjdev/world-wide-maze` | Public source-code repository |
 | `MIT` | Licence of the project's own source code (e.g. MIT, Apache-2.0) |
 
 ---
 
-**World Wide Maze (revival)** at `https://wwm.ewj.dev` ("the site", "the game") is run by {{OPERATOR_NAME}}
-("we", "us"). Contact: {{CONTACT_EMAIL}}. Effective: {{EFFECTIVE_DATE}}.
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` ("the site", "the game") is run by EWJ Dev LLC
+("we", "us"). Contact: ewjdev@gmail.com. Effective: September 25, 2026.
 
 By using the site you agree to these terms. If you don't agree, please don't use it.
 
@@ -87,18 +87,18 @@ The site is provided **"as is" and "as available"**, without warranties of any k
 fitness for a particular purpose, accuracy and non-infringement, to the extent the law allows.
 
 ## 11. Limitation of liability
-To the extent the law allows, {{OPERATOR_NAME}} is not liable for any indirect, incidental, special or
+To the extent the law allows, EWJ Dev LLC is not liable for any indirect, incidental, special or
 consequential damages, or for loss of data, arising from use of this free service, and our total liability for
 any claim is limited to zero, as no fee is paid. Nothing in these terms limits liability that cannot be limited
 by law (for example for death or personal injury caused by negligence, or for fraud), or your statutory rights as
 a consumer.
 
 ## 12. Governing law
-These terms are governed by the laws of {{JURISDICTION}}, and disputes go to the courts of {{JURISDICTION}}, except
+These terms are governed by the laws of the State of California, USA, and disputes go to the courts of the State of California, USA, except
 where the law of your country of residence gives you the right to bring proceedings or rely on consumer
 protections there.
 
 ## 13. Changes, suspension and contact
 We may update these terms; the effective date above changes when we do, and continuing to use the site means you
 accept the new version. We may suspend or end the service, or your access to it, at any time. Questions and
-notices: {{CONTACT_EMAIL}}.
+notices: ewjdev@gmail.com.

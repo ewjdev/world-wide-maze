@@ -296,13 +296,16 @@ describe('Room DO relay', () => {
     const { code } = room;
     const host = await hostOf(room);
     const ctl = await phoneOf(room);
+    const t0 = performance.now();
     for (let seq = 1; seq <= 500; seq++)
       ctl.ws.send(encodeInput({ seq, power: false, jump: false, menu: false, tiltX: 0, tiltZ: 0 }));
     await until(() => host.frames.length >= 290, 5000);
     await new Promise((r) => setTimeout(r, 300));
-    // burst 300 (+ a few tokens refilled while sending); the rest was dropped
+    // Burst 300, plus whatever the bucket refilled (150/s) while the frames were arriving. Bound the upper limit by
+    // the measured elapsed time so a loaded machine doesn't make this flaky; the rest must have been dropped.
+    const elapsedSec = (performance.now() - t0) / 1000;
     expect(host.frames.length).toBeGreaterThanOrEqual(300);
-    expect(host.frames.length).toBeLessThan(400);
+    expect(host.frames.length).toBeLessThanOrEqual(Math.min(499, 300 + Math.ceil(150 * elapsedSec) + 10));
     const stats = (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as {
       dropped: { rate: number };
     };

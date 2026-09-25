@@ -8,8 +8,8 @@
 
 | Placeholder | Meaning |
 |---|---|
-| `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site |
-| `{{CONTACT_EMAIL}}` | Contact address for rights holders |
+| `EWJ Dev LLC` | Legal name of the person or entity running the site |
+| `ewjdev@gmail.com` | Contact address for rights holders |
 | `wwm.ewj.dev` | The site's domain |
 
 ---
@@ -20,7 +20,7 @@
 > [Takedown & opt-out](/takedown)
 
 **Long (about / terms):**
-> World Wide Maze (revival) at `wwm.ewj.dev` is an independent, free, non-commercial tribute by {{OPERATOR_NAME}} to
+> World Wide Maze (revival) at `wwm.ewj.dev` is an independent, free, non-commercial tribute by EWJ Dev LLC to
 > the 2013 Chrome Experiment *World Wide Maze*, created by Google Japan with PARTY and collaborators (full credits
 > on /about).
 >
@@ -34,4 +34,4 @@
 >
 > Websites shown inside mazes belong to their owners, who can opt out or ask for removal on the
 > [takedown and opt-out page](takedown.md). If you are one of the original creators or rights holders and would
-> like anything changed — the name, the credits or the wording here — please write to {{CONTACT_EMAIL}}.
+> like anything changed — the name, the credits or the wording here — please write to ewjdev@gmail.com.

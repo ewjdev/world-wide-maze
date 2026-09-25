@@ -9,18 +9,18 @@
 
 | Placeholder | Meaning |
 |---|---|
-| `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site (the data controller) |
-| `{{POSTAL_ADDRESS}}` | Contact postal address for the operator |
-| `{{CONTACT_EMAIL}}` | Address for privacy, removal and takedown requests |
+| `EWJ Dev LLC` | Legal name of the person or entity running the site (the data controller) |
+| `1240 North Simon Circle, Suite E, Anaheim, CA 92806, USA` | Contact postal address for the operator |
+| `ewjdev@gmail.com` | Address for privacy, removal and takedown requests |
 | `wwm.ewj.dev` | The site's domain |
-| `{{JURISDICTION}}` | Country/state whose law governs, and where the operator is based |
-| `{{EFFECTIVE_DATE}}` | Date this notice takes effect / was last updated |
+| `the State of California, USA` | Country/state whose law governs, and where the operator is based |
+| `September 25, 2026` | Date this notice takes effect / was last updated |
 
 ---
 
-**World Wide Maze (revival)** at `https://wwm.ewj.dev` is run by {{OPERATOR_NAME}}, {{POSTAL_ADDRESS}}
-({{JURISDICTION}}). Contact: {{CONTACT_EMAIL}}.
-Effective: {{EFFECTIVE_DATE}}.
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` is run by EWJ Dev LLC, 1240 North Simon Circle, Suite E, Anaheim, CA 92806, USA
+(California, USA). Contact: ewjdev@gmail.com.
+Effective: September 25, 2026.
 
 ## The short version
 - **No accounts, no ads, no analytics trackers, no third-party scripts, and no cookies.** The game remembers your
@@ -84,7 +84,7 @@ headers) to deliver the site and protect it from attacks. It does this under its
   spot and clean up abuse (for example, many fake scores from one source on one day). It is erased from the entry
   after 30 days.
 - **Retention:** leaderboard entries and their recordings are deleted **12 months** after they were submitted.
-  You can ask us to remove an entry sooner at {{CONTACT_EMAIL}}; send its name, score and date or a link to the
+  You can ask us to remove an entry sooner at ewjdev@gmail.com; send its name, score and date or a link to the
   stage.
 
 ## 5. The "Ask about the original" assistant (AI docent)
@@ -136,7 +136,7 @@ We don't sell or share personal information for advertising, and we don't use an
   using the assistant.
 - You can clear the game's local data at any time in your browser's site settings.
 - You can ask us to access, correct or delete data relating to you — for example a leaderboard entry or a
-  maze you shared — or object to how we use it, by writing to {{CONTACT_EMAIL}}. We will reply within 30 days.
+  maze you shared — or object to how we use it, by writing to ewjdev@gmail.com. We will reply within 30 days.
   Because we don't have accounts, we may ask for details (such as a link, name, score and date) to find the data;
   we can't link data to you by IP address, since we don't keep it.
 - Depending on where you live (for example the EU, UK or California), you may have further rights under local
@@ -148,7 +148,7 @@ We don't sell or share personal information for advertising, and we don't use an
 The game is suitable for all ages, but it is not directed at children under 13, and we don't knowingly collect
 personal information from them. It asks for no personal information: the only thing you can type in is a
 leaderboard nickname (which should not be a real name) and questions to the assistant. If you believe a child has
-put personal information on a leaderboard or in a shared maze, write to {{CONTACT_EMAIL}} and we will delete it.
+put personal information on a leaderboard or in a shared maze, write to ewjdev@gmail.com and we will delete it.
 
 ## 11. Security
 Data is sent over HTTPS. The IP hash uses a secret key held as an encrypted server secret. Our capture browser is

@@ -8,18 +8,18 @@
 
 | Placeholder | Meaning |
 |---|---|
-| `{{OPERATOR_NAME}}` | Legal name of the operator (also the designated copyright agent unless someone else is named) |
-| `{{POSTAL_ADDRESS}}` | Postal address for notices (needed for a US DMCA designated-agent registration) |
-| `{{CONTACT_EMAIL}}` | Address that receives takedown, opt-out and copyright notices |
+| `EWJ Dev LLC` | Legal name of the operator (also the designated copyright agent unless someone else is named) |
+| `1240 North Simon Circle, Suite E, Anaheim, CA 92806, USA` | Postal address for notices (needed for a US DMCA designated-agent registration) |
+| `ewjdev@gmail.com` | Address that receives takedown, opt-out and copyright notices |
 | `wwm.ewj.dev` | The site's domain |
-| `{{JURISDICTION}}` | Governing law / where the operator is based |
-| `{{EFFECTIVE_DATE}}` | Date this page takes effect / was last updated |
+| `the State of California, USA` | Governing law / where the operator is based |
+| `September 25, 2026` | Date this page takes effect / was last updated |
 
 ---
 
 # Part A — public page
 
-**World Wide Maze (revival)** at `https://wwm.ewj.dev` · run by {{OPERATOR_NAME}} · Effective: {{EFFECTIVE_DATE}}
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` · run by EWJ Dev LLC · Effective: September 25, 2026
 
 World Wide Maze turns public web pages into game levels: a screenshot of a page becomes the ground a ball rolls
 on. Mazes that players build are unlisted (reachable only by their link) and are deleted automatically after
@@ -27,7 +27,7 @@ on. Mazes that players build are unlisted (reachable only by their link) and are
 permission, stay on the site; their sources and licences are credited in the game.
 
 We want site owners to be comfortable with this. You can opt out, ask for removal, or send a copyright notice,
-all at **{{CONTACT_EMAIL}}**.
+all at **ewjdev@gmail.com**.
 
 ## Response times
 | Request | We acknowledge within | We act within |
@@ -40,7 +40,7 @@ all at **{{CONTACT_EMAIL}}**.
 In an emergency we can stop all new mazes from being built within minutes while we deal with a problem.
 
 ## 1. Opt your site out
-Send an email to {{CONTACT_EMAIL}} with the subject "Opt-out" and the domain. To show you control the domain,
+Send an email to ewjdev@gmail.com with the subject "Opt-out" and the domain. To show you control the domain,
 either:
 - send the email from an address at that domain, or
 - publish a DNS TXT record `wwm-optout=<token>` on the domain, using the token we send you in reply.
@@ -76,7 +76,7 @@ why. Players can ask for their own leaderboard entries to be removed; give the n
 If you believe a maze or other content on the site infringes your copyright, send a notice to our designated
 agent:
 
-> {{OPERATOR_NAME}}, Copyright agent · {{POSTAL_ADDRESS}} · {{CONTACT_EMAIL}}
+> EWJ Dev LLC, Copyright agent · 1240 North Simon Circle, Suite E, Anaheim, CA 92806, USA · ewjdev@gmail.com
 
 Include:
 1. your physical or electronic signature;
@@ -103,7 +103,7 @@ used to infringe.
 
 ## 4. Trademarks and the original World Wide Maze
 This is an unofficial, non-commercial tribute; see the [tribute disclaimer](tribute-disclaimer.md). If you hold
-rights in *World Wide Maze* or in a mark shown on the site and have a concern, write to {{CONTACT_EMAIL}}; we will
+rights in *World Wide Maze* or in a mark shown on the site and have a concern, write to ewjdev@gmail.com; we will
 respond within the times above and are willing to change names, wording or content.
 
 ## 5. Misuse of notices

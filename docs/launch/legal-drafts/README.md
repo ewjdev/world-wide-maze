@@ -17,12 +17,12 @@
 ## 1. Placeholders
 | Placeholder | Meaning | Used in |
 |---|---|---|
-| `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site (data controller; copyright agent) | all four |
-| `{{CONTACT_EMAIL}}` | One address for privacy, removal, opt-out and copyright notices | all four |
+| `EWJ Dev LLC` | Legal name of the person or entity running the site (data controller; copyright agent) | all four |
+| `ewjdev@gmail.com` | One address for privacy, removal, opt-out and copyright notices | all four |
 | `wwm.ewj.dev` | The production domain (not yet chosen) | all four |
-| `{{JURISDICTION}}` | Governing law/courts and the operator's country | privacy, terms, takedown |
-| `{{EFFECTIVE_DATE}}` | Effective / last-updated date | privacy, terms, takedown |
-| `{{POSTAL_ADDRESS}}` | Postal address (privacy controller identity; required for a US DMCA agent registration) | privacy, takedown |
+| `the State of California, USA` | Governing law/courts and the operator's country | privacy, terms, takedown |
+| `September 25, 2026` | Effective / last-updated date | privacy, terms, takedown |
+| `1240 North Simon Circle, Suite E, Anaheim, CA 92806, USA` | Postal address (privacy controller identity; required for a US DMCA agent registration) | privacy, takedown |
 | `https://github.com/ewjdev/world-wide-maze` | Public source repository | terms |
 | (resolved) | Code licence: **MIT** (LICENSE, 2026-09-25) | terms |
 
@@ -123,7 +123,7 @@ describes a Phase 14/15 feature that isn't merged yet (re-check against the code
 8. **AI docent.** Is describing Anthropic as a processor accurate under its commercial terms, and what does it
    retain and for how long? Any AI-specific disclosure duties (EU AI Act Art. 50 transparency: telling users they
    are interacting with an AI)?
-9. **Liability limitation** to zero for a free service — enforceable under {{JURISDICTION}} consumer law?
+9. **Liability limitation** to zero for a free service — enforceable under the State of California, USA consumer law?
 10. **California (CCPA/CPRA)** and other US state laws — likely below thresholds for a non-commercial project;
     confirm whether any notice section is still advisable.
 11. **Public leaderboard ghosts.** Are input recordings personal data when tied to a public nickname, and is 12
