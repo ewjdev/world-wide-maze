@@ -8,11 +8,16 @@ function render(path: string): string {
 }
 
 describe('route shell', () => {
-  test('/ renders home', () => {
-    expect(render('/')).toContain('World Wide Maze');
+  test('/ renders the full-screen game shell (no document nav)', () => {
+    const html = render('/');
+    expect(html).toContain('data-testid="game-root"');
+    expect(html).not.toContain('About</a>');
   });
-  test('/play/:stageId passes the id', () => {
-    expect(render('/play/abc123')).toContain('abc123');
+  test('/play/:stageId renders the game shell', () => {
+    expect(render('/play/abc123')).toContain('data-testid="game-root"');
+  });
+  test('/p/:code renders the game shell', () => {
+    expect(render('/p/123456')).toContain('data-testid="game-root"');
   });
   test('/c/:code renders the controller without the desktop nav', () => {
     const html = render('/c/123456');
