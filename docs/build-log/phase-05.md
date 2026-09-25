@@ -82,3 +82,40 @@ None.
 - Rolling contact shows a small vertical velocity jitter (±0.1 m/s) from Rapier's contact solver. It's invisible in position (< 1 mm), and `grounded` is stable because of the 2 cm touch tolerance.
 - The feel values are evidenced constants, but they haven't been playtested with a phone yet (Phase 06/08).
 - `reset()` to a point off every island falls back to the nearest island through `distanceToPolygonEdge` (which uses `Math.hypot`). That's only relevant for a malformed `restartAt`.
+
+---
+
+# Phase 05b: physics 0.2.0 (low-rise lifts, precompiled WASM)
+
+- **Agent / date / environment:** as Phase 03b (`phase-03.md`), same session and branch.
+
+## What changed (`PHYSICS_VERSION` 0.1.0 → **0.2.0**)
+- **BI-3, the lift wedge.** Both platforms share one footprint. After a ride down, the partner platform came back
+  right above the ball; with a rise under ball diameter + slab (1.463 D) its colliders were re-enabled around the
+  ball, which was pushed into the lower slab and couldn't move (a softlock). Now:
+  - the partner's colliders stay disabled (`pending`) until the ball has left its volume (footprint grown by the ball
+    radius + rail, slab to rail top), checked every step;
+  - on a ride down with a rise under 1.463 D + 5 cm, the ball is eased along the platform axis (same cubic easing as
+    the platform) to just clear the upper island's edge. Without this, a ball that boarded at the platform's upper
+    end sat partly under the upper island's slab and was wedged there instead.
+  - Rides with a normal rise (every lift the builder makes now: ≥ 3.7 D) are unchanged.
+- **`loadRapier({ wasmModule })`** (additive): initialise Rapier from a precompiled `WebAssembly.Module` of the
+  package's `dist/rapier_wasm3d_bg.wasm`, for runtimes that forbid WASM codegen (workerd). The compat build's `init()`
+  takes no arguments, so while it initialises, its single `WebAssembly.instantiate(bytes)` call is answered with the
+  module (scoped, restored in `finally`; it throws if the module wasn't used). A failed load is no longer cached.
+  `loadRapier('deterministic')` still works. The Worker's replay verification and playability validation both use it.
+- Fixture replay regenerated (`pnpm --filter @wwm/physics replay:make`): byte-identical inputs, same events, goal at
+  tick 5429. Replays stored with 0.1.0 are now verified as "stale version" (by design).
+
+## Test evidence
+- `test/simulation.test.ts`: lifts rising 0.5, 1.04 and 6 D: ride down, then the ball rolls ≥ 30 px off the lower
+  end (before: 1.04 D stayed pinned with |v| = 0).
+- `test/rapier.test.ts`: the shipped `.wasm` is byte-identical (sha256) to the inlined copy; with
+  `WebAssembly.instantiate(bytes)` made to throw like workerd, `loadRapier()` fails and isn't cached, then
+  `loadRapier({ wasmModule })` initialises and a simulation runs.
+- Whole package: 47 passed, 2 skipped (reference/browser).
+- In workerd: `apps/worker/test/solver.workerd.test.ts` (see Phase 03b).
+
+## Attempts that failed
+- The partner-platform deferral alone didn't free the ball at 1.04 D (the upper island's slab wedged it); the
+  along-axis easing was added after the new test exposed it.

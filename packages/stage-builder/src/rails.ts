@@ -135,6 +135,81 @@ export function buildRails(
   return rails;
 }
 
+/** Sub-polyline of `line` between arc lengths s0 < s1. */
+function subPolyline(line: readonly Vec2[], s0: number, s1: number): Vec2[] {
+  const out: Vec2[] = [];
+  let acc = 0;
+  for (let i = 1; i < line.length; i++) {
+    const p = line[i - 1] as Vec2;
+    const q = line[i] as Vec2;
+    const len = Math.hypot(q[0] - p[0], q[1] - p[1]);
+    const e0 = acc;
+    const e1 = acc + len;
+    acc = e1;
+    if (len === 0 || e1 < s0 || e0 > s1) continue;
+    const t0 = Math.max(0, (s0 - e0) / len);
+    const t1 = Math.min(1, (s1 - e0) / len);
+    const a = t0 === 0 ? ([p[0], p[1]] as Vec2) : lerp(p, q, t0);
+    const b = t1 === 1 ? ([q[0], q[1]] as Vec2) : lerp(p, q, t1);
+    const last = out[out.length - 1];
+    if (!last || last[0] !== a[0] || last[1] !== a[1]) out.push(a);
+    out.push(b);
+  }
+  return out;
+}
+
+export interface RailGapOptions {
+  /** Gap length, px. */
+  gapPx: number;
+  /** One gap per this much rail, px. */
+  everyPx: number;
+  /** No gap closer than this to an open polyline's ends (the mouths), px. */
+  keepEndsPx: number;
+  /** No gap centred closer than `avoidPx` to these points (start, goal). */
+  avoid: readonly Vec2[];
+  avoidPx: number;
+  /** Seeded [0, 1) source for the gap phase. */
+  next: () => number;
+}
+
+/**
+ * Hard difficulty (N, E-anchored: 2013 rails covered ≈ 90 % of the outline): cut short gaps into long rails, so
+ * the edge is open in places and a careless roll falls off. Gaps stay away from mouths and from start/goal.
+ */
+export function cutRailGaps(lines: readonly Vec2[][], o: RailGapOptions): Vec2[][] {
+  if (o.gapPx <= 0 || o.everyPx <= 0) return lines.map((l) => l.slice());
+  const out: Vec2[][] = [];
+  for (const line of lines) {
+    const L = polylineLength(line);
+    const first = line[0] as Vec2;
+    const last = line[line.length - 1] as Vec2;
+    const closed = line.length > 2 && first[0] === last[0] && first[1] === last[1];
+    const keep = closed ? 0 : o.keepEndsPx;
+    const usable = L - 2 * keep;
+    const k = Math.floor(usable / o.everyPx);
+    const phase = o.next();
+    if (k < 1) {
+      out.push(line.slice());
+      continue;
+    }
+    const pitch = usable / k;
+    const gaps: [number, number][] = [];
+    for (let j = 0; j < k; j++) {
+      const c = keep + (j + 0.25 + 0.5 * phase) * pitch;
+      const at = subPolyline(line, c, c)[0];
+      if (at && o.avoid.some((p) => Math.hypot(p[0] - at[0], p[1] - at[1]) < o.avoidPx)) continue;
+      gaps.push([c - o.gapPx / 2, c + o.gapPx / 2]);
+    }
+    let s = 0;
+    for (const [g0, g1] of gaps) {
+      if (g0 > s) out.push(subPolyline(line, s, g0));
+      s = g1;
+    }
+    if (s < L) out.push(subPolyline(line, s, L));
+  }
+  return out.filter((l) => l.length >= 2 && polylineLength(l) >= 2);
+}
+
 export function ringLength(ring: readonly Vec2[]): number {
   return polylineLength([...ring, ring[0] as Vec2]);
 }

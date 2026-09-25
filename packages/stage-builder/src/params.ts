@@ -10,7 +10,13 @@
  */
 
 import type { Difficulty } from '@wwm/schema';
-import { MAX_LARGE_ITEMS, MIN_BRIDGE_WIDTH_PX, MIN_ISLAND_SIZE_PX, PX_PER_METER } from '@wwm/schema';
+import {
+  BALL_RADIUS_PX,
+  MAX_LARGE_ITEMS,
+  MIN_BRIDGE_WIDTH_PX,
+  MIN_ISLAND_SIZE_PX,
+  PX_PER_METER,
+} from '@wwm/schema';
 
 /** 1 ball diameter in px. */
 export const D = PX_PER_METER;
@@ -63,6 +69,25 @@ export interface BuildParams {
   /** Width of the channel cut between split tiles, cells. N. */
   splitChannelCells: number;
 
+  // ── walkable area (03b, BI-1/BI-2) ──
+  /** The ball centre can roll where it is at least this far from the island edge: ball radius + 1 px, measured
+   *  on the final polygons rasterized at `walkCellPx`. So a passage must be ≥ 16.5 px (1.22 D) wide. N
+   *  (physics: a 13 px neck blocks and 14 px passes; the margin keeps marginal 14–15 px necks, which only the
+   *  bot threads, out of every route). */
+  walkClearancePx: number;
+  /** Cell size of the walkable raster, px. N. */
+  walkCellPx: number;
+  /** Fill water gaps up to this many cells wide inside one land component (title ↔ meta line). N. */
+  inletFillCells: number;
+  /** Cut islands at necks narrower than the ball when both sides could be islands of their own. N. */
+  splitNecks: boolean;
+  /** Neck threshold for that cut, on the 3 px work grid (ball radius + ¾ px → necks under 15 px). N. */
+  neckClearancePx: number;
+  /** A bridge mouth must reach the island's main walkable part within this depth (rolling straight in), px. N. */
+  mouthDepthPx: number;
+  /** Deck side rails may run at most this far over their own island at a slanted mouth, px. N (BI-4). */
+  bridgeCornerMaxDepthPx: number;
+
   // ── contours ──
   /** Douglas–Peucker tolerance, px. N (≈ 1/3 cell: keeps islands ≥ 1 cell apart after simplification). */
   simplifyEpsPx: number;
@@ -102,12 +127,29 @@ export interface BuildParams {
   rampSlope: number;
   /** Probability that a tree edge is kept flat. C (2013: 11 of 31 static bridges flat). */
   flatChance: number;
+  /** Ramps shorter than this stay flat: a sub-1 D ramp rises ≤ 0.17 D (invisible), but its two deck-end seams
+   *  sit so close together that the ball can snag on them at crawl speed (eval-openstreetmap, 12 px). N (03b). */
+  rampMinSpanPx: number;
+  /** A ramp needs a straight mouth: the island may reach at most this far past each deck end anywhere
+   *  across the deck (a notch leaves a step of slope × depth). N (03b). */
+  rampMouthMaxDepthPx: number;
   /** Gaps up to this length (px, a→b) may become elevators. E (2013 elevator gaps 4–10 2013-px). */
   elevatorMaxSpanPx: number;
   /** Elevator rises, D. E (2013: 40/60/80 2013-px = 3.70/5.56/7.41 D). */
   elevatorRisesD: number[];
-  /** Probability that an eligible short edge becomes an elevator. C (2013: 6 of 37 links). */
+  /** Probability that an eligible short edge becomes an elevator. C (2013: 6 of 37 links; raised from 0.6 to
+   *  0.85 in 03b because the new room/rise checks turn many eligible edges back into bridges). */
   elevatorChance: number;
+  /** Smallest elevator rise, D. E (2013's smallest rise, 3.70 D); physics pins the ball below 1.463 D (BI-3). */
+  elevatorMinRiseD: number;
+  /** Walkable ground needed beyond each platform end (the ball boards and leaves through the ends), D. N (BI-2). */
+  elevatorLandingD: number;
+
+  // ── rails ──
+  /** Extra rail gaps (hard): a gap of `railGapPx` every `railGapEveryPx` of rail, px; 0 = none. N
+   *  (E-anchored: 2013 rails covered ≈ 90 % of the outline). */
+  railGapPx: number;
+  railGapEveryPx: number;
 
   // ── placement ──
   /** Small-item inset rings, px from the edge. E (0.9 D and 2.3 D). */
@@ -156,6 +198,14 @@ export const DEFAULT_PARAMS: BuildParams = {
   splitTilePx: 24 * D,
   splitChannelCells: 2,
 
+  walkClearancePx: BALL_RADIUS_PX + 1,
+  walkCellPx: 1.5,
+  inletFillCells: 2,
+  splitNecks: true,
+  neckClearancePx: BALL_RADIUS_PX + 0.75,
+  mouthDepthPx: 5 * D,
+  bridgeCornerMaxDepthPx: BALL_RADIUS_PX,
+
   simplifyEpsPx: 1,
   cornerBevelPx: 0.25 * D,
 
@@ -176,9 +226,16 @@ export const DEFAULT_PARAMS: BuildParams = {
   elevatorMinWantD: 2,
   rampSlope: 0.17,
   flatChance: 0.35,
+  rampMinSpanPx: D,
+  rampMouthMaxDepthPx: 4.5,
   elevatorMaxSpanPx: 1.2 * D,
   elevatorRisesD: [3.7, 5.56, 7.41],
-  elevatorChance: 0.6,
+  elevatorChance: 0.85,
+  elevatorMinRiseD: 3.7,
+  elevatorLandingD: 1,
+
+  railGapPx: 0,
+  railGapEveryPx: 0,
 
   itemRingsPx: [0.9 * D, 2.3 * D],
   itemSpacingPx: 1.5 * D,
@@ -192,12 +249,41 @@ export const DEFAULT_PARAMS: BuildParams = {
   maxLargeItems: MAX_LARGE_ITEMS,
 };
 
-/** Merge overrides into the defaults (shallow; `loopShare` merged per key). */
-export function resolveParams(overrides?: Partial<BuildParams>): BuildParams {
-  if (!overrides) return DEFAULT_PARAMS;
+/**
+ * Difficulty levers (03b, BI-5). All **N**: the 2013 builder had no difficulty setting that we know of, so these
+ * are design choices, kept inside the 2013 envelope where there is evidence. `normal` is the calibrated default.
+ * - **easy:** 15 % loops (alternative routes), gentler heights (less noise, more flat bridges, fewer lifts).
+ * - **hard:** the narrowest legal decks (2.67 D on the 3 px grid; 2013 decks were 1.6–3.6 D but the contract
+ *   minimum is 2.5 D), bumpier heights with more lifts, restart points only on the inner ring and 4 D apart
+ *   (a fall costs more), and rail gaps: 2 D every 16 D of rail, ≈ 88 % coverage like 2013's ≈ 90 % (E).
+ *   Never any loops.
+ */
+export const DIFFICULTY_PARAMS: Record<Difficulty, Partial<BuildParams>> = {
+  easy: { flatChance: 0.5, levelNoise: 3, elevatorChance: 0.6 },
+  normal: {},
+  hard: {
+    bridgeWidthMaxPx: 2.7 * D,
+    flatChance: 0.2,
+    levelNoise: 5,
+    elevatorChance: 1,
+    restartRingsPx: [1.3 * D],
+    restartSpacingPx: 4 * D,
+    railGapPx: 2 * D,
+    railGapEveryPx: 16 * D,
+  },
+};
+
+/**
+ * Defaults, then the difficulty levers (if a difficulty is given), then the caller's overrides (the debugger's
+ * sliders win). Shallow; `loopShare` merged per key.
+ */
+export function resolveParams(overrides?: Partial<BuildParams>, difficulty?: Difficulty): BuildParams {
+  if (!overrides && !difficulty) return DEFAULT_PARAMS;
+  const byDifficulty = difficulty ? DIFFICULTY_PARAMS[difficulty] : {};
   return {
     ...DEFAULT_PARAMS,
-    ...overrides,
-    loopShare: { ...DEFAULT_PARAMS.loopShare, ...(overrides.loopShare ?? {}) },
+    ...byDifficulty,
+    ...(overrides ?? {}),
+    loopShare: { ...DEFAULT_PARAMS.loopShare, ...(overrides?.loopShare ?? {}) },
   };
 }

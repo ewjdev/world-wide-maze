@@ -276,3 +276,53 @@ export function extractIslands(
   const out: IslandRaster = { labels: final.labels, count: final.count, dist, droppedMask };
   return out;
 }
+
+/**
+ * 03b (BI-1): fill narrow water gaps *inside* one land component, e.g. between a text row's title line and its
+ * meta line, which the DOM padding leaves 1–2 cells apart but joined at one end. Such a component looks like
+ * one island but the ball could only roll between its lines through that one join, often a neck narrower than
+ * the ball. A water cell is filled when, along a row or a column, the same component lies within `maxGapCells`
+ * on both sides and no other component touches it (islands never merge). ≈ 2013's dilate → blur → threshold,
+ * which fused such lines. N. Returns the number of filled cells.
+ */
+export function fillInlets(mask: Uint8Array, cols: number, rows: number, maxGapCells: number): number {
+  if (maxGapCells <= 0) return 0;
+  const { labels } = labelComponents(mask, cols, rows);
+  const fill: number[] = [];
+  const at = (c: number, r: number) =>
+    c < 0 || r < 0 || c >= cols || r >= rows ? 0 : (labels[r * cols + c] as number);
+  for (let r = 0; r < rows; r++)
+    for (let c = 0; c < cols; c++) {
+      if (labels[r * cols + c] !== 0) continue;
+      let other = false;
+      let near = 0;
+      for (let dr = -1; dr <= 1 && !other; dr++)
+        for (let dc = -1; dc <= 1; dc++) {
+          const v = at(c + dc, r + dr);
+          if (!v) continue;
+          if (near && v !== near) {
+            other = true;
+            break;
+          }
+          near = v;
+        }
+      if (other) continue;
+      let hit = false;
+      for (const [dc, dr] of [
+        [0, 1],
+        [1, 0],
+      ] as const) {
+        let a = 0;
+        let b = 0;
+        for (let k = 1; k <= maxGapCells && !a; k++) a = at(c - dc * k, r - dr * k);
+        for (let k = 1; k <= maxGapCells && !b; k++) b = at(c + dc * k, r + dr * k);
+        if (a && a === b) {
+          hit = true;
+          break;
+        }
+      }
+      if (hit) fill.push(r * cols + c);
+    }
+  for (const i of fill) mask[i] = 1;
+  return fill.length;
+}

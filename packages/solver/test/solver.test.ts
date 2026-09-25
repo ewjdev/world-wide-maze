@@ -130,10 +130,14 @@ describe('buildPlayableStage', () => {
   test('rerolls seeds until the stage passes validateStage and the solver (real builder, python.org slice 1)', async () => {
     const { capture, image } = loadCapture('eval-python-home');
     const input = { capture, image, sliceIndex: 1, seed: 1, difficulty: 'normal' as const };
-    const p = await buildPlayableStage(input, { build: buildStage, maxSeeds: 4 });
+    // Builder 0.4.0 fixed the issues that made seeds 1–2 unplayable here (Phase 03b), so seed 1 is made
+    // unplayable on purpose to exercise the reroll with the real builder.
+    const build: typeof buildStage = (inp) =>
+      inp.seed === 1 ? { stage: elevatorStage(1), debug: {} as never } : buildStage(inp);
+    const p = await buildPlayableStage(input, { build, maxSeeds: 4 });
     expect(validateStage(p.stage).ok).toBe(true);
     expect(p.validation.ok).toBe(true);
-    expect(p.seed).toBeGreaterThan(1); // seeds 1 and 2 are unplayable (builder issues filed)
+    expect(p.seed).toBe(2);
     expect(p.tried.length).toBe(p.seed - 1);
     // Every returned stage really is solvable: re-solve independently.
     const again = await solveStage(p.stage);

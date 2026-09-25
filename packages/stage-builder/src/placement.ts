@@ -50,12 +50,24 @@ function cellCenter(raster: Raster, i: number): Vec2 {
   return [round2((c + 0.5) * raster.cell), round2((r + 0.5) * raster.cell)];
 }
 
-/** Distance-transform maximum per island, verified against the polygon. */
-export function findSafeSpot(raster: Raster, isl: RasterIsland, shape: IslandShape): SafeSpot {
+/**
+ * Distance-transform maximum per island, verified against the polygon. `allowed` (03b) restricts the search
+ * to some cells (the island's main walkable part), falling back to the whole island if none qualifies.
+ */
+export function findSafeSpot(
+  raster: Raster,
+  isl: RasterIsland,
+  shape: IslandShape,
+  allowed?: (cell: number) => boolean,
+): SafeSpot {
   const { labels, dist, cols } = raster;
-  const cells: number[] = [];
+  let cells: number[] = [];
   for (let r = isl.r0; r < isl.r1; r++)
     for (let c = isl.c0; c < isl.c1; c++) if (labels[r * cols + c] === isl.label) cells.push(r * cols + c);
+  if (allowed) {
+    const ok = cells.filter(allowed);
+    if (ok.length > 0) cells = ok;
+  }
   // Near-maximal cells form a ridge (a strip's centerline, a square's middle): prefer the one closest to the
   // ridge's centroid so spots sit in the middle of the island, not at the first cell in raster order.
   let top = 0;
@@ -97,6 +109,8 @@ export interface RingOptions {
   /** Points closer than this to any of `avoid` are rejected. */
   keepOutPx: number;
   avoid: readonly Vec2[];
+  /** Extra acceptance test (03b: reachable from the island's main walkable part). */
+  accept?: (p: Vec2) => boolean;
 }
 
 /** Points on inset rings of one island, greedy in raster order with a minimum spacing. */
@@ -128,6 +142,7 @@ export function ringPoints(
           if (!far(q, out, minSp2) || !far(q, opts.avoid, keep2)) continue;
           if (!pointInPolygon(q, shape.contour, shape.holes)) continue;
           if (distanceToPolygonEdge(q, shape.contour, shape.holes) < opts.minClearance) continue;
+          if (opts.accept && !opts.accept(q)) continue;
           out.push(q);
           break;
         }

@@ -76,11 +76,14 @@ describe('contours', () => {
   test('diagonal pinches are removed so rings stay simple', () => {
     const { mask, cols, rows } = maskFrom(['##..', '##..', '..##', '..##']);
     expect(removeDiagonalPinches(mask, cols, rows)).toBeGreaterThan(0);
+    // 03b: two islands touching at a corner are separated (not fused through a one-cell neck)
     const { labels, count } = labelComponents(mask, cols, rows);
-    expect(count).toBe(1);
-    const rings = traceRings(labels, cols, rows, 1, { c0: 0, r0: 0, c1: cols, r1: rows });
-    expect(rings).toHaveLength(1);
-    expect(ringSelfIntersects(rings[0] as Vec2[])).toBe(false);
+    expect(count).toBe(2);
+    for (const label of [1, 2]) {
+      const rings = traceRings(labels, cols, rows, label, { c0: 0, r0: 0, c1: cols, r1: rows });
+      expect(rings).toHaveLength(1);
+      expect(ringSelfIntersects(rings[0] as Vec2[])).toBe(false);
+    }
   });
   test('simplify keeps corners, bevel cuts them', () => {
     const sq: Vec2[] = [

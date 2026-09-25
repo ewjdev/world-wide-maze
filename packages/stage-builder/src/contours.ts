@@ -6,9 +6,16 @@
  * Every simplified ring is checked for self-intersection and falls back to the exact outline if needed.
  */
 import { ringSelfIntersects, signedArea, type Vec2 } from '@wwm/schema';
+import { labelComponents } from './islands.ts';
 
-/** Remove diagonal-only contacts (2×2 checkerboards) by filling a water cell, so traced rings are simple. */
+/**
+ * Remove diagonal-only contacts (2×2 checkerboards), so traced rings are simple. Within one island a water cell
+ * is filled. Between two different islands (4-connected components) a land cell is cleared instead (03b,
+ * BI-1): filling would fuse them through a one-cell neck the ball can't pass, e.g. two HN rows touching at a
+ * corner.
+ */
 export function removeDiagonalPinches(mask: Uint8Array, cols: number, rows: number): number {
+  const { labels } = labelComponents(mask, cols, rows);
   let fixes = 0;
   let changed = true;
   while (changed) {
@@ -21,11 +28,13 @@ export function removeDiagonalPinches(mask: Uint8Array, cols: number, rows: numb
         const d = mask[i + cols];
         const e = mask[i + cols + 1];
         if (a && e && !b && !d) {
-          mask[i + 1] = 1;
+          if (labels[i] === labels[i + cols + 1]) mask[i + 1] = 1;
+          else mask[i + cols + 1] = 0;
           fixes++;
           changed = true;
         } else if (b && d && !a && !e) {
-          mask[i] = 1;
+          if (labels[i + 1] === labels[i + cols]) mask[i] = 1;
+          else mask[i + cols] = 0;
           fixes++;
           changed = true;
         }
