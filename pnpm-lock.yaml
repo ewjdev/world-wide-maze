@@ -81,6 +81,9 @@ importers:
       '@wwm/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@wwm/solver':
+        specifier: workspace:*
+        version: link:../../packages/solver
       '@wwm/stage-builder':
         specifier: workspace:*
         version: link:../../packages/stage-builder
@@ -166,9 +169,15 @@ importers:
 
   packages/solver:
     dependencies:
+      '@wwm/physics':
+        specifier: workspace:*
+        version: link:../physics
       '@wwm/schema':
         specifier: workspace:*
         version: link:../schema
+      '@wwm/stage-builder':
+        specifier: workspace:*
+        version: link:../stage-builder
 
   packages/stage-builder:
     dependencies:
@@ -178,9 +187,22 @@ importers:
 
   tools/batch-eval:
     dependencies:
+      '@wwm/physics':
+        specifier: workspace:*
+        version: link:../../packages/physics
       '@wwm/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@wwm/solver':
+        specifier: workspace:*
+        version: link:../../packages/solver
+      '@wwm/stage-builder':
+        specifier: workspace:*
+        version: link:../../packages/stage-builder
+    devDependencies:
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
 
   tools/fixture-capture:
     dependencies:
