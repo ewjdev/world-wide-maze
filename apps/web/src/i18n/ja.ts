@@ -185,6 +185,7 @@ export const ja: Resources = {
     challengeShare: '友だちに挑戦',
     challengeText: 'World Wide Maze で “{{title}}” の立体迷路を {{score}} 点でクリア！超えられる？',
     shareFailed: 'シェアできませんでした。アドレスバーの URL をコピーしてください。',
+    cardAlt: 'リンクのプレビュー：“{{title}}” の立体迷路',
   },
   ranking: {
     title: 'ランキング',
@@ -214,6 +215,10 @@ export const ja: Resources = {
     stagesHeading: 'ステージ別',
     stageRank: 'このステージで {{rank}}',
     verified: 'リプレイ検証済み',
+    shareStage: 'シェア',
+    shareStageLabel: '{{title}} のスコアをシェア',
+    stageShareText: 'World Wide Maze で “{{title}}” の立体迷路を {{score}} 点でクリア！超えられる？',
+    cardAlt: 'リンクのプレビュー：World Wide Maze ランキング {{rank}}',
     errors: {
       name: 'a–z、0–9、_ だけを使ってください。',
       profanity: 'その名前は使えません。別の名前にしてください。',

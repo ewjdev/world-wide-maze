@@ -168,6 +168,8 @@ export interface RankedStage {
   rank: number | null;
   verified: boolean;
   stored: BoardSource | null;
+  /** Phase 18: server permalink id of the stage entry (share card `/s/:stageId/r/:scoreId`). */
+  scoreId?: string;
 }
 
 export interface RankingView {
@@ -180,6 +182,8 @@ export interface RankingView {
   skipped: boolean;
   name: string | null;
   stored: BoardSource | null;
+  /** Phase 18: server permalink id of the run entry (share card `/r/:scoreId`). */
+  scoreId?: string;
   /** Cleared stages of the session (each has its own board). */
   stages: RankedStage[];
 }
@@ -991,7 +995,13 @@ export class Game {
           st.source,
         );
         return sr.ok
-          ? { ...st, rank: sr.rank, verified: sr.verified, stored: sr.stored ?? st.source }
+          ? {
+              ...st,
+              rank: sr.rank,
+              verified: sr.verified,
+              stored: sr.stored ?? st.source,
+              ...(sr.scoreId ? { scoreId: sr.scoreId } : {}),
+            }
           : { ...st, rank: null, verified: false, stored: null };
       }),
     );
@@ -1003,6 +1013,7 @@ export class Game {
         submitted: true,
         name,
         stored: res.stored ?? r.source,
+        ...(res.ok && res.scoreId ? { scoreId: res.scoreId } : {}),
         stages: ranked,
       },
     });

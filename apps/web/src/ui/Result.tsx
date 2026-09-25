@@ -11,8 +11,8 @@ import { LARGE_SCORE, ONEUP_SCORE, SMALL_SCORE, TIME_SCORE } from '@wwm/schema';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NameEntry } from '../ranking/NameEntry.tsx';
-import { ChallengeBanner, ShareButton } from '../ranking/ShareButton.tsx';
-import { shareUrl } from '../ranking/share.ts';
+import { CardPreview, ChallengeBanner, ShareButton } from '../ranking/ShareButton.tsx';
+import { cardImage, runUrl, scoreUrl, shareUrl } from '../ranking/share.ts';
 import {
   GameBoard,
   useChallengeLabels,
@@ -207,6 +207,13 @@ export function ResultScreen() {
         className={`wwm-result__actions${stage >= 3 ? ' is-on' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
+        {v.stageSource === 'server' && (
+          <CardPreview
+            className="wwm-result__card"
+            src={cardImage('stage', r.stageId)}
+            alt={t('result.cardAlt', { title })}
+          />
+        )}
         <ShareButton
           tone="game"
           stageId={r.stageId}
@@ -216,6 +223,7 @@ export function ResultScreen() {
           text={t('result.challengeText', { title, score: r.stageScore.toLocaleString('en-US') })}
           labels={shareLabels}
           buttonClassName="wwm-btn wwm-btn--ghost"
+          {...(v.stageSource === 'server' ? { image: cardImage('stage', r.stageId) } : {})}
         />
         <span className="wwm-spacer" />
         <button
@@ -309,6 +317,23 @@ export function RankingScreen() {
                         {t('ranking.verified')}
                       </span>
                     )}
+                    {s.scoreId && s.stored === 'server' && (
+                      <ShareButton
+                        tone="game"
+                        stageId={s.stageId}
+                        title={tabTitle(s)}
+                        href={scoreUrl(location.origin, s.stageId, s.scoreId)}
+                        text={t('ranking.stageShareText', {
+                          title: tabTitle(s),
+                          score: s.score.toLocaleString('en-US'),
+                        })}
+                        image={cardImage('score', s.scoreId)}
+                        labels={{ ...shareLabels, share: t('ranking.shareStage') }}
+                        ariaLabel={t('ranking.shareStageLabel', { title: tabTitle(s) })}
+                        buttonClassName="wwm-btn wwm-btn--ghost wwm-btn--small"
+                        testId={`stage-share-${s.resultIndex}`}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -316,6 +341,13 @@ export function RankingScreen() {
           </div>
         )}
         {r.skipped && <p className="wwm-muted">{t('ranking.skipped')}</p>}
+        {r.submitted && r.scoreId && r.stored === 'server' && (
+          <CardPreview
+            className="wwm-ranking__card"
+            src={cardImage('run', r.scoreId)}
+            alt={t('ranking.cardAlt', { rank: rankText })}
+          />
+        )}
         <JourneySection variant="ranking" name={r.name} />
         <div className="wwm-row wwm-ranking__actions">
           <button
@@ -334,10 +366,13 @@ export function RankingScreen() {
               tone="game"
               stageId=""
               title={t('app.name')}
-              href={location.origin}
+              // Phase 18: the run's permalink (its card shows this rank and total), when the server has the entry
+              href={r.scoreId && r.stored === 'server' ? runUrl(location.origin, r.scoreId) : location.origin}
               text={t('ranking.shareText', { rank: rankText })}
               labels={{ ...shareLabels, share: t('ranking.share') }}
               buttonClassName="wwm-btn wwm-btn--ghost"
+              testId="rank-share"
+              {...(r.scoreId && r.stored === 'server' ? { image: cardImage('run', r.scoreId) } : {})}
             />
           )}
         </div>

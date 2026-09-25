@@ -77,6 +77,8 @@ export default defineConfig({
       '/api': { target: process.env.WWM_API_URL ?? 'http://localhost:8787', changeOrigin: true, ws: true },
       // Share pages are served by the Worker (Phase 10); proxied so `/s/:id` works in dev as in production.
       '/s/': { target: process.env.WWM_API_URL ?? 'http://localhost:8787', changeOrigin: true },
+      // Phase 18: run-score permalinks (`/r/<scoreId>`) are Worker pages too. (`/j/…` stays the app's page here.)
+      '/r/': { target: process.env.WWM_API_URL ?? 'http://localhost:8787', changeOrigin: true },
     },
   },
 });

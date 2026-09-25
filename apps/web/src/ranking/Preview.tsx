@@ -7,7 +7,8 @@ import { useMemo, useState } from 'react';
 import { createMemoryRankingClient, createRankingClient } from './client.ts';
 import { Leaderboard, useLeaderboard } from './Leaderboard.tsx';
 import { NameEntry } from './NameEntry.tsx';
-import { ChallengeBanner, ShareButton } from './ShareButton.tsx';
+import { CardPreview, ChallengeBanner, ShareButton } from './ShareButton.tsx';
+import { cardImage } from './share.ts';
 
 const STAGE = 'b2169063668c61be2d46c0f164480c1a6fa26d6baae08344228f1afd414d8a7b';
 const at = '2026-09-25T10:00:00.000Z';
@@ -80,6 +81,19 @@ export default function RankingPreview() {
           </div>
           <div>
             <ShareButton stageId={STAGE} title="Hacker News" quiet />
+          </div>
+          {/* Phase 18: the link-preview card (rendered by the Worker; hidden when it can't load) */}
+          <CardPreview
+            src={cardImage('site', 'default')}
+            alt="Link preview: the default World Wide Maze card"
+          />
+          <div>
+            <ShareButton
+              stageId=""
+              title="World Wide Maze"
+              href={typeof location === 'undefined' ? '/' : location.origin}
+              image={cardImage('site', 'default')}
+            />
           </div>
           <Leaderboard title="Empty board" state={{ status: 'ready', entries: [] }} />
           <Leaderboard title="Loading" state={{ status: 'loading' }} />

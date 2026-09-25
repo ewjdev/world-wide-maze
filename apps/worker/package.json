@@ -11,12 +11,14 @@
     "db:migrate:local": "wrangler d1 migrations apply wwm --local",
     "capture-sidecar": "tsx node/sidecar-cli.ts",
     "bench": "tsx node/bench.ts",
-    "smoke": "tsx node/smoke.ts"
+    "smoke": "tsx node/smoke.ts",
+    "cards:samples": "tsx node/cards-samples.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.128.0",
     "@cloudflare/playwright": "1.3.6",
     "@dimforge/rapier3d-deterministic-compat": "0.20.0",
+    "@resvg/resvg-wasm": "2.6.2",
     "@wwm/capture-script": "workspace:*",
     "@wwm/docent-index": "workspace:*",
     "@wwm/net": "workspace:*",

@@ -13,6 +13,7 @@ import {
   rateLimitKey,
   readJsonCapped,
   readTextCapped,
+  SPA_SECURITY_HEADERS,
   securityHeadersFor,
   withSecurityHeaders,
 } from '../src/security.ts';
@@ -36,6 +37,28 @@ describe('security headers', () => {
     expect(page['strict-transport-security']).toBeUndefined();
     const card = securityHeadersFor(new URL('http://x/api/share/abc/card'), 'image/png');
     expect(card['cross-origin-resource-policy']).toBe('cross-origin');
+    const rendered = securityHeadersFor(
+      new URL('http://x/api/cards/score/AbCdEfGhIjKlMnOp.png'),
+      'image/png',
+    );
+    expect(rendered['cross-origin-resource-policy']).toBe('cross-origin');
+  });
+  test('the SPA shell the Worker serves (/, /log, /j/*) carries exactly the app headers from _headers', () => {
+    const file = readFileSync(resolve(here, '../../web/public/_headers'), 'utf8');
+    const block = file.split(/\n(?=\S)/).find((b) => b.startsWith('/*\n')) ?? '';
+    const fromFile = Object.fromEntries(
+      block
+        .split('\n')
+        .slice(1)
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .map((l) => {
+          const i = l.indexOf(':');
+          return [l.slice(0, i).toLowerCase(), l.slice(i + 1).trim()];
+        }),
+    );
+    expect(Object.keys(fromFile).length).toBeGreaterThan(5);
+    expect(SPA_SECURITY_HEADERS).toEqual(fromFile);
   });
   test('withSecurityHeaders keeps route overrides and copies immutable responses', async () => {
     const req = new Request('http://x/api/health');
@@ -188,6 +211,7 @@ describe('deploy config (wrangler.jsonc)', () => {
     ]);
   });
   test('production serves the web app with the API first', () => {
-    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*']);
+    // Phase 18: + score permalinks (/r/*) and the app routes with their own link-preview card (/, /log, /j/*)
+    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*', '/r/*', '/j/*', '/', '/log']);
   });
 });

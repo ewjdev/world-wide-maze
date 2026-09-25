@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { type Challenge, type ShareOutcome, shareLink, shareText, shareUrl } from './share.ts';
+import { type Challenge, fetchCardFile, type ShareOutcome, shareLink, shareText, shareUrl } from './share.ts';
 import './ranking.css';
 
 function ShareIcon() {
@@ -33,6 +33,14 @@ export interface ShareButtonProps {
   labels?: Partial<ShareLabels>;
   /** Extra class on the button (the game uses its own button styles). */
   buttonClassName?: string;
+  /**
+   * Phase 18: the link's card image (`cardImage(...)`). Fetched ahead of the tap, so the share sheet opens with the
+   * picture attached while the tap still counts as a user gesture (iOS drops `share()` after a slow await).
+   */
+  image?: string;
+  /** Accessible name when the label alone is ambiguous (e.g. one share button per stage row). */
+  ariaLabel?: string;
+  testId?: string;
 }
 
 export interface ShareLabels {
@@ -65,9 +73,24 @@ export function ShareButton({
   text,
   labels,
   buttonClassName,
+  image,
+  ariaLabel,
+  testId,
 }: ShareButtonProps) {
   const L = { ...SHARE_LABELS, ...labels };
   const [outcome, setOutcome] = useState<ShareOutcome | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  useEffect(() => {
+    setFile(null);
+    if (!image || typeof navigator === 'undefined' || !navigator.canShare) return;
+    let live = true;
+    void fetchCardFile(image).then((f) => {
+      if (live && f && navigator.canShare?.({ files: [f] })) setFile(f);
+    });
+    return () => {
+      live = false;
+    };
+  }, [image]);
   useEffect(() => {
     if (!outcome) return;
     const t = setTimeout(() => setOutcome(null), 3000);
@@ -84,12 +107,15 @@ export function ShareButton({
       <button
         type="button"
         className={buttonClassName ?? (quiet ? 'rk-btn rk-btn--quiet' : 'rk-btn')}
+        aria-label={ariaLabel}
+        data-testid={testId}
         onClick={async () =>
           setOutcome(
             await shareLink({
               url: href ?? shareUrl(base, stageId, challenge),
               title,
               text: text ?? shareText(title, score),
+              file,
             }),
           )
         }
@@ -101,6 +127,36 @@ export function ShareButton({
         {outcome ? L.feedback[outcome] : ''}
       </span>
     </span>
+  );
+}
+
+/**
+ * Phase 18: a small preview of the link's card (what a chat app or social network will unfurl). Hidden if the
+ * image can't load (offline, a stage only this device has).
+ */
+export function CardPreview({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  // the load state belongs to one `src`; a new card starts as loading again
+  const [loaded, setLoaded] = useState<{ src: string; state: 'ok' | 'error' } | null>(null);
+  const state = loaded?.src === src ? loaded.state : 'loading';
+  const setState = (s: 'ok' | 'error') => setLoaded({ src, state: s });
+  if (state === 'error') return null;
+  return (
+    <figure
+      className={`rk-card${className ? ` ${className}` : ''}`}
+      data-state={state}
+      data-testid="card-preview"
+    >
+      <img
+        src={src}
+        alt={alt}
+        width={1200}
+        height={630}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setState('ok')}
+        onError={() => setState('error')}
+      />
+    </figure>
   );
 }
 

@@ -19,6 +19,23 @@ const API_CSP = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; fo
 const SHARE_CSP =
   "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'";
 
+/**
+ * Phase 18: the web app's own headers (apps/web/public/_headers `/*`), for the SPA shell when the Worker serves
+ * it with a route's preview tags (`/`, `/log`, `/j/*`): `_headers` doesn't apply to Worker responses.
+ * test/security.test.ts keeps this in sync with `_headers`.
+ */
+export const SPA_SECURITY_HEADERS: Record<string, string> = {
+  'content-security-policy':
+    "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests",
+  'x-content-type-options': 'nosniff',
+  'x-frame-options': 'DENY',
+  'referrer-policy': 'strict-origin-when-cross-origin',
+  'cross-origin-opener-policy': 'same-origin',
+  'permissions-policy':
+    'accelerometer=(self), gyroscope=(self), magnetometer=(), camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self), screen-wake-lock=(self)',
+  'strict-transport-security': 'max-age=31536000',
+};
+
 export function securityHeadersFor(url: URL, contentType: string | null): Record<string, string> {
   const html = (contentType ?? '').includes('text/html');
   const h: Record<string, string> = {
@@ -28,7 +45,7 @@ export function securityHeadersFor(url: URL, contentType: string | null): Record
     'content-security-policy': html ? SHARE_CSP : API_CSP,
     'cross-origin-opener-policy': 'same-origin',
     // Share cards are fetched by social-network crawlers and may be embedded elsewhere; the rest is ours.
-    'cross-origin-resource-policy': /^\/api\/share\/[^/]+\/card$/.test(url.pathname)
+    'cross-origin-resource-policy': /^\/api\/(?:share\/[^/]+\/card|cards\/[a-z]+\/[^/]+)$/.test(url.pathname)
       ? 'cross-origin'
       : 'same-origin',
   };

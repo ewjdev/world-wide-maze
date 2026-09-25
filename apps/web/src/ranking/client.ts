@@ -35,6 +35,8 @@ export type SubmitResult =
       note?: string;
       /** Where it was saved: the shared server board, or this device (offline / stage unknown to the server). */
       stored?: 'server' | 'device';
+      /** Phase 18: the entry's permalink id on the server (`/s/:stageId/r/:scoreId`, `/r/:scoreId`). */
+      scoreId?: string;
     }
   | { ok: false; error: SubmitError; message: string; retryAfterSec?: number };
 
@@ -99,6 +101,9 @@ async function toResult(res: Response): Promise<SubmitResult> {
       verified: body.verified === true,
       stored: 'server',
       ...(typeof body.note === 'string' ? { note: body.note } : {}),
+      ...(typeof body.scoreId === 'string' && /^[A-Za-z0-9_-]{16}$/.test(body.scoreId)
+        ? { scoreId: body.scoreId }
+        : {}),
     };
   if (res.status === 429) {
     const retry = Number(res.headers.get('retry-after'));
