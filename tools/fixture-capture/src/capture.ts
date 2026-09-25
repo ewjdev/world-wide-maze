@@ -1,13 +1,30 @@
 import { writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { capturePage } from '@wwm/capture-script';
-import { type CaptureBundle, DEFAULT_VIEWPORT, type ElementKind, parseCapture } from '@wwm/schema';
+import {
+  CAPTURE_DPR,
+  type CaptureBundle,
+  DEFAULT_VIEWPORT,
+  type ElementKind,
+  parseCapture,
+} from '@wwm/schema';
 import { chromium } from 'playwright';
 import { formatJson } from './format.ts';
 
 export interface CaptureToDirOptions {
   colorScheme?: 'light' | 'dark';
   timeoutMs?: number;
+  /** Device scale factor (screenshot px per CSS px). Default: the `CAPTURE_DPR` env var, else CAPTURE_DPR (2). */
+  dpr?: number;
+}
+
+/** The `CAPTURE_DPR` env var (a number in (0, 4]) if set, else the contract's CAPTURE_DPR. */
+export function defaultDpr(env: Record<string, string | undefined> = process.env): number {
+  const raw = env.CAPTURE_DPR;
+  if (raw === undefined || raw === '') return CAPTURE_DPR;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0 || n > 4) throw new Error(`CAPTURE_DPR must be in (0, 4], got "${raw}"`);
+  return n;
 }
 
 export interface CaptureToDirResult {
@@ -31,7 +48,7 @@ export async function captureToDir(
   try {
     const context = await browser.newContext({
       viewport: { ...DEFAULT_VIEWPORT },
-      deviceScaleFactor: 1,
+      deviceScaleFactor: opts.dpr ?? defaultDpr(),
       colorScheme: opts.colorScheme ?? 'light',
       reducedMotion: 'reduce',
       locale: 'en-US',

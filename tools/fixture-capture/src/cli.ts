@@ -1,10 +1,10 @@
 /**
- * pnpm fixture:capture <url> <slug> [--dark] [--out <dir>] [--timeout <ms>]
+ * pnpm fixture:capture <url> <slug> [--dark] [--dpr <n>] [--out <dir>] [--timeout <ms>]
  *
- * Captures <url> with local Playwright Chromium (1280×800 viewport, DPR 1) through the shared
- * @wwm/capture-script sequence and writes:
- *   fixtures/captures/<slug>/capture.json   (CaptureBundle, validated with parseCapture)
- *   fixtures/captures/<slug>/screenshot.png (1280 wide, full page, height ≤ MAX_PAGE_HEIGHT_PX)
+ * Captures <url> with local Playwright Chromium (1280×800 viewport, DPR = --dpr, else the CAPTURE_DPR env
+ * var, else CAPTURE_DPR = 2) through the shared @wwm/capture-script sequence and writes:
+ *   fixtures/captures/<slug>/capture.json   (CaptureBundle, validated with parseCapture; screenshot.scale = DPR)
+ *   fixtures/captures/<slug>/screenshot.png (1280 × DPR wide, full page, CSS height ≤ MAX_PAGE_HEIGHT_PX)
  */
 import { mkdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -12,13 +12,14 @@ import { parseArgs } from 'node:util';
 import { captureToDir } from './capture.ts';
 import { CAPTURES_DIR } from './paths.ts';
 
-const USAGE = 'usage: pnpm fixture:capture <url> <slug> [--dark] [--out <dir>] [--timeout <ms>]';
+const USAGE = 'usage: pnpm fixture:capture <url> <slug> [--dark] [--dpr <n>] [--out <dir>] [--timeout <ms>]';
 
 async function main(): Promise<void> {
   const { values, positionals } = parseArgs({
     allowPositionals: true,
     options: {
       dark: { type: 'boolean', default: false },
+      dpr: { type: 'string' },
       out: { type: 'string' },
       timeout: { type: 'string', default: '45000' },
       help: { type: 'boolean', short: 'h', default: false },
@@ -36,11 +37,12 @@ async function main(): Promise<void> {
   const r = await captureToDir(url, dir, {
     colorScheme: values.dark ? 'dark' : 'light',
     timeoutMs: Number(values.timeout),
+    ...(values.dpr ? { dpr: Number(values.dpr) } : {}),
   });
   const ms = Math.round(performance.now() - t0);
   console.log(
     `✔ ${slug}: ${r.bundle.url}\n  "${r.bundle.title}"\n  page ${r.bundle.page.width}×${r.bundle.page.height}, ` +
-      `screenshot ${r.bundle.screenshot.width}×${r.bundle.screenshot.height} (${(r.pngBytes / 1024).toFixed(0)} KiB), ` +
+      `screenshot ${r.bundle.screenshot.width}×${r.bundle.screenshot.height} @${r.bundle.screenshot.scale}x (${(r.pngBytes / 1024).toFixed(0)} KiB), ` +
       `${r.bundle.elements.length} elements, ${ms} ms\n  kinds: ${JSON.stringify(r.summary.kinds)}\n  cookie: ${JSON.stringify(r.summary.cookie)}, hidden fixed: ${r.summary.hiddenFixed}`,
   );
 }

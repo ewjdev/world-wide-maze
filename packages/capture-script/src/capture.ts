@@ -37,7 +37,7 @@ export interface CaptureOptions {
 
 export interface CaptureResult {
   bundle: CaptureBundle;
-  /** PNG bytes, `bundle.screenshot.width × height`. */
+  /** PNG bytes, `bundle.screenshot.width × height` image px (= CSS px × `bundle.screenshot.scale`). */
   png: Uint8Array;
   prepare: PrepareReport;
   hiddenFixed: number;
@@ -78,7 +78,12 @@ export async function capturePage(
 
   const width = viewport.width;
   const height = Math.min(extracted.page.height, maxH);
+  // The clip is in CSS px; the image comes out at CSS px × devicePixelRatio (the context's
+  // deviceScaleFactor, CAPTURE_DPR for new captures). Record the real image size and the scale.
+  const dpr = Number(await page.evaluate('window.devicePixelRatio'));
   const png = await page.screenshot({ type: 'png', fullPage: true, clip: { x: 0, y: 0, width, height } });
+  const image = pngSize(png) ?? { width: Math.round(width * dpr), height: Math.round(height * dpr) };
+  const scale = Number.isFinite(dpr) && dpr > 0 ? dpr : image.width / width;
 
   const capturedAt = (opts.now ?? (() => new Date()))().toISOString();
   const finalUrl = normalizeUrl(page.url() || extracted.url);
@@ -90,9 +95,16 @@ export async function capturePage(
     capturedAt,
     viewport: extracted.viewport,
     page: extracted.page,
-    screenshot: { path: opts.screenshotPath, width, height, format: 'png' },
+    screenshot: { path: opts.screenshotPath, ...image, format: 'png', scale },
     backgroundColor: extracted.backgroundColor,
     elements: extracted.elements,
   };
   return { bundle, png, prepare, hiddenFixed };
+}
+
+/** Width/height from a PNG's IHDR chunk, or null if the bytes aren't a PNG. */
+export function pngSize(bytes: Uint8Array): { width: number; height: number } | null {
+  if (bytes.byteLength < 24 || bytes[1] !== 0x50 || bytes[2] !== 0x4e || bytes[3] !== 0x47) return null;
+  const v = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  return { width: v.getUint32(16), height: v.getUint32(20) };
 }

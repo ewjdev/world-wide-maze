@@ -4,7 +4,10 @@ Real pages captured with `pnpm fixture:capture <url> <slug> [--dark]` (tools/fix
 through the same `@wwm/capture-script` sequence the hosted service uses. Each folder has:
 
 - `capture.json`: a `CaptureBundle` (contracts §2). It passes `parseCapture`. `screenshot.path` is relative to this file.
-- `screenshot.png`: 1280 wide, full page, height capped at 6000 px (`MAX_PAGE_HEIGHT_PX`).
+- `screenshot.png`: 1280 CSS px wide × `screenshot.scale`, full page, CSS height capped at 6000 px (`MAX_PAGE_HEIGHT_PX`).
+
+These 7 fixtures are **legacy DPR 1 captures** (`screenshot.scale: 1`, added in contract v0.2 without recapturing).
+New captures default to `CAPTURE_DPR` = 2 (`--dpr <n>` or the `CAPTURE_DPR` env var override it).
 
 Capture settings: Playwright Chromium 1.63 (headless shell), viewport 1280×800, DPR 1, `reducedMotion: reduce`,
 locale en-US, timezone UTC, and the default (honest) headless user agent.

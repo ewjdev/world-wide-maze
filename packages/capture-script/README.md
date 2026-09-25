@@ -16,7 +16,8 @@ the hosted capture Worker (Phase 07) both use it, so fixtures and live captures 
   - `waitForAssets` waits for fonts and pending images, with a bound.
   - `hideFixedElements` sets fixed and sticky elements to `visibility:hidden`. Call it **after** `extractPage`, so they are recorded once with `fixed: true` but don't paint into the full-page screenshot.
   - `preparePage` runs the full sequence (everything except hiding).
-- `capturePage(page, url, {screenshotPath, …}) → {bundle, png, prepare, hiddenFixed}` runs the full sequence: viewport 1280×800 → goto → prepare → extract → hide fixed → PNG screenshot (1280 wide, height ≤ 6000) → `CaptureBundle` with `captureId` and a normalized URL.
+- `capturePage(page, url, {screenshotPath, …}) → {bundle, png, prepare, hiddenFixed}` runs the full sequence: viewport 1280×800 → goto → prepare → extract → hide fixed → PNG screenshot (1280 CSS px wide, CSS height ≤ 6000) → `CaptureBundle` with `captureId` and a normalized URL. The caller sets the device scale factor on the browser context (`CAPTURE_DPR` = 2 for new captures); `screenshot.scale` records `window.devicePixelRatio` and `screenshot.width/height` are the real PNG (image px) size. Element rects stay in CSS px.
+- `pngSize(bytes)` reads a PNG IHDR size.
 - `normalizeUrl(url)` lower-cases the host, strips default ports, the fragment and tracking params, and sorts the query.
 
 ## Extraction rules (summary)

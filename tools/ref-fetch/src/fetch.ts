@@ -87,9 +87,14 @@ async function main(argv: string[]): Promise<number> {
     const json = join(REFERENCE_DIR, 'wwmmm/http-aid-dcc.json');
     const png = join(REFERENCE_DIR, 'wwmmm/http-aid-dcc.png');
     if (existsSync(json) && existsSync(png)) {
-      const report = convertFiles({ jsonPath: json, pngPath: png, outDir: REFERENCE_DIR, slug: 'aid-dcc' });
+      const report = await convertFiles({
+        jsonPath: json,
+        pngPath: png,
+        outDir: REFERENCE_DIR,
+        slug: 'aid-dcc',
+      });
       console.log(
-        `convert aid-dcc -> reference/aid-dcc.stage.json (${report.issues.length} structural issue(s); see reference/aid-dcc.check.txt)`,
+        `convert aid-dcc -> reference/aid-dcc.stage.json (validateStage: ${report.issues.length} issue(s); see reference/aid-dcc.check.txt)`,
       );
     }
   }

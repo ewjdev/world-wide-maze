@@ -1,7 +1,7 @@
 /**
  * The ONLY place page space ↔ world space conversion happens (contracts §1).
  *
- * Page space: CSS px at DPR 1, x right, y down, origin top-left.
+ * Stage space (contracts §1): CSS px local to the stage slice, x right, y down, origin = slice top-left.
  * World space: meters, right-handed, +Y up. worldX = pageX / PX_PER_METER, worldZ = pageY / PX_PER_METER,
  * worldY = level * LEVEL_HEIGHT_M (island top surface).
  */
@@ -10,7 +10,7 @@ import type { Vec2 } from './types.ts';
 
 export type Vec3 = [number, number, number];
 
-/** Page point (px) + integer-or-fractional level → world point (m). */
+/** Stage-local point (px) + float level → world point (m). */
 export function pageToWorld(p: Vec2, level = 0): Vec3 {
   return [p[0] / PX_PER_METER, level * LEVEL_HEIGHT_M, p[1] / PX_PER_METER];
 }

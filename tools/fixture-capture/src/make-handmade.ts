@@ -3,14 +3,19 @@
  * pnpm fixture:texture                          → only re-render the .png
  *
  * The stage is validated with `validateStage` before anything is written. The texture is rendered by
- * Playwright Chromium from generated HTML (so labels/grid are real text), 1280×1600, DPR 1.
+ * Playwright Chromium from generated HTML (so labels/grid are real text): 640×800 CSS px at DPR 2 → 1280×1600.
  */
 import { mkdir, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import { validateStage } from '@wwm/schema';
 import { chromium } from 'playwright';
 import { formatJson } from './format.ts';
-import { buildHandmadeStage, HANDMADE_TEXTURE_SIZE, handmadeTextureHtml } from './handmade.ts';
+import {
+  buildHandmadeStage,
+  HANDMADE_STAGE_SIZE,
+  HANDMADE_TEXTURE_SCALE,
+  handmadeTextureHtml,
+} from './handmade.ts';
 import { STAGES_DIR } from './paths.ts';
 
 async function main(): Promise<void> {
@@ -33,9 +38,12 @@ async function main(): Promise<void> {
 
   const browser = await chromium.launch();
   try {
-    const page = await browser.newPage({ viewport: { ...HANDMADE_TEXTURE_SIZE }, deviceScaleFactor: 1 });
+    const page = await browser.newPage({
+      viewport: { ...HANDMADE_STAGE_SIZE },
+      deviceScaleFactor: HANDMADE_TEXTURE_SCALE,
+    });
     await page.setContent(handmadeTextureHtml(stage), { waitUntil: 'load' });
-    const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, ...HANDMADE_TEXTURE_SIZE } });
+    const png = await page.screenshot({ type: 'png', clip: { x: 0, y: 0, ...HANDMADE_STAGE_SIZE } });
     await writeFile(resolve(STAGES_DIR, 'handmade-simple.png'), png);
     console.log(`✔ wrote fixtures/stages/handmade-simple.png (${(png.byteLength / 1024).toFixed(0)} KiB)`);
   } finally {

@@ -1,5 +1,11 @@
 import { existsSync } from 'node:fs';
-import { type CaptureBundle, type DomElement, MAX_PAGE_HEIGHT_PX, parseCapture } from '@wwm/schema';
+import {
+  CAPTURE_DPR,
+  type CaptureBundle,
+  type DomElement,
+  MAX_PAGE_HEIGHT_PX,
+  parseCapture,
+} from '@wwm/schema';
 import { type Browser, chromium, type Page } from 'playwright';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import {
@@ -11,6 +17,7 @@ import {
   hideFixedElements,
   normalizeUrl,
   pageExpression,
+  pngSize,
 } from '../src/index.ts';
 
 // Browser tests need Playwright Chromium (`pnpm --filter @wwm/fixture-capture browsers`). They are skipped
@@ -192,7 +199,7 @@ describe.skipIf(!HAS_CHROMIUM)('in a real browser', () => {
       ...out,
       captureId: 'x',
       capturedAt: new Date().toISOString(),
-      screenshot: { path: 'screenshot.png', width: 1280, height: out.page.height, format: 'png' },
+      screenshot: { path: 'screenshot.png', width: 1280, height: out.page.height, format: 'png', scale: 1 },
     };
     expect(() => parseCapture(bundle)).not.toThrow();
   });
@@ -255,7 +262,43 @@ describe.skipIf(!HAS_CHROMIUM)('in a real browser', () => {
     expect(r.bundle.capturedAt).toBe('2026-09-25T00:00:00.000Z');
     expect(r.bundle.captureId).toMatch(/^[0-9a-f]{64}$/);
     expect(r.hiddenFixed).toBeGreaterThanOrEqual(2);
+    expect(r.bundle.screenshot).toMatchObject({ width: 1280, height: MAX_PAGE_HEIGHT_PX, scale: 1 });
     expect(() => parseCapture(r.bundle)).not.toThrow();
     await p.close();
   }, 60_000);
+
+  test('capturePage at CAPTURE_DPR: image is CSS size × scale, element rects stay in CSS px', async () => {
+    const ctx = await browser.newContext({ deviceScaleFactor: CAPTURE_DPR });
+    const p = await ctx.newPage();
+    await p.route('https://wwm.test/**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: '<html><body style="margin:0"><p style="margin:100px">Hello at 2x</p><div style="height:1500px"></div></body></html>',
+      }),
+    );
+    const r = await capturePage(p, 'https://wwm.test/dpr', { screenshotPath: 'screenshot.png' });
+    const png = Buffer.from(r.png);
+    expect(r.bundle.screenshot.scale).toBe(CAPTURE_DPR);
+    expect(r.bundle.page.width).toBe(1280);
+    expect(png.readUInt32BE(16)).toBe(1280 * CAPTURE_DPR);
+    expect(png.readUInt32BE(20)).toBe(r.bundle.page.height * CAPTURE_DPR);
+    expect(r.bundle.screenshot).toMatchObject({
+      width: 1280 * CAPTURE_DPR,
+      height: r.bundle.page.height * CAPTURE_DPR,
+    });
+    const hello = r.bundle.elements.find((e) => e.text?.includes('Hello at 2x'));
+    expect(hello?.rect.x).toBe(100);
+    expect(() => parseCapture(r.bundle)).not.toThrow();
+    await ctx.close();
+  }, 60_000);
+});
+
+test('pngSize reads the IHDR size and rejects non-PNG bytes', () => {
+  const b = new Uint8Array(24);
+  b.set([0x89, 0x50, 0x4e, 0x47], 0);
+  new DataView(b.buffer).setUint32(16, 2560);
+  new DataView(b.buffer).setUint32(20, 3400);
+  expect(pngSize(b)).toEqual({ width: 2560, height: 3400 });
+  expect(pngSize(new Uint8Array(24))).toBeNull();
 });

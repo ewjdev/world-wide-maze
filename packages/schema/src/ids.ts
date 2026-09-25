@@ -2,8 +2,8 @@
  * Content-derived ids (contracts §2 `captureId`, §3 `stageId`). Uses WebCrypto (`crypto.subtle`), which
  * exists in browsers, Workers and Node ≥ 19, so every phase computes identical ids.
  *
- * Joining rule (interpretation of the contract's "a + b + c"): fields are joined with "|" so different
- * splits can't collide (e.g. seed 12 + "1.0.0" vs seed 1 + "21.0.0").
+ * Joining rule (contracts §9): fields are joined with "|" so different splits can't collide
+ * (e.g. seed 12 + "1.0.0" vs seed 1 + "21.0.0").
  */
 import type { Difficulty } from './types.ts';
 
@@ -18,12 +18,17 @@ export function computeCaptureId(normalizedUrl: string, capturedAt: string): Pro
   return sha256Hex(`${normalizedUrl}|${capturedAt}`);
 }
 
-/** stageId = sha256(captureId | seed | builderVersion | difficulty). */
+/** stageId = sha256(captureId | slice.index | seed | builderVersion | difficulty). */
 export function computeStageId(
   captureId: string,
+  sliceIndex: number,
   seed: number,
   builderVersion: string,
   difficulty: Difficulty,
 ): Promise<string> {
-  return sha256Hex(`${captureId}|${seed >>> 0}|${builderVersion}|${difficulty}`);
+  if (!Number.isInteger(sliceIndex) || sliceIndex < 0)
+    return Promise.reject(
+      new RangeError(`computeStageId: sliceIndex must be a non-negative integer (got ${sliceIndex})`),
+    );
+  return sha256Hex(`${captureId}|${sliceIndex}|${seed >>> 0}|${builderVersion}|${difficulty}`);
 }

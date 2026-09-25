@@ -124,3 +124,14 @@ export function cropRows(img: Rgba, y0: number, y1: number): Rgba {
   const stride = img.width * 4;
   return { width: img.width, height: y1 - y0, data: img.data.slice(y0 * stride, y1 * stride) };
 }
+
+/** Extend (or trim) to `height` rows; extra rows repeat the last row (like 2013's stretched edge band). */
+export function padRows(img: Rgba, height: number): Rgba {
+  const stride = img.width * 4;
+  if (height <= img.height) return cropRows(img, 0, height);
+  const data = new Uint8Array(height * stride);
+  data.set(img.data.subarray(0, img.height * stride));
+  const last = img.data.subarray((img.height - 1) * stride, img.height * stride);
+  for (let y = img.height; y < height; y++) data.set(last, y * stride);
+  return { width: img.width, height, data };
+}
