@@ -573,3 +573,73 @@
   height: 20px;
   flex: none;
 }
+
+/* ── Phase 18: link-preview card thumbnail ───────────────────────────────── */
+/* What the link unfurls into, at the size a chat app shows it. Chamfered like the game's plates; while the
+   image loads, the COLOR_TRIANGLE pastels stand in for it (no layout shift: the box has the card's ratio). */
+.rk-card {
+  position: relative;
+  margin: 0;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1200 / 630;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  background: linear-gradient(135deg, #c2e1bf 0 25%, #acc4d0 25% 50%, #f7e29c 50% 75%, #dcaeb0 75%);
+  filter: drop-shadow(0 6px 14px rgba(32, 38, 45, 0.14));
+}
+.rk-card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 360ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rk-card[data-state="ok"] img {
+  opacity: 1;
+}
+.rk-card[data-state="loading"] {
+  animation: rk-card-wait 1.4s ease-in-out infinite alternate;
+}
+@keyframes rk-card-wait {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 0.9;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rk-card img {
+    transition: none;
+  }
+  .rk-card[data-state="loading"] {
+    animation: none;
+  }
+}
+
+/* where the game places the card previews (Phase 18) */
+.rk-card.wwm-result__card {
+  width: 132px;
+  flex: none;
+}
+.rk-card.wwm-ranking__card {
+  max-width: 300px;
+  margin-top: 4px;
+}
+.rk-card.wwm-journey__card {
+  max-width: 280px;
+  margin: 4px 0 2px;
+}
+.wwm-stagerank li .rk {
+  margin-left: auto;
+  align-self: center;
+}
+.wwm-stagerank li .rk .wwm-btn--small {
+  min-height: 30px;
+  padding: 4px 12px;
+  font-size: 13px;
+}
+.wwm-stagerank li .rk .rk-status:empty {
+  display: none;
+}

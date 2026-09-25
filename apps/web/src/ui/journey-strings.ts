@@ -43,6 +43,7 @@ export const journeyEn = {
     link: 'Share my web journey',
     copied: 'Link copied',
     text: 'I rolled a marble across {{count}} websites in World Wide Maze: {{trail}}',
+    cardAlt: 'Link preview: this web journey as a chain of island mazes', // Phase 18
   },
   page: {
     title: 'A web journey',
@@ -97,6 +98,7 @@ export const journeyJa: typeof journeyEn = {
     link: 'ウェブの旅をシェア',
     copied: 'リンクをコピーしました',
     text: 'World Wide Maze でボールを転がして {{count}} つのサイトを旅しました：{{trail}}',
+    cardAlt: 'リンクのプレビュー：この旅を島の迷路のつながりで表したカード',
   },
   page: {
     title: 'ウェブの旅',

@@ -5,7 +5,9 @@
  */
 import { type CSSProperties, useEffect, useRef, useState } from 'react';
 import type { PortalPrompt } from '../game/game.ts';
-import { hostColor, isJourney, type JourneyStop, journeyUrl } from '../game/journey.ts';
+import { encodeJourney, hostColor, isJourney, type JourneyStop } from '../game/journey.ts';
+import { CardPreview } from '../ranking/ShareButton.tsx';
+import { cardImage, fetchCardFile, shareLink } from '../ranking/share.ts';
 import { useGame, useView } from './GameApp.tsx';
 import { journeyEn, useJourneyT } from './journey-strings.ts';
 import { Mono } from './Mono.tsx';
@@ -223,24 +225,33 @@ export function JourneySection({
   const v = useView();
   const { t } = useJourneyT();
   const [copied, setCopied] = useState(false);
-  if (!isJourney(v.journey)) return null;
-  const href = journeyUrl(location.origin, v.journey, { total: v.total, ...(name ? { name } : {}) });
+  const journey = isJourney(v.journey);
+  const trail = journey ? encodeJourney(v.journey, { total: v.total, ...(name ? { name } : {}) }) : '';
+  const image = trail ? cardImage('journey', trail) : '';
+  // Phase 18: the card as a file for the share sheet, fetched before the tap (see ShareButton).
+  const [file, setFile] = useState<File | null>(null);
+  useEffect(() => {
+    setFile(null);
+    if (!image || typeof navigator === 'undefined' || !navigator.canShare) return;
+    let live = true;
+    void fetchCardFile(image, 'web-journey.png').then((f) => {
+      if (live && f && navigator.canShare?.({ files: [f] })) setFile(f);
+    });
+    return () => {
+      live = false;
+    };
+  }, [image]);
+  if (!journey) return null;
+  const href = `${location.origin}/j/${trail}`;
   const text = t('journey.share.text', {
     count: v.journey.length,
     trail: v.journey.map((s) => s.host).join(' → '),
   });
   const share = async () => {
-    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> };
-    try {
-      if (nav.share && matchMedia('(pointer: coarse)').matches) {
-        await nav.share({ title: journeyEn.share.heading, text, url: href });
-        return;
-      }
-      await navigator.clipboard?.writeText(`${text}\n${href}`);
+    const out = await shareLink({ url: href, title: journeyEn.share.heading, text, file });
+    if (out === 'copied') {
       setCopied(true);
       setTimeout(() => setCopied(false), 1800);
-    } catch {
-      // dismissed or blocked: the link is still visible below
     }
   };
   return (
@@ -256,6 +267,9 @@ export function JourneySection({
         <p className="wwm-muted">{t('journey.share.summary', { count: v.journey.length })}</p>
       </header>
       <JourneyTrail stops={v.journey} />
+      {variant === 'ranking' && (
+        <CardPreview className="wwm-journey__card" src={image} alt={t('journey.share.cardAlt')} />
+      )}
       <div className="wwm-journey__share">
         <button
           type="button"
