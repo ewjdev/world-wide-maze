@@ -21,7 +21,7 @@ function fakeEnv(taken: Set<string>) {
       },
     }),
   };
-  return { env: { ROOM }, claims, fetched };
+  return { env: { ROOM, ROOM_STATS: '1' as string | undefined }, claims, fetched };
 }
 
 /** Deterministic random stream yielding the given codes in order. */
@@ -70,5 +70,42 @@ describe('room code allocation', () => {
     expect((await handleRooms(new Request('http://x/api/rooms/123456/nope'), env))?.status).toBe(404);
     expect((await handleRooms(new Request('http://x/api/rooms'), env))?.status).toBe(405);
     expect(await handleRooms(new Request('http://x/api/stages'), env)).toBeNull();
+  });
+
+  test('Phase 12: stats is 404 unless ROOM_STATS=1 (never in staging/production)', async () => {
+    const { env, fetched } = fakeEnv(new Set());
+    env.ROOM_STATS = undefined;
+    expect((await handleRooms(new Request('http://x/api/rooms/123456/stats'), env))?.status).toBe(404);
+    env.ROOM_STATS = '0';
+    expect((await handleRooms(new Request('http://x/api/rooms/123456/stats'), env))?.status).toBe(404);
+    expect(fetched).toEqual([]);
+  });
+
+  test('Phase 12: room creation and ws upgrades are rate limited per client IP', async () => {
+    const { env } = fakeEnv(new Set());
+    const keys: string[] = [];
+    let budget = 1;
+    const limiter = {
+      async limit({ key }: { key: string }) {
+        keys.push(key);
+        return { success: budget-- > 0 };
+      },
+    };
+    const e = { ...env, ROOM_CREATE_LIMITER: limiter, ROOM_WS_LIMITER: limiter };
+    const post = () =>
+      handleRooms(
+        new Request('http://x/api/rooms', { method: 'POST', headers: { 'cf-connecting-ip': '203.0.113.9' } }),
+        e,
+      );
+    expect((await post())?.status).toBe(200);
+    const limited = await post();
+    expect(limited?.status).toBe(429);
+    expect(limited?.headers.get('retry-after')).toBe('60');
+    const ws = await handleRooms(
+      new Request('http://x/api/rooms/123456/ws?role=host', { headers: { Upgrade: 'websocket' } }),
+      e,
+    );
+    expect(ws?.status).toBe(429);
+    expect(keys).toEqual(['room-create:203.0.113.9', 'room-create:203.0.113.9', 'room-ws:local']);
   });
 });

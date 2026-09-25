@@ -1,0 +1,7 @@
+PASS  GET / serves the app with a CSP  (default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; wo)
+PASS  SPA fallback for /play/:id and /c/:code
+PASS  GET /api/health  (0.2.6)
+PASS  GET /api/curated (kill-switch fallback list)  (0 curated runs)
+PASS  POST /api/rooms → 6-digit code  (room 126559, stats 404)
+PASS  cross-site POST refused
+PASS  share page 404 for an unknown stage

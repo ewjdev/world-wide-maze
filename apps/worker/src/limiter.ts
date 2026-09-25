@@ -5,6 +5,8 @@
  * - `browser`: global semaphore capping concurrent browser sessions, with leases so a crashed job can't
  *   leak a slot forever.
  * DO storage is strongly consistent and each instance is single-threaded, so there are no races.
+ * Phase 12: an alarm deletes an instance's storage once nothing in it is live any more, so per-IP objects don't
+ * keep old timestamps forever (privacy notice).
  */
 import { DurableObject } from 'cloudflare:workers';
 
@@ -25,8 +27,30 @@ export class Limiter extends DurableObject<Env> {
       return { ok: false, retryAfterSec: Math.ceil((oldest + windowMs - now) / 1000), count: hits.length };
     }
     hits.push(now);
-    await this.ctx.storage.put('hits', hits);
+    await this.ctx.storage.put({ hits, windowMs });
+    await this.#cleanupAt(now + windowMs);
     return { ok: true, retryAfterSec: 0, count: hits.length };
+  }
+
+  /** Schedule the cleanup alarm unless one is already due earlier. */
+  async #cleanupAt(t: number): Promise<void> {
+    const cur = await this.ctx.storage.getAlarm();
+    if (cur === null || cur > t) await this.ctx.storage.setAlarm(t + 1000);
+  }
+
+  override async alarm(): Promise<void> {
+    const now = Date.now();
+    const windowMs = (await this.ctx.storage.get<number>('windowMs')) ?? 0;
+    const hits = ((await this.ctx.storage.get<number[]>('hits')) ?? []).filter((t) => t > now - windowMs);
+    const leases = Object.values((await this.ctx.storage.get<Record<string, number>>('leases')) ?? {}).filter(
+      (exp) => exp > now,
+    );
+    if (hits.length === 0 && leases.length === 0) {
+      await this.ctx.storage.deleteAll();
+      return;
+    }
+    const next = Math.min(...hits.map((t) => t + windowMs), ...leases);
+    await this.ctx.storage.setAlarm(next + 1000);
   }
 
   /** Take one of `max` slots for `holder` until it's released or `leaseMs` passes. */
@@ -48,6 +72,7 @@ export class Limiter extends DurableObject<Env> {
     }
     leases[holder] = now + leaseMs;
     await this.ctx.storage.put('leases', leases);
+    await this.#cleanupAt(now + leaseMs);
     return { ok: true, retryAfterSec: 0, count: Object.keys(leases).length };
   }
 

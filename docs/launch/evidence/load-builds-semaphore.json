@@ -1,0 +1,43 @@
+{
+  "mode": "burst",
+  "base": "http://localhost:8898",
+  "when": "2026-09-25T11:24:02.181Z",
+  "n": 50,
+  "wallMs": 40511,
+  "postStatuses": {
+    "202": 50
+  },
+  "postMs": {
+    "p50": 208,
+    "p95": 213
+  },
+  "jobOutcomes": {
+    "done": 10,
+    "error:CAPTURE_TIMEOUT": 40
+  },
+  "doneMs": {
+    "p50": 11697,
+    "p95": 19721,
+    "max": 19721
+  },
+  "errorSamples": [
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing", "extracting"],
+      "message": "texture capture exceeded its time budget",
+      "ms": 20860.981042000003
+    },
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing"],
+      "message": "capture exceeded its time budget",
+      "ms": 21005.029292
+    },
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing"],
+      "message": "capture exceeded its time budget",
+      "ms": 22116.161166
+    }
+  ]
+}

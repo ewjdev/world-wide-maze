@@ -2,11 +2,11 @@
  * Routes. Phase 08 owns the game shell (`/`, `/play/:stageId`, `/p/:code`), Phase 06 owns `/c/:code`
  * (apps/web/src/controller), Phase 10 owns the showcase pages (`/about`, `/making`, `/log`).
  * `/dev/*` sandboxes exist only in dev builds (they pull test fixtures into the bundle).
+ *
+ * Phase 12: every page is a lazy route, so each loads only its own code. The phone controller (`/c/:code`)
+ * no longer downloads three.js, the engine, the builder and Rapier; the showcase pages don't either.
  */
 import { Link, Outlet, type RouteObject, useParams } from 'react-router';
-import { ControllerPage } from './controller/ControllerPage.tsx';
-import { AboutPage } from './pages/about/AboutPage.tsx';
-import { GameApp } from './ui/GameApp.tsx';
 
 function DevLayout() {
   return (
@@ -20,18 +20,37 @@ function DevLayout() {
   );
 }
 
-export function Home() {
-  return <GameApp />;
+/** The game shell and its three entry routes live in one chunk (three.js, engine, physics, builder). */
+const game = () => import('./ui/GameApp.tsx');
+
+async function homeRoute() {
+  const { GameApp } = await game();
+  return { Component: () => <GameApp /> };
 }
 
-export function Play() {
-  const { stageId } = useParams();
-  return <GameApp deepLink={stageId} key={stageId} />;
+async function playRoute() {
+  const { GameApp } = await game();
+  return {
+    Component: function Play() {
+      const { stageId } = useParams();
+      return <GameApp deepLink={stageId} key={stageId} />;
+    },
+  };
 }
 
-export function JoinRoom() {
-  const { code } = useParams();
-  return <GameApp roomCode={code} key={code} />;
+async function joinRoute() {
+  const { GameApp } = await game();
+  return {
+    Component: function JoinRoom() {
+      const { code } = useParams();
+      return <GameApp roomCode={code} key={code} />;
+    },
+  };
+}
+
+/** Shown while a lazy route's chunk loads on first paint (also keeps React Router from warning). */
+function Loading() {
+  return null;
 }
 
 function NotFound() {
@@ -65,15 +84,21 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
     ]
   : [];
 
-export const routes: RouteObject[] = [
+const pageRoutes: RouteObject[] = [
   // The game renders full-screen without the document layout.
-  { path: '/', element: <Home /> },
-  { path: '/play/:stageId', element: <Play /> },
-  { path: '/p/:code', element: <JoinRoom /> },
+  { path: '/', lazy: homeRoute },
+  { path: '/play/:stageId', lazy: playRoute },
+  { path: '/p/:code', lazy: joinRoute },
   // The phone controller renders without the desktop layout.
-  { path: '/c/:code', element: <ControllerPage /> }, // Phase 06
+  {
+    path: '/c/:code',
+    lazy: async () => ({ Component: (await import('./controller/ControllerPage.tsx')).ControllerPage }),
+  }, // Phase 06
   // Phase 10 showcase pages (own full-page layout).
-  { path: '/about', element: <AboutPage /> },
+  {
+    path: '/about',
+    lazy: async () => ({ Component: (await import('./pages/about/AboutPage.tsx')).AboutPage }),
+  },
   {
     path: '/making/:stageId?',
     lazy: async () => ({ Component: (await import('./pages/making/MakingPage.tsx')).default }),
@@ -82,3 +107,6 @@ export const routes: RouteObject[] = [
   ...devRoutes,
   { path: '*', element: <NotFound /> },
 ];
+
+/** Every lazy page gets the blank first-paint fallback. */
+export const routes: RouteObject[] = pageRoutes.map((r) => (r.lazy ? { ...r, HydrateFallback: Loading } : r));

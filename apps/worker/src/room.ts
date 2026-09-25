@@ -12,7 +12,12 @@
  *   inter-arrival jitter and "bursts" to prove it (see @wwm/net StreamStats).
  * - Uses the WebSocket Hibernation API; codes expire after 30 min with no sockets and no activity.
  * - `GET …/stats`: live relay diagnostics (RTT per role, input rate, buttons seen, event log) for dev and
- *   remote device verification. Aggregates only, no text content.
+ *   remote device verification. Aggregates only, no text content. Phase 12: the route only forwards it
+ *   when `ROOM_STATS=1` (dev/test), see routes/rooms.ts.
+ * - Phase 12 abuse caps: binary frames ≤ MAX_BINARY_BYTES and text frames ≤ MAX_TEXT_CHARS (bigger ones
+ *   close the socket with 1009); each socket has a token bucket of RATE_BURST messages refilled at
+ *   RATE_PER_SEC. Messages over budget are dropped (counted in stats); a socket that keeps flooding
+ *   (RATE_KICK_DROPS drops) is closed with 1008.
  */
 
 import { DurableObject } from 'cloudflare:workers';
@@ -24,6 +29,27 @@ export const KEEPALIVE_MS = 5000;
 const CLOSE_BAD_REQUEST = 4400;
 const CLOSE_ROOM_NOT_FOUND = 4404;
 const CLOSE_REPLACED = 4409;
+const CLOSE_POLICY = 1008;
+const CLOSE_TOO_BIG = 1009;
+
+/** INPUT frames are 12 bytes (contracts §6); leave room for a future frame type, nothing more. */
+export const MAX_BINARY_BYTES = 64;
+/** The largest legitimate text frame is `{t:'text', field:'url', value}` with a ≤ 2048-char URL. */
+export const MAX_TEXT_CHARS = 4096;
+/** Token bucket per socket: 60 Hz input + ≤ 10 Hz pos + state/haptic/ping traffic, with headroom. */
+export const RATE_PER_SEC = 150;
+export const RATE_BURST = 300;
+/** Dropped messages before a flooding socket is closed. */
+export const RATE_KICK_DROPS = 600;
+
+interface Bucket {
+  tokens: number;
+  at: number;
+  dropped: number;
+}
+
+/** Strip control characters from client-supplied text before it reaches logs (security review #13). */
+const clean = (s: string, max = 64) => s.replace(/[^\x20-\x7e]/g, '?').slice(0, max);
 
 interface Meta {
   code: string;
@@ -53,6 +79,9 @@ export class Room extends DurableObject<Env> {
   #prevButtons = 0;
   #counts = { calibrated: 0, text: 0, state: 0, haptic: 0, connects: 0, replaced: 0 };
   #log: string[] = [];
+  #buckets = new WeakMap<WebSocket, Bucket>();
+  #keepalives = 0;
+  #dropped = { rate: 0, oversize: 0 };
   #lastActive = 0;
   readonly #idleMs: number;
   readonly #keepaliveMs: number;
@@ -69,7 +98,8 @@ export class Room extends DurableObject<Env> {
     const entry = `${new Date().toISOString()} ${line}`;
     this.#log.push(entry);
     if (this.#log.length > 100) this.#log.shift();
-    console.log(`[room ${code}] ${line}`);
+    // Phase 12: one structured line (Workers Logs indexes `svc`, `room`, `msg`).
+    console.log(JSON.stringify({ level: 'info', svc: 'wwm-room', room: code, msg: line }));
   }
 
   #code: string | null = null;
@@ -177,6 +207,7 @@ export class Room extends DurableObject<Env> {
     if (!role) return;
     const now = Date.now();
     this.#lastActive = now;
+    if (!this.#admit(ws, role, message, now)) return;
     if (typeof message === 'string') {
       // Only the relay's own keepalive pongs (negative id) are consumed; everything else is relayed verbatim.
       if (message.length < 256 && message.includes('"pong"')) {
@@ -210,6 +241,47 @@ export class Room extends DurableObject<Env> {
     this.#broadcast(other(role), message);
   }
 
+  /** Phase 12: size and rate caps. False = drop this message (the socket may have been closed). */
+  #admit(ws: WebSocket, role: RoomRole, message: string | ArrayBuffer, now: number): boolean {
+    const size = typeof message === 'string' ? message.length : message.byteLength;
+    if (size > (typeof message === 'string' ? MAX_TEXT_CHARS : MAX_BINARY_BYTES)) {
+      this.#dropped.oversize++;
+      this.#note(
+        `${role} sent an oversized ${typeof message === 'string' ? 'text' : 'binary'} frame (${size})`,
+      );
+      try {
+        ws.close(CLOSE_TOO_BIG, 'message too big');
+      } catch {
+        // already closing
+      }
+      return false;
+    }
+    let b = this.#buckets.get(ws);
+    if (!b) {
+      b = { tokens: RATE_BURST, at: now, dropped: 0 };
+      this.#buckets.set(ws, b);
+    }
+    b.tokens = Math.min(RATE_BURST, b.tokens + ((now - b.at) / 1000) * RATE_PER_SEC);
+    b.at = now;
+    if (b.tokens >= RATE_BURST) b.dropped = 0; // a full bucket forgives past overruns (only sustained floods kick)
+    if (b.tokens >= 1) {
+      b.tokens -= 1;
+      return true;
+    }
+    b.dropped++;
+    this.#dropped.rate++;
+    if (b.dropped === 1 || b.dropped % 100 === 0)
+      this.#note(`${role} over the rate cap (${b.dropped} dropped)`);
+    if (b.dropped >= RATE_KICK_DROPS) {
+      try {
+        ws.close(CLOSE_POLICY, 'rate limit');
+      } catch {
+        // already closing
+      }
+    }
+    return false;
+  }
+
   #countText(message: string): void {
     const t = /^\{\s*"t"\s*:\s*"(\w+)"/.exec(message)?.[1];
     if (t === 'calibrated') {
@@ -227,7 +299,7 @@ export class Room extends DurableObject<Env> {
     }
     if (!role) return;
     const stillHere = this.#sockets(role).some((s) => s !== ws);
-    this.#note(`${role} closed code=${code}${reason ? ` (${reason})` : ''} ${this.#rttLine()}`);
+    this.#note(`${role} closed code=${code}${reason ? ` (${clean(reason)})` : ''} ${this.#rttLine()}`);
     if (!stillHere) this.#broadcast(other(role), JSON.stringify({ t: 'peer', role, connected: false }));
     await this.#touch(Date.now());
     if ((await this.ctx.storage.getAlarm()) === null) {
@@ -262,7 +334,9 @@ export class Room extends DurableObject<Env> {
         }
       }
       const s = this.#input.summary(now);
-      this.#note(`keepalive ${this.#rttLine()}; input ${s.ratePerSec}/s lost=${s.lost} bursts=${s.bursts}`);
+      // Phase 12: log the relay health once a minute per live room, not on every keepalive (log volume).
+      if (this.#keepalives++ % Math.max(1, Math.round(60_000 / this.#keepaliveMs)) === 0)
+        this.#note(`keepalive ${this.#rttLine()}; input ${s.ratePerSec}/s lost=${s.lost} bursts=${s.bursts}`);
       await this.ctx.storage.put<Meta>('meta', { ...meta, lastActive: Math.max(meta.lastActive, now) });
       await this.ctx.storage.setAlarm(now + this.#keepaliveMs);
       return;
@@ -292,6 +366,7 @@ export class Room extends DurableObject<Env> {
         buttonPresses: this.#buttons,
       },
       counts: this.#counts,
+      dropped: this.#dropped,
       log: this.#log.slice(-40),
     });
   }

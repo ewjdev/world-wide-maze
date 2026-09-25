@@ -1,0 +1,34 @@
+{
+  "base": "http://localhost:8899",
+  "when": "2026-09-25T11:19:20.449Z",
+  "roomsRequested": 25,
+  "roomsLive": 25,
+  "setupMs": 50129,
+  "hz": 60,
+  "seconds": 20,
+  "createOk": 25,
+  "createFail": {},
+  "socketsOk": 50,
+  "socketFail": 0,
+  "framesSent": 30000,
+  "framesReceived": 30000,
+  "lossPct": 0,
+  "achievedSendRatePerRoom": 60,
+  "relayLatencyMs": {
+    "p50": 1.6,
+    "p95": 56.3,
+    "p99": 88.2,
+    "max": 111
+  },
+  "closesDuringRun": {},
+  "relayDroppedInFirst20Rooms": {
+    "rate": 0,
+    "oversize": 0,
+    "roomsSampled": 20
+  },
+  "pingsAnswered": 200,
+  "generatorEventLoopDelayMs": {
+    "p50": 12.025855,
+    "p99": 12.320767
+  }
+}

@@ -1,6 +1,10 @@
 // Cloudflare Worker config. All resource IDs below are PLACEHOLDERS: no Cloudflare resources exist yet.
 // Local `wrangler dev` simulates R2/D1/KV/DO/rate limits with Miniflare and runs Browser Run against a local
 // Chrome that wrangler downloads, so no account is needed for development. See README "Enabling production".
+//
+// The top level is the LOCAL DEV / TEST config (`pnpm dev`, the integration tests). `env.staging` and
+// `env.production` (bottom) are the deploy targets (Phase 12, infra/README.md): they also serve the web app
+// as Workers static assets and must redeclare every binding and var (those keys are not inherited).
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "wwm",
@@ -27,7 +31,19 @@
     "CAPTURE_BUDGET_MS": "20000",
     "SLICE0_BUDGET_MS": "30000",
     "CACHE_TTL_DAYS": "7",
-    "RETENTION_DAYS": "30"
+    "RETENTION_DAYS": "30",
+    // Phase 12: all new builds per hour across all clients.
+    "GLOBAL_BUILD_LIMIT_PER_HOUR": "600",
+    // Phase 12 kill switch: "0" refuses new captures (cached runs and curated stages still play). The runtime
+    // switch without a redeploy is the KV key `kill:capture` (docs/launch/runbook.md).
+    "CAPTURE_ENABLED": "1",
+    // Phase 12: "development" | "staging" | "production". Deployed envs fail closed on missing secrets.
+    "WWM_ENV": "development",
+    // Phase 12 (contracts v0.2.3): "1" exposes GET /api/rooms/:code/stats. Dev/test ONLY; "0" in staging/prod.
+    "ROOM_STATS": "1",
+    // Phase 12: "1" accepts client telemetry at POST /api/t (logged, never stored). Off until the user approves.
+    "TELEMETRY_INGEST": "0"
+    // Secret (not a var): IP_HASH_SALT. Locally the code falls back to a dev default (see .dev.vars.example).
   },
 
   // Stage JSON, slice textures and capture bundles.
@@ -51,8 +67,11 @@
 
   // Read rate limit: 100 requests / minute / IP (the binding supports 10 s or 60 s periods only; the
   // 10 builds / hour limit uses the Limiter Durable Object instead).
+  // Phase 12: room creation 30 / minute / IP, WebSocket upgrades 120 / minute / IP (reconnects included).
   "ratelimits": [
-    { "name": "READ_LIMITER", "namespace_id": "7001", "simple": { "limit": 100, "period": 60 } }
+    { "name": "READ_LIMITER", "namespace_id": "7001", "simple": { "limit": 100, "period": 60 } },
+    { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7002", "simple": { "limit": 30, "period": 60 } },
+    { "name": "ROOM_WS_LIMITER", "namespace_id": "7003", "simple": { "limit": 120, "period": 60 } }
   ],
 
   "durable_objects": {
@@ -69,7 +88,124 @@
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
     { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] }
   ],
-
   // Retention sweep (task 9): daily at 03:17 UTC.
-  "triggers": { "crons": ["17 3 * * *"] }
+  "triggers": { "crons": ["17 3 * * *"] },
+
+  // ── Deploy targets (Phase 12). NOT deployed yet: every id/domain below is a placeholder the user fills in
+  // (infra/README.md "Provisioning"). Deploys run only through .github/workflows/deploy.yml.
+  "env": {
+    "staging": {
+      "name": "wwm-staging",
+      "workers_dev": true,
+      // "routes": [{ "pattern": "staging.<YOUR-DOMAIN>", "custom_domain": true }],
+      "assets": {
+        "directory": "../web/dist",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/api/*", "/s/*"]
+      },
+      "vars": {
+        "CAPTURE_BACKEND": "browser-run",
+        "CAPTURE_SIDECAR_URL": "",
+        "DEV_ALLOWED_HOSTS": "",
+        "DOH_URL": "https://cloudflare-dns.com/dns-query",
+        "WWM_ENV": "staging",
+        "BUILD_LIMIT_PER_HOUR": "10",
+        "GLOBAL_BUILD_LIMIT_PER_HOUR": "120",
+        "BROWSER_MAX_CONCURRENCY": "2",
+        "CAPTURE_BUDGET_MS": "20000",
+        "SLICE0_BUDGET_MS": "30000",
+        "CACHE_TTL_DAYS": "7",
+        "RETENTION_DAYS": "30",
+        "CAPTURE_ENABLED": "1",
+        "ROOM_STATS": "0",
+        "TELEMETRY_INGEST": "0"
+      },
+      "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-staging" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wwm-staging",
+          "database_id": "00000000-0000-0000-0000-000000000001",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000001" }],
+      "browser": { "binding": "BROWSER" },
+      "ratelimits": [
+        { "name": "READ_LIMITER", "namespace_id": "7101", "simple": { "limit": 100, "period": 60 } },
+        { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7102", "simple": { "limit": 30, "period": 60 } },
+        { "name": "ROOM_WS_LIMITER", "namespace_id": "7103", "simple": { "limit": 120, "period": 60 } }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "name": "ROOM", "class_name": "Room" },
+          { "name": "BUILD_JOB", "class_name": "BuildJob" },
+          { "name": "LIMITER", "class_name": "Limiter" }
+        ]
+      },
+      "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["Room"] },
+        { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] }
+      ],
+      "triggers": { "crons": ["17 3 * * *"] }
+    },
+    "production": {
+      "name": "wwm",
+      // A custom domain gives HTTPS (required for DeviceOrientation on iOS). Fill in before the first deploy:
+      // "routes": [{ "pattern": "<YOUR-DOMAIN>", "custom_domain": true }],
+      "workers_dev": false,
+      "assets": {
+        "directory": "../web/dist",
+        "binding": "ASSETS",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/api/*", "/s/*"]
+      },
+      "vars": {
+        "CAPTURE_BACKEND": "browser-run",
+        "CAPTURE_SIDECAR_URL": "",
+        "DEV_ALLOWED_HOSTS": "",
+        "DOH_URL": "https://cloudflare-dns.com/dns-query",
+        "WWM_ENV": "production",
+        "BUILD_LIMIT_PER_HOUR": "10",
+        "GLOBAL_BUILD_LIMIT_PER_HOUR": "600",
+        "BROWSER_MAX_CONCURRENCY": "2",
+        "CAPTURE_BUDGET_MS": "20000",
+        "SLICE0_BUDGET_MS": "30000",
+        "CACHE_TTL_DAYS": "7",
+        "RETENTION_DAYS": "30",
+        "CAPTURE_ENABLED": "1",
+        "ROOM_STATS": "0",
+        "TELEMETRY_INGEST": "0"
+      },
+      "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "wwm",
+          "database_id": "00000000-0000-0000-0000-000000000002",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000002" }],
+      "browser": { "binding": "BROWSER" },
+      "ratelimits": [
+        { "name": "READ_LIMITER", "namespace_id": "7201", "simple": { "limit": 100, "period": 60 } },
+        { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7202", "simple": { "limit": 30, "period": 60 } },
+        { "name": "ROOM_WS_LIMITER", "namespace_id": "7203", "simple": { "limit": 120, "period": 60 } }
+      ],
+      "durable_objects": {
+        "bindings": [
+          { "name": "ROOM", "class_name": "Room" },
+          { "name": "BUILD_JOB", "class_name": "BuildJob" },
+          { "name": "LIMITER", "class_name": "Limiter" }
+        ]
+      },
+      "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["Room"] },
+        { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] }
+      ],
+      "triggers": { "crons": ["17 3 * * *"] }
+    }
+  }
 }

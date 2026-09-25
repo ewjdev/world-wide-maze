@@ -1,0 +1,324 @@
+{
+  "mode": "latency",
+  "base": "http://localhost:8898",
+  "when": "2026-09-25T11:26:42.443Z",
+  "urls": 24,
+  "coldDone": 21,
+  "coldMs": {
+    "p50": 4528,
+    "p95": 8593,
+    "max": 12451
+  },
+  "warmHits": 21,
+  "warmMs": {
+    "p50": 66,
+    "p95": 189
+  },
+  "failures": [
+    {
+      "url": "https://www.w3.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 1725,
+        "message": "site answered HTTP 403"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 2.5
+      }
+    },
+    {
+      "url": "https://www.gnu.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_TIMEOUT",
+        "ms": 20108,
+        "message": "capture exceeded its time budget"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 4.7
+      }
+    },
+    {
+      "url": "https://www.bbc.co.uk/news",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 1200,
+        "message": "could not load the page"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 3.2
+      }
+    }
+  ],
+  "rows": [
+    {
+      "url": "https://example.com/",
+      "cold": {
+        "outcome": "done",
+        "ms": 2203
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.5
+      }
+    },
+    {
+      "url": "https://news.ycombinator.com/",
+      "cold": {
+        "outcome": "done",
+        "ms": 2542
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.2
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Labyrinth",
+      "cold": {
+        "outcome": "done",
+        "ms": 7530
+      },
+      "warm": {
+        "status": 200,
+        "ms": 193.9
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Maze",
+      "cold": {
+        "outcome": "done",
+        "ms": 7133
+      },
+      "warm": {
+        "status": 200,
+        "ms": 164.5
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Marble_(toy)",
+      "cold": {
+        "outcome": "done",
+        "ms": 12451
+      },
+      "warm": {
+        "status": 200,
+        "ms": 174.2
+      }
+    },
+    {
+      "url": "https://www.gov.uk/",
+      "cold": {
+        "outcome": "done",
+        "ms": 6533
+      },
+      "warm": {
+        "status": 200,
+        "ms": 83.7
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Range/getClientRects",
+      "cold": {
+        "outcome": "done",
+        "ms": 4810
+      },
+      "warm": {
+        "status": 200,
+        "ms": 67.2
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/grid",
+      "cold": {
+        "outcome": "done",
+        "ms": 7049
+      },
+      "warm": {
+        "status": 200,
+        "ms": 151
+      }
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day",
+      "cold": {
+        "outcome": "done",
+        "ms": 7379
+      },
+      "warm": {
+        "status": 200,
+        "ms": 137.9
+      }
+    },
+    {
+      "url": "https://www.python.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 4137
+      },
+      "warm": {
+        "status": 200,
+        "ms": 7.3
+      }
+    },
+    {
+      "url": "https://www.rust-lang.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 4528
+      },
+      "warm": {
+        "status": 200,
+        "ms": 66.1
+      }
+    },
+    {
+      "url": "https://www.w3.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 1725,
+        "message": "site answered HTTP 403"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 2.5
+      }
+    },
+    {
+      "url": "https://www.iana.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 2601
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.5
+      }
+    },
+    {
+      "url": "https://www.ietf.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 4326
+      },
+      "warm": {
+        "status": 200,
+        "ms": 5.8
+      }
+    },
+    {
+      "url": "https://www.debian.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 4174
+      },
+      "warm": {
+        "status": 200,
+        "ms": 5.5
+      }
+    },
+    {
+      "url": "https://www.gnu.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_TIMEOUT",
+        "ms": 20108,
+        "message": "capture exceeded its time budget"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 4.7
+      }
+    },
+    {
+      "url": "https://www.kernel.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 2603
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.2
+      }
+    },
+    {
+      "url": "https://nodejs.org/en",
+      "cold": {
+        "outcome": "done",
+        "ms": 2675
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.7
+      }
+    },
+    {
+      "url": "https://www.mozilla.org/en-US/",
+      "cold": {
+        "outcome": "done",
+        "ms": 7220
+      },
+      "warm": {
+        "status": 200,
+        "ms": 172.1
+      }
+    },
+    {
+      "url": "https://www.wikipedia.org/",
+      "cold": {
+        "outcome": "done",
+        "ms": 2478
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.4
+      }
+    },
+    {
+      "url": "https://lobste.rs/",
+      "cold": {
+        "outcome": "done",
+        "ms": 3478
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4.8
+      }
+    },
+    {
+      "url": "https://www.nasa.gov/",
+      "cold": {
+        "outcome": "done",
+        "ms": 8593
+      },
+      "warm": {
+        "status": 200,
+        "ms": 169.8
+      }
+    },
+    {
+      "url": "https://www.bbc.co.uk/news",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 1200,
+        "message": "could not load the page"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 3.2
+      }
+    },
+    {
+      "url": "https://www.chromeexperiments.com/",
+      "cold": {
+        "outcome": "done",
+        "ms": 8527
+      },
+      "warm": {
+        "status": 200,
+        "ms": 188.7
+      }
+    }
+  ]
+}

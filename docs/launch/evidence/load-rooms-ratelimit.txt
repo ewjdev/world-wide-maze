@@ -1,0 +1,33 @@
+creating 40 rooms over 1000 ms against http://localhost:8899 (spoof ips: false)
+30 rooms live after 981 ms; streaming 60 Hz for 5 s
+{
+  "base": "http://localhost:8899",
+  "when": "2026-09-25T11:17:18.302Z",
+  "roomsRequested": 40,
+  "roomsLive": 30,
+  "setupMs": 981,
+  "hz": 60,
+  "seconds": 5,
+  "createOk": 30,
+  "createFail": {
+    "429": 10
+  },
+  "socketsOk": 60,
+  "socketFail": 0,
+  "framesSent": 9000,
+  "framesReceived": 9000,
+  "lossPct": 0,
+  "achievedSendRatePerRoom": 60,
+  "relayLatencyMs": {
+    "p50": 1.6,
+    "p95": 4.9,
+    "p99": 8.6,
+    "max": 14
+  },
+  "closesDuringRun": {},
+  "pingsAnswered": 60,
+  "generatorEventLoopDelayMs": {
+    "p50": 10.608639,
+    "p99": 12.582911
+  }
+}

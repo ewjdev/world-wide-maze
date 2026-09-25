@@ -14,6 +14,7 @@ import { errorResponse, ServiceError } from '../errors.ts';
 import { defaultSeed, runCacheKey } from '../ids.ts';
 import type { JobParams } from '../pipeline.ts';
 import { checkUrl, checkUrlStatic } from '../policy/url-policy.ts';
+import { BodyTooLargeError, MAX_STAGE_REQUEST_BYTES, readJsonCapped, tooLarge } from '../security.ts';
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -34,7 +35,14 @@ stagesRoutes.use('*', readLimit);
 stagesRoutes.post('/stages', async (c) => {
   const t0 = Date.now();
   const { store, policy, builder, settings, log } = c.get('services');
-  const body = CreateStageRequestSchema.safeParse(await c.req.json().catch(() => null));
+  let raw: unknown;
+  try {
+    raw = await readJsonCapped(c.req.raw, MAX_STAGE_REQUEST_BYTES); // Phase 12: bounded body
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) return tooLarge(e);
+    throw e;
+  }
+  const body = CreateStageRequestSchema.safeParse(raw);
   if (!body.success)
     return Response.json(
       { error: 'bad request', message: body.error.issues[0]?.message ?? 'invalid body' },
@@ -44,6 +52,9 @@ stagesRoutes.post('/stages', async (c) => {
   const stat = checkUrlStatic(body.data.url, policy);
   if (!stat.ok) return errorResponse(new ServiceError('URL_FORBIDDEN', stat.reason));
   const url = stat.url;
+  // Phase 12: an opt-out applies at once, also to runs already in the cache (security review #12).
+  if (policy.isOptedOut && (await policy.isOptedOut(stat.host)))
+    return errorResponse(new ServiceError('URL_FORBIDDEN', 'this site has opted out of World Wide Maze'));
   const difficulty = body.data.difficulty ?? 'normal';
   const seed = body.data.seed ?? defaultSeed(url);
   const cacheKey = runCacheKey(url, difficulty, builder.version, body.data.seed);
@@ -59,6 +70,15 @@ stagesRoutes.post('/stages', async (c) => {
   const inflight = await store.inflightJob(cacheKey);
   if (inflight) return c.json<CreateStageResponse>({ jobId: inflight }, 202);
 
+  // Phase 12 kill switch: new captures off (var CAPTURE_ENABLED=0 at deploy, or KV `kill:capture` at runtime,
+  // see docs/launch/runbook.md). Cached runs above still play; the game offers the curated/offline stages.
+  if (c.env.CAPTURE_ENABLED === '0' || (await c.env.CACHE.get('kill:capture')) !== null) {
+    log.warn('capture disabled (kill switch)', { url });
+    return errorResponse(
+      new ServiceError('RATE_LIMITED', 'building new sites is paused right now; play a featured site', 3600),
+    );
+  }
+
   const full = await checkUrl(url, policy);
   if (!full.ok) return errorResponse(new ServiceError('URL_FORBIDDEN', full.reason));
 
@@ -72,6 +92,16 @@ stagesRoutes.post('/stages', async (c) => {
         rl.retryAfterSec,
       ),
     );
+
+  // Phase 12: a global cap too, so many IPs (or IPv6 prefixes) can't monopolise the capture browsers.
+  const global = c.env.LIMITER.get(c.env.LIMITER.idFromName('build:global'));
+  const grl = await global.hit(settings.globalBuildLimitPerHour, 3600_000);
+  if (!grl.ok) {
+    log.warn('global build limit reached', { limit: settings.globalBuildLimitPerHour });
+    return errorResponse(
+      new ServiceError('RATE_LIMITED', 'the maze factory is busy; try a featured site', grl.retryAfterSec),
+    );
+  }
 
   const jobId = crypto.randomUUID();
   const params: JobParams = { jobId, url, difficulty, seed, cacheKey };
