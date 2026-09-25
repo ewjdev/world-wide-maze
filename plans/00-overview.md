@@ -158,12 +158,29 @@ Notes for dependent phases:
 | 01 | merged | main | G0 | fidelity spec + contract deltas; contracts → v0.2 |
 | 02 | merged (+02b v0.2.1) | main | G0 ✅ | 106 tests green; CRs logged in contracts §9 |
 | 03 | merged | main | G1 ✅ (own criteria) | 315/315 stages valid; recognizable islands; builder 0.3.0 |
-| 04 | in progress | worktree | — | Wave 1 started 2026-09-25 |
+| 04 | merged | main | G1 ✅ | 46 draw calls; 60 fps @1080p M5 Max (p99 17.7 ms); fireworks weak (polish backlog) |
 | 05 | merged | main | G1 ✅ (own criteria) | deterministic Rapier; 1000/1000 tunneling; aid-dcc traversable |
 | 06 | merged | main | G1 ✅ iPhone | iPhone 17 Pro: 60 Hz, p95 interval 21 ms, 0 lost; lock/reconnect unverified; Android pending |
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
-| 08 | not started | | | |
-| 09 | not started | | | |
+| 08 | in progress | worktree | — | Wave 2 started 2026-09-25 |
+| 09 | in progress | worktree | — | Wave 2 started 2026-09-25 |
 | 10 | not started | | | |
 | 11 | optional | | | |
 | 12 | not started | | | |
+
+### Gate log
+- **G0 ✅ (2026-09-25):** contracts v0.2.x reconciled with the 2013 evidence. The converted 2013 stage validates, apart from the intentional width minimums.
+- **G1 ✅ (2026-09-25):**
+  - The builder produces 315/315 valid stages, and they're recognizable.
+  - The engine renders at 60 fps at 1080p on an M5 Max, with 46 draw calls.
+  - Physics is deterministic and the 2013 stage is traversable.
+  - The phone controller works on a physical iPhone (60 Hz, 0 lost frames).
+  - Capture + build on the 7 live URLs takes 1.0–4.7 s.
+  - **Open:** Android, iPhone lock/reconnect, integrated-GPU fps (Phase 12), and enabling real Browser Rendering (the user must create resources).
+
+### Polish backlog (assign later)
+- Goal fireworks are weak on the white sky (no trails). Owner: engine follow-up.
+- Engine: the idle particle pool and background dots are always drawn (about 11k triangles).
+- Engine: `frame()` relies on the private three.js field `renderer._nodes.nodeFrame`. Re-check on upgrades.
+- The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
+- Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase.
