@@ -111,23 +111,15 @@ A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS`
   - `@cloudflare/vitest-pool-workers` 0.22 needs Vitest 4, and this repo uses Vitest 5, so the integration tests use `createTestHarness` instead.
 - TypeScript: `tsconfig.json` checks `src/` with the workers types plus DOM. `@wwm/capture-script`'s in-page code needs DOM types, and they coexist under TS 7. `tsconfig.node.json` checks `node/` and `test/`.
 
-## Enabling production (orchestrator / Phase 12 checklist)
-1. Upgrade to a **Workers Paid** plan. You need it for `limits.cpu_ms`, Browser Run concurrency, and Durable Object alarms at scale.
-2. Create the resources and put their IDs into `wrangler.jsonc`:
-   - `wrangler r2 bucket create wwm-stages`
-   - `wrangler d1 create wwm`, which gives you `database_id`
-   - `wrangler kv namespace create CACHE`, which gives you `id`
-   - Pick a unique `ratelimits[].namespace_id`.
-3. Run `wrangler d1 migrations apply wwm --remote`.
-4. Check that the vars have production values:
-   - `CAPTURE_BACKEND=browser-run`
-   - `DEV_ALLOWED_HOSTS=""`, which must stay empty
-   - `BROWSER_MAX_CONCURRENCY` at or below the account's Browser Run limit
-   - `DOH_URL` (default `https://cloudflare-dns.com/dns-query`)
-5. Browser Run needs no extra config beyond `"browser": {"binding": "BROWSER"}`. To try the real service before deploying, set `"remote": true` on the binding and run `wrangler dev` (this needs `wrangler login`).
-6. Deploy with `wrangler deploy`. The dry-run bundle is 4.0 MB, or 793 KB gzipped.
-7. Verify on the real service with `pnpm --filter @wwm/worker smoke https://<worker-host>`. Then check these in the logs:
-   - `browser session reused` appears. The local emulator reports disconnected sessions as still connected, so reuse couldn't be observed locally.
-   - `capture.textures` in ms. It is about 1 s per slice over the local Browser Run proxy.
-   - `build.<i>` in ms with the real builder, measured against `cpu_ms`.
-8. Seed `optout:<domain>` keys for takedown requests. Phase 10 creates `curated` and inserts the curated `run_id`s. Those runs are then exempt from retention.
+## Enabling production
+Deploy targets, provisioning and CI are in [infra/README.md](../../infra/README.md) (Phase 17). In short:
+`wrangler.jsonc` top level is local dev/test; `env.production` is the Worker `wwm`; `env.production.previews`
+configures the per-PR Worker Previews. Resource names live in `infra/cloudflare.config.json`, and
+`node infra/scripts/provision.mjs --apply` creates the resources and writes their ids. Always pass
+`--env production` to `wrangler deploy` / `preview` / `secret` / `d1` commands.
+
+After the first real deploy, also check in the logs (things the local emulator can't show):
+- `browser session reused` appears. The local emulator reports disconnected sessions as still connected, so reuse couldn't be observed locally.
+- `capture.textures` in ms. It is about 1 s per slice over the local Browser Run proxy.
+- `build.<i>` in ms with the real builder, measured against `cpu_ms`.
+- Seed `optout:<domain>` keys for takedown requests. Phase 10 creates `curated` and inserts the curated `run_id`s. Those runs are then exempt from retention.

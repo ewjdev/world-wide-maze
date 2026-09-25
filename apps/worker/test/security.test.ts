@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
+import { parseJsonc } from '../../../infra/scripts/lib/cloudflare-infra.mjs';
 import { hashIp, ipHashSecret } from '../src/routes/scores-rules.ts';
 import { sanitizeTelemetry } from '../src/routes/telemetry-rules.ts';
 import {
@@ -120,6 +121,8 @@ describe('IP hashes', () => {
   test('deployed environments fail closed without the secret', () => {
     expect(ipHashSecret({ WWM_ENV: 'production' })).toBeNull();
     expect(ipHashSecret({ WWM_ENV: 'staging', IP_HASH_SALT: 'short' })).toBeNull();
+    expect(ipHashSecret({ WWM_ENV: 'preview' })).toBeNull();
+    expect(ipHashSecret({ WWM_ENV: 'development' })).not.toBeNull();
     expect(ipHashSecret({ WWM_ENV: 'production', IP_HASH_SALT: 'y'.repeat(32) })).toBe('y'.repeat(32));
   });
 });
@@ -159,34 +162,32 @@ describe('telemetry ingest', () => {
 });
 
 describe('deploy config (wrangler.jsonc)', () => {
-  // JSONC → JSON: drop comments (none of our strings contain "//").
-  const cfg = JSON.parse(
-    readFileSync(resolve(here, '../wrangler.jsonc'), 'utf8')
-      .replace(/^\s*\/\/.*$/gm, '')
-      .replace(/,(\s*[}\]])/g, '$1'),
-  ) as {
+  const cfg = parseJsonc(readFileSync(resolve(here, '../wrangler.jsonc'), 'utf8')) as {
     vars: Record<string, string>;
-    env: Record<
-      string,
-      { vars: Record<string, string>; ratelimits: { name: string }[]; assets: { run_worker_first: string[] } }
-    >;
+    env: Record<string, DeployTarget & { previews?: DeployTarget; assets: { run_worker_first: string[] } }>;
   };
-  test.each(['staging', 'production'])('%s: dev-only switches are off and abuse caps are bound', (name) => {
-    const env = cfg.env[name];
-    expect(env).toBeDefined();
-    if (!env) return;
-    expect(env.vars.ROOM_STATS).toBe('0');
-    expect(env.vars.DEV_ALLOWED_HOSTS).toBe('');
-    expect(env.vars.TELEMETRY_INGEST).toBe('0');
-    expect(env.vars.CAPTURE_BACKEND).toBe('browser-run');
-    expect(env.vars.WWM_ENV).toBe(name);
-    // every top-level var is redeclared (vars are not inherited by environments)
-    expect(Object.keys(env.vars).sort()).toEqual(Object.keys(cfg.vars).sort());
-    expect(env.ratelimits.map((r) => r.name).sort()).toEqual([
+  type DeployTarget = { vars: Record<string, string>; ratelimits: { name: string }[] };
+  const prod = cfg.env.production;
+  test.each([
+    ['production', prod, 'production'],
+    ['previews', prod?.previews, 'preview'],
+  ] as const)('%s: dev-only switches are off and abuse caps are bound', (_name, target, wwmEnv) => {
+    expect(target).toBeDefined();
+    if (!target) return;
+    expect(target.vars.ROOM_STATS).toBe('0');
+    expect(target.vars.DEV_ALLOWED_HOSTS).toBe('');
+    expect(target.vars.TELEMETRY_INGEST).toBe('0');
+    expect(target.vars.CAPTURE_BACKEND).toBe('browser-run');
+    expect(target.vars.WWM_ENV).toBe(wwmEnv);
+    // every top-level var is redeclared (vars are inherited neither by environments nor by Previews)
+    expect(Object.keys(target.vars).sort()).toEqual(Object.keys(cfg.vars).sort());
+    expect(target.ratelimits.map((r) => r.name).sort()).toEqual([
       'READ_LIMITER',
       'ROOM_CREATE_LIMITER',
       'ROOM_WS_LIMITER',
     ]);
-    expect(env.assets.run_worker_first).toEqual(['/api/*', '/s/*']);
+  });
+  test('production serves the web app with the API first', () => {
+    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*']);
   });
 });

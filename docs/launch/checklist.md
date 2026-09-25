@@ -17,12 +17,12 @@ items need the user.
 ## Environments and deploy
 | # | Item | Status | Evidence / what's missing |
 |---|---|---|---|
-| 6 | Staging + production Workers, R2, D1, KV, secrets | 🟡 👤 | Config ready: `apps/worker/wrangler.jsonc` `env.staging` / `env.production` (placeholder ids); provisioning commands in infra/README.md. `node infra/scripts/check-deploy-config.mjs production` currently **fails on purpose** (placeholders, no domain) |
+| 6 | Production Worker + PR Previews, R2, D1, KV, AI Gateway, secrets | 🟡 👤 | Phase 17: `apps/worker/wrangler.jsonc` `env.production` + `env.production.previews` (placeholder ids); names in `infra/cloudflare.config.json`; `node infra/scripts/provision.mjs` (dry-run → `--apply`) creates everything and writes the ids (infra/README.md Part A). `node infra/scripts/check-deploy-config.mjs all` currently **fails on purpose** (placeholders, no domain) |
 | 7 | Custom domain with HTTPS | ❌ 👤 | Needs a domain; `routes` stub in `env.production` |
-| 8 | Web app as Workers static assets, headers | ✅ (local) | `wrangler dev --env staging` serves `apps/web/dist` with SPA fallback and `_headers`; smoke test 7/7 PASS: [evidence/smoke-local.txt](evidence/smoke-local.txt) |
+| 8 | Web app as Workers static assets, headers | ✅ (local) | `wrangler dev --env staging` (now `--env production`) serves `apps/web/dist` with SPA fallback and `_headers`; smoke test 7/7 PASS: [evidence/smoke-local.txt](evidence/smoke-local.txt) |
 | 9 | COOP/COEP | ✅ | COOP `same-origin`; no COEP needed (no SharedArrayBuffer: physics runs lockstep on the main thread, contracts v0.2.6) |
-| 10 | GitHub Actions: staging on `main`, production on tag with approval, D1 migrations in CI | 🟡 👤 | `.github/workflows/deploy.yml` — never run; inert until `WWM_DEPLOY_ENABLED=true` |
-| 11 | Rollback procedure tested once | ❌ 👤 | Procedure: runbook §4 (`wrangler rollback`). Needs a real staging deployment |
+| 10 | GitHub Actions: PR Previews, production on `main` (optional approval), D1 migrations in CI | 🟡 👤 | `.github/workflows/preview.yml` + `deploy.yml` (Phase 17) — never run; inert until `WWM_PREVIEWS_ENABLED` / `WWM_DEPLOY_ENABLED` = `true` |
+| 11 | Rollback procedure tested once | ❌ 👤 | Procedure: runbook §4 (`wrangler rollback`). Needs a real deployment (rehearse right after the first production deploy) |
 | 12 | Budget alerts | ❌ 👤 | Thresholds in runbook §7; dashboard-only |
 
 ## Product checks

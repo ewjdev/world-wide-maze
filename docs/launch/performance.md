@@ -251,7 +251,7 @@ answers (`evidence/kill-switch.txt`).
 ## 8. Reproduce
 ```sh
 pnpm --filter @wwm/web build
-(cd apps/worker && npx wrangler dev --env staging --port 8899)          # production-like build + headers
+(cd apps/worker && npx wrangler dev --env production --port 8899)       # production-like build + headers (was --env staging before Phase 17)
 node infra/perf/frames.mjs http://localhost:8899 --throttle 1,4,6       # §1–2, §6
 node infra/perf/lighthouse.mjs http://localhost:8899                    # §5
 node infra/perf/requests.mjs http://localhost:8899                      # §4 chunk check

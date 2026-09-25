@@ -1,45 +1,32 @@
-# Deploy (Phase 12). PREPARED, NOT YET ENABLED — nothing here has ever run.
+# Production deploy (Phase 12, reworked in Phase 17). PREPARED, NOT YET RUN — inert until the repository variable
+# WWM_DEPLOY_ENABLED is "true" (infra/README.md, one-time setup).
 #
-# - Staging: every push to `main` → Worker `wwm-staging` (API + web app as static assets), D1 migrations first.
-# - Production: a `v*` tag → Worker `wwm`, gated by the GitHub Environment `production`, which must be configured
-#   with "Required reviewers" so every production deploy waits for an explicit human approval.
+# Every push to `main` (i.e. every merged PR) → pnpm check → build web → migrate the production D1 →
+# `wrangler deploy --env production` (Worker `wwm`: API + web app as static assets) → smoke test on the custom
+# domain. The deploy job runs in the GitHub Environment `production`: add "Required reviewers" there if every
+# production deploy should wait for a manual approval (optional; see infra/README.md).
+# PR Previews are a separate workflow (preview.yml). There is no staging Worker any more (Phase 17).
 #
-# Nothing runs until the repository variable WWM_DEPLOY_ENABLED is set to "true" (Settings → Secrets and
-# variables → Actions → Variables). Before that, fill in the placeholder ids in apps/worker/wrangler.jsonc and
-# follow infra/README.md ("Provisioning" and "Enabling the deploy workflow").
-#
-# Secrets (per GitHub Environment `staging` / `production`):
-#   CLOUDFLARE_API_TOKEN   token with Workers Scripts:Edit, Workers KV:Edit, D1:Edit, R2:Edit, Account Settings:Read
-#   CLOUDFLARE_ACCOUNT_ID
-# The token is only exposed to the migration and deploy steps (not to `pnpm install` or the build).
-# Also restrict the `production` Environment's deployment rules to `v*` tags, and consider pinning actions by SHA.
-# Worker secrets (IP_HASH_SALT) are set once with `wrangler secret put`, not from CI; deployed envs refuse score
-# submissions (503) while it's missing.
+# Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (repository or `production` environment secrets), exposed
+# only to the migration and deploy steps. Worker secrets (IP_HASH_SALT, ANTHROPIC_API_KEY) are set once with
+# `wrangler secret put … --env production`, never from CI. Consider pinning the actions by commit SHA.
 name: Deploy
 
 on:
   push:
     branches: [main]
-    tags: ['v*']
-  workflow_dispatch:
-    inputs:
-      target:
-        description: 'staging or production'
-        required: true
-        default: staging
-        type: choice
-        options: [staging, production]
+  workflow_dispatch: # re-deploy the current main by hand
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: false
+  group: deploy-production
+  cancel-in-progress: false # never interrupt a deploy half-way; queue the next one
 
 permissions:
   contents: read
 
 jobs:
   check:
-    if: vars.WWM_DEPLOY_ENABLED == 'true'
+    if: vars.WWM_DEPLOY_ENABLED == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
@@ -55,13 +42,13 @@ jobs:
       - run: pnpm --filter @wwm/fixture-capture exec playwright install --with-deps chromium
       - run: pnpm check
 
-  staging:
+  production:
     needs: check
-    if: vars.WWM_DEPLOY_ENABLED == 'true' && ((github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'workflow_dispatch' && inputs.target == 'staging'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     environment:
-      name: staging
+      name: production
+      url: ${{ steps.names.outputs.url }}
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -70,68 +57,41 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+
+      - name: Names from infra/cloudflare.config.json
+        id: names
+        run: |
+          echo "env=$(jq -er .wranglerEnv infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
+          echo "d1=$(jq -er .production.d1 infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
+          echo "url=https://$(jq -er .domain infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
+
       - name: Build the web app (static assets)
         run: pnpm --filter @wwm/web build
         env:
           VITE_TELEMETRY_URL: ${{ vars.WWM_TELEMETRY_URL }} # empty = telemetry off
-      - name: Refuse placeholder resource ids
-        run: node infra/scripts/check-deploy-config.mjs staging
-      - name: D1 migrations
-        working-directory: apps/worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: pnpm exec wrangler d1 migrations apply wwm-staging --remote --env staging
-      - name: Deploy
-        working-directory: apps/worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          SHA: ${{ github.sha }}
-        run: pnpm exec wrangler deploy --env staging --message "staging $SHA"
-      - name: Smoke test
-        env:
-          URL: ${{ vars.WWM_STAGING_URL }}
-        run: node infra/scripts/smoke.mjs "$URL"
 
-  production:
-    needs: check
-    # Production only ever deploys a `v*` tag (a manual dispatch must also be started from a tag).
-    if: vars.WWM_DEPLOY_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v') && (github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && inputs.target == 'production'))
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    # The `production` GitHub Environment must require a reviewer: this job then waits for manual approval.
-    environment:
-      name: production
-      url: ${{ vars.WWM_PRODUCTION_URL }}
-    steps:
-      - uses: actions/checkout@v5
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v5
-        with:
-          node-version: 24
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - name: Build the web app (static assets)
-        run: pnpm --filter @wwm/web build
-        env:
-          VITE_TELEMETRY_URL: ${{ vars.WWM_TELEMETRY_URL }}
-      - name: Refuse placeholder resource ids
+      - name: Refuse placeholder ids, dev switches, missing domain
         run: node infra/scripts/check-deploy-config.mjs production
-      - name: D1 migrations
+
+      - name: D1 migrations (production database; must stay backward compatible)
         working-directory: apps/worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: pnpm exec wrangler d1 migrations apply wwm --remote --env production
+          WENV: ${{ steps.names.outputs.env }}
+          D1: ${{ steps.names.outputs.d1 }}
+        run: pnpm exec wrangler d1 migrations apply "$D1" --remote --env "$WENV"
+
       - name: Deploy
         working-directory: apps/worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          REF: ${{ github.ref_name }}
-        run: pnpm exec wrangler deploy --env production --message "production $REF"
+          WENV: ${{ steps.names.outputs.env }}
+          SHA: ${{ github.sha }}
+        run: pnpm exec wrangler deploy --env "$WENV" --message "main $SHA"
+
       - name: Smoke test
         env:
-          URL: ${{ vars.WWM_PRODUCTION_URL }}
+          URL: ${{ steps.names.outputs.url }}
         run: node infra/scripts/smoke.mjs "$URL"

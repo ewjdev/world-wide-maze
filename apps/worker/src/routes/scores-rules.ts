@@ -303,8 +303,8 @@ export function replayMatches(claimed: number, r: ReplayScore): boolean {
 // ── misc ───────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * Dev-only fallback for the `IP_HASH_SALT` secret. Staging and production must set the secret
- * (`wrangler secret put IP_HASH_SALT --env <env>`, see infra/README.md); without it the hash of an IPv4
+ * Dev-only fallback for the `IP_HASH_SALT` secret. Production and Previews must set the secret
+ * (`wrangler secret put` / `wrangler preview base-config secret put`, see infra/README.md); without it the hash of an IPv4
  * address could be reversed by trying all 2^32 addresses (security review #11).
  */
 export const DEV_IP_HASH_SALT = 'wwm-dev-only-ip-hash-salt';
@@ -312,7 +312,7 @@ export const DEV_IP_HASH_SALT = 'wwm-dev-only-ip-hash-salt';
 let warnedNoSalt = false;
 /**
  * The HMAC key for IP hashes: the `IP_HASH_SALT` secret, else the dev default (with one warning). Returns null
- * in a deployed environment (`WWM_ENV` = staging/production) without the secret: callers must then refuse to
+ * in a deployed environment (`WWM_ENV` set to anything but "development", e.g. production/preview) without the secret: callers must then refuse to
  * store hashes rather than fall back to the public default.
  */
 export function ipHashSecret(
@@ -324,7 +324,7 @@ export function ipHashSecret(
 ): string | null {
   const s = env.IP_HASH_SALT;
   if (s && s.length >= 16) return s;
-  if (env.WWM_ENV === 'staging' || env.WWM_ENV === 'production') {
+  if (env.WWM_ENV && env.WWM_ENV !== 'development') {
     (log?.error ?? log?.warn)?.(
       'IP_HASH_SALT secret missing in a deployed environment; refusing to hash IPs',
     );

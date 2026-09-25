@@ -1,0 +1,163 @@
+# PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
+# (wrangler.jsonc env.production.previews). PREPARED, NOT YET RUN — inert until the repository variable
+# WWM_PREVIEWS_ENABLED is "true" (infra/README.md, one-time setup).
+#
+# opened / synchronize / reopened: pnpm check → build web → migrate the preview D1 → `wrangler preview` → smoke
+#   test → one sticky PR comment with the Preview URL.
+# closed: `wrangler preview delete`.
+#
+# Repository secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (token permissions: infra/README.md). They are
+# exposed only to the steps that talk to Cloudflare. PRs from forks are skipped (they get no secrets).
+# Resource names come from infra/cloudflare.config.json; Preview settings from wrangler.jsonc.
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+
+# One run per PR at a time; a new push (or closing the PR) cancels the run in progress.
+concurrency:
+  group: preview-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  check:
+    if: >-
+      vars.WWM_PREVIEWS_ENABLED == 'true' && github.event.action != 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @wwm/fixture-capture exec playwright install --with-deps chromium
+      - run: pnpm check
+
+  preview:
+    needs: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write # the sticky comment
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Names from infra/cloudflare.config.json
+        id: names
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          echo "env=$(jq -er .wranglerEnv infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
+          echo "preview=$(jq -er .previews.namePrefix infra/cloudflare.config.json)${PR}" >> "$GITHUB_OUTPUT"
+
+      - name: Build the web app (static assets; telemetry off in Previews)
+        run: pnpm --filter @wwm/web build
+
+      - name: Refuse placeholder ids / Previews bound to production data
+        run: node infra/scripts/check-deploy-config.mjs previews
+
+      - name: D1 migrations (shared preview database)
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler d1 migrations apply PREVIEW_DB --remote --config wrangler.preview-migrations.jsonc
+
+      - name: Create or update the Preview
+        id: preview
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WENV: ${{ steps.names.outputs.env }}
+          NAME: ${{ steps.names.outputs.preview }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o pipefail
+          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
+          printf '%s\n' "$output"
+          url="$(printf '%s' "$output" | jq -er '.preview.urls[0]')"
+          [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
+          echo "url=${url%/}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        id: smoke
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+        run: node infra/scripts/smoke.mjs "$URL"
+
+      - name: Sticky PR comment
+        if: always() && steps.preview.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          NAME: ${{ steps.names.outputs.preview }}
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          marker='<!-- wwm-worker-preview -->'
+          body="$(printf '%s\n' "$marker" \
+            "### Worker Preview \`$NAME\`" \
+            "" \
+            "**$URL**" \
+            "" \
+            "- Commit: $SHA · smoke test: **$SMOKE**" \
+            "- HTTPS, so phones can pair: open the URL on a computer and scan the pairing QR code; iOS tilt works (motion sensors need a secure origin)." \
+            "- Separate from production: preview D1/R2/KV, own Durable Objects (rooms, jobs), \`ROOM_STATS=0\`, telemetry off, lower build caps. Deleted when the PR closes.")"
+          id="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | tail -n 1)"
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$body" > /dev/null
+          fi
+
+  cleanup:
+    if: >-
+      vars.WWM_PREVIEWS_ENABLED == 'true' && github.event.action == 'closed' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      # The PR's merge ref may be gone once it's closed: use the base branch's config (same Worker name).
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Delete the Preview
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          wenv="$(jq -er .wranglerEnv ../../infra/cloudflare.config.json)"
+          name="$(jq -er .previews.namePrefix ../../infra/cloudflare.config.json)${PR}"
+          pnpm exec wrangler preview delete --env "$wenv" --name "$name" --skip-confirmation

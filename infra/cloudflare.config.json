@@ -1,0 +1,33 @@
+{
+  "$comment": "Single source of Cloudflare resource NAMES (Phase 17). Ids are written by `node infra/scripts/provision.mjs --apply` into apps/worker/wrangler.jsonc and apps/worker/wrangler.preview-migrations.jsonc. Change a name here, then re-run provision (dry-run first) and `node infra/scripts/check-deploy-config.mjs all`.",
+  "worker": "wwm",
+  "wranglerEnv": "production",
+  "domain": "{{DOMAIN}}",
+  "production": {
+    "d1": "wwm",
+    "r2": "wwm-stages",
+    "kv": "wwm-cache",
+    "aiGateway": "wwm",
+    "rateLimitNamespaceIds": {
+      "READ_LIMITER": "7201",
+      "ROOM_CREATE_LIMITER": "7202",
+      "ROOM_WS_LIMITER": "7203"
+    }
+  },
+  "previews": {
+    "namePrefix": "pr-",
+    "d1": "wwm-preview",
+    "r2": "wwm-stages-preview",
+    "kv": "wwm-cache-preview",
+    "aiGateway": "wwm-preview",
+    "rateLimitNamespaceIds": {
+      "READ_LIMITER": "7301",
+      "ROOM_CREATE_LIMITER": "7302",
+      "ROOM_WS_LIMITER": "7303"
+    }
+  },
+  "secrets": ["IP_HASH_SALT", "ANTHROPIC_API_KEY"],
+  "github": {
+    "productionEnvironment": "production"
+  }
+}
