@@ -75,3 +75,23 @@ The user has a **physical iPhone 17 Pro connected to this Mac by USB** (`xcrun d
 
 ## Out of scope
 Game rules, rendering, and WebRTC (only add it if Phase 12 measurements demand it).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Tilt limits (E):** phone pitch ±45° (0.785), roll ±20° (0.349). Normalize and clamp on the controller.
+- **Calibration (E):**
+  - First game only. The prompt is "tilt the phone to match the dots". Success = the indicator within about 2° of the zero pose.
+  - **15 s timeout** (not 10) → offer keyboard mode with a hint.
+  - The zero is recorded from the held pose (R: 2013 assumed a fixed −45° gamma neutral, i.e. the phone tilted toward the player).
+- **"Too tilted!" warning (E):** shown when beyond half range, with 500 ms hysteresis.
+- **Keyboard (E):**
+  - Arrows set a target tilt of ±25° (`KEYBOARD_TILT`) per axis, ramped at 162°/s.
+  - **Any arrow held means POWER is on**, off 100 ms after release.
+  - Space = jump, M = map. WASD and Esc are N.
+- **Gamepad (N):** stick magnitude above the deadzone = POWER.
+- **Disconnect (N improvement):** auto-pause, reconnect with the same code, and resume. 2013 only offered a reload.
+- **Optional (E data, R UI):** a phone mini-map from `{t:'pos'}`, and typing the URL or ranking name on the phone (`{t:'text'}`).

@@ -50,3 +50,33 @@ A deterministic Rapier 3D simulation implementing `Simulation` (contracts §5), 
 
 ## Out of scope
 Rendering beyond debug lines, networking, and game rules like score, lives and timer (Phase 08).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Model (E):**
+  - Tilt **rotates gravity** by (tiltZ pitch, tiltX roll) in the `frameYaw` heading frame, only while `power` is held. The target tilt eases back to 0 on release.
+  - Tilt smoothing τ ≈ 0.18 s (α = 0.0461 per 120 Hz tick). This is sim-side smoothing of the *target* gravity, separate from the host's One Euro filter.
+  - Gravity 46.3 m/s², doubling to 92.6 over 1 s while falling.
+- **Ball (E):**
+  - r 0.5 m, 1 kg, never sleeps.
+  - Friction 0.95, restitution 0.35. Island and bridge surfaces 0.95 / 0.7. Rails 0.5 / 0.7. Combine rule **Multiply** for both.
+  - Linear damping 1.20/s. Angular damping 1.20/s with POWER, **4.61/s without** (brakes).
+- **Jump (E):** Δv 16.7 m/s up, only if there was *any* contact within the last 100 ms (`JUMP_GRACE_SEC`). POWER isn't required.
+- **Sensors (E):** item spheres r 0.926 m centered 0.5 m above the surface. Goal cylinder r 0.926 m, h 1.85 m.
+- **Rails:** colliders 0–0.56 m tall (R).
+- **Elevators (E):**
+  - Kinematic platforms, **trigger-activated** by touching the sensor at either end.
+  - Travel `travelSec`, cubicInOut. The ball's velocity is zeroed during the ride. Cooldown `cooldownSec`.
+  - Emit `elevator` start/end. Return platform heights in `step().elevators`.
+- **Falls (E):**
+  - `fell` when ball y < lowest island top − `FALL_DEPTH_M`. From then on, input is ignored and gravity is doubled.
+  - `lost` is emitted `FALL_LOST_DELAY_SEC` later.
+  - `restartAt` = the restart point on the **last-touched island** nearest the last contact position (fallback: start).
+  - Emit `island` on first contact with a new island.
+- **Keyboard mapping lives in Phase 06.** Headless tests use raw `InputSample`s, including `frameYaw`.
+- **Feel checks** (tolerances in `params.ts`): jump apex ≈ 2.3 m (4.7 ball radii) with damping, and max downhill acceleration at 45° ≈ 23 m/s².
+- `SIM_HZ` 120, with per-second constants. Document a 60 Hz parity mode switch for A/B feel comparison.

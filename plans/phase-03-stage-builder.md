@@ -72,3 +72,25 @@ Rendering, physics, capture, and AI. Physically validating traversal belongs to 
 
 ## Tips
 Iterate visually first with the debugger. Most of the work is tuning. Keep every magic number in `params.ts` with a comment saying where it came from (evidenced, calibrated or chosen).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Slices:** build one stage per `sliceIndex` (≤ `MAX_STAGE_HEIGHT_PX` = 1700 px of the page). Output **stage-local** coordinates and `size`. Elements that straddle the slice boundary are clipped, and elements outside it are dropped with `out-of-slice`. `texture.path` is left `''`. Export `sliceCount` (re-exported from schema).
+- **Scale:** 1 D = 13.5 px, so all thresholds are much smaller than the text above assumes. `MIN_ISLAND_SIZE_PX` is 27 and `MIN_BRIDGE_WIDTH_PX` is 34. A grid cell of 2–3 px is probably right, so re-derive `params.ts` in units of D.
+- **Faithful topology (E):**
+  - Bridges run in **cardinal directions only** (0/90/180/270°), with deck widths of 1.6–3.6 D (clamped up to the contract minimum).
+  - The maze is a **spanning tree** (islands = bridges + 1) from randomized DFS. Loops are an optional difficulty knob (N): easy 15%, normal 0%, hard 0%.
+  - **Start at top-left, goal at bottom-right** (distance-transform maxima). Farthest-by-graph is an optional variant labeled N.
+  - At most 6 large items (`MAX_LARGE_ITEMS`) at distance-transform maxima.
+  - Small items sit on inset rings about 0.9 D and 2.3 D from the edges, spaced about 1.5 D apart, targeting about 1 per 10 D² of island area. Calibrate to `docs/reference/stage-format.md` §8.
+  - Restart points go on the same inset rings.
+  - Rails cover about 90% of island outlines, open at bridge and elevator mouths.
+- **Heights (R: the 2013 method is unknown):**
+  - `level` is a float in D. The 2013 range is about 9–23 D above the ground plane, so use a documented heuristic, e.g. tree depth plus DOM depth mixed with seeded noise, then clamped.
+  - Where two connected islands differ in height, use a **ramp** if the slope is ≤ 0.176 over the bridge length. Otherwise use an **elevator** (E: short gaps with 40–80 px, or about 3–6 D, rises). The builder should *prefer* height assignments that keep most edges rampable.
+- **Time:** `timeLimitSec = TIME_LIMIT_SEC_DEFAULT` (300, E). Drop the route-length formula. Phase 09 checks that par fits.
+- **Validation:** the new `validateStage` (slope, elevator shape, `size` bounds, ≤ 6 large items) must pass for every fixture × slice × difficulty × seeds 1–5.

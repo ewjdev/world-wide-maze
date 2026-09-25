@@ -59,3 +59,24 @@ It must feel polished and faithful: 3 balls, the original scoring, the timer, th
 
 ## Out of scope
 Leaderboard persistence, the history/About content (10), AI (11), and deployment (12).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Rules (E):**
+  - **Timer:** a fixed `timeLimitSec` (300). It starts on the first POWER press (first game) or on entering play. It pauses for the map, falling, the goal fly-away, window blur, and disconnect (N). The last-30 s caution cue plays. It **resets to full on every respawn** (E; flag it for playtest).
+  - **Lives:** `NUM_BALLS` = 3 **spare** balls, shown as 3 icons. A fall (on `lost`) or a time-up costs 1. **Game over when spares < 0.**
+  - **Extra balls:** one more spare per `ONEUP_SCORE` (3000) crossed in the **run total**, while spares < 3. This is also checked during the result count-up.
+  - **Score:** small +1 (credited 300 ms after pickup), large +100, time bonus 5 × remaining whole seconds at the goal.
+  - **Game over:** the stage score is items only, then go to ranking.
+  - **Runs:** a page's slices are consecutive stages. The result screen offers **Next stage** (keep the score and spares) or **Finish** → ranking. After the last slice, offer another site.
+- **Input:** each tick, `InputSample.frameYaw = engine.cameraYaw()`.
+- **Phases:** use the v0.2 `GamePhase` (adds `howto`, `falling`, `restarting`, `error`). `paused` = the map, with physics and timer stopped. The map menu offers: search another site, retry the stage (N), quit to title (with confirmation), and back.
+- **Screens and copy:** follow `docs/reference/ux-flow.md`. HUD layout (E): TIME + score top-left, LIFE icons top-right, the orientation indicator + MENU bottom-left, and centered instruction text.
+- **Signs:** GOAL, TIME IS UP and GAME OVER as big CSS animations.
+- **Stage result (E):** title and URL, count-up (seconds × 5, large × 100, small × 1), stage score, total, a "1UP" pop, share, and Next or Finish.
+- **Audio cue list (E):** BGM for opening, game, time-up, result and game over. About 15 SEs, including a rolling loop pitched by speed and impact volume ∝ vertical speed². New audio only.
+- **Easter egg (optional tribute):** the Konami code gives a takoyaki ball.

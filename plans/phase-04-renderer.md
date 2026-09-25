@@ -79,3 +79,35 @@ export function createEngine(opts: EngineOptions): Promise<Engine>;
 
 ## Out of scope
 Physics, input, UI/HUD (Phase 08), and audio.
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **World look (E, new assets):**
+  - The "ocean" is **not water**. It's a large **faceted pastel triangle plane** far below the islands (2013: 3000 WU wide at y = −200 WU), with wire lines, dots, ripples on falls, and clouds and stars. The background **leans with the tilt**.
+  - Bright, near-white fog (`#F8F8F8`).
+  - Color roles: green bridges, red elevators, yellow rails, blue island sides, white line overlays.
+  - Replace the Gerstner-water task with this faceted plane, done in shaders.
+- **Islands:** slabs about 0.46 m thick, with the page texture on top. The texture uses anisotropy. Offer the 2013 "pixel" look as an option (it switched to nearest-neighbor filtering 10 s into the intro). Linear filtering is the default. Account for `texture.scale` (2× images).
+- **Ball (E):** a chrome shell with the env map updated every 3rd frame, and a glowing core that **brightens while POWER is held**.
+- **Chase camera (E):**
+  - A leash follow: a dummy point trails the ball by 1.94 m horizontally, and the camera sits 4.63 m behind along ball→dummy at **35° elevation**, smoothing τ ≈ 0.14 s.
+  - FOV 70°, near 0.09 m. No manual control.
+  - `camera.up` leans with 20–50% of the tilt (disabled under reduced motion).
+  - **Expose the camera yaw** (`engine.cameraYaw()`). Phase 08 feeds it into `InputSample.frameYaw`.
+- **Map view (E):** orbit the whole stage at 0.2 rad/s, with a spinning "YOU" marker over the ball. Drag-to-rotate is N.
+- **Intro (E):**
+  1. The page stands upright, then folds flat (5 s).
+  2. Islands extrude (3 s).
+  3. Bridges rise (3 s).
+  4. Items appear.
+  5. The camera flies over from start to goal.
+  6. The ball drops in a cage (3 s).
+
+  Implement the same sequence, **skippable**, compressed to ≤ 8 s after the first play.
+- **Goal (E):** the ball is pulled into the goal and flies up. Fireworks count = remaining seconds mod 10.
+- **Elevators** move by `sim.step().elevators[].y`. Don't animate them independently.
+- **Perf ladder (E):** below 45 fps, env map off. Below 40, render scale 0.7 and FXAA off. Below 30, glow off. Also clamp DPR (N).

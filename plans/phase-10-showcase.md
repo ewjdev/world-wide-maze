@@ -51,3 +51,16 @@ Deliver the *point* of the project: honor the 2013 creators, make the AI-assiste
 
 ## Out of scope
 The AI remix (11) and infrastructure hardening (12).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Ranking (E + N):**
+  - A **global run board** of session totals. This is what 2013 had: a top 10 with the name as `[a-z0-9_]`, and skip = not submitted. Ours shows the top 50.
+  - **Plus per-stage boards** (N).
+  - Use the v0.2 `/api/scores` shapes.
+- **Curated collection:** items are **runs** (a page's slices), each with difficulty stars from Phase 09.
+- **About page facts:** use the fidelity spec's E/R/N labels. Note the evidence correction: the WWMMM fixture has 501 small and 4 large items, not 1503 and 12.

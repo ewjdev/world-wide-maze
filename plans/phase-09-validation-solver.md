@@ -46,3 +46,16 @@ Guarantee that every published stage is **actually playable with the real physic
 
 ## Out of scope
 Changing the builder's code: report issues, and the orchestrator routes the fixes to a Phase 03 follow-up. Also out: rendering the ghost (08/10) and AI (11).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Time limit is a fixed 300 s (E):** drop the par × factor formula. The solver's par time is used to:
+  - (a) **reject** stages where par > 150 s (keeping at least 2× headroom), and
+  - (b) derive the **difficulty stars** (1–5) shown on the select screen (E: 2013 showed stars).
+- **Solver inputs** must set `frameYaw`. Use the heading toward the next waypoint, which mimics a chase camera, and hold `power` while steering.
+- **The solver models trigger elevators** (roll onto the end sensor, wait `travelSec`, roll off, respect the cooldown).
+- **Eval runs per slice.** Report per-run aggregates too.

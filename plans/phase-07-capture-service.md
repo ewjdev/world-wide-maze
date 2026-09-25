@@ -50,3 +50,18 @@ A safe, cached, hosted pipeline: **URL → capture → build → validate → st
 
 ## Out of scope
 The Room DO (06), the solver (09), AI (11), and the leaderboard endpoints (Phase 10 adds `routes/scores.ts`; leave the router extensible).
+
+
+---
+
+## G0 updates (2026-09-25). Where these conflict with the text above, these win.
+Sources: `docs/reference/fidelity-spec.md` (E = evidenced from the 2013 build) and contracts v0.2.0.
+
+- **Capture** at `CAPTURE_DPR` = 2 (`screenshot.scale` = 2), with the page height capped at 6000.
+- **One URL gives a run:**
+  - Compute `sliceCount`. Build **slice 0 first** and return `done {runId, stageIds}` as soon as slice 0 is stored.
+  - Build the remaining slices in the background, and have `GET /api/runs/:runId` list them as they become ready.
+  - For each stage, crop and store the slice texture (the WebP region for exactly `stage.size` × scale) and fill in `stage.texture`.
+- **Build timeout (E):** 2013 used 30 s. Keep 30 s for slice 0, measured from capture start.
+- The KV cache key now covers the run: `run:<normUrl>:<difficulty>:<builderVersion>`.
+- **Conversion failure (N improvement):** 2013 silently built the "not available" page. We return explicit codes plus curated fallbacks.
