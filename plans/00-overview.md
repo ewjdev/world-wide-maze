@@ -228,3 +228,14 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
   - Eval captures lack link data.
   - Merge `fixtures/builder/links` into the captures, or recapture.
   - Regenerate the build story after wave 5.
+- **Launch setup (2026-09-25):**
+  - Names approved; public repo (after a scrub); domain `wwm.ewj.dev`; Workers Paid; production auto-deploys on merge.
+  - Provisioned: D1 `wwm`/`wwm-preview` (migrations applied), R2 `wwm-stages`/`wwm-stages-preview`, KV `wwm-cache`/`wwm-cache-preview`. `check-deploy-config all` passes.
+  - ewj.dev ticket: ewjdev/ewj.dev#173.
+  - **Pending:**
+    - The content scrub, then a history purge (git-filter-repo).
+    - The first production deploy, then the `IP_HASH_SALT` secrets.
+    - Create the GitHub repo and push, then set the CI secrets and vars.
+    - AI Gateways `wwm`/`wwm-preview` (user: dashboard).
+    - `ANTHROPIC_API_KEY` (user).
+    - A LICENSE (user decision).
