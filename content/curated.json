@@ -1,4 +1,112 @@
 {
   "$comment": "Curated runs. Only `approved` entries are built (content/scripts/curate.mjs). Move candidates from content/curated-proposal.md here once the owner approves them: {slug, url, title?, license, difficulty?, stars?}.",
-  "approved": []
+  "approved": [
+    {
+      "slug": "wwm-about",
+      "url": "/about",
+      "title": "History of World Wide Maze (this site)",
+      "license": "Ours",
+      "stars": 1
+    },
+    {
+      "slug": "wwm-log",
+      "url": "/log",
+      "title": "Build record (this site)",
+      "license": "Ours",
+      "stars": 5
+    },
+    {
+      "slug": "example",
+      "url": "https://example.com/",
+      "title": "example.com (practice)",
+      "license": "IANA reserved example domain",
+      "stars": 1
+    },
+    {
+      "slug": "govuk",
+      "url": "https://www.gov.uk/",
+      "title": "GOV.UK",
+      "license": "Open Government Licence v3.0",
+      "stars": 2
+    },
+    {
+      "slug": "wiki-maze",
+      "url": "https://en.wikipedia.org/wiki/Maze",
+      "title": "Maze – Wikipedia",
+      "license": "CC BY-SA 4.0 (attribute + share-alike)",
+      "stars": 3
+    },
+    {
+      "slug": "wiki-labyrinth",
+      "url": "https://en.wikipedia.org/wiki/Labyrinth",
+      "title": "Labyrinth – Wikipedia",
+      "license": "CC BY-SA 4.0 (attribute + share-alike)",
+      "stars": 4
+    },
+    {
+      "slug": "webdev-wwm-case-study",
+      "url": "https://web.dev/case-studies/world-wide-maze",
+      "title": "Case Study – Inside World Wide Maze (web.dev)",
+      "license": "CC BY 4.0 (Google developer content policy; re-check)",
+      "stars": 3
+    },
+    {
+      "slug": "chromium-projects",
+      "url": "https://www.chromium.org/chromium-projects/",
+      "title": "The Chromium Projects",
+      "license": "Creative Commons (per site footer; re-check)",
+      "stars": 3
+    },
+    {
+      "slug": "mdn-deviceorientation",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/DeviceOrientationEvent",
+      "title": "DeviceOrientationEvent – MDN",
+      "license": "CC BY-SA 2.5 (Mozilla contributors)",
+      "stars": 3
+    },
+    {
+      "slug": "mdn-websocket",
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/WebSocket",
+      "title": "WebSocket – MDN",
+      "license": "CC BY-SA 2.5 (Mozilla contributors)",
+      "stars": 3
+    },
+    {
+      "slug": "webdev-home",
+      "url": "https://web.dev/",
+      "title": "web.dev",
+      "license": "CC BY 4.0 (re-check home page footer)",
+      "stars": 2
+    },
+    {
+      "slug": "commons-potd",
+      "url": "https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day",
+      "title": "Picture of the day – Wikimedia Commons",
+      "license": "Per-image free licences (attribution)",
+      "stars": 3
+    }
+  ],
+  "candidates_pending_permission": [
+    {
+      "slug": "kaisoku-tokyo",
+      "url": "http://kaisokutokyo.com/",
+      "note": "needs the band/label's permission"
+    },
+    {
+      "slug": "aid-dcc-news",
+      "url": "https://aid-dcc.com/news/",
+      "note": "needs AID-DCC's permission (the 2013 case-study page)"
+    },
+    {
+      "slug": "usa-gov",
+      "url": "https://www.usa.gov/",
+      "note": "check usa.gov third-party image policy"
+    },
+    {
+      "slug": "owner-site",
+      "url": "(owner to supply)",
+      "note": "the owner's own site"
+    }
+  ],
+  "$approval": "Approved by the project owner on 2026-09-25 (\"the list is good for now; we may change it over time\"). Candidates #7–#15 from content/curated-proposal.md."
 }
