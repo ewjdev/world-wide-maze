@@ -24,6 +24,7 @@ import {
   vertexStage,
 } from 'three/tsl';
 import {
+  Box3,
   BufferAttribute,
   BufferGeometry,
   CanvasTexture,
@@ -36,7 +37,7 @@ import {
   Sprite,
   SpriteNodeMaterial,
   SRGBColorSpace,
-  type Vector3,
+  Vector3,
   Vector4,
 } from 'three/webgpu';
 import { COLOR_TRIANGLE, COLOR_WIRE, GROUND_SIZE_M, WU } from '../palette.ts';
@@ -48,6 +49,8 @@ export interface Background {
   group: Group;
   ground: Mesh;
   motes: Sprite;
+  /** local-space bounds of the floating dots (drift included), for view culling */
+  motesBounds: Box3;
   clouds: Mesh;
   /** 1 = wires, dots, motes; 0 = cheap tier */
   rich: N;
@@ -209,6 +212,11 @@ export function buildBackground(
   motes.frustumCulled = false;
   motes.name = 'motes';
   group.add(motes);
+  const R = 700 + 4;
+  const motesBounds = new Box3(
+    new Vector3(center.x - R, lo - 3, center.z - R),
+    new Vector3(center.x + R, lo + Math.max(10, hi - lo) + 3, center.z + R),
+  );
 
   // ── ring of clouds on the horizon (E: 30 clouds, radius 1000–1300 WU, 80–580 WU up, facing centre) ──
   const atlas = bin.add(makeCloudAtlas(rng));
@@ -275,6 +283,7 @@ export function buildBackground(
     group,
     ground,
     motes,
+    motesBounds,
     clouds,
     rich,
     ripple(x, z, now) {

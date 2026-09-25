@@ -85,3 +85,57 @@ None blocking. The contract v0.2.2 conventions are adopted as specified: yaw, qu
 Notes for the orchestrator:
 - I added `@wwm/engine` to `apps/web/package.json` dependencies and one `/dev/engine` route line in `apps/web/src/routes.tsx`.
 - pnpm 11 auto-added `three@0.186.1` to `minimumReleaseAgeExclude` in `pnpm-workspace.yaml`.
+
+## Phase 04b: engine polish follow-ups (2026-09-25)
+- **Agent:** Claude Opus 5.5 (1M context), a Claude Code sub-agent in an isolated worktree (branch `worktree-agent-aaf7e1009c7fb9cc7`). It ran alongside Phase 08, so the public API is unchanged (additive only; nothing was added in the end).
+- **Instructions:** clear up the three overview "Polish backlog" items for the engine: weak goal fireworks, the always-drawn idle particle pool and motes, and the private `renderer._nodes.nodeFrame`. Then re-capture the goal, chase and map screenshots.
+
+### What changed
+- **Streak particles** (`world/particles.ts`): the pool is now one instanced quad `Mesh` (still 1 draw) instead of sprites.
+  - Each particle is drawn as a camera-facing capsule from its position `trail` seconds ago to its position now. Both points come from the same analytic motion law, so trails curve with gravity and drag.
+  - The fragment shader adds a soft tail, an optional white-hot head (`core`) and an optional darker rim (`outline`).
+  - Normal blending with saturated colours plus a rim is what reads on `#F8F8F8`. Additive or glow-only light vanishes there, and the bloom composite is a screen blend, which adds nothing over white.
+- **Fireworks** (`world/fireworks.ts`, pure and tested). The count stays E: remaining seconds mod 10, 300–800 ms apart. New (N):
+  - A golden rocket decelerates up to the burst point: its velocity is solved analytically so it arrives exactly at `launch + flight`, shedding 16 sparks on the way.
+  - The burst is scheduled in the future on the GPU (birth = launch + flight), so there's no CPU work at burst time.
+  - Shapes: peony (always first), chrysanthemum (long trails, white tips), ring (faces the camera, with a contrasting core), willow (gold, drooping), double.
+  - Bursts are placed in world space relative to the goal vantage camera: 20–30 m out, 14–44° up, spread across the view width.
+  - The goal camera now tilts at most 26° up (was 38°), so bursts stay in the sky and the ball leaves the top of the frame.
+  - The worst case is 9 × 187 particles, which fits the 4096 pool.
+- **Idle cost:**
+  - The pool hides itself when every particle is dead and instances only the used prefix of its ring (the ring restarts at 0 once all are dead). `count` stays ≥ 2 so the render-object cache key never flips.
+  - The motes are hidden when their slab's bounding box (after the tilt lean) is outside the camera frustum, and on the cheap-background tier as before.
+- **Private three.js field** (`src/three-private.ts`). Checked in three r186.1 source:
+  - The node frame advances only in the renderer's internal `Animation` rAF (`nodeFrame.update()`, then `info.frame = frameId`) and in `compile*()`, which is too heavy to call per frame.
+  - `setAnimationLoop` only installs a callback inside that same rAF, and `info.autoReset` only resets counters. **There is no public way** to advance the frame on demand.
+  - So `NodeFrameClock.tick()` compares the public `renderer.info.frame` against the previous `frame()` and advances the private field only if the renderer's rAF hasn't done so since. A one-frame-per-rAF game loop never touches it. If the field is gone, it warns once and degrades.
+  - `test/polish.test.ts` fails loudly if `Renderer._nodes`, `NodeManager.nodeFrame` or the `Animation` → `info.frame` mirroring changes.
+
+### Evidence
+- **Triangles** (`stats().triangles`, scene pass, handmade-simple, 1600×900 WebGPU; `metrics.json`):
+
+  | View | Before | After |
+  |---|---|---|
+  | chase | 27 676 | 19 484 |
+  | map | 27 678 | 19 486 |
+  | items-pop at 0.12 s | 27 676 | 19 720 |
+  | goal-fireworks at 2.9 s | 27 436 | 20 580 |
+
+  In a probe, idle chase showed `particles.visible = false`. It flipped to true for a large-item pop and back to false about 1 s later.
+  - The motes stay visible in chase, map and goal views because their slab is genuinely in view. They're culled only when the camera looks away from it.
+- **Draw calls:** chase 45 (was 46), map 46 (was 47), goal 41–44. Every view stays under 50. The WebGL2 fallback gives the same numbers and renders the streaks identically (checked `goal-fireworks-3_6s` with `--backend webgl`).
+- **Node frame:** with the real rAF clock, `nodeFrame.frameId` equalled `info.frame` (10→131 over 2 s), so the private path was never used. With `?clock=manual`, 60 frames in one tick used it 59 times, as intended.
+- **Screenshots** (`docs/build-log/assets/phase-04/`, overwritten, 1280×720):
+  - `goal-fireworks` (2.9 s)
+  - the goal sequence frames `goal-fireworks-1_6s`, `-2_2s`, `-3_6s` and `-4_6s`
+  - `chase-start`, `chase-route`, `chase-ramp`, `map`, `items-pop`, `elevator`, `fall-ripple`, `spawn-cage`, `intro-skip` and `intro-14_8s`
+
+  Iterations:
+  1. The first streak version read well but the bursts were small.
+  2. Scaled the shells up.
+  3. Bursts placed by NDC ended up low on screen once the camera tilted up, so I switched to world-space placement from the vantage and capped the tilt.
+- **Tests:** `pnpm check` is green. There are 8 new engine tests: the node-frame guard (5), fireworks (2) and pool idle bookkeeping (1).
+
+### Remaining
+- Fireworks draw on top of the transparent goal vase where they overlap. The vase doesn't write depth; this is minor.
+- The motes are rarely culled in practice, because they're usually in view. Saving more there would take a lower count or fog-based distance culling, not frustum tests.

@@ -73,16 +73,25 @@ const shots: Shot[] = [
       },
     }),
   ),
-  {
-    name: 'goal-fireworks',
-    stage: 'handmade-simple',
-    run: async (p) => {
-      await call(p, 'wwm.placeOnRoute(0.97)');
-      await adv(p, 1.5);
-      await call(p, 'wwm.freeze(true); void wwm.engine().playGoal(7)');
-      await adv(p, 3.1);
-    },
-  },
+  // goal sequence: several frames (E: fireworks = remaining seconds mod 10; 7 here)
+  ...[
+    ['goal-fireworks', 2.9],
+    ['goal-fireworks-1_6s', 1.6],
+    ['goal-fireworks-2_2s', 2.2],
+    ['goal-fireworks-3_6s', 3.6],
+    ['goal-fireworks-4_6s', 4.6],
+  ].map(
+    ([name, t]): Shot => ({
+      name: name as string,
+      stage: 'handmade-simple',
+      run: async (p) => {
+        await call(p, 'wwm.placeOnRoute(0.97)');
+        await adv(p, 1.5);
+        await call(p, 'wwm.freeze(true); void wwm.engine().playGoal(7)');
+        await adv(p, t as number);
+      },
+    }),
+  ),
   {
     name: 'items-pop',
     stage: 'handmade-simple',
