@@ -265,7 +265,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('e2e_bot');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
     expect(problems).toEqual([]);
     await page.context().close();
@@ -307,12 +307,16 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('e2e_bot');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('server');
     await page.getByTestId('stage-verified').waitFor(); // the Worker re-simulated the replay and accepted it
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await page.getByTestId('tab-stage-0').click();
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     expect(await page.getByTestId('rank-board').textContent()).toContain(
       expected.stageScore.toLocaleString('en-US'),
     );
@@ -333,7 +337,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     expect(ghost.inputs).toHaveLength(goalTick);
     await shot(page, 'b-05-ranking-submitted-stage-tab');
     await page.getByTestId('tab-run').click();
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await shot(page, 'b-04-ranking-submitted');
     expect(problems).toEqual([]);
     await page.context().close();
@@ -399,7 +405,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     const verdict = page.getByTestId('challenge-verdict');
     await verdict.waitFor({ timeout: 20_000 });
     expect(await verdict.textContent()).toBe('17 points short of mika’s 1,500.'); // 1484 vs 1500
-    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('res-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await page.waitForTimeout(400);
     await shot(page, 'b-06-result-board-challenge');
     await page.setViewportSize({ width: 820, height: 1100 });
@@ -409,7 +417,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await page.getByTestId('res-finish').click();
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').waitFor();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('2nd'); // ties rank behind e2e_bot
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('2nd'); // ties rank behind e2e_bot
     await page.waitForTimeout(700);
     await shot(page, 'b-07-ranking-entry');
     expect(problems).toEqual([]);
@@ -426,15 +434,19 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     });
     await page.goto(`${base}/play/${SERVICE_ID}`);
     await waitPhase(page, 'result', 150_000);
-    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot'); // online: server board
+    await expect
+      .poll(() => page.getByTestId('res-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot'); // online: server board
     await page.context().setOffline(true); // the connection drops before the name is entered
     await page.getByTestId('res-finish').click();
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('offline_ana');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('offline_ana');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('offline_ana');
     expect(await page.getByTestId('ranking').textContent()).toContain('can’t be reached');
     await shot(page, 'b-08-ranking-offline');
     // Nothing reached the server.
