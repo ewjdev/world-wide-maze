@@ -9,6 +9,9 @@ export interface SynthBlock {
   lines?: Rect[];
   /** Paint the rect into the screenshot (default true). */
   paint?: boolean;
+  /** Link text and target (contracts §10.1). */
+  text?: string;
+  href?: string;
 }
 
 /** A capture whose screenshot is a flat background with solid colored blocks (page px × scale). */
@@ -35,6 +38,8 @@ export function synthCapture(
     const el: DomElement = { id, kind: b.kind ?? 'block', rect: b.rect, depth: 3, z: 0, fixed: false };
     if (b.bg) el.bg = b.bg;
     if (b.lines) el.lines = b.lines;
+    if (b.text) el.text = b.text;
+    if (b.href) el.href = b.href;
     elements.push(el);
   });
   const hex = `#${bg.map((v) => v.toString(16).padStart(2, '0')).join('')}`;

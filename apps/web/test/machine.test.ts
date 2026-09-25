@@ -33,6 +33,7 @@ const EDGES: [GamePhase, GameEvent, GamePhase][] = [
   ['play', { type: 'FELL' }, 'falling'],
   ['play', { type: 'TIMESUP' }, 'timeup'],
   ['play', { type: 'GOAL' }, 'goal'],
+  ['play', { type: 'TRAVEL' }, 'building'], // Phase 13: link portal
   ['paused', { type: 'RESUME' }, 'play'],
   ['paused', { type: 'RETRY' }, 'building'],
   ['paused', { type: 'SEARCH' }, 'select'],
@@ -55,6 +56,7 @@ const EDGES: [GamePhase, GameEvent, GamePhase][] = [
 ];
 
 const SAMPLE_EVENTS: GameEvent[] = [
+  { type: 'TRAVEL' },
   { type: 'START', howtoSeen: true, ready: true },
   { type: 'HOWTO_DONE' },
   { type: 'PAIRED' },

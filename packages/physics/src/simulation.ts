@@ -22,6 +22,7 @@ import {
   type InputSample,
   type Island,
   type Item,
+  PORTAL_RADIUS_M,
   pointInPolygon,
   type SimEvent,
   type SimStepResult,
@@ -114,6 +115,8 @@ export class RapierSimulation implements Simulation {
   private roles = new Map<number, Role>();
   private itemsByHandle = new Map<number, { item: Item; col: Collider }>();
   private goalHandle = -1;
+  /** contracts §10.1: portal sensors (geometric, no collider: nothing in the Rapier world changes). */
+  private portals: { id: number; x: number; z: number; top: number; inside: boolean }[] = [];
   private elevators: ElevatorRt[] = [];
   private islandsById = new Map<number, Island>();
   private lowestTop = 0;
@@ -277,6 +280,12 @@ export class RapierSimulation implements Simulation {
       );
       this.goalHandle = col.handle;
     }
+    // Portals (Phase 13): upright cylinders like the goal sensor, radius PORTAL_RADIUS_M around the ball centre.
+    this.portals = (stage.portals ?? []).map((pt) => {
+      const island = this.islandsById.get(pt.islandId);
+      const w = pageToWorld(pt.pos, island?.level ?? 0);
+      return { id: pt.id, x: w[0], z: w[2], top: w[1], inside: false };
+    });
 
     // Ball: dynamic sphere, CCD, never sleeps (E).
     const ball = world.createRigidBody(
@@ -331,6 +340,35 @@ export class RapierSimulation implements Simulation {
     for (const e of this.elevators) {
       e.wasInLow = false;
       e.wasInHigh = false;
+    }
+    this.armPortals();
+  }
+
+  /**
+   * Portal sensors start "inside" wherever the ball already is (a respawn or teleport onto a portal doesn't
+   * fire it); each portal fires on entering and re-arms once the ball has left it (contracts §10.1).
+   */
+  private armPortals(): void {
+    const t = this.ball?.translation();
+    for (const pt of this.portals) pt.inside = t ? this.inPortal(pt, t.x, t.y, t.z) : false;
+  }
+
+  private inPortal(pt: { x: number; z: number; top: number }, x: number, y: number, z: number): boolean {
+    const p = this.params;
+    const dy = y - pt.top;
+    return (
+      Math.hypot(x - pt.x, z - pt.z) < PORTAL_RADIUS_M &&
+      dy > -p.ballRadius &&
+      dy < p.goalHeight + p.ballRadius
+    );
+  }
+
+  private processPortals(pos: RapierNS.Vector, events: SimEvent[]): void {
+    for (const pt of this.portals) {
+      const inside = this.inPortal(pt, pos.x, pos.y, pos.z);
+      if (inside && !pt.inside && !this.falling && !this.goalReached)
+        events.push({ type: 'portal', portalId: pt.id });
+      pt.inside = inside;
     }
   }
 
@@ -406,8 +444,9 @@ export class RapierSimulation implements Simulation {
     const pos = ball.translation();
     this.processContacts(tick, pos, events);
 
-    // 5. Sensors → items, goal.
+    // 5. Sensors → items, goal, portals.
     this.processSensors(events);
+    this.processPortals(pos, events);
 
     // 6. Falls.
     if (!this.falling && pos.y < this.lowestTop - p.fallDepth) {
@@ -699,6 +738,7 @@ export class RapierSimulation implements Simulation {
     this.ballCol = null;
     this.roles.clear();
     this.itemsByHandle.clear();
+    this.portals = [];
     this.elevators = [];
     this.riding = null;
   }
@@ -725,6 +765,7 @@ export class RapierSimulation implements Simulation {
     this.falling = false;
     this.lostEmitted = false;
     this.prevTouching.clear();
+    this.armPortals();
   }
 
   getBallState(): BallState {

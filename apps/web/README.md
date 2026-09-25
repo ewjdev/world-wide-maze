@@ -9,6 +9,7 @@ state machine, HUD, audio, i18n), Phase 06 (`src/controller/`), Phase 10 (histor
 | `/` | The game: title (attract orbit of a curated stage) → how-to (first visit) → connect → calibrate → select → building → intro → play → result → ranking |
 | `/play/:stageId` | Deep link. `practice`, `fixture-<slug>[~<slice>]` (built in the browser), or a capture-service stage id (the run is found with `computeRunId`, so later slices follow) |
 | `/p/:code` | The host joins an existing room code (e.g. after a desktop reload) |
+| `/j/:trail` | Phase 13: a shared web journey (light page, no renderer); every stop links to `/play/<ref>` |
 | `/c/:code` | Phone controller (Phase 06) |
 | `/about` | Placeholder until Phase 10 |
 | `/dev/engine`, `/dev/physics`, `/dev/input` | Phase 04 / 05 / 06 sandboxes |
@@ -49,6 +50,22 @@ state machine, HUD, audio, i18n), Phase 06 (`src/controller/`), Phase 10 (histor
 - E: fireworks = round(time left) mod 10; GOAL / TIME IS UP / GAME OVER signs after a tile curtain.
 - N: a 3-2-1 countdown on repeat stages (the first game has the tutorial instead); the map's "Retry this
   stage" (removes the stage's points); disconnect → freeze with a reconnect overlay → resume.
+
+## Link portals and web journeys (Phase 13, N)
+- Rolling into a portal (`SimEvent portal`) opens "Travel to <label>?" (`ui/Journey.tsx`), pausing the sim and
+  the timer. Travel = Enter / Y / the phone's JUMP (after a release); stay = Esc / M / the phone's MENU / N.
+- Travel banks the stage (items only, no time bonus; `StageResult.exit = 'portal'`), keeps score and spares, plays
+  `engine.playPortal`, and builds the link like a typed URL (`createApiRun`: `POST /api/stages` → SSE → the usual
+  error screen). A link to an offline fixture page builds in the browser instead. Machine edge `play → building`
+  on `TRAVEL`.
+- `/api/health` is probed once per session when a stage has portals; unreachable (or `?offline=1`) greys the gates
+  and the prompt says "Needs the online service".
+- `game/journey.ts`: the stops (`view.journey`), `/j/<base64url>` share links (validated, ≤ 12 stops). The trail
+  shows in the HUD (bottom right), on the building screen, the result and the ranking ("Share my web journey").
+- Strings: `ui/journey-strings.ts` (en + ja, registered into i18next at runtime; parity tested).
+- Hooks: `__wwmGame.debugRollIntoPortal(id)`, `debugRollIntoGoal()` roll the ball in with the real physics.
+- `test/portal.e2e.test.ts`: roll in → prompt → stay → re-arm → travel (mocked `/api`) → the second site loads with
+  the score carried → share page; and the offline prompt.
 
 ## Testing hooks
 Set `window.__WWM_TEST__` before load: `{ replay?: InputSample[], lockstep?, timeScale?, noAutoPause?,

@@ -45,6 +45,7 @@ the same geometry (tested).
 | 9 | `maze.ts` | randomized DFS spanning tree from the top-left island (non-overlapping decks, and (03b) no deck whose rail stubs would pinch an island shut). Easy adds 15 % loops | E (+N loops) |
 | 7 | `levels.ts` | float heights 9.3–23.2 D: top→bottom trend + chrome bump + noise, walked along the tree within the ramp slope. Short gaps can become elevators (3.7/5.6/7.4 D rises). (03b) A lift needs a rise ≥ 3.7 D and main-walkable ground 1 D beyond both platform ends, and its lower platform must not cut its island; ramps need ≥ 1 D and straight mouths | R/N (2013 method unknown) |
 | 10 | `placement.ts` | distance-transform safe spots. Start at the top-left, goal at the bottom-right, ≤ 6 large items, small items on 0.9/2.3 D rings 1.5 D apart, restart points on 0.6/1.3 D rings | E |
+| 10c | `portals.ts` | (Phase 13) link portals: ≤ `MAX_PORTALS` links with an `href` become portals. Junk/chrome/counter labels, files and wiki meta pages are skipped; off-site targets rank first, then label quality and type size (seeded tie-break); one per href/label, a repeated host costs 1.5. Each sits on the island covering most of the link's rect, as close to the link text as possible, on reachable ground, ≥ a ball radius (ideally 0.85 × the portal radius) from the edge, ≥ 4 D from start and goal, ≥ 2 D from mouths and large items, ≥ 6 D from other portals. Small items inside a portal ring are removed | N |
 | 11 | `rails.ts` | outline minus bridge/elevator mouth boxes → open polylines on the outline | E |
 | 12 | (build) | `timeLimitSec` = 300 | E |
 | 13 | `build.ts` | orchestration, provenance, ids, `validateStage` + rerolls; (03b) a reachability audit (rail stubs + lift footprints as walls) also triggers a reroll | — |
@@ -57,6 +58,11 @@ Caller `params` override the difficulty levers.
 **Playability (03b):** every mouth, lift end, start, goal, item and restart point is on (or within pickup reach of)
 its island's main walkable part, so a ball can roll to everything. `tools/batch-eval` with `@wwm/solver` is the
 end-to-end check (builder 0.4.0: 819/819 stages solved, none needing a jump).
+
+**Link portals (Phase 13, builder 0.5.0):** every stage carries `portals` (possibly `[]`). Legacy fixtures get
+their link targets from `fixtures/builder/links/<slug>.json` (`loadCapture` merges them; the web app does the same
+through `@wwm/stage-builder/links`). `node packages/stage-builder/scripts/portals.ts [slug …]` lists the portals per
+slice. On the 7 fixtures: Hacker News 6 story links (all off-site), every Wikipedia slice 6 article links.
 
 Islands the maze can't reach (no cardinal bridge fits) are dropped, and a provenance note records it. A slice with
 no content gets one plain fallback island, so a run never breaks.

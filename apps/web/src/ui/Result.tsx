@@ -21,6 +21,7 @@ import {
   useShareLabels,
 } from './Boards.tsx';
 import { useGame, useView } from './GameApp.tsx';
+import { JourneySection } from './Journey.tsx';
 import { Facets, GemIcon, Icon, SmallItemIcon, useSiteTitle } from './parts.tsx';
 
 /** `/s/:stageId` (server share page with the card) or `/play/<ref>` for stages only this device has. */
@@ -171,6 +172,7 @@ export function ResultScreen() {
             {oneUpShown && <dd className="wwm-oneup">{t('result.oneUp')}</dd>}
           </div>
         </dl>
+        <JourneySection />
         {ch && stage >= 3 && (
           <p
             className={`wwm-verdict${r.stageScore > ch.beat ? ' is-won' : ''}`}
@@ -314,6 +316,7 @@ export function RankingScreen() {
           </div>
         )}
         {r.skipped && <p className="wwm-muted">{t('ranking.skipped')}</p>}
+        <JourneySection variant="ranking" name={r.name} />
         <div className="wwm-row wwm-ranking__actions">
           <button
             type="button"

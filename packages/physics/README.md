@@ -31,6 +31,7 @@ const r = await replay(stage, inputs);            // { final, events: {tick, eve
   - `landed` fires on ground contact after ≥ 0.1 s in the air with impact ≥ 1 m/s.
   - `bump` fires on a new non-ground contact with impact ≥ 1 m/s. The impact is the approach speed along the contact normal.
   - `item` and `goal` each fire once per `load()`.
+  - `portal` (Phase 13, contracts §10.1): a geometric sensor (no collider, so nothing in the Rapier world changes and replays are unaffected; `PHYSICS_VERSION` unchanged): the ball centre within `PORTAL_RADIUS_M` of a portal horizontally and at most `goalHeight` + r above its island. It fires on entering, re-arms once the ball leaves, and a ball placed onto a portal (`reset`, `setBallState`) doesn't fire until it leaves and re-enters. Not while falling or after the goal.
   - `fell` fires once. `lost` follows 3 s later.
 - **Elevators:** entering a platform footprint at either level (an edge trigger, outside the cooldown) starts a ride. The ball becomes kinematic and rides with the platform, and its velocity is zeroed at both ends. The partner platform's colliders are disabled during the ride. After a ride down they come back only once the ball is out of their volume, and on a ride down with a rise under 1.463 D the ball is eased along the platform, clear of the upper island's slab (0.2.0, BI-3: before, such lifts wedged the ball). The builder no longer makes lifts under 3.7 D.
 

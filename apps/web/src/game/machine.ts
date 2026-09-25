@@ -42,6 +42,8 @@ export type GameEvent =
   | { type: 'SIGN_DONE'; spares: number }
   | { type: 'SPAWNED' }
   | { type: 'GOAL' }
+  /** Phase 13 (N): "Travel" on a link portal: build the linked site (score and spares carry over). */
+  | { type: 'TRAVEL' }
   | { type: 'GOAL_DONE' }
   /** Result "Next stage": `more` = another slice of this page (else back to site select, E). */
   | { type: 'NEXT'; more: boolean }
@@ -75,7 +77,7 @@ export const TRANSITIONS: Table = {
     QUIT: 'title',
   },
   countdown: { GO: 'play', MENU: 'paused' },
-  play: { MENU: 'paused', FELL: 'falling', TIMESUP: 'timeup', GOAL: 'goal' },
+  play: { MENU: 'paused', FELL: 'falling', TIMESUP: 'timeup', GOAL: 'goal', TRAVEL: 'building' },
   paused: { RESUME: 'play', RETRY: 'building', SEARCH: 'select', QUIT: 'title' },
   falling: {
     LOST: (e) => ((e as Extract<GameEvent, { type: 'LOST' }>).spares < 0 ? 'gameover' : 'restarting'),

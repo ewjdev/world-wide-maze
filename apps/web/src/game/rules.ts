@@ -194,6 +194,8 @@ export interface StageResult {
   runId: string;
   /** The stage came from the capture service (so the scores API knows it). */
   fromServer: boolean;
+  /** Phase 13: left through a link portal (not cleared; items only, the journey continues). */
+  exit?: 'portal';
 }
 
 /**

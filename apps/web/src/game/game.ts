@@ -20,6 +20,7 @@ import {
 import { PHYSICS_VERSION } from '@wwm/physics';
 import {
   type ApiErrorCode,
+  distanceToPolygonEdge,
   type GamePhase,
   type HapticPattern,
   type InputSample,
@@ -27,6 +28,7 @@ import {
   MAX_TILT_PITCH,
   MAX_TILT_ROLL,
   NUM_BALLS,
+  pointInPolygon,
   SIM_HZ,
   type SimEvent,
   SMALL_SCORE,
@@ -40,6 +42,7 @@ import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
 import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
 import type { Challenge } from '../ranking/share.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
+import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
 import {
@@ -80,6 +83,16 @@ export interface RoomView {
   pairToken: string | null;
   controllerConnected: boolean;
   rttMs: number | null;
+}
+
+/** Phase 13: "Travel to <label> (<host>)?" after the ball rolled into a link portal. */
+export interface PortalPrompt {
+  id: number;
+  label: string;
+  host: string;
+  href: string;
+  /** The capture service is unreachable (and the target isn't an offline fixture): travel is unavailable. */
+  offline: boolean;
 }
 
 export interface GameView {
@@ -134,6 +147,12 @@ export interface GameView {
   sensitivity: number;
   pixelLook: boolean;
   firstRun: boolean;
+  /** Phase 13: the portal prompt (play is paused while it shows). */
+  portal: PortalPrompt | null;
+  /** Phase 13: travelling through a portal (the gate animation, then the build of the linked site). */
+  travel: { label: string; host: string; href: string } | null;
+  /** Phase 13: the sites this session rolled through, in order (a web journey once a portal was taken). */
+  journey: JourneyStop[];
 }
 
 export interface RankedStage {
@@ -301,6 +320,19 @@ export class Game {
   /** Replay of each entry in `#results` that has one (same index). */
   #replays = new Map<number, VersionedReplay>();
 
+  // link portals (Phase 13)
+  /** The capture service answers `/api/health` (probed once per session when a stage has portals). */
+  #api: 'unknown' | 'online' | 'offline' = 'unknown';
+  #apiProbe: Promise<void> | null = null;
+  /** The timer was running when the portal prompt paused it. */
+  #portalTimer = false;
+  #portalAt = 0;
+  #prevJump = true;
+  /** A travel is building: the journey's last stop is its target. */
+  #travelling = false;
+  /** Test / automation: a fixed input for the next ticks (`debugRollIntoPortal`). */
+  #autopilot: { sample: InputSample; ticks: number } | null = null;
+
   // ghost race (08b)
   #ghostTrack: GhostTrack | null = null;
   #ghostFor: string | null = null;
@@ -355,6 +387,9 @@ export class Game {
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
       pixelLook: this.#get(PIXEL_KEY) === '1',
       firstRun: this.#get(HOWTO_KEY) !== '1',
+      portal: null,
+      travel: null,
+      journey: [],
     };
     this.#cleanups.push(opts.audio.onChange(() => this.#set({ muted: opts.audio.muted })));
   }
@@ -576,7 +611,16 @@ export class Game {
       case 'title':
         this.#endGhost();
         this.#resetSession();
-        this.#set({ confirm: null, sign: null, result: null, ranking: null, error: null, tutorial: null });
+        this.#set({
+          confirm: null,
+          sign: null,
+          result: null,
+          ranking: null,
+          error: null,
+          tutorial: null,
+          portal: null,
+          travel: null,
+        });
         d?.setPaused(true);
         this.#music('opening');
         void this.#loadAttract();
@@ -595,7 +639,15 @@ export class Game {
         break;
       case 'select':
         this.#endGhost();
-        this.#set({ confirm: null, sign: null, error: null, tutorial: null, build: null });
+        this.#set({
+          confirm: null,
+          sign: null,
+          error: null,
+          tutorial: null,
+          build: null,
+          portal: null,
+          travel: null,
+        });
         d?.setPaused(true);
         this.#music('opening');
         if (IN_STAGE.has(from) && e) e.setView('map');
@@ -606,6 +658,7 @@ export class Game {
         d?.setPaused(true);
         break;
       case 'intro':
+        this.#set({ travel: null, portal: null });
         this.#startIntro();
         break;
       case 'countdown':
@@ -640,6 +693,7 @@ export class Game {
         if (from === 'intro' || from === 'countdown') this.#startGhost();
         break;
       case 'paused':
+        this.#set({ portal: null });
         this.#timer.stop();
         d?.setPaused(true);
         e?.setView('map');
@@ -671,6 +725,7 @@ export class Game {
         void this.#openRanking();
         break;
       case 'error':
+        this.#set({ travel: null, portal: null });
         d?.setPaused(true);
         this.#music('opening');
         break;
@@ -1169,6 +1224,8 @@ export class Game {
         stageId,
       },
     });
+    this.#recordStop(got.stage, run);
+    this.#applyPortalStates(got.stage);
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
     this.#after(wait, () => this.#send({ type: 'BUILT' }));
@@ -1176,6 +1233,11 @@ export class Game {
 
   #buildFailed(err: unknown, url: string, ac: AbortController): void {
     if (ac.signal.aborted) return;
+    if (this.#travelling) {
+      // the linked site never became a stop of the journey
+      this.#travelling = false;
+      this.#set({ journey: this.#view.journey.slice(0, -1) });
+    }
     const code: LoadErrorCode = err instanceof StageLoadError ? err.code : 'BUILD_FAILED';
     const message = err instanceof Error ? err.message : String(err);
     this.#set({ error: { code, message, url } });
@@ -1311,6 +1373,12 @@ export class Game {
       case 'elevator':
         if (ev.phase === 'start') this.audio.play('elevator');
         return false;
+      case 'portal':
+        if (this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel) {
+          this.#openPortal(ev.portalId);
+          return true;
+        }
+        return false;
       case 'landed':
         e?.handleEvent(ev);
         this.audio.impact('land', ev.impact);
@@ -1377,7 +1445,7 @@ export class Game {
     else shown();
   }
 
-  #finishStage(cleared: boolean): void {
+  #finishStage(cleared: boolean, exit?: 'portal'): void {
     const stage = this.#stage();
     const run = this.#run;
     if (!stage || !run) return;
@@ -1411,6 +1479,7 @@ export class Game {
       ref: this.#loaded?.ref ?? run.id,
       runId: run.id,
       fromServer: run.kind === 'api',
+      ...(exit ? { exit } : {}),
     };
     this.#results.push(result);
     if (cleared && this.#recExact && this.#rec.length > 0)
@@ -1483,13 +1552,189 @@ export class Game {
   #resetSession(): void {
     this.#results = [];
     this.#replays.clear();
-    this.#set({ total: 0, spares: NUM_BALLS, result: null, ranking: null });
+    this.#travelling = false;
+    this.#set({
+      total: 0,
+      spares: NUM_BALLS,
+      result: null,
+      ranking: null,
+      journey: [],
+      portal: null,
+      travel: null,
+    });
+  }
+
+  // ── link portals (Phase 13) ───────────────────────────────────────────────────────────────────────────
+
+  /** Once per session: can the capture service build a linked site? (`?offline=1` = no.) */
+  #probeApi(): Promise<void> {
+    this.#apiProbe ??= (async () => {
+      if (typeof location !== 'undefined' && new URLSearchParams(location.search).has('offline')) {
+        this.#api = 'offline';
+        return;
+      }
+      try {
+        const r = await fetch(`${this.#opts.origin}/api/health`, { signal: AbortSignal.timeout(5000) });
+        const j = r.ok ? ((await r.json()) as { ok?: boolean }) : null;
+        this.#api = j?.ok ? 'online' : 'offline';
+      } catch {
+        this.#api = 'offline';
+      }
+    })();
+    return this.#apiProbe;
+  }
+
+  /** Portals the service can't reach are shown greyed out (fixture targets travel offline). */
+  #applyPortalStates(stage: StageData): void {
+    const portals = stage.portals ?? [];
+    if (portals.length === 0) return;
+    const apply = () => {
+      if (this.#stage() !== stage) return;
+      for (const p of portals)
+        this.#engine?.setPortalState(
+          p.id,
+          this.#api === 'offline' && !fixtureFor(p.href) ? 'offline' : 'open',
+        );
+    };
+    apply();
+    void this.#probeApi().then(apply);
+  }
+
+  /** Every site played becomes a stop; a portal travel already added its target, which now gets its ref. */
+  #recordStop(stage: StageData, run: RunSource): void {
+    if (run.kind === 'practice') return;
+    const url = stage.source.url || run.url;
+    const stop: JourneyStop = {
+      host: hostOf(url) || run.title,
+      title: stage.source.title || run.title,
+      url,
+      ref: this.#slice === 0 ? (this.#loaded?.ref ?? null) : null,
+      via: 'start',
+    };
+    const j = this.#view.journey;
+    const last = j[j.length - 1];
+    if (this.#travelling && last) {
+      this.#travelling = false;
+      this.#set({
+        journey: [...j.slice(0, -1), { ...last, ...stop, title: last.title || stop.title, via: 'portal' }],
+      });
+      return;
+    }
+    if (last && (last.url === url || this.#slice > 0)) {
+      if (!last.ref && stop.ref) this.#set({ journey: [...j.slice(0, -1), { ...last, ref: stop.ref }] });
+      return;
+    }
+    this.#set({ journey: [...j, { ...stop, via: j.length === 0 ? 'start' : 'select' }] });
+  }
+
+  #openPortal(id: number): void {
+    const p = this.#stage()?.portals?.find((x) => x.id === id);
+    if (!p) return;
+    this.#engine?.handleEvent({ type: 'portal', portalId: id });
+    this.#driver?.setPaused(true);
+    this.#portalTimer = this.#timer.running;
+    this.#timer.stop();
+    this.#portalAt = this.#clock;
+    this.#prevJump = true; // a held JUMP must be released before it confirms
+    this.audio.setRoll(0, false);
+    this.audio.play('oneup', { gain: 0.8, rate: 0.8 });
+    this.#haptic('large');
+    const prompt = (): PortalPrompt => ({
+      id,
+      label: p.label,
+      host: hostOf(p.href),
+      href: p.href,
+      offline: this.#api === 'offline' && !fixtureFor(p.href),
+    });
+    this.#set({ portal: prompt() });
+    if (this.#api === 'unknown')
+      void this.#probeApi().then(() => {
+        if (this.#view.portal?.id === id) this.#set({ portal: prompt() });
+      });
+  }
+
+  /** "Stay here": close the prompt and play on (the portal re-arms once the ball leaves it). */
+  stayHere(): void {
+    if (!this.#view.portal) return;
+    this.audio.play('click');
+    this.#set({ portal: null });
+    if (this.#view.phase !== 'play') return;
+    if (this.#portalTimer) this.#timer.start();
+    this.#driver?.setPaused(false);
+  }
+
+  /**
+   * "Travel": bank this stage (items only; the goal's time bonus is forfeited), carry the score and spares, roll
+   * into the gate, and build the linked site like a URL typed on site select (`POST /api/stages`, SSE, the same
+   * error screens). A link to one of the offline fixture pages is built in the browser instead.
+   */
+  travelPortal(): void {
+    const pr = this.#view.portal;
+    const run = this.#run;
+    if (!pr || pr.offline || this.#view.phase !== 'play' || !run || this.#view.travel) return;
+    this.audio.play('getGoal');
+    this.#haptic('goal');
+    this.#music(null);
+    for (const _ of this.#pendingSmall) this.#credit(SMALL_SCORE);
+    this.#pendingSmall = [];
+    this.#finishStage(false, 'portal');
+    const j = this.#view.journey;
+    const target: JourneyStop = { host: pr.host, title: pr.label, url: pr.href, ref: null, via: 'portal' };
+    this.#travelling = true;
+    this.#set({
+      portal: null,
+      result: null,
+      travel: { label: pr.label, host: pr.host, href: pr.href },
+      journey: [...j, target],
+      build: { step: 'queued', pct: 2, label: pr.label },
+    });
+    this.#buildAbort?.abort();
+    const ac = new AbortController();
+    this.#buildAbort = ac;
+    const fixture = fixtureFor(pr.href);
+    // Start building now (a capture takes seconds) while the gate animation plays.
+    const outcome: Promise<{ run: RunSource } | { err: unknown }> = (
+      fixture
+        ? Promise.resolve<RunSource>(new FixtureRun(fixture, this.#pool))
+        : createApiRun(this.#opts.origin, pr.href, (p) => this.#progress(p.step, p.pct), ac.signal)
+    ).then(
+      (r) => ({ run: r }),
+      (err) => ({ err }),
+    );
+    const t0 = this.#clock;
+    const gate = this.#engine?.playPortal(pr.id) ?? Promise.resolve();
+    void gate.then(async () => {
+      if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'play') return;
+      if (!this.#send({ type: 'TRAVEL' })) return;
+      const o = await outcome;
+      if (ac.signal.aborted || this.#disposed) return;
+      if ('err' in o) {
+        this.#buildFailed(o.err, pr.href, ac);
+        return;
+      }
+      this.#run = o.run;
+      this.#slice = 0;
+      void this.#loadSlice(ac, t0);
+    });
   }
 
   // ── input ─────────────────────────────────────────────────────────────────────────────────────────────
 
   #onKeyDown(ev: KeyboardEvent): void {
     const p = this.#view.phase;
+    if (p === 'play' && this.#view.portal && !ev.repeat) {
+      if (ev.code === 'Enter' || ev.code === 'NumpadEnter' || ev.code === 'KeyY') {
+        ev.preventDefault();
+        if (this.#view.portal.offline) this.stayHere();
+        else this.travelPortal();
+        return;
+      }
+      if (ev.code === 'KeyN' || ev.code === 'Backspace') {
+        ev.preventDefault();
+        this.stayHere();
+        return;
+      }
+    }
     if ((p === 'intro' || p === 'countdown') && ev.code === 'KeyG' && this.#view.ghost.run) {
       ev.preventDefault();
       this.setGhost(!this.#view.ghost.on);
@@ -1503,6 +1748,11 @@ export class Game {
 
   #onMenuKey(): void {
     const p = this.#view.phase;
+    if (p === 'play' && this.#view.portal) {
+      this.stayHere();
+      return;
+    }
+    if (p === 'play' && this.#view.travel) return;
     if (p === 'play' || p === 'countdown') {
       this.audio.play('click');
       this.#send({ type: 'MENU' });
@@ -1514,6 +1764,7 @@ export class Game {
   /** E: losing window focus pauses the game (map). */
   #autoPause(): void {
     if (this.#opts.test?.noAutoPause) return;
+    if (this.#view.travel) return;
     const p = this.#view.phase;
     if (p === 'play' || p === 'countdown') this.#send({ type: 'MENU' });
   }
@@ -1557,6 +1808,10 @@ export class Game {
     if (v.phase !== 'play') return neutralSample(this.#yaw());
     let s = this.#lastSample;
     if (this.#replay) s = this.#replay[tick] ?? neutralSample(s.frameYaw);
+    if (this.#autopilot) {
+      s = { ...this.#autopilot.sample, frameYaw: this.#yaw() };
+      if (--this.#autopilot.ticks <= 0) this.#autopilot = null;
+    }
     // E: jump is locked until tutorial step 4
     if (v.tutorial !== null && v.tutorial < 4 && s.jump) s = { ...s, jump: false };
     if (this.#timerArmed && s.power) {
@@ -1639,7 +1894,15 @@ export class Game {
       if (left !== v.calibrateLeft) this.#set({ calibrateLeft: left });
     }
 
-    const stepping = !!d && !hold && (v.phase === 'play' || v.phase === 'falling');
+    // Portal prompt (Phase 13): JUMP (after a release) confirms, the world waits.
+    if (v.portal && v.phase === 'play') {
+      if (sample.jump && !this.#prevJump && this.#clock - this.#portalAt > 0.35) {
+        if (v.portal.offline) this.stayHere();
+        else this.travelPortal();
+      }
+    }
+    this.#prevJump = sample.jump;
+    const stepping = !!d && !hold && !v.portal && !v.travel && (v.phase === 'play' || v.phase === 'falling');
     if (stepping) {
       const r = d.advance(gdt, this.#inputForStep, this.#onSimEvent);
       if (r.ball) {
@@ -1651,7 +1914,10 @@ export class Game {
       }
     }
     if (this.#ghostBall) this.#ghostBall.update((d?.tick ?? 0) / SIM_HZ);
-    const control = this.#view.phase === 'play' ? sample : neutralSample(sample.frameYaw);
+    const control =
+      this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel
+        ? sample
+        : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
     e.frame(gdt);
     this.#syncController(false);
@@ -1700,6 +1966,9 @@ export class Game {
       hold: this.#view.hold,
       recording: { ticks: this.#rec.length, exact: this.#recExact, replays: this.#replays.size },
       ghost: { ...this.#view.ghost, loaded: !!this.#ghostTrack, ticks: this.#ghostTrack?.ticks ?? 0 },
+      portal: this.#view.portal,
+      journey: this.#view.journey,
+      api: this.#api,
       engine: this.#engine?.stats() ?? null,
     };
   }
@@ -1725,6 +1994,55 @@ export class Game {
     this.#set({ timeInt: this.#timer.remainsInt, last30: sec <= 30 });
   }
 
+  /**
+   * e2e / screenshots (Phase 13): put the ball a few metres from a portal and roll it in with the real physics
+   * (POWER + forward tilt towards the portal for up to 3 s). Returns false if there is no such portal or no room.
+   */
+  debugRollIntoPortal(portalId: number, backM = 4.5): boolean {
+    const p = this.#stage()?.portals?.find((x) => x.id === portalId);
+    return !!p && this.#rollTo(p.pos, p.islandId, backM);
+  }
+
+  /** e2e / screenshots: the same, into the goal. */
+  debugRollIntoGoal(backM = 4.5): boolean {
+    const g = this.#stage()?.goal;
+    return !!g && this.#rollTo(g.pos, g.islandId, backM);
+  }
+
+  #rollTo(target: Vec2, islandId: number, backM: number): boolean {
+    const stage = this.#stage();
+    const p = { pos: target };
+    const d = this.#driver;
+    const e = this.#engine;
+    if (!stage || !d || !e || this.#view.phase !== 'play') return false;
+    const isl = stage.islands.find((i) => i.id === islandId);
+    if (!isl) return false;
+    // the free direction on the island: the farthest-reaching of 16 headings (up to backM metres)
+    const PX = 13.5;
+    let best: { at: Vec2; len: number } | null = null;
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2;
+      let len = 0;
+      for (let m = 0.5; m <= backM + 1e-9; m += 0.25) {
+        const q: Vec2 = [p.pos[0] + Math.cos(a) * m * PX, p.pos[1] + Math.sin(a) * m * PX];
+        if (!insideWithMargin(q, isl.contour, isl.holes, 8)) break;
+        len = m;
+      }
+      if (!best || len > best.len)
+        best = { at: [p.pos[0] + Math.cos(a) * len * PX, p.pos[1] + Math.sin(a) * len * PX], len };
+    }
+    if (!best || best.len < 2.2) return false;
+    d.reset(best.at);
+    // frameYaw such that "forward" (−sin ψ, −cos ψ) points from the ball to the portal
+    const yaw = Math.atan2(-(p.pos[0] - best.at[0]), -(p.pos[1] - best.at[1]));
+    void e.spawnBall(best.at, { durationSec: 0.01, faceTo: p.pos });
+    this.#autopilot = {
+      sample: { tiltX: 0, tiltZ: MAX_TILT_PITCH * 0.6, frameYaw: yaw, power: true, jump: false },
+      ticks: SIM_HZ * 3,
+    };
+    return true;
+  }
+
   /** Direct entry to a catalog run by id (e2e / curated deep links). */
   playCatalog(id: string): boolean {
     const entry = catalogEntry(id);
@@ -1741,6 +2059,10 @@ export class Game {
   static errorCodeOf(code: LoadErrorCode): ApiErrorCode | 'NETWORK' | 'NOT_FOUND' {
     return code;
   }
+}
+
+function insideWithMargin(p: Vec2, contour: Vec2[], holes: Vec2[][], margin: number): boolean {
+  return pointInPolygon(p, contour, holes) && distanceToPolygonEdge(p, contour, holes) >= margin;
 }
 
 function memoryStorage(): Pick<Storage, 'getItem' | 'setItem'> {

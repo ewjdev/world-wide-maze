@@ -245,6 +245,42 @@ describe.skipIf(!HAS_CHROMIUM)('in a real browser', () => {
     await p.close();
   });
 
+  test('link targets (contracts §10.1): absolute, normalized, http(s) only, same-page anchors dropped', async () => {
+    const p = await browser.newPage({ viewport: { width: 1280, height: 800 } });
+    await p.route('https://Wwm.test/**', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: `<html><body style="margin:0;font:16px sans-serif">
+          <p><a id="rel" href="/docs/page?b=2&a=1&utm_source=x#frag">Relative docs</a></p>
+          <p><a href="HTTPS://Other.EXAMPLE:443/path">Off-site story</a></p>
+          <p><a href="#section">Same-page anchor</a></p>
+          <p><a href="https://wwm.test/here?q=1#top">The page itself</a></p>
+          <p><a href="javascript:void(0)">Script link</a></p>
+          <p><a href="mailto:someone@example.com">Mail</a></p>
+          <p><a href="https://user:pw@example.com/">Credentials</a></p>
+          <p><a href="https://example.com/${'x'.repeat(2100)}">Too long</a></p>
+          <p><a href="https://example.com/btn"><button>Wrapped button</button></a></p>
+          <p><span role="link">Role link</span></p>
+        </body></html>`,
+      }),
+    );
+    await p.goto('https://wwm.test/here?q=1');
+    const got = (await p.evaluate(pageExpression(extractPage, {}))) as ExtractedPage;
+    const href = (t: string) =>
+      got.elements.find((e) => (e.kind === 'link' || e.kind === 'button') && e.text?.includes(t))?.href;
+    expect(href('Relative docs')).toBe('https://wwm.test/docs/page?a=1&b=2');
+    expect(href('Relative docs')).toBe(normalizeUrl('https://wwm.test/docs/page?b=2&a=1&utm_source=x#frag'));
+    expect(href('Off-site story')).toBe('https://other.example/path');
+    for (const t of ['Same-page anchor', 'The page itself', 'Script link', 'Mail', 'Credentials', 'Too long'])
+      expect(href(t), t).toBeUndefined();
+    expect(href('Wrapped button')).toBe('https://example.com/btn');
+    expect(href('Role link')).toBeUndefined();
+    // Only links (and buttons) carry a target.
+    for (const e of got.elements) if (e.href) expect(['link', 'button']).toContain(e.kind);
+    await p.close();
+  }, 60_000);
+
   test('capturePage end-to-end: 1280-wide PNG, capped height, valid bundle', async () => {
     const p = await browser.newPage();
     await p.route('https://wwm.test/**', (route) =>

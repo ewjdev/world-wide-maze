@@ -1,12 +1,13 @@
 {
   "name": "@wwm/stage-builder",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "Screenshot + DOM → StageData (islands, bridges, maze, items, rails). Pure, deterministic, no I/O.",
   "exports": {
     ".": "./src/index.ts",
-    "./node": "./src/node/index.ts"
+    "./node": "./src/node/index.ts",
+    "./links": "./src/links.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json"

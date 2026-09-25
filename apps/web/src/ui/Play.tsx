@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
 import { useGame, useView } from './GameApp.tsx';
+import { JourneyHud, PortalPromptCard, TravelIris } from './Journey.tsx';
 import { BallIcon, GemIcon, Glyphs, Icon, TiltRing, useSiteTitle } from './parts.tsx';
 import { ChallengeCard } from './Result.tsx';
 
@@ -44,6 +45,9 @@ export function PlayLayer() {
         </p>
       )}
       {hudVisible && <Hud />}
+      {hudVisible && <JourneyHud />}
+      {v.phase === 'play' && v.portal && !v.travel && <PortalPromptCard prompt={v.portal} />}
+      {v.phase === 'play' && v.travel && <TravelIris host={v.travel.host} />}
       {v.countdown !== null && v.countdown >= 0 && <Countdown n={v.countdown} />}
       {v.phase === 'paused' && <MapMenu />}
       {v.sign && <Sign kind={v.sign} />}
