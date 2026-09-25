@@ -239,3 +239,14 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
     - AI Gateways `wwm`/`wwm-preview` (user: dashboard).
     - `ANTHROPIC_API_KEY` (user).
     - A LICENSE (user decision).
+- **LIVE (2026-09-25 ~11:20 PT):**
+  - https://wwm.ewj.dev deployed by hand (`wrangler deploy --env production`). Smoke test 7/7. A real Browser Rendering capture and build of example.com succeeded in production.
+  - `IP_HASH_SALT` is set (production and the Preview base config; random, never printed).
+  - The repo is **public**: https://github.com/ewjdev/world-wide-maze (MIT). History was purged of third-party captures, and authors are mapped to the GitHub noreply address. A backup bundle is at `../wwm-pre-publication-backup.bundle`.
+  - GitHub: the `CLOUDFLARE_ACCOUNT_ID` secret, the `production` environment (limited to main, no reviewers, so it auto-deploys), and `WWM_DEPLOY_ENABLED`/`WWM_PREVIEWS_ENABLED` = false until the API token exists.
+  - **Waiting on the user:**
+    - The `CLOUDFLARE_API_TOKEN` GitHub secret, then set both vars to true.
+    - The AI Gateways `wwm` and `wwm-preview`.
+    - `ANTHROPIC_API_KEY` (production and Preview base config).
+    - The legal placeholders (operator, contact, jurisdiction, date, address).
+    - Running the bake-off once keys exist.
