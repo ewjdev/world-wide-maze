@@ -179,8 +179,8 @@ Notes for dependent phases:
   - **Open:** Android, iPhone lock/reconnect, integrated-GPU fps (Phase 12), and enabling real Browser Rendering (the user must create resources).
 
 ### Polish backlog (assign later)
-- Goal fireworks are weak on the white sky (no trails). Owner: engine follow-up.
-- Engine: the idle particle pool and background dots are always drawn (about 11k triangles).
-- Engine: `frame()` relies on the private three.js field `renderer._nodes.nodeFrame`. Re-check on upgrades.
+- ~~Goal fireworks are weak~~: fixed in 04b (streak trails, rockets, 5 burst shapes).
+- ~~Idle particle pool~~: fixed in 04b (chase scene 27.7k → 19.5k triangles).
+- ~~Private three.js field~~: isolated and guarded in 04b (`three-private.ts`, with a loud test). Only used by the manual clock.
 - The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
 - Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase.
