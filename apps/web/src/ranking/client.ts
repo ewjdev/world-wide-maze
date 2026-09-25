@@ -8,13 +8,11 @@ import type {
   ScoresResponse,
   SubmitRunScoreRequest,
   SubmitStageScoreRequest,
+  VersionedReplay,
 } from '@wwm/schema';
 
-/** contracts §9 v0.2.2: replays travel with the physics version they were recorded on. */
-export interface VersionedReplay {
-  physicsVersion: string;
-  inputs: InputSample[];
-}
+/** contracts §9 v0.2.5 (CCR-10-1): replays travel with the physics version they were recorded on. */
+export type { VersionedReplay };
 
 export type StageSubmission = Omit<SubmitStageScoreRequest, 'kind' | 'replay'> & { replay?: VersionedReplay };
 export type RunSubmission = Omit<SubmitRunScoreRequest, 'kind'>;
@@ -29,7 +27,15 @@ export type SubmitError =
   | 'server';
 
 export type SubmitResult =
-  | { ok: true; rank: number; verified: boolean }
+  | {
+      ok: true;
+      rank: number;
+      verified: boolean;
+      /** Why a replay was stored unverified (server `note`). */
+      note?: string;
+      /** Where it was saved: the shared server board, or this device (offline / stage unknown to the server). */
+      stored?: 'server' | 'device';
+    }
   | { ok: false; error: SubmitError; message: string; retryAfterSec?: number };
 
 export interface GhostRun {
@@ -74,6 +80,8 @@ export interface HttpRankingOptions {
   /** Origin + prefix, default '' (same origin; Vite proxies /api in dev). */
   baseUrl?: string;
   fetch?: typeof fetch;
+  /** Abort requests after this long (ms); a timeout counts as a network error. Default: none. */
+  timeoutMs?: number;
 }
 
 async function toResult(res: Response): Promise<SubmitResult> {
@@ -84,7 +92,14 @@ async function toResult(res: Response): Promise<SubmitResult> {
     // non-JSON error page
   }
   const message = String(body.message ?? body.error ?? res.statusText ?? 'error');
-  if (res.ok) return { ok: true, rank: Number(body.rank), verified: body.verified === true };
+  if (res.ok)
+    return {
+      ok: true,
+      rank: Number(body.rank),
+      verified: body.verified === true,
+      stored: 'server',
+      ...(typeof body.note === 'string' ? { note: body.note } : {}),
+    };
   if (res.status === 429) {
     const retry = Number(res.headers.get('retry-after'));
     return {
@@ -104,7 +119,9 @@ async function toResult(res: Response): Promise<SubmitResult> {
 
 export function createRankingClient(opts: HttpRankingOptions = {}): RankingClient {
   const base = opts.baseUrl ?? '';
-  const f = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
+  const raw = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
+  const f: typeof fetch = (input, init) =>
+    opts.timeoutMs ? raw(input, { ...init, signal: AbortSignal.timeout(opts.timeoutMs) }) : raw(input, init);
   const post = async (body: unknown): Promise<SubmitResult> => {
     try {
       return await toResult(
@@ -119,7 +136,9 @@ export function createRankingClient(opts: HttpRankingOptions = {}): RankingClien
     }
   };
   const board = async (path: string): Promise<ScoreEntry[]> => {
-    const res = await f(`${base}${path}`);
+    // Boards change with every submission; the Worker's `max-age=10` is for shared caches, so revalidate here
+    // (a player must see their own name right after submitting).
+    const res = await f(`${base}${path}`, { cache: 'no-cache' });
     if (!res.ok) throw new Error(`leaderboard: HTTP ${res.status}`);
     return ((await res.json()) as ScoresResponse).entries;
   };

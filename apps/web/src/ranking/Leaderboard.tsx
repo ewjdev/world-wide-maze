@@ -40,6 +40,31 @@ export function formatTime(ms: number | undefined): string {
   return `${m}:${rest.toFixed(1).padStart(4, '0')}`;
 }
 
+/** Visible strings (the game passes its i18n table; the defaults are English). */
+export interface LeaderboardLabels {
+  loading: string;
+  errorTitle: string;
+  errorBody: string;
+  retry: string;
+  rank: string;
+  name: string;
+  score: string;
+  time: string;
+  you: string;
+}
+
+export const LEADERBOARD_LABELS: LeaderboardLabels = {
+  loading: 'Loading scores',
+  errorTitle: 'Scores couldn’t load.',
+  errorBody: 'Check the connection and try again.',
+  retry: 'Try again',
+  rank: 'Rank',
+  name: 'Name',
+  score: 'Score',
+  time: 'Time',
+  you: 'you',
+};
+
 export interface LeaderboardProps {
   title: string;
   /** Short line under the title, e.g. the site or "All sites, whole sessions". */
@@ -51,9 +76,16 @@ export interface LeaderboardProps {
   showTime?: boolean;
   /** Visible rows (the API returns up to 50). */
   limit?: number;
-  tone?: 'light' | 'dark';
+  tone?: 'light' | 'dark' | 'game';
   onRetry?: () => void;
   emptyText?: string;
+  labels?: Partial<LeaderboardLabels>;
+  /** Rank cell text (default: the number). */
+  formatRank?: (rank: number) => string;
+  /** Render the title as this heading level (default h2). */
+  headingLevel?: 2 | 3;
+  /** Stable id for the heading (default derived from the title). */
+  id?: string;
 }
 
 /** A results sheet: rank, name, score (and time on stage boards). */
@@ -67,29 +99,35 @@ export function Leaderboard({
   tone = 'light',
   onRetry,
   emptyText = 'No scores yet. Finish this stage to set the first one.',
+  labels,
+  formatRank = String,
+  headingLevel = 2,
+  id,
 }: LeaderboardProps) {
-  const headingId = `rk-${title.replace(/\W+/g, '-').toLowerCase()}`;
+  const L = { ...LEADERBOARD_LABELS, ...labels };
+  const headingId = id ?? `rk-${title.replace(/\W+/g, '-').toLowerCase()}`;
+  const H = headingLevel === 3 ? 'h3' : 'h2';
   return (
     <section className="rk rk-board" data-tone={tone} aria-labelledby={headingId}>
       <header className="rk-board__head">
-        <h2 className="rk-board__title" id={headingId}>
+        <H className="rk-board__title" id={headingId}>
           {title}
-        </h2>
+        </H>
         {subtitle ? <span className="rk-board__sub">{subtitle}</span> : null}
       </header>
       {state.status === 'loading' ? (
-        <div role="status" aria-busy="true" aria-label="Loading scores">
+        <div role="status" aria-busy="true" aria-label={L.loading}>
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="rk-skel" style={{ margin: '0.9rem 0', width: `${90 - i * 12}%` }} />
           ))}
         </div>
       ) : state.status === 'error' ? (
         <div className="rk-state" role="alert">
-          <strong>Scores couldn’t load.</strong> Check the connection and try again.
+          <strong>{L.errorTitle}</strong> {L.errorBody}
           {onRetry ? (
             <div className="rk-actions">
               <button type="button" className="rk-btn rk-btn--quiet" onClick={onRetry}>
-                Try again
+                {L.retry}
               </button>
             </div>
           ) : null}
@@ -100,14 +138,14 @@ export function Leaderboard({
         <table className="rk-table">
           <thead>
             <tr>
-              <th scope="col">Rank</th>
-              <th scope="col">Name</th>
+              <th scope="col">{L.rank}</th>
+              <th scope="col">{L.name}</th>
               <th scope="col" className="rk-num">
-                Score
+                {L.score}
               </th>
               {showTime ? (
                 <th scope="col" className="rk-num">
-                  Time
+                  {L.time}
                 </th>
               ) : null}
             </tr>
@@ -115,10 +153,10 @@ export function Leaderboard({
           <tbody>
             {state.entries.slice(0, limit).map((e, i) => (
               <tr key={e.name} data-you={you === e.name} data-top={i < 3}>
-                <td className="rk-rank">{i + 1}</td>
+                <td className="rk-rank">{formatRank(i + 1)}</td>
                 <td className="rk-name">
                   {e.name}
-                  {you === e.name ? <span className="rk-you">you</span> : null}
+                  {you === e.name ? <span className="rk-you">{L.you}</span> : null}
                 </td>
                 <td className="rk-num rk-score">{e.score.toLocaleString('en-US')}</td>
                 {showTime ? <td className="rk-num rk-time">{formatTime(e.timeMs)}</td> : null}

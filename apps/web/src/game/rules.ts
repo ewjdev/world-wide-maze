@@ -2,6 +2,7 @@
  * The 2013 game rules, pure and unit-tested (docs/reference/fidelity-spec.md §4–§5, bundle-notes §5).
  * E = evidenced from the recovered build, R = reconstructed, N = new.
  */
+
 import {
   LARGE_SCORE,
   NUM_BALLS,
@@ -12,6 +13,7 @@ import {
   TIME_SCORE,
   type Vec2,
 } from '@wwm/schema';
+import { normalizeName } from '../ranking/client.ts';
 
 /** E: small items are credited 300 ms after pickup (`setTimeout(addScore, 300)`). */
 export const SMALL_CREDIT_DELAY_SEC = 0.3;
@@ -184,8 +186,14 @@ export interface StageResult {
   total: number;
   /** Spares gained by the time bonus (E: checked during the result count-up). */
   oneUps: number;
-  /** Play time in ms (for the per-stage board, N). */
+  /** Play time in ms: simulated ticks since the stage started (for the per-stage board, N). */
   timeMs: number;
+  /** `/play/<ref>` deep link of this slice (share links for stages the server doesn't have). */
+  ref: string;
+  /** The run (page capture) this slice belongs to. */
+  runId: string;
+  /** The stage came from the capture service (so the scores API knows it). */
+  fromServer: boolean;
 }
 
 /**
@@ -201,12 +209,13 @@ export function finishStage(
   return { score, bonus, stageScore: stageScore(args.timeInt, args.small, args.large, args.cleared) };
 }
 
-/** E (ranking): nicknames are sanitised to `[a-z0-9_]`; other characters become `-`. N: 1–16 chars. */
+/**
+ * E (ranking): nicknames use `[a-z0-9_]`. The 2013 input replaced other characters with `-`, which the scores API
+ * (contracts §9: `[a-z0-9_]{1,32}`) rejects, so N: spaces become `_` and everything else is dropped, as in the
+ * Phase 10 name entry (`normalizeName`).
+ */
 export function sanitizeName(raw: string): string {
-  return raw
-    .toLowerCase()
-    .replace(/[^a-z0-9_]/g, '-')
-    .slice(0, 16);
+  return normalizeName(raw);
 }
 
 /** 1st, 2nd, 3rd, 4th … 11th, 12th, 13th, 21st … */

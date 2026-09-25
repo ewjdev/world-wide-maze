@@ -64,7 +64,8 @@ type IconName =
   | 'close'
   | 'link'
   | 'trophy'
-  | 'sliders';
+  | 'sliders'
+  | 'ghost';
 
 const PATHS: Record<IconName, ReactNode> = {
   phone: (
@@ -125,6 +126,12 @@ const PATHS: Record<IconName, ReactNode> = {
     <path d="M7.5 4h9v4.5a4.5 4.5 0 0 1-9 0zM7.5 6H4v1.5A3.5 3.5 0 0 0 7.5 11M16.5 6H20v1.5a3.5 3.5 0 0 1-3.5 3.5M12 13v4M8 20h8M9.5 17h5" />
   ),
   sliders: <path d="M5 4v16M12 4v16M19 4v16M3 15h4M10 8h4M17 13h4" />,
+  ghost: (
+    <>
+      <circle cx="15" cy="12" r="5.5" />
+      <circle cx="8" cy="12" r="5.5" strokeDasharray="2.4 2.6" />
+    </>
+  ),
 };
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {

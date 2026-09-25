@@ -38,10 +38,20 @@ export {
   type BoardRef,
   type BoardState,
   formatTime,
+  LEADERBOARD_LABELS,
   Leaderboard,
+  type LeaderboardLabels,
   type LeaderboardProps,
   useLeaderboard,
 } from './Leaderboard.tsx';
-export { NameEntry, type NameEntryProps } from './NameEntry.tsx';
-export { ChallengeBanner, ShareButton, type ShareButtonProps } from './ShareButton.tsx';
+export { NAME_ENTRY_LABELS, NameEntry, type NameEntryLabels, type NameEntryProps } from './NameEntry.tsx';
+export {
+  CHALLENGE_LABELS,
+  ChallengeBanner,
+  type ChallengeLabels,
+  SHARE_LABELS,
+  ShareButton,
+  type ShareButtonProps,
+  type ShareLabels,
+} from './ShareButton.tsx';
 export { type Challenge, readChallenge, type ShareOutcome, shareLink, shareText, shareUrl } from './share.ts';

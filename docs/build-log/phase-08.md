@@ -144,6 +144,171 @@ None. The physical-phone session is pending: [phase-08-playtest.md](phase-08-pla
 - **Chase camera faces the goal**, so on a top-left → bottom-right stage the page text reads upside down at the
   start (E behaviour, engine `resetToStart`); flag for the playtest.
 - **Attract mode** is the map orbit of a fixture stage; swap for Phase 09's solver ghost when it lands.
-- **Leaderboard** is local to the browser until Phase 10's `/api/scores`.
+- ~~**Leaderboard** is local to the browser until Phase 10's `/api/scores`.~~ Done in 08b (below).
 - The tutorial runs on the first real stage (E) and the practice stage is offered as "Practice site"; there is
   no separate tutorial-only mini stage.
+
+---
+
+## Phase 08b: Phase 10's leaderboards, ranking UI and ghosts wired into the game
+
+- **Agent:** Claude Opus 5.5 (1M context), Claude Code sub-agent in an isolated git worktree
+  (branch `worktree-agent-aa1178db08b0ba9b8`).
+- **Start / end:** 2026-09-25 ~10:05Z → ~10:45Z.
+- **Environment:** as above (macOS, Apple M5 Max, Node 26, pnpm 11.5, Vite 8.3, wrangler 4.140, Playwright 1.63).
+
+### Instructions received (summary)
+- Swap the game to the HTTP leaderboard (contracts §7): the stage board on the Result screen, the global run
+  board on the Ranking screen (E: session totals, `[a-z0-9_]` names, skip = not submitted). Submit a
+  `VersionedReplay` recorded from the game's input; confirm it re-simulates to the same result, or record the
+  stream the sim actually consumed, or submit unverified. Measure and document. Fall back to the device when the
+  API is unreachable.
+- Mount Phase 10's `Leaderboard`, `NameEntry`, `ShareButton` and `ChallengeBanner`, restyled to the Phase 08
+  look (`impeccable` skill).
+- "Race the #1 run" toggle on the stage intro/countdown when the ghost endpoint has a track (`createGhostBall`);
+  challenge links `/s/:id?beat=&by=` → `/play/:id` with a banner.
+- E2E: replay run → name → stage board and run board; ghost toggle renders a ghost; offline fallback. Screenshots
+  `docs/build-log/assets/phase-08/b-*`. Ownership: `apps/web/src/{game,ui,ranking,i18n}/**`, `apps/web/test/**`;
+  no `packages/*` or worker edits.
+
+### What was built
+- **Boards** (`src/game/leaderboard.ts`, rewritten): `GameBoards` = Phase 10's `createRankingClient()` (6 s
+  timeout) plus `LocalRankingClient`, a localStorage board with the same `RankingClient` API and the Worker's
+  ordering (best per name, score desc, time asc).
+  - A stage's board is on the **server** when the stage came from the Worker (capture-service runs and deep links
+    to service stage ids). Stages built in the browser (practice, the offline fixture captures) use the
+    **device** board. The session total goes to the server run board only if every stage of the session is a
+    server stage and no stage repeats (the Worker checks each stage and refuses duplicates).
+  - Network errors, 5xx and 404 at submit → the score is saved and ranked on the device (the player never loses
+    a finished game); the server is then skipped for 30 s. `navigator.onLine === false` skips it straight
+    away. Name, profanity, plausibility and rate-limit errors go back to the name entry.
+  - `?offline=1` forces preservation mode (no scores traffic at all).
+- **Replay recording** (`src/game/game.ts`): the `InputSample` of every sim tick of the current attempt, taken in
+  the sim's input callback, i.e. exactly what the sim consumed. On `lost` the driver now pauses until the
+  respawn, so the tick stream matches `@wwm/physics` `replay()` (which resets on the tick after `lost`).
+  Each cleared stage keeps `{physicsVersion: PHYSICS_VERSION, inputs}` (schema `VersionedReplay`), submitted
+  with its stage score. Not attached: attempts with a time-up respawn (no sim event, `replay()` can't reproduce
+  it) and anything recorded on the worker driver. A 422 "replay mismatch" is resent once without the replay
+  (stored unverified), see the timer issue below. Stage `timeMs` is now simulated play time (ticks / SIM_HZ).
+- **Physics driver default → lockstep** (main thread, fixed step). N. `?physics=worker` keeps Phase 05's
+  free-running worker. Measured cost of one step on the main thread (`scripts/step-cost.ts`, Node, all fixture
+  stages): **7–18 µs/step, 0.014–0.036 ms per 60 Hz frame**, so the worker buys nothing for the game.
+- **Ghost race**: when a server stage's board has entries, the game fetches the #1 verified run
+  (`/ghost` only then: a "none yet" 404 would log a console error) and, if its `physicsVersion` matches,
+  re-simulates the track (`recordGhostTrack`) while the intro plays. A "Race the #1 run" toggle (name + score,
+  `G` key, `aria-pressed`, persisted) appears on the intro, countdown and map. The ghost ball follows the
+  player's own tick clock, so both start at GO. New `look: 'holo'` in `ranking/ghost.ts`: a faint shell in a
+  faceted wire cage in the bridge blue, so it reads as "not a ball" next to the player. A small
+  "Racing <name>" tag sits bottom-right during play.
+- **Challenge links**: `/play/:stageId?beat=&by=` → `ChallengeBanner` (game tone) at the top during the intro
+  and countdown of that stage. The result answers it: "You beat mika's 1,500!" (green plate) or
+  "17 points short of mika's 1,500.".
+- **Result screen**: two columns. The Phase 08 tally stays on the left, and the stage board ("This stage",
+  top 8 with times) sits on the right; one column under 900 px. Share is Phase 10's `ShareButton`
+  ("Challenge a friend", `?beat=<stage score>`). It links to `/s/:stageId` for server stages (OG card) and to
+  `/play/<ref>?beat=` for device stages, whose `/s/` page would 404.
+- **Ranking screen**: the E rank ("??" → 1st/1位), total, then Phase 10's `NameEntry` (game tone, i18n,
+  `hideScore`). After submitting, it lists each cleared stage's rank with a green "replay verified" tag. The
+  right column holds tabs: "All sites" (the run board of session totals, E) plus up to 3 stage boards; "you"
+  is highlighted. Device boards say so, with the reason (offline / this site isn't on the ranking server).
+- **Phase 10 components** (`src/ranking/**`): optional `labels` (i18n) on all four, `tone: 'game'`, `href`/`text`
+  overrides on `ShareButton`, `formatRank` + `headingLevel` on `Leaderboard`, test ids on `NameEntry`,
+  `stored`/`note` on `SubmitResult`, a request timeout, and board GETs with `cache: 'no-cache'`: the Worker's
+  `max-age=10` otherwise hid the player's own name right after submitting. `VersionedReplay` now comes from
+  `@wwm/schema` (it was redeclared).
+- **Game tone** (`ranking.css`): chamfered plates on the fog-white `--sky`, Unbounded for ranks, scores and
+  headings, Figtree for names (no monospace), the 2013 colour roles. The "you" row is a blue tint plus a
+  chamfered YOU chip, not a side stripe. The name field and buttons match `.wwm-btn`. The Phase 08 name bar
+  and board table CSS were removed.
+- **i18n**: `ghost.*`, `challenge.*`, `boards.*` and the new `ranking.*`/`result.*` strings in en + ja (parity
+  test green). The ja rank reads 1位 (the ja share text used to say "1st 位").
+- **Names**: `sanitizeName` used to turn other characters into `-` (the 2013 input did), which the scores API
+  rejects. It now follows Phase 10's `normalizeName`: spaces → `_`, the rest dropped (N).
+
+### Measurements: does the recorded replay re-simulate?
+`scripts/replay-fidelity.ts` plays the practice stage in Chromium with the Phase 05 fixture replay injected,
+3× per driver, then re-simulates what the game recorded with headless `replay()`:
+
+| driver | live run | re-simulated recording |
+|---|---|---|
+| lockstep ×3 | goal, 11 items, 5429 ticks | **goal at tick 5429, 11 items, 0.00 m from the live ball: 3/3 identical** |
+| worker #1 | goal, 11 items, 5452 ticks recorded | goal at tick 5397, 11 items, end 0.05 m off |
+| worker #2 | goal, 5400 | goal at 5397, 0.02 m off |
+| worker #3 | goal, 5386 | **no goal**, end 0.21 m off |
+
+The worker latches the newest input for however many ticks it runs, so the main thread can only approximate the
+stream (the frame's input × the frame's ticks). One run in three doesn't even reach the goal when replayed.
+Hence lockstep by default, and worker recordings are never submitted. In the e2e the Worker **verified** the
+game's lockstep replay (claimed 1484; the Worker's timer rule gives 1479, which is within its 3 s slack).
+
+### Attempts that failed, and why
+- **Probing the Worker for every stage** (`HEAD /api/stages/:id`, to give fixture stages server boards when the
+  server has them): each 404 is a browser console error ("Failed to load resource"), which G2 forbids. Replaced
+  by "server iff the stage came from the Worker". The ghost is fetched only when the board has entries, for the
+  same reason.
+- **Own name missing from the board right after submitting**: the board GET was served from the HTTP cache
+  (`cache-control: public, max-age=10`). Board reads now revalidate.
+- **The e2e harness**: `unstable_startWorker` gives no access to bindings and doesn't apply D1 migrations, so the
+  scores tables didn't exist. Switched to wrangler's `createTestHarness` (like the Worker's own integration
+  tests). It applies migrations, and the e2e seeds `handmade-simple` into R2 + D1 exactly as the build pipeline
+  stores a service stage (stage JSON, texture, `runs` + `stages` rows). The phone and room tests pass unchanged
+  on it.
+- **Space on a focused ghost toggle** also reached the global "skip intro" handler; the toggle stops the event.
+- First ghost look (one translucent `MeshBasicMaterial` sphere) read as a flat purple disc over the red island;
+  replaced by the holo look.
+- Screenshot timing: two shots were taken mid-animation or while the board loaded. The shots now wait for the
+  content.
+
+### Manual human interventions
+None.
+
+### Test evidence
+- `pnpm check`: green. **45 files passed, 2 skipped; 563 tests passed, 12 skipped** (the skips are pre-existing).
+- New `test/leaderboard.test.ts` (9 tests): the device board ordering and ranks; server vs device source with
+  no probing requests; 201 → server; network failure → device and offline cool-down; 404/5xx → device;
+  429 stays an error; a 422 replay mismatch is resent without the replay; ghost only when the board has entries;
+  `rankFor`.
+- `test/game.e2e.test.ts` (real Worker + Room DO + D1/R2 in workerd, Vite, Chromium), **8/8 in ~135 s**:
+
+  | test | result |
+  |---|---|
+  | Phase 08 replay run from the title (practice) | exact score as before; ranked **1st on the device** board |
+  | **08b** replay run on the service stage | stage board on the result ("No scores yet"); the recorded replay **equals the injected stream tick for tick (5429)** and re-simulates to the same goal tick and items; name → **1st**, `data-source=server`, **"replay verified"**; the name is on the run tab and the stage tab (with 1,484 and 0:45.2); the API returns it on `/api/scores/stage/:id` (`timeMs` = 5429/120 s) and `/api/scores/run`; `/ghost` returns the 5429-tick track |
+  | **08b** ghost race on `/play/<id>?beat=1500&by=mika` | banner shows mika; toggle shows "e2e_bot · 1,484 pts", `aria-pressed` false → true; in play the `wwm-ghost` mesh is visible and **moved 6.8 m in 2.5 s**; off in the map removes it |
+  | **08b** challenge + stage board | verdict "17 points short of mika's 1,500."; the result's stage board shows e2e_bot; the ranking shows "2nd" before entry (a tie ranks behind the earlier entry) |
+  | **08b** offline at the ranking (`context.setOffline`) | ranked **1st on the device** (`data-source=device`), the board shows the name + note "The ranking server can't be reached…", and the name never reached the server |
+  | phone pairing, disconnect/resume, build failure | unchanged, pass |
+
+  No console errors or warnings in any of them. The offline test filters only the dev server's own
+  lost-connection messages.
+- Screenshots (`docs/build-log/assets/phase-08/`, 1440×900 unless noted, `WWM_SHOTS=1`), reviewed:
+  `b-01-intro-ghost-challenge`, `b-02-countdown-ghost`, `b-03-play-ghost`, `b-03b-map-ghost`,
+  `b-04-ranking-submitted`, `b-05-ranking-submitted-stage-tab`, `b-06-result-board-challenge`,
+  `b-07-ranking-entry`, `b-08-ranking-offline`, and `b-09-result-narrow` (820 px).
+- Impeccable detector on the changed UI: only the pre-existing, intentional thumbnail colour stripe
+  (see Phase 08).
+- `vite build`: ok.
+
+### Remaining defects and follow-ups
+- **Worker replay timer rule (Phase 10 follow-up / CCR).** `scoreReplayEvents` starts the timer at the first
+  POWER press. In the game (E) that holds only on the very first game; after that, the timer starts at GO.
+  A player who waits more than about 2 s after GO before pressing POWER therefore gets a 422 "replay mismatch".
+  The game resends without the replay, so the score counts but unverified. Proposal: add
+  `timerStartTick?: number` to `VersionedReplay` (the game knows it exactly), or have the Worker start the timer
+  at tick 0 unless the replay says otherwise.
+- **Ghost "none yet" = 404** (CCR): browsers log it as a console error. A `200 null` or `204` would let the game
+  ask directly, instead of reading the board first. Also, a board whose top entries are all unverified still
+  gets a 404 from `/ghost`.
+- **Practice and fixture stages have device boards only.** For global boards (and ghosts) on the curated set,
+  build those runs through the Worker (Phase 10's `curate.mjs`) or seed them as service stages at deploy
+  (Phase 12). Then deep links point at service ids.
+- **`/s/*` isn't proxied by Vite in dev** (`apps/web/vite.config.ts`, not in this phase's paths). Share links
+  work in production when the Worker serves `/s/*` (Phase 12 routing).
+- **Replay-less attempts:** after a time-up respawn the stage has no replay (stored unverified). An `engine`/
+  `physics` "respawn" input marker would fix it (Phase 05).
+- **Ghost in the map view** is ball-sized and hard to spot from the map camera. `createGhostBall` supports
+  `scale`, but switching the scale with the view isn't wired yet.
+- `vite build` warns that `ranking/ghost.ts`'s dynamic `import('@wwm/physics')` is ineffective, because the game
+  imports physics statically for the lockstep driver anyway. It's harmless.
+- The worker driver (`?physics=worker`) is kept for comparison. If nobody needs it, Phase 12 can drop the second
+  Rapier copy from the bundle.

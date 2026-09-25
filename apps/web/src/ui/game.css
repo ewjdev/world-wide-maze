@@ -1446,16 +1446,48 @@
 /* ── result / ranking ─────────────────────────────────────────────────── */
 
 .wwm-result {
-  width: min(100%, 720px);
+  width: min(100%, 1060px);
   display: grid;
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+  column-gap: 40px;
+  row-gap: 22px;
   padding-top: 0;
   cursor: default;
 }
 .wwm-result__band {
+  grid-column: 1 / -1;
   height: 18px;
   margin: 0 -40px;
   width: calc(100% + 80px);
+}
+.wwm-result__main {
+  display: grid;
+  gap: 22px;
+  align-content: start;
+  min-width: 0;
+}
+.wwm-result__board {
+  min-width: 0;
+  align-self: stretch;
+  display: grid;
+}
+.wwm-result__actions {
+  grid-column: 1 / -1;
+}
+/* the friend's challenge, answered (N) */
+.wwm-verdict {
+  justify-self: start;
+  font: 700 16px / 1.3 var(--display);
+  letter-spacing: -0.01em;
+  padding: 10px 16px 10px 14px;
+  background: var(--sky);
+  color: var(--ink-2);
+  clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px);
+  animation: wwm-rise 420ms var(--ease) both;
+}
+.wwm-verdict.is-won {
+  background: var(--go);
+  color: #fff;
 }
 .wwm-result__head {
   display: grid;
@@ -1573,31 +1605,45 @@
   font: 800 34px / 1 var(--display);
   font-variant-numeric: tabular-nums;
 }
-.wwm-namebar {
-  margin: 18px 0 8px;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.wwm-namebar input {
-  flex: 1 1 220px;
-  min-height: 46px;
-  border: 0;
-  background: var(--sky);
-  box-shadow: inset 0 0 0 1.5px var(--line);
-  font: 600 17px / 1 var(--ui);
-  padding: 0 14px;
-  color: var(--ink);
-}
-.wwm-namebar input:focus {
-  outline: none;
-  box-shadow: inset 0 0 0 3px var(--blue);
-}
 .wwm-ranking__ok {
   margin: 14px 0 8px;
   font-weight: 700;
   color: var(--go);
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+.wwm-stagerank {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  color: var(--ink);
+  font-weight: 600;
+}
+.wwm-stagerank li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+.wwm-stagerank__site {
+  flex: 1 0 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.wwm-stagerank__rank {
+  font: 700 14px / 1.2 var(--display);
+}
+.wwm-stagerank__ok {
+  font: 700 10px / 1 var(--display);
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: var(--go);
+  padding: 4px 7px 4px 8px;
+  clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px);
 }
 .wwm-ranking__you .wwm-row {
   margin-top: 16px;
@@ -1606,34 +1652,134 @@
   display: grid;
   gap: 12px;
   align-content: start;
-  background: var(--sky);
-  padding: 20px 22px;
+  min-width: 0;
 }
-.wwm-board {
-  width: 100%;
-  border-collapse: collapse;
-  font-variant-numeric: tabular-nums;
+.wwm-boardtabs {
+  justify-self: start;
+  max-width: 100%;
 }
-.wwm-board th {
+.wwm-boardtabs button {
+  max-width: 16ch;
+}
+.wwm-boardtabs button span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── ghost race + challenge (08b) ─────────────────────────────────────── */
+
+.wwm-ghost {
+  position: absolute;
+  right: 28px;
+  bottom: 84px;
+  appearance: none;
+  border: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px 10px 10px;
+  max-width: min(360px, calc(100% - 56px));
   text-align: left;
-  font: 700 11px / 1 var(--display);
-  letter-spacing: 0.12em;
+  font-family: var(--ui);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.92);
+  cursor: pointer;
+  filter: var(--shadow);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+  animation: wwm-rise 520ms 200ms var(--ease) both;
+  transition: transform 160ms var(--ease);
+}
+.wwm-ghost:hover {
+  transform: translateY(-1px);
+}
+.wwm-ghost__box {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  background: var(--sky);
   color: var(--ink-2);
-  padding: 0 0 10px;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  transition:
+    background-color 200ms,
+    color 200ms;
 }
-.wwm-board td {
-  padding: 9px 0;
-  border-top: 1px solid var(--line);
+.wwm-ghost[aria-pressed="true"] .wwm-ghost__box {
+  background: var(--blue-deep);
+  color: #fff;
+  box-shadow: none;
+}
+.wwm-ghost__text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+.wwm-ghost__title {
+  font: 700 14px / 1.2 var(--display);
+  letter-spacing: -0.01em;
+}
+.wwm-ghost__by {
   font-weight: 600;
+  font-size: 13px;
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.wwm-board td:last-child,
-.wwm-board th:last-child {
-  text-align: right;
+.wwm-ghost__key {
+  font: 700 12px / 1 var(--display);
+  min-width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  color: var(--ink-2);
+  box-shadow:
+    inset 0 0 0 1.5px var(--line),
+    inset 0 -3px 0 var(--line);
 }
-.wwm-board td:first-child {
-  font-family: var(--display);
+.wwm-playlayer[data-phase="paused"] .wwm-ghost {
+  right: auto;
+  left: 24px;
+  bottom: 24px;
+}
+.wwm-playlayer[data-phase="countdown"] .wwm-ghost {
+  bottom: 28px;
+}
+.wwm-ghosttag {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 700;
-  width: 5ch;
+  font-size: 13px;
+  color: #fff;
+  background: rgba(45, 111, 163, 0.88);
+  padding: 7px 12px 7px 10px;
+  clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px);
+  animation: wwm-fade 400ms var(--ease) both;
+}
+.wwm-challenge {
+  position: absolute;
+  top: clamp(20px, 4vh, 40px);
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: calc(100% - 48px);
+  filter: var(--shadow);
+  animation: wwm-rise 600ms 150ms var(--ease) both;
 }
 .wwm-ranking__note {
   font-size: 13px;
@@ -1800,6 +1946,9 @@
   }
   .wwm-grid--compact {
     grid-template-columns: repeat(2, 1fr);
+  }
+  .wwm-result {
+    grid-template-columns: minmax(0, 1fr);
   }
   .wwm-result__band {
     margin: 0 -22px;

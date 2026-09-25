@@ -17,6 +17,7 @@ import {
   neutralSample,
   PhoneInputSource,
 } from '@wwm/net';
+import { PHYSICS_VERSION } from '@wwm/physics';
 import {
   type ApiErrorCode,
   type GamePhase,
@@ -26,7 +27,7 @@ import {
   MAX_TILT_PITCH,
   MAX_TILT_ROLL,
   NUM_BALLS,
-  type ScoreEntry,
+  SIM_HZ,
   type SimEvent,
   SMALL_SCORE,
   type StageData,
@@ -35,8 +36,11 @@ import {
 } from '@wwm/schema';
 import type { AudioManager, Bgm } from '../audio/audio.ts';
 import { openHostRoom } from '../controller/useHostRoom.ts';
+import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
+import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
+import type { Challenge } from '../ranking/share.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
-import type { Leaderboard } from './leaderboard.ts';
+import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
 import {
   addScore,
@@ -97,6 +101,8 @@ export interface GameView {
     url: string;
     index: number;
     count: number;
+    /** Set once the slice is loaded. */
+    stageId?: string;
   } | null;
   build: { step: string; pct: number; label: string } | null;
   error: { code: LoadErrorCode; message: string; url?: string } | null;
@@ -115,17 +121,55 @@ export interface GameView {
   sign: SignKind | null;
   confirm: 'quit' | 'search' | null;
   result: StageResult | null;
-  ranking: {
-    rank: number | null;
-    total: number;
-    top: ScoreEntry[];
-    submitted: boolean;
-    local: boolean;
-  } | null;
+  /** Where the current stage's board lives (null while asking the server). */
+  stageSource: BoardSource | null;
+  ranking: RankingView | null;
+  /** "Race the #1 run" (N, Phase 10 ghosts). */
+  ghost: GhostView;
+  /** `/play/:id?beat=&by=` from a friend's share link; `stageId` is the stage it applies to once loaded. */
+  challenge: (Challenge & { stageId: string | null }) | null;
   muted: boolean;
   sensitivity: number;
   pixelLook: boolean;
   firstRun: boolean;
+}
+
+export interface RankedStage {
+  /** Index into the session's results. */
+  resultIndex: number;
+  stageId: string;
+  title: string;
+  sliceIndex: number;
+  sliceCount: number;
+  score: number;
+  source: BoardSource;
+  /** After submission: rank on the stage board, whether the replay was verified, where it was stored. */
+  rank: number | null;
+  verified: boolean;
+  stored: BoardSource | null;
+}
+
+export interface RankingView {
+  /** E: "??" until known. */
+  rank: number | null;
+  total: number;
+  /** Where the session total goes: the server's global run board, or this device. */
+  source: BoardSource | null;
+  submitted: boolean;
+  skipped: boolean;
+  name: string | null;
+  stored: BoardSource | null;
+  /** Cleared stages of the session (each has its own board). */
+  stages: RankedStage[];
+}
+
+export interface GhostView {
+  /** The stage's #1 verified run, when the server has one for this physics version. */
+  run: { name: string; score: number; timeMs: number } | null;
+  /** The player's choice (persisted). */
+  on: boolean;
+  /** A ghost ball is in the scene. */
+  racing: boolean;
 }
 
 export interface TiltReadout {
@@ -148,12 +192,22 @@ export interface GameTestHooks {
   noAutoPause?: boolean;
   /** Skip intros immediately. */
   skipIntro?: boolean;
+  /** Measurement (08b): keep the free-running physics worker even with an injected replay. */
+  forceWorker?: boolean;
 }
 
 export interface GameOptions {
   origin: string;
   audio: AudioManager;
-  leaderboard: Leaderboard;
+  boards: GameBoards;
+  /**
+   * Physics driver. N (08b): `lockstep` (main thread, tick-exact; default) records the exact InputSample stream
+   * the sim consumed, so score submissions carry a replay the server can verify. `worker` = Phase 05's
+   * free-running worker (not tick-deterministic; its recordings are approximate and never submitted).
+   */
+  physics?: 'lockstep' | 'worker';
+  /** From `?beat=&by=` on a `/play/:stageId` link. */
+  challenge?: Challenge | null;
   reducedMotion: boolean;
   /** `/p/:code`: join this existing room as host. */
   roomCode?: string;
@@ -170,6 +224,7 @@ const HOWTO_KEY = 'wwm.howtoSeen';
 const TUTORIAL_KEY = 'wwm.tutorialDone';
 const SENS_KEY = 'wwm.sensitivity';
 const PIXEL_KEY = 'wwm.pixelLook';
+const GHOST_KEY = 'wwm.ghost';
 const CALIBRATE_TIMEOUT_SEC = 15; // E
 const CONNECTED_SHOW_SEC = 1.4; // N (2013: 4 s)
 const TUTORIAL_STEP_SEC = 3; // E
@@ -185,7 +240,7 @@ function clamp(v: number, lim: number) {
 export class Game {
   readonly audio: AudioManager;
   readonly #opts: GameOptions;
-  readonly #lb: Leaderboard;
+  readonly #boards: GameBoards;
   readonly #pool = new StageBuilderPool();
   readonly #storage: Pick<Storage, 'getItem' | 'setItem'>;
   readonly #listeners = new Set<() => void>();
@@ -224,17 +279,28 @@ export class Game {
   #lastIslandPos: Vec2 | null = null;
   #ballPos: [number, number, number] = [0, 0, 0];
   #stageStartTotal = 0;
-  #stageStartClock = 0;
   #firstStageOfVisit = true;
   #results: StageResult[] = [];
   #stateSentAt = 0;
   #stateKey = '';
   #hapticAt = 0;
 
+  // replay recording (08b): the InputSample of every sim tick of the current stage attempt
+  #rec: InputSample[] = [];
+  /** The recording reproduces the attempt headlessly (lockstep, and no respawn the replay format can't express). */
+  #recExact = true;
+  /** Replay of each entry in `#results` that has one (same index). */
+  #replays = new Map<number, VersionedReplay>();
+
+  // ghost race (08b)
+  #ghostTrack: GhostTrack | null = null;
+  #ghostFor: string | null = null;
+  #ghostBall: GhostBall | null = null;
+
   constructor(opts: GameOptions) {
     this.#opts = opts;
     this.audio = opts.audio;
-    this.#lb = opts.leaderboard;
+    this.#boards = opts.boards;
     this.#storage = opts.storage ?? (typeof localStorage === 'undefined' ? memoryStorage() : localStorage);
     this.#replay = opts.test?.replay ?? null;
     const sens = Number(this.#get(SENS_KEY) ?? '1');
@@ -266,7 +332,10 @@ export class Game {
       sign: null,
       confirm: null,
       result: null,
+      stageSource: null,
       ranking: null,
+      ghost: { run: null, on: this.#get(GHOST_KEY) === '1', racing: false },
+      challenge: opts.challenge ? { ...opts.challenge, stageId: null } : null,
       muted: opts.audio.muted,
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
       pixelLook: this.#get(PIXEL_KEY) === '1',
@@ -317,6 +386,10 @@ export class Game {
 
   get engine(): Engine | null {
     return this.#engine;
+  }
+
+  get boards(): GameBoards {
+    return this.#boards;
   }
 
   // ── lifecycle ─────────────────────────────────────────────────────────────────────────────────────────
@@ -375,7 +448,12 @@ export class Game {
         return;
       }
       this.#engine = engine;
-      this.#driver = await createDriver(this.#opts.test?.lockstep || this.#replay ? 'lockstep' : 'worker');
+      const kind = this.#opts.test?.forceWorker
+        ? 'worker'
+        : this.#opts.test?.lockstep || this.#replay
+          ? 'lockstep'
+          : (this.#opts.physics ?? 'lockstep');
+      this.#driver = await createDriver(kind);
       if (this.#disposed) {
         this.#driver.dispose();
         return;
@@ -403,6 +481,8 @@ export class Game {
     this.#cleanups = [];
     this.#phone?.dispose();
     this.#conn?.close();
+    this.#ghostBall?.dispose();
+    this.#ghostBall = null;
     this.#driver?.dispose();
     this.#engine?.dispose();
     this.#pool.dispose();
@@ -459,6 +539,7 @@ export class Game {
     const d = this.#driver;
     switch (to) {
       case 'title':
+        this.#endGhost();
         this.#resetSession();
         this.#set({ confirm: null, sign: null, result: null, ranking: null, error: null, tutorial: null });
         d?.setPaused(true);
@@ -478,12 +559,14 @@ export class Game {
         this.#after(CALIBRATE_TIMEOUT_SEC, () => this.#set({ calibrateTimedOut: true }));
         break;
       case 'select':
+        this.#endGhost();
         this.#set({ confirm: null, sign: null, error: null, tutorial: null, build: null });
         d?.setPaused(true);
         this.#music('opening');
         if (IN_STAGE.has(from) && e) e.setView('map');
         break;
       case 'building':
+        this.#endGhost();
         this.#set({ confirm: null, sign: null, result: null, tutorial: null });
         d?.setPaused(true);
         break;
@@ -516,6 +599,7 @@ export class Game {
         // E: the timer starts on entering GAME, except on the first game where the first POWER starts it.
         if (!this.#timerArmed) this.#timer.start();
         this.#music(this.#timer.remainsInt <= 30 ? 'timeup' : 'game');
+        if (from === 'intro' || from === 'countdown') this.#startGhost();
         break;
       case 'paused':
         this.#timer.stop();
@@ -542,6 +626,7 @@ export class Game {
         this.#gameOver(from);
         break;
       case 'result':
+        this.#endGhost();
         this.#music('result');
         break;
       case 'ranking':
@@ -765,29 +850,62 @@ export class Game {
     this.#send({ type: 'FINISH' });
   }
 
-  async submitName(raw: string): Promise<void> {
+  /**
+   * E: the session total goes to the ranking with a name (skip = not submitted). N: every cleared stage also goes
+   * to its own board, with the replay recorded from the sim when it is exact (contracts §9 VersionedReplay).
+   */
+  async submitName(raw: string): Promise<SubmitResult> {
     const name = sanitizeName(raw);
     const r = this.#view.ranking;
-    if (!name || !r || r.submitted) return;
+    if (!name || !r || r.submitted || !r.source)
+      return { ok: false, error: 'name', message: 'nothing to submit' };
     this.audio.play('click');
-    const res = await this.#lb.submitRun({
-      kind: 'run',
-      runId: this.#run?.kind === 'api' ? this.#run.id : undefined,
-      name,
-      totalScore: r.total,
-      stages: this.#results.map((s) => ({ stageId: s.stageId, score: s.stageScore, timeMs: s.timeMs })),
-    });
-    for (const s of this.#results.filter((x) => x.cleared)) {
-      void this.#lb.submitStage({
-        kind: 'stage',
-        stageId: s.stageId,
+    const stages = this.#results.map((s) => ({ stageId: s.stageId, score: s.stageScore, timeMs: s.timeMs }));
+    const runIds = new Set(this.#results.map((x) => x.runId));
+    const runId = runIds.size === 1 && this.#run?.kind === 'api' ? [...runIds][0] : undefined;
+    const res = await this.#boards.submitRun(
+      {
+        ...(runId ? { runId } : {}),
         name,
-        score: s.stageScore,
-        timeMs: s.timeMs,
-      });
-    }
-    const top = await this.#lb.topRuns(10);
-    this.#set({ ranking: { ...r, rank: res.rank, top, submitted: true } });
+        totalScore: stages.reduce((a, s) => a + s.score, 0),
+        stages,
+      },
+      r.source,
+    );
+    if (!res.ok) return res;
+    const ranked = await Promise.all(
+      r.stages.map(async (st) => {
+        const i = st.resultIndex;
+        const s = this.#results[i];
+        if (!s) return st;
+        const replay = this.#replays.get(i);
+        const sr = await this.#boards.submitStage(
+          { stageId: s.stageId, name, score: s.stageScore, timeMs: s.timeMs, ...(replay ? { replay } : {}) },
+          st.source,
+        );
+        return sr.ok
+          ? { ...st, rank: sr.rank, verified: sr.verified, stored: sr.stored ?? st.source }
+          : { ...st, rank: null, verified: false, stored: null };
+      }),
+    );
+    const cur = this.#view.ranking ?? r;
+    this.#set({
+      ranking: {
+        ...cur,
+        rank: res.rank,
+        submitted: true,
+        name,
+        stored: res.stored ?? r.source,
+        stages: ranked,
+      },
+    });
+    return res;
+  }
+
+  /** E: "skip" leaves the ranking without submitting. */
+  skipRanking(): void {
+    const r = this.#view.ranking;
+    if (r && !r.submitted) this.#set({ ranking: { ...r, skipped: true } });
   }
 
   newGame(): void {
@@ -846,6 +964,55 @@ export class Game {
   shareUrl(): string {
     const ref = this.#loaded?.ref ?? this.#run?.id ?? '';
     return `${location.origin}/play/${ref}`;
+  }
+
+  // ── ghost race (08b) ──────────────────────────────────────────────────────────────────────────────────
+
+  /** "Race the #1 run": the player's choice, persisted. Takes effect when play starts. */
+  setGhost(on: boolean): void {
+    this.audio.play('click');
+    this.#put(GHOST_KEY, on ? '1' : '0');
+    this.#set({ ghost: { ...this.#view.ghost, on } });
+    if (!on) this.#endGhost();
+    else if (this.#view.phase === 'play') this.#startGhost();
+  }
+
+  async #fetchGhost(stage: StageData): Promise<void> {
+    const id = stage.stageId;
+    this.#ghostFor = id;
+    this.#ghostTrack = null;
+    this.#set({ ghost: { ...this.#view.ghost, run: null } });
+    const run = await this.#boards.ghost(id);
+    // A replay only reproduces on the physics build it was recorded with.
+    if (!run || run.physicsVersion !== PHYSICS_VERSION || this.#ghostFor !== id || !run.inputs.length) return;
+    try {
+      const track = await recordGhostTrack(stage, run.inputs);
+      if (this.#ghostFor !== id || this.#disposed) return;
+      this.#ghostTrack = track;
+      this.#set({
+        ghost: { ...this.#view.ghost, run: { name: run.name, score: run.score, timeMs: run.timeMs } },
+      });
+      if (this.#view.phase === 'play') this.#startGhost();
+    } catch (err) {
+      console.info('[wwm] ghost unavailable', err);
+    }
+  }
+
+  #startGhost(): void {
+    const e = this.#engine;
+    const track = this.#ghostTrack;
+    if (!e || !track || !this.#view.ghost.on || this.#ghostBall || this.#ghostFor !== this.#stage()?.stageId)
+      return;
+    this.#ghostBall = createGhostBall(e, track, { color: 0x4f9fd6, opacity: 0.3, look: 'holo' });
+    this.#ghostBall.update((this.#driver?.tick ?? 0) / SIM_HZ);
+    this.#set({ ghost: { ...this.#view.ghost, racing: true } });
+  }
+
+  #endGhost(): void {
+    if (!this.#ghostBall) return;
+    this.#ghostBall.dispose();
+    this.#ghostBall = null;
+    this.#set({ ghost: { ...this.#view.ghost, racing: false } });
   }
 
   // ── building ──────────────────────────────────────────────────────────────────────────────────────────
@@ -911,6 +1078,7 @@ export class Game {
     const run = this.#run;
     if (!e || !d || !run) return;
     this.#progress('world', 94);
+    this.#endGhost();
     try {
       this.#attract = false;
       await Promise.all([e.loadStage(got.stage, got.image), d.load(got.stage)]);
@@ -920,6 +1088,21 @@ export class Game {
       return;
     }
     if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'building') return;
+    // A fresh recording per attempt: tick 0 is the first step after load (08b).
+    this.#rec = [];
+    this.#recExact = d.kind === 'lockstep';
+    const stageId = got.stage.stageId;
+    const ch = this.#view.challenge;
+    if (ch && ch.stageId === null) this.#set({ challenge: { ...ch, stageId } });
+    const source = this.#boards.whereStage(stageId, run.kind === 'api');
+    this.#set({ stageSource: source });
+    if (source === 'server' && (this.#ghostFor !== stageId || !this.#ghostTrack))
+      void this.#fetchGhost(got.stage);
+    else if (source !== 'server') {
+      this.#ghostFor = null;
+      this.#ghostTrack = null;
+      this.#set({ ghost: { ...this.#view.ghost, run: null } });
+    }
     this.#set({
       run: {
         id: run.id,
@@ -928,6 +1111,7 @@ export class Game {
         url: got.stage.source.url || run.url,
         index: this.#slice,
         count: run.sliceCount(),
+        stageId,
       },
     });
     this.#progress('world', 100);
@@ -980,7 +1164,6 @@ export class Game {
     if (this.#opts.test?.skipIntro) this.#after(0.05, () => e.skipIntro());
     void done.then(() => {
       if (this.#view.phase !== 'intro') return;
-      this.#stageStartClock = this.#clock;
       const tutorial = firstGame && !this.#replay;
       if (tutorial) this.#set({ tutorial: 2 });
       this.#send({ type: 'INTRO_DONE', countdown: !tutorial });
@@ -1056,6 +1239,9 @@ export class Game {
         return true;
       case 'lost':
         e?.handleEvent(ev);
+        // 08b: stop stepping until the respawn, so the recorded ticks match @wwm/physics replay(), which
+        // resets to the restart point on the tick after 'lost' (elevators would drift otherwise).
+        this.#driver?.setPaused(true);
         this.audio.play('splash');
         if (this.#view.phase === 'falling') {
           const spares = this.#view.spares - 1;
@@ -1166,9 +1352,15 @@ export class Game {
       totalBefore,
       total: f.score.total,
       oneUps: f.score.oneUps,
-      timeMs: Math.round((this.#clock - this.#stageStartClock) * 1000),
+      timeMs: Math.round(((this.#driver?.tick ?? 0) * 1000) / SIM_HZ),
+      ref: this.#loaded?.ref ?? run.id,
+      runId: run.id,
+      fromServer: run.kind === 'api',
     };
     this.#results.push(result);
+    if (cleared && this.#recExact && this.#rec.length > 0)
+      this.#replays.set(this.#results.length - 1, { physicsVersion: PHYSICS_VERSION, inputs: this.#rec });
+    this.#rec = [];
     this.#set({ result, total: f.score.total, spares: f.score.spares, sign: null });
   }
 
@@ -1189,17 +1381,48 @@ export class Game {
 
   async #openRanking(): Promise<void> {
     const total = this.#view.total;
+    const cleared = this.#results.flatMap((x, i) => (x.cleared ? [{ x, i }] : []));
     this.#set({
-      ranking: { rank: null, total, top: [], submitted: false, local: this.#lb.kind === 'local' },
+      ranking: {
+        rank: null,
+        total,
+        source: null,
+        submitted: false,
+        skipped: false,
+        name: null,
+        stored: null,
+        stages: [],
+      },
     });
     this.#music('result');
-    const [rank, top] = await Promise.all([this.#lb.rankFor(total), this.#lb.topRuns(10)]);
-    const r = this.#view.ranking;
-    if (r && !r.submitted) this.#set({ ranking: { ...r, rank, top } });
+    const source = this.#boards.whereRun(this.#results);
+    const stageSources = cleared.map(({ x }) => this.#boards.whereStage(x.stageId, x.fromServer));
+    // The server takes each stage once per run (the same site played twice in one session stays on this device).
+    const unique = new Set(this.#results.map((x) => x.stageId)).size === this.#results.length;
+    const runSource: BoardSource = unique ? source : 'device';
+    const stages: RankedStage[] = cleared.map(({ x, i: resultIndex }, i) => ({
+      resultIndex,
+      stageId: x.stageId,
+      title: x.title,
+      sliceIndex: x.sliceIndex,
+      sliceCount: x.sliceCount,
+      score: x.stageScore,
+      source: stageSources[i] ?? 'device',
+      rank: null,
+      verified: false,
+      stored: null,
+    }));
+    let r = this.#view.ranking;
+    if (!r || r.submitted || this.#view.phase !== 'ranking') return;
+    this.#set({ ranking: { ...r, source: runSource, stages } });
+    const rank = await this.#boards.rankFor(total, runSource);
+    r = this.#view.ranking;
+    if (r && !r.submitted) this.#set({ ranking: { ...r, rank } });
   }
 
   #resetSession(): void {
     this.#results = [];
+    this.#replays.clear();
     this.#set({ total: 0, spares: NUM_BALLS, result: null, ranking: null });
   }
 
@@ -1207,6 +1430,11 @@ export class Game {
 
   #onKeyDown(ev: KeyboardEvent): void {
     const p = this.#view.phase;
+    if ((p === 'intro' || p === 'countdown') && ev.code === 'KeyG' && this.#view.ghost.run) {
+      ev.preventDefault();
+      this.setGhost(!this.#view.ghost.on);
+      return;
+    }
     if (p === 'intro' && (ev.code === 'Space' || ev.code === 'Enter' || ev.code === 'Escape')) {
       ev.preventDefault();
       this.skipIntro();
@@ -1256,6 +1484,15 @@ export class Game {
 
   /** Input for one sim step; also advances the game timer and delayed small-item credits in step time. */
   #inputForStep = (tick: number, dt: number): InputSample => {
+    const s = this.#stepInput(tick, dt);
+    // 08b: the stream the sim consumes is the replay. Lockstep: exactly one sample per tick. Worker: the latest
+    // input is latched for however many ticks the worker runs, so this is only an approximation.
+    if (this.#driver?.kind === 'lockstep') this.#rec.push(s);
+    else for (let n = Math.max(1, Math.round(dt * SIM_HZ)); n > 0; n--) this.#rec.push(s);
+    return s;
+  };
+
+  #stepInput(tick: number, dt: number): InputSample {
     const v = this.#view;
     if (v.phase !== 'play') return neutralSample(this.#yaw());
     let s = this.#lastSample;
@@ -1279,9 +1516,11 @@ export class Game {
     }
     if (this.#timer.remainsInt !== v.timeInt) this.#set({ timeInt: this.#timer.remainsInt });
     return s;
-  };
+  }
 
   #timesUp(): void {
+    // The respawn after a time-up has no sim event, so replay() can't reproduce it: no replay for this attempt.
+    this.#recExact = false;
     const spares = this.#view.spares - 1;
     this.#set({ spares, sign: spares < 0 ? 'gameover' : 'timeup' });
     this.#send({ type: 'TIMESUP' });
@@ -1350,6 +1589,7 @@ export class Game {
         this.audio.setRoll(Math.hypot(vx, vy, vz), r.ball.grounded && this.#view.phase === 'play');
       }
     }
+    if (this.#ghostBall) this.#ghostBall.update(d.tick / SIM_HZ);
     const control = this.#view.phase === 'play' ? sample : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
     e.frame(gdt);
@@ -1397,8 +1637,24 @@ export class Game {
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,
       hold: this.#view.hold,
+      recording: { ticks: this.#rec.length, exact: this.#recExact, replays: this.#replays.size },
+      ghost: { ...this.#view.ghost, loaded: !!this.#ghostTrack, ticks: this.#ghostTrack?.ticks ?? 0 },
       engine: this.#engine?.stats() ?? null,
     };
+  }
+
+  /** e2e / measurement: the replays recorded for this session's results (index = result order). */
+  debugReplays(): { stageId: string; stageScore: number; replay: VersionedReplay | null }[] {
+    return this.#results.map((r, i) => ({
+      stageId: r.stageId,
+      stageScore: r.stageScore,
+      replay: this.#replays.get(i) ?? null,
+    }));
+  }
+
+  /** Measurement: the recording of the current attempt so far (also for the worker driver). */
+  debugRecording(): InputSample[] {
+    return this.#rec.slice();
   }
 
   /** Playtest / e2e: set the remaining time (seconds) of the running stage. */

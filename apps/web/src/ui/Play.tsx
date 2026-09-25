@@ -12,6 +12,7 @@ import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
 import { useGame, useView } from './GameApp.tsx';
 import { BallIcon, GemIcon, Glyphs, Icon, TiltRing, useSiteTitle } from './parts.tsx';
+import { ChallengeCard } from './Result.tsx';
 
 const IN_STAGE = new Set([
   'intro',
@@ -27,17 +28,65 @@ const IN_STAGE = new Set([
 
 export function PlayLayer() {
   const v = useView();
+  const { t } = useTranslation();
   if (!IN_STAGE.has(v.phase)) return null;
   const hudVisible = ['countdown', 'play', 'falling', 'restarting', 'timeup'].includes(v.phase);
   return (
     <div className="wwm-playlayer" data-phase={v.phase}>
       {v.phase === 'intro' && <IntroCaption />}
+      {(v.phase === 'intro' || v.phase === 'countdown') && <ChallengeCard />}
+      {(v.phase === 'intro' || v.phase === 'countdown' || v.phase === 'paused') && v.ghost.run && (
+        <GhostToggle />
+      )}
+      {v.phase === 'play' && v.ghost.racing && v.ghost.run && (
+        <p className="wwm-ghosttag" data-testid="ghost-racing">
+          <Icon name="ghost" size={16} /> {t('ghost.racing', { name: v.ghost.run.name })}
+        </p>
+      )}
       {hudVisible && <Hud />}
       {v.countdown !== null && v.countdown >= 0 && <Countdown n={v.countdown} />}
       {v.phase === 'paused' && <MapMenu />}
       {v.sign && <Sign kind={v.sign} />}
       {v.hold && <DisconnectHold />}
     </div>
+  );
+}
+
+/** "Race the #1 run" (N): the stage's best verified replay as a translucent ball. G toggles it too. */
+function GhostToggle() {
+  const g = useGame();
+  const v = useView();
+  const { t } = useTranslation();
+  const run = v.ghost.run;
+  if (!run) return null;
+  return (
+    <button
+      type="button"
+      className="wwm-ghost"
+      aria-pressed={v.ghost.on}
+      onClick={(e) => {
+        e.stopPropagation();
+        g.setGhost(!v.ghost.on);
+      }}
+      onKeyDown={(e) => {
+        // Space / Enter toggle here instead of skipping the intro.
+        if (e.key === ' ' || e.key === 'Enter') e.stopPropagation();
+      }}
+      data-testid="ghost-toggle"
+    >
+      <span className="wwm-ghost__box" aria-hidden="true">
+        <Icon name="ghost" size={22} />
+      </span>
+      <span className="wwm-ghost__text">
+        <span className="wwm-ghost__title">{t('ghost.toggle')}</span>
+        <span className="wwm-ghost__by">
+          {t('ghost.by', { name: run.name, score: run.score.toLocaleString('en-US') })}
+        </span>
+      </span>
+      <span className="wwm-ghost__key" aria-hidden="true">
+        {t('ghost.key')}
+      </span>
+    </button>
   );
 }
 

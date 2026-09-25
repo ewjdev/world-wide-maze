@@ -323,3 +323,253 @@
   color: var(--rk-muted);
   font-size: 0.8125rem;
 }
+
+/*
+ * ── Game tone (Phase 08b) ──
+ * The same components inside the game shell (apps/web/src/ui/game.css): fog-white plates, chamfered corners,
+ * Unbounded for figures and headings, Figtree for names and text, the 2013 colour roles. No rounded cards and
+ * no monospace. Literal fallbacks apply outside `.wwm-root`.
+ */
+.rk[data-tone="game"] {
+  --rk-ink: var(--ink, #20262d);
+  --rk-muted: var(--ink-2, #4b555f);
+  --rk-paper: var(--sky, #f8f8f8);
+  --rk-panel: var(--sky, #f8f8f8);
+  --rk-rule: var(--line, rgba(32, 38, 45, 0.14));
+  --rk-accent: var(--blue-deep, #2d6fa3);
+  --rk-accent-soft: rgba(79, 159, 214, 0.16);
+  --rk-danger: var(--red-deep, #c23b38);
+  --rk-focus: var(--blue, #4f9fd6);
+  --rk-sans: var(--ui, "Figtree Variable", system-ui, sans-serif);
+  --rk-mono: var(--ui, "Figtree Variable", system-ui, sans-serif);
+  --rk-display: var(--display, "Unbounded Variable", sans-serif);
+  --rk-cut: 8px;
+  --rk-chamfer: polygon(
+    var(--rk-cut) 0,
+    100% 0,
+    100% calc(100% - var(--rk-cut)),
+    calc(100% - var(--rk-cut)) 100%,
+    0 100%,
+    0 var(--rk-cut)
+  );
+}
+.rk[data-tone="game"].rk-board {
+  border: 0;
+  border-radius: 0;
+  padding: 20px 22px 12px;
+  min-width: 0;
+  clip-path: var(--rk-chamfer);
+}
+.rk[data-tone="game"] .rk-board__head {
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
+.rk[data-tone="game"] .rk-board__title {
+  font: 700 15px / 1.25 var(--rk-display);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.rk[data-tone="game"] .rk-board__sub {
+  font-weight: 600;
+  font-size: 12.5px;
+}
+.rk[data-tone="game"] .rk-table th {
+  font: 700 11px / 1 var(--rk-display);
+  letter-spacing: 0.12em;
+  color: var(--rk-muted);
+  padding: 0 0 10px;
+  border-bottom: 0;
+}
+.rk[data-tone="game"] .rk-table td {
+  padding: 9px 0;
+  border-bottom: 0;
+  border-top: 1px solid var(--rk-rule);
+  font-weight: 600;
+}
+.rk[data-tone="game"] .rk-table .rk-rank {
+  font: 700 14px / 1 var(--rk-display);
+  width: 4.6em;
+  white-space: nowrap;
+}
+.rk[data-tone="game"] .rk-table tr[data-top="true"] .rk-rank {
+  font-weight: 800;
+}
+.rk[data-tone="game"] .rk-table tr:first-child .rk-rank {
+  color: var(--rk-accent);
+}
+.rk[data-tone="game"] .rk-name {
+  font-family: var(--rk-sans);
+  font-weight: 600;
+}
+.rk[data-tone="game"] .rk-score {
+  font: 700 15px / 1 var(--rk-display);
+  font-variant-numeric: tabular-nums;
+}
+.rk[data-tone="game"] .rk-table td.rk-time {
+  font-family: var(--rk-sans);
+  font-weight: 600;
+  font-size: 14px;
+  width: 4.8em;
+}
+.rk[data-tone="game"] .rk-table tr[data-you="true"] td {
+  background: var(--rk-accent-soft);
+}
+.rk[data-tone="game"] .rk-table tr[data-you="true"] td:first-child {
+  box-shadow: none;
+  padding-left: 8px;
+}
+.rk[data-tone="game"] .rk-table tr[data-you="true"] td:last-child {
+  padding-right: 8px;
+}
+.rk[data-tone="game"] .rk-you {
+  display: inline-block;
+  vertical-align: 1px;
+  font: 700 10px / 1 var(--rk-display);
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: var(--rk-accent);
+  padding: 3px 6px 3px 7px;
+  clip-path: polygon(4px 0, 100% 0, 100% 100%, 0 100%, 0 4px);
+}
+.rk[data-tone="game"] .rk-state {
+  padding: 14px 0 18px;
+  font-weight: 500;
+  line-height: 1.5;
+}
+.rk[data-tone="game"] .rk-skel {
+  border-radius: 0;
+}
+
+.rk[data-tone="game"].rk-entry {
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  max-width: none;
+  width: 100%;
+  margin: 18px 0 4px;
+}
+.rk[data-tone="game"] .rk-entry__lede {
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+.rk[data-tone="game"] .rk-label {
+  font: 700 12px / 1 var(--rk-display);
+  letter-spacing: 0.12em;
+  color: var(--rk-muted);
+  margin-bottom: 8px;
+}
+.rk[data-tone="game"] .rk-field {
+  border: 0;
+  border-radius: 0;
+  background: var(--rk-paper);
+  box-shadow: inset 0 0 0 1.5px var(--rk-rule);
+  clip-path: var(--rk-chamfer);
+}
+.rk[data-tone="game"] .rk-field:focus-within {
+  box-shadow: inset 0 0 0 3px var(--rk-focus);
+}
+.rk[data-tone="game"] .rk-field[data-invalid="true"] {
+  box-shadow: inset 0 0 0 2px var(--rk-danger);
+}
+.rk[data-tone="game"] .rk-input {
+  font: 600 18px / 1 var(--rk-sans);
+  min-height: 50px;
+  padding: 0 14px;
+}
+.rk[data-tone="game"] .rk-count,
+.rk[data-tone="game"] .rk-hint {
+  font-weight: 600;
+}
+.rk[data-tone="game"] .rk-actions {
+  margin-top: 14px;
+}
+.rk[data-tone="game"] .rk-btn {
+  font: 600 16px / 1 var(--rk-sans);
+  min-height: 46px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 0;
+  background: var(--go, #2e7a3a);
+  color: #fff;
+  clip-path: var(--rk-chamfer);
+  transition:
+    transform 160ms var(--ease, ease-out),
+    background-color 160ms;
+}
+.rk[data-tone="game"] .rk-btn:hover {
+  background: #276b32;
+  transform: translateY(-1px);
+}
+.rk[data-tone="game"] .rk-btn:disabled {
+  background: var(--rk-muted);
+  transform: none;
+}
+.rk[data-tone="game"] .rk-btn:focus-visible {
+  outline: none;
+  clip-path: none;
+  box-shadow:
+    0 0 0 3px var(--paper, #fff),
+    0 0 0 6px var(--rk-focus);
+}
+.rk[data-tone="game"] .rk-btn--quiet {
+  background: rgba(255, 255, 255, 0.7);
+  color: var(--rk-ink);
+  box-shadow: inset 0 0 0 1.5px var(--rk-rule);
+}
+.rk[data-tone="game"] .rk-link {
+  font: 600 16px / 1 var(--rk-sans);
+  color: var(--rk-muted);
+  padding: 14px 8px;
+}
+.rk[data-tone="game"] .rk-link:hover {
+  color: var(--rk-ink);
+}
+.rk[data-tone="game"] .rk-link:focus-visible {
+  outline: 3px solid var(--rk-focus);
+}
+.rk[data-tone="game"] .rk-status {
+  font-weight: 600;
+}
+
+.rk[data-tone="game"].rk-challenge {
+  gap: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: var(--paper, #fff);
+  align-items: stretch;
+  clip-path: var(--rk-chamfer);
+}
+.rk[data-tone="game"] .rk-challenge__score {
+  display: grid;
+  place-items: center;
+  padding: 14px 18px;
+  font: 800 26px / 1 var(--rk-display);
+  letter-spacing: -0.02em;
+  color: #fff;
+  background: var(--red-deep, #c23b38);
+}
+.rk[data-tone="game"] .rk-challenge__text {
+  padding: 12px 20px 12px 16px;
+  font-weight: 600;
+  font-size: 15px;
+  align-self: center;
+}
+.rk[data-tone="game"] .rk-challenge__text .rk-name {
+  font-weight: 800;
+}
+.rk[data-tone="game"] .rk-challenge__text span {
+  font-weight: 500;
+  font-size: 13px;
+  margin-top: 2px;
+}
+.rk[data-tone="game"] .rk-input:focus-visible {
+  outline: none;
+}
+.rk[data-tone="game"] .wwm-btn svg {
+  width: 20px;
+  height: 20px;
+  flex: none;
+}
