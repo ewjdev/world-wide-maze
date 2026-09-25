@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.2`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.3`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -335,3 +335,12 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
   - The reference implementation is `elevatorFootprint` in `@wwm/physics/src/geometry.ts`. The renderer must match it.
 - **New constants `SLAB_THICKNESS_M`, `RAIL_HEIGHT_M`, `ELEVATOR_MIN_PLATFORM_PX`.** Rails sit just outside the island edge line, and outside a bridge deck's width.
 - **Replays** carry `physicsVersion`, and score submissions include `replay?: {physicsVersion, inputs}`. The server only verifies replays whose version matches its `PHYSICS_VERSION`.
+
+**v0.2.3, from the Phase 06 CCRs (orchestrator, 2026-09-25). Documentation only:**
+- **WebSocket close codes:**
+  - `4404`: room not found or expired.
+  - `4409`: replaced by a newer socket of the same role.
+  - `4400`: bad role.
+- **Relay keepalive:** the relay sends pings with **negative** ids and consumes their pongs itself.
+- **Controller keepalive:** outside play, the controller sends neutral INPUT frames at 4 Hz. The host treats 1.5 s of silence as disconnected, which catches suspended iOS pages whose sockets stay open.
+- **`GET /api/rooms/:code/stats`:** relay diagnostics for dev only. Phase 12 must gate it or remove it in production.

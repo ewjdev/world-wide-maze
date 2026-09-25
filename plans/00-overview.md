@@ -157,10 +157,10 @@ Notes for dependent phases:
 |---|---|---|---|---|
 | 01 | merged | main | G0 | fidelity spec + contract deltas; contracts → v0.2 |
 | 02 | merged (+02b v0.2.1) | main | G0 ✅ | 106 tests green; CRs logged in contracts §9 |
-| 03 | in progress | worktree | — | Wave 1 started 2026-09-25 |
+| 03 | merged | main | G1 ✅ (own criteria) | 315/315 stages valid; recognizable islands; builder 0.3.0 |
 | 04 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 05 | merged | main | G1 ✅ (own criteria) | deterministic Rapier; 1000/1000 tunneling; aid-dcc traversable |
-| 06 | in progress | worktree | — | Wave 1 started 2026-09-25 |
+| 06 | merged | main | G1 partial | e2e 10/10 emulated + tunnel; physical iPhone test pending, Android pending |
 | 07 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 08 | not started | | | |
 | 09 | not started | | | |
