@@ -63,7 +63,7 @@ describe('playability validation in workerd', () => {
     timeout: 300_000,
   }, async () => {
     const rows: string[] = [];
-    for (const slug of ['wikipedia-article', 'hn-front', 'bbc-news-grid']) {
+    for (const slug of ['wikipedia-article', 'hn-front', 'govuk-card-grid']) {
       const dir = resolve(root, 'fixtures/captures', slug);
       const capture = parseCapture(JSON.parse(readFileSync(resolve(dir, 'capture.json'), 'utf8')));
       const png = readFileSync(resolve(dir, 'screenshot.png')).toString('base64');

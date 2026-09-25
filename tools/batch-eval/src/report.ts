@@ -100,7 +100,7 @@ export interface EvalReport {
   wallMs: number;
   overall: GroupStats;
   byDifficulty: Record<string, GroupStats>;
-  /** Legacy 7 fixtures vs the eval-* set. */
+  /** Legacy Phase 02 fixtures vs the eval-* set. */
   bySet: Record<string, GroupStats>;
   runs: { overall: { runs: number; playable: number; rate: number; meanPrefix: number }; list: RunStats[] };
   records: EvalRecord[];

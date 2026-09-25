@@ -48,8 +48,8 @@ by a person before release. This is not legal advice.
 | 16 | The project owner's own site | (owner to supply) | A personal page is what made 2013's game personal ("choose your own site") | Owner's own content | L |
 
 Not proposed, and why:
-- **BBC News** (`bbc-news-grid` fixture): news photos and text are © BBC and agencies. **Internal test fixture
-  only**, never curated or shown publicly; it is already excluded from production builds of `/making`.
+- **Commercial news sites:** news photos and text belong to the publisher and its agencies. The one internal
+  news-site test fixture was never curated or shown publicly, and was removed before publication.
 - **Hacker News** (`hn-front` fixture): user-submitted titles under Y Combinator's terms; keep it as a test fixture.
 - **google.com** (2013's practice site): Google branding and terms; we are not affiliated with Google.
 - Any page with personal data, logins, or photos of people we can't clear.

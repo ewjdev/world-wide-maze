@@ -39,7 +39,6 @@ describe('portals and the solver', () => {
   test.each([
     'hn-front',
     'wikipedia-article',
-    'bbc-news-grid',
     'govuk-card-grid',
     'mdn-dark-docs',
     'example-sparse',

@@ -1,6 +1,6 @@
 /**
- * Evidence screenshots, except the internal-only BBC fixture's (licensing, see fixtures/captures/README.md): the
- * `[!b]` pattern keeps `bbc-*` files out of the build entirely. Name evidence files so they don't start with `b`.
+ * Evidence screenshots. The `[!b]` pattern dates from an internal news-site fixture (`bbc-*`, removed before
+ * publication, see NOTICE.md) and still skips files starting with `b` (e.g. Phase 08's `b-*` extra shots).
  */
 export const ASSETS = import.meta.glob<string>(
   '../../../../../docs/build-log/assets/**/[!b]*.{png,jpg,webp}',

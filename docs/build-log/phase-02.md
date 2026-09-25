@@ -43,14 +43,14 @@ None.
   The typecheck ran first and passed in all 13 packages.
 - `pnpm --filter worker dev`: `Ready on http://localhost:8787`. It listed the bindings KV/D1/R2/Browser as local, and `GET /api/health` returned `{"ok":true,"contract":"0.1.0"}`.
 - `pnpm --filter web dev`: I opened `/`, `/play/abc`, `/c/123456` and `/about` in Chromium. Each rendered its heading and there were 0 console errors. The `/api` proxy reaches the worker. `vite build` also succeeds.
-- Capture runs (elements / time): wikipedia-article 399 / 2.4 s, hn-front 354 / 1.0 s, bbc-news-grid 327 / 3.1 s, govuk-card-grid 243 / 1.8 s, mdn-dark-docs 312 / 1.8 s, example-sparse 4 / 0.9 s, image-gallery 400 / 2.6 s.
+- Capture runs (elements / time): wikipedia-article 399 / 2.4 s, hn-front 354 / 1.0 s, an internal news-site fixture (removed before publication) 327 / 3.1 s, govuk-card-grid 243 / 1.8 s, mdn-dark-docs 312 / 1.8 s, example-sparse 4 / 0.9 s, image-gallery 400 / 2.6 s.
 
 ## Remaining defects and limitations
 - The `adlike` heuristic misses ads without class or id hints, e.g. the MDN top and footer ad bands.
 - `z` is only a hint: the nearest positioned numeric z-index, with no full stacking-context resolution.
 - Fixed and sticky elements are hidden in the screenshot, which leaves blank space where sticky elements were in flow.
-- The `bbc-news-grid` fixture contains copyrighted news photos. It is for internal testing only (see `fixtures/captures/README.md`).
-- Fixture PNGs total about 9.8 MB, with BBC alone at 3.7 MB. WebP or quantization could shrink them if repo size matters.
+- An internal news-site fixture contained copyrighted news photos. It was for internal testing only and was removed before publication (see `NOTICE.md`).
+- Fixture PNGs total about 9.8 MB, with the news-site fixture (since removed) alone at 3.7 MB. WebP or quantization could shrink them if repo size matters.
 - Worker tests run in plain Node. Binding-level tests (`@cloudflare/vitest-pool-workers`) are left to Phase 07.
 
 ## Contract Change Requests (interpretations implemented; the orchestrator should confirm or amend contracts.md)

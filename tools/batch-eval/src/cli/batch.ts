@@ -124,7 +124,7 @@ const report: EvalReport = {
   overall: group(records),
   byDifficulty,
   bySet: {
-    'fixtures (7)': group(records.filter((r) => !r.slug.startsWith('eval-'))),
+    'fixtures (Phase 02)': group(records.filter((r) => !r.slug.startsWith('eval-'))),
     'eval-*': group(records.filter((r) => r.slug.startsWith('eval-'))),
   },
   runs: runStats(records),

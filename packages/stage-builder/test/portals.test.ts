@@ -1,6 +1,6 @@
 /**
  * Phase 13: link portals (contracts §10.1). Choice and placement on synthetic captures, the helpers, and the
- * acceptance checks on the 7 capture fixtures (portals on real link islands: Hacker News stories, Wikipedia links).
+ * acceptance checks on the 6 capture fixtures (portals on real link islands: Hacker News stories, Wikipedia links).
  */
 import {
   BALL_RADIUS_PX,
@@ -191,11 +191,10 @@ describe('helpers', () => {
   });
 });
 
-describe('the 7 capture fixtures (acceptance)', () => {
+describe('the 6 capture fixtures (acceptance)', () => {
   const FIXTURES = [
     'hn-front',
     'wikipedia-article',
-    'bbc-news-grid',
     'govuk-card-grid',
     'mdn-dark-docs',
     'example-sparse',

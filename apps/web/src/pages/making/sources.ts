@@ -7,20 +7,11 @@
  */
 import { type CaptureBundle, parseCapture, parseStage, type StageData } from '@wwm/schema';
 
-// `[!b]*` keeps the internal-only BBC fixture out of the globs, so no build ever emits its files.
-const CAPTURES = import.meta.glob<{ default: unknown }>(
-  '../../../../../fixtures/captures/[!b]*/capture.json',
-);
-const SHOTS = import.meta.glob<string>('../../../../../fixtures/captures/[!b]*/screenshot.png', {
+const CAPTURES = import.meta.glob<{ default: unknown }>('../../../../../fixtures/captures/*/capture.json');
+const SHOTS = import.meta.glob<string>('../../../../../fixtures/captures/*/screenshot.png', {
   query: '?url',
   import: 'default',
 });
-
-/**
- * Fixtures that may appear on the public site. `bbc-news-grid` is an internal test fixture only (© BBC and
- * agencies; fixtures/captures/README.md), so it is listed only in dev builds.
- */
-const INTERNAL_ONLY = new Set(['bbc-news-grid']);
 
 export interface FixtureInfo {
   slug: string;
@@ -34,12 +25,11 @@ const LABELS: Record<string, string> = {
   'mdn-dark-docs': 'MDN docs, dark theme',
   'image-gallery': 'Wikimedia Commons: Picture of the day',
   'example-sparse': 'example.com',
-  'bbc-news-grid': 'BBC News (internal fixture)',
 };
 
 export const FIXTURES: FixtureInfo[] = Object.keys(CAPTURES)
   .map((p) => p.split('/').at(-2) ?? '')
-  .filter((slug) => slug && (import.meta.env.DEV || !INTERNAL_ONLY.has(slug)))
+  .filter((slug) => slug)
   .sort((a, b) => Object.keys(LABELS).indexOf(a) - Object.keys(LABELS).indexOf(b))
   .map((slug) => ({ slug, label: LABELS[slug] ?? slug }));
 
@@ -53,7 +43,7 @@ const HEX64 = /^[0-9a-f]{64}$/;
 
 export async function loadSource(id: string, fetchImpl: typeof fetch = fetch): Promise<Source> {
   const cap = Object.entries(CAPTURES).find(([p]) => p.endsWith(`/${id}/capture.json`));
-  if (cap && (import.meta.env.DEV || !INTERNAL_ONLY.has(id))) {
+  if (cap) {
     const [path, load] = cap;
     const shot = SHOTS[path.replace('capture.json', 'screenshot.png')];
     if (!shot) throw new Error(`no screenshot for ${id}`);

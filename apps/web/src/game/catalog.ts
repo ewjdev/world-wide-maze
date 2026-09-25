@@ -43,7 +43,6 @@ export const FIXTURES: CatalogEntry[] = [
   fx('hn-front', 'Hacker News', 'https://news.ycombinator.com/', 3, 1214),
   fx('wikipedia-article', 'Labyrinth – Wikipedia', 'https://en.wikipedia.org/wiki/Labyrinth', 3, 6000),
   fx('govuk-card-grid', 'Welcome to GOV.UK', 'https://www.gov.uk/', 2, 4550),
-  // bbc-news-grid is an internal builder fixture only (© BBC photos) and is never offered in the game.
   fx(
     'mdn-dark-docs',
     'Range: getClientRects() – MDN',

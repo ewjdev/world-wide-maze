@@ -87,18 +87,13 @@ export class PracticeRun implements RunSource {
 
 // ── fixtures (offline) ──────────────────────────────────────────────────────────────────────────────────
 
-// Internal-only fixtures (bbc-news-grid: © BBC photos) are excluded from the bundle.
-const captureJson = import.meta.glob<{ default: CaptureBundle }>([
+const captureJson = import.meta.glob<{ default: CaptureBundle }>(
   '../../../../fixtures/captures/*/capture.json',
-  '!../../../../fixtures/captures/bbc-news-grid/**',
-]);
-const screenshotUrl = import.meta.glob<string>(
-  ['../../../../fixtures/captures/*/screenshot.png', '!../../../../fixtures/captures/bbc-news-grid/**'],
-  {
-    query: '?url',
-    import: 'default',
-  },
 );
+const screenshotUrl = import.meta.glob<string>('../../../../fixtures/captures/*/screenshot.png', {
+  query: '?url',
+  import: 'default',
+});
 
 // Phase 13: link targets recovered for the legacy fixtures (captured before `DomElement.href`), so their links
 // become portals too (fixtures/builder/links/<slug>.json, see @wwm/stage-builder `applyLinkTargets`).

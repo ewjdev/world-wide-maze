@@ -56,11 +56,14 @@ planner and the physics agreeing on the 13/14 px boundary (ball diameter 13.5 px
 ball diameter + slab (1.463 D) pins the ball between its two platforms, so it's never used.
 
 ## Numbers
-From the batch eval, on 35 captures × all slices × easy/normal/hard × seeds 1–3 (819 stages). See
-`fixtures/eval/report.json` and `docs/build-log/phase-09.md`:
-- solved 93.9 % overall, 94.1 % at normal;
-- par p50 49.8 s / p90 78.1 s / max 133.4 s at normal (0 stages over 150 s);
-- solve CPU p50 119 ms / p90 245 ms / max 548 ms per stage (Node 26, Apple M5 Max), about 400× real time.
+From the batch eval, on 28 captures × all slices × easy/normal/hard × seeds 1–3 (666 stages, builder 0.5.0,
+physics 0.2.0). See `fixtures/eval/report.json`:
+- solved 100 % (666/666), and all 252 runs fully playable;
+- par p50 47.9 s / p90 72.2 s / max 97.6 s at normal (0 stages over 150 s);
+- solve CPU p50 104 ms / p90 150 ms / max 315 ms per stage at normal (Node 26, Apple M5 Max), about 490× real time.
+
+The first run (Phase 09, builder 0.3.0, 35 captures, 819 stages, some since removed before publication) solved
+93.9 % overall and 94.1 % at normal; `docs/build-log/phase-09.md` has the details.
 
 ## Known limits
 - The planner is 2D. Decks crossing over other decks at different heights aren't supported. Only the converted 2013

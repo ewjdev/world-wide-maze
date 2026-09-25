@@ -18,7 +18,7 @@ The **Human** columns are all the user needs to see. About 25 minutes.
    - The phone's relay stats: `curl -s T/api/rooms/<code>/stats | jq`.
 
 The 5 fixture sites (built in the browser, no capture service needed): **Hacker News** (1 stage),
-**Labyrinth – Wikipedia** (4), **GOV.UK** (3), **BBC News** (4), **MDN** (3). Play at least slice 1 of each.
+**Labyrinth – Wikipedia** (4), **GOV.UK** (3), a news site (4; an internal fixture, removed before publication), **MDN** (3). Play at least slice 1 of each.
 
 ## B. Keyboard (about 10 minutes)
 | # | Human: do this | You should see / hear |
@@ -34,7 +34,7 @@ The 5 fixture sites (built in the browser, no capture service needed): **Hacker 
 | 9 | Jump over a rail and fall off | The ball drops, splashes into the pastel sea, a LIFE icon empties, 3 s later it's dropped back in a cage at the island you last touched. TIME resets to 300 (faithful, 2013) |
 | 10 | Reach the goal (the tall wire vase with the site title) | The ball is sucked in and rockets up, fireworks, a tile curtain and **GOAL**, then the result: time left × 5, big × 100, small × 1, a count-up with ticks |
 | 11 | Click **Finish**, type a name, **Submit** | The ranking with your rank and the top-10 table |
-| 12 | Repeat 3–10 on **Wikipedia**, **GOV.UK**, **BBC News** and **MDN** (Start → site). Use **Next stage** on one of them | "Stage 2 of 4": the next slice of the same page, score and lives carried over |
+| 12 | Repeat 3–10 on **Wikipedia**, **GOV.UK**, the news site and **MDN** (Start → site). Use **Next stage** on one of them | "Stage 2 of 4": the next slice of the same page, score and lives carried over |
 | 13 | On any stage: M → **Quit to title** → **Yes** | Back to the title. Also try **Retry this stage** once |
 | 14 | Switch to **日本語** (top right) on the title, then back | Every menu string is Japanese; switch back to English |
 

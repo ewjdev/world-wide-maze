@@ -64,7 +64,7 @@
 - Design: an exhibition-catalogue voice. Paper and ink, Newsreader (reading serif), Instrument Sans (UI), IBM Plex Mono (dates and data only), all self-hosted via `@fontsource`. Accents are the 2013 colour roles (item teal, bridge green, elevator red, rail yellow). E/R/N marks differ by **shape + letter**, not colour alone. Motion is limited to one staggered plan reveal and a step crossfade, both off under `prefers-reduced-motion`.
 
 **Content (`content/`)**
-- `curated-proposal.md`: **16 candidates** with URL, why it's a good maze, licence/permission notes and L/M/H risk flags, a suggested first 12, and a pre-release checklist. BBC is flagged internal-only, and HN and google.com are listed as not proposed.
+- `curated-proposal.md`: **16 candidates** with URL, why it's a good maze, licence/permission notes and L/M/H risk flags, a suggested first 12, and a pre-release checklist. The news-site fixture is flagged internal-only, and HN and google.com are listed as not proposed.
 - `curated.json`: `approved: []`.
 - Scripts that print commands instead of touching remote resources:
   - `scripts/curate.mjs`: builds the approved runs via the Worker and writes an upsert SQL.
@@ -83,10 +83,10 @@
    - The table now has exactly the six assumed columns. Licence notes live in `content/curated.json`.
    - Phase 07's test got a one-word change (`CREATE TABLE IF NOT EXISTS`), because the migration now creates the table.
 4. **`/log` summary said "0 models, date not stated":** the bold-field regex captured the colon inside `**Agent:**`. Fixed and covered by a test.
-5. **BBC fixture leaking into production builds:** a render-time filter doesn't stop Vite from emitting globbed files, and negative glob patterns didn't exclude them.
+5. **Internal news-site fixture (removed before publication) leaking into production builds:** a render-time filter doesn't stop Vite from emitting globbed files, and negative glob patterns didn't exclude them.
    - Fix: character-class globs (`[!b]*`) for captures and log assets.
-   - Checked with a clean `vite build`: no BBC screenshot or evidence image is emitted.
-   - One BBC file remains, `bbc-news-grid.normal.seed1.json`, emitted by Phase 04's `/dev/engine` sandbox glob (follow-up).
+   - Checked with a clean `vite build`: no news-site screenshot or evidence image is emitted.
+   - One news-site file remained, its builder golden, emitted by Phase 04's `/dev/engine` sandbox glob (follow-up).
 6. The full-page `/log` screenshot exceeded Chromium's capture limit, so it was replaced by viewport shots. The page also needed a small effect so `#phase-XX` links scroll after client render.
 7. Biome: `then` as an object key (renamed `was`), `!important` (replaced with more specific selectors), descending-specificity CSS (reordered, and the anchors got classes), and ARIA-on-plain-element warnings.
 
@@ -121,7 +121,7 @@ None.
 - **Ghost race on a curated stage (G3):** the API, the ghost track/ball and a demo (`/making/handmade-simple`, step 7) are done. It still needs Phase 08 to mount `createGhostBall` in `/play`, and a curated stage with a verified #1 replay or a Phase 09 solver replay ("Race the bot").
 - **Engine follow-up (Phase 04):** `engine.addGhost({color, opacity})` with the engine's own glow material, instead of an overlay through `debug()`.
 - **Physics follow-up (Phase 05):** let `loadRapier()` accept a precompiled `WebAssembly.Module`, so the workerd shim can go.
-- **Phase 04's `/dev/engine` sandbox** bundles `fixtures/builder/bbc-news-grid…json` into production builds. Exclude it, or gate the dev routes out of production.
+- **Phase 04's `/dev/engine` sandbox** bundles the news-site fixture's builder golden into production builds (moot since the fixture was removed before publication). Exclude it, or gate the dev routes out of production.
 - **Share-card validators** (X/Facebook/LinkedIn) need a public URL, so they weren't run. The evidence is the rendered cards plus the HTML tags asserted in tests. Also:
   - The Worker must serve `/s/*` in production (Phase 12 routing). In Vite dev, `/s/*` isn't proxied.
   - The card is a map-view hero shot. Phase 12 may want a closer, more flattering camera.
