@@ -253,3 +253,22 @@ fixtures/
 ```
 
 The WWMMM reference stage (no license) is **downloaded on demand** to `reference/` (gitignored) by `pnpm ref:fetch`. It is never committed.
+
+---
+
+## 9. Resolutions log (orchestrator)
+
+**2026-09-25, from the Phase 02 hand-off.** All accepted as implemented in `@wwm/schema` 0.1.0:
+- **Ring orientation:** "CCW" means a positive shoelace area on raw page (x, y) coordinates. Because y points down, that ring looks clockwise on screen. Holes are the opposite. Always use `isCCW` from `@wwm/schema/geometry`.
+- **ID hashing:** `captureId` and `stageId` hash their fields joined with `|` (`computeCaptureId` / `computeStageId`).
+- **SSE job events:** `{type:'progress'|'done'|'error', ...}`. `type` is the SSE event name, and `pct` runs from 0 to 100.
+- **Extra `validateStage` invariants** (see `packages/schema` tests):
+  - Bridge endpoint levels must equal their islands' levels. `flat` means the levels are equal.
+  - Bridge endpoints must be on or within 20 px of their island.
+  - Guardrails must leave gaps at bridge mouths.
+  - Elevator levels must match their islands.
+  - The start must be inside its island with clearance, and the goal must be inside its island.
+  - IDs must be unique, contours must be simple, and holes must lie inside their contour.
+- **Added constants and types:** `MAX_PAGE_HEIGHT_PX`, `MAX_TILT`, `DEFAULT_VIEWPORT`, `ControllerInputFrame`, and the HTTP body types. Score names are 1–32 characters.
+- **Paths and width:** screenshot and texture paths are relative to their JSON file. The captured `page.width` is capped to the viewport width (1280).
+- **Pending (G0):** elevator geometry semantics. The provisional rule is a `size`×`size` platform centered at `pos` that spans the gap between its two islands. This will be finalized with Phase 01's evidence.

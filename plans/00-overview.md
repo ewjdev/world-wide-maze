@@ -156,7 +156,7 @@ Notes for dependent phases:
 | Phase | Status | Branch | Last gate | Notes |
 |---|---|---|---|---|
 | 01 | in progress | worktree | — | Wave 0 started 2026-09-25 |
-| 02 | in progress | worktree | — | Wave 0 started 2026-09-25 |
+| 02 | merged | main | G0 pending | 106 tests green; CRs logged in contracts §9 |
 | 03 | not started | | | |
 | 04 | not started | | | |
 | 05 | not started | | | |
