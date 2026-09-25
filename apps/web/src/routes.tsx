@@ -7,6 +7,7 @@
  * no longer downloads three.js, the engine, the builder and Rapier; the showcase pages don't either.
  */
 import { Link, Outlet, type RouteObject, useParams } from 'react-router';
+import { localCaptureRoutes } from './local-capture/routes.tsx';
 
 function DevLayout() {
   return (
@@ -104,6 +105,7 @@ const pageRoutes: RouteObject[] = [
     lazy: async () => ({ Component: (await import('./pages/making/MakingPage.tsx')).default }),
   },
   { path: '/log', lazy: async () => ({ Component: (await import('./pages/log/LogPage.tsx')).default }) },
+  ...localCaptureRoutes, // Phase 14: /play/local (receiver), /mazify (extension + bookmarklet)
   ...devRoutes,
   { path: '*', element: <NotFound /> },
 ];

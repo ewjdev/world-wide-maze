@@ -215,6 +215,8 @@ export interface GameOptions {
   roomCode?: string;
   /** `/play/:stageId`: start this stage right away. */
   deepLink?: string;
+  /** Phase 14 `/play/local`: start this run (a capture built in the player's browser) right away. */
+  localRun?: RunSource;
   forceWebGL?: boolean;
   test?: GameTestHooks;
   storage?: Pick<Storage, 'getItem' | 'setItem'>;
@@ -477,7 +479,10 @@ export class Game {
     this.#raf = requestAnimationFrame(this.#frame);
 
     if (this.#opts.roomCode) void this.#ensureRoom();
-    if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
+    if (this.#opts.localRun) {
+      this.#set({ inputMode: this.#view.inputMode ?? 'keyboard' });
+      this.#beginRun(this.#opts.localRun, 0);
+    } else if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
     else void this.#loadAttract();
   }
 

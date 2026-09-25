@@ -11,6 +11,7 @@ import { I18nextProvider } from 'react-i18next';
 import { AudioManager } from '../audio/audio.ts';
 import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
 import { GameBoards } from '../game/leaderboard.ts';
+import type { RunSource } from '../game/stages.ts';
 import { createI18n } from '../i18n/index.ts';
 import { readChallenge } from '../ranking/share.ts';
 import { observeGame } from '../telemetry/index.ts';
@@ -40,9 +41,11 @@ declare global {
 export interface GameAppProps {
   deepLink?: string;
   roomCode?: string;
+  /** Phase 14 `/play/local`: a run built from a capture made in this browser. */
+  localRun?: RunSource;
 }
 
-export function GameApp({ deepLink, roomCode }: GameAppProps) {
+export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
   const host = useRef<HTMLDivElement>(null);
   const [game, setGame] = useState<Game | null>(null);
   const [i18n] = useState<i18n>(() => createI18n());
@@ -67,6 +70,7 @@ export function GameApp({ deepLink, roomCode }: GameAppProps) {
       forceWebGL: params.get('backend') === 'webgl',
       deepLink,
       roomCode,
+      localRun,
       test,
       onPhase: (phase) => {
         document.body.dataset.phase = phase;
@@ -83,7 +87,7 @@ export function GameApp({ deepLink, roomCode }: GameAppProps) {
       document.body.classList.remove('wwm-body');
       setGame(null);
     };
-  }, [deepLink, roomCode, i18n]);
+  }, [deepLink, roomCode, localRun, i18n]);
 
   return (
     <I18nextProvider i18n={i18n}>

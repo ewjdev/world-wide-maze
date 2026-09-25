@@ -1,0 +1,24 @@
+{
+  "name": "@wwm/extension",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "\"Maze this page\": a Chrome MV3 extension that captures the page you're on and hands it to /play/local.",
+  "scripts": {
+    "build": "tsx scripts/build.ts",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@wwm/capture-script": "workspace:*",
+    "@wwm/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource-variable/unbounded": "^5.3.0",
+    "esbuild": "0.28.2",
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.15",
+    "vite": "^8.3.1",
+    "wrangler": "4.140.0"
+  }
+}

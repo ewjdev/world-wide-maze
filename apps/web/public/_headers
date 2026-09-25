@@ -15,5 +15,10 @@
   Permissions-Policy: accelerometer=(self), gyroscope=(self), magnetometer=(), camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self), screen-wake-lock=(self)
   Strict-Transport-Security: max-age=31536000
 
+# Phase 14: the bookmarklet hands its capture to /play/local through `window.opener` (contracts §10.2).
+# COOP same-origin would sever that link, so this one route drops COOP (the default, unsafe-none, applies).
+/play/local
+  ! Cross-Origin-Opener-Policy
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
