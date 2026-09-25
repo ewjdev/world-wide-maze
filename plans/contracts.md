@@ -376,3 +376,7 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
   - After a controller authenticates with the pairTok, the relay rotates nothing. The phone remembers the token in `sessionStorage` for reconnects.
 - **CCR-12-3:** `CaptureBundleSchema` size limits: `elements` ≤ 20,000, `title` ≤ 512, `url` ≤ 2,048, `text` ≤ 120 (already), `lines` ≤ 200 per element.
 - **CCR-12-1:** `@wwm/schema` calls `z.config({ jitless: true })`, so the CSP never sees an `eval` probe.
+- **CCR-12b-1, accepted:** "no controller connected" means no controller heard from in the last `CONTROLLER_LIVE_MS` (3 s). A locked phone that joined by typed code can therefore rejoin. The QR phone reclaims control when it reconnects.
+- **CCR-12b-2, accepted:** the host keeps its tokens in `sessionStorage`. A `#h=<hostToken>&p=<pairToken>` link lets another tab rejoin as host. `/p/<code>` without the host token gets 4401.
+- **CCR-12b-3, accepted:** a malformed token gets HTTP 400 before the WebSocket upgrade.
+- **Open:** the WS token travels in the query string and can appear in Cloudflare request logs. Options are log redaction or moving it to `Sec-WebSocket-Protocol` (a contract change). Decide before production.

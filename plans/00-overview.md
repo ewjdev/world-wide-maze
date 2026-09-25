@@ -166,7 +166,7 @@ Notes for dependent phases:
 | 09 | merged (+03b/05b fixes) | main | G2 ✅ (solver) | 819/819 stages solved at all difficulties; 315/315 runs; solver runs in workerd with seed reroll; builder 0.4.0, physics 0.2.0 |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
-| 12 | merged (local portion) | main | G4 blocked on user | perf 60 fps; entry bundle 1.46 MB→5.6 KiB; CSP+limits; load tests local; legal drafts + infra ready, not run |
+| 12 | merged (local + 12b) | main | G4 blocked on user | perf 60 fps; entry bundle 1.46 MB→5.6 KiB; CSP+limits; load tests local; legal drafts + infra ready, not run |
 
 ### Gate log
 - **G0 ✅ (2026-09-25):** contracts v0.2.x reconciled with the 2013 evidence. The converted 2013 stage validates, apart from the intentional width minimums.
@@ -191,3 +191,10 @@ Notes for dependent phases:
   - Store par times so the scores API can use `par × 0.5`.
   - The worker bundle is 3.7 MB gzipped with Rapier, so the Workers Paid plan is required.
 - **G2 status (2026-09-25 overnight):** all automated criteria pass (E2E 8/8, solver 100%, replays verified). **Remaining: the human playtest** (`docs/build-log/phase-08-playtest.md`, with keyboard and iPhone, including lock/reconnect).
+- **12b (2026-09-25):**
+  - Pairing secret: a guessing attack can no longer take over a room.
+  - Queued builds wait or return RATE_LIMITED instead of timing out.
+  - Iframe `WebSocketStream` bypass closed.
+  - Rapier deferred: `/` is now 612 KiB gzipped, down from 1,681.
+  - `/log` CLS 0.20 → 0.003.
+  - Tests: 723 passed.
