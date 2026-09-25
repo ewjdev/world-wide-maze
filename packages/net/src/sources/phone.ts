@@ -17,10 +17,18 @@ import { neutralSample } from '../input-source.ts';
 import { OneEuroFilter, type OneEuroParams } from '../one-euro.ts';
 
 export const STALE_INPUT_MS = 250;
+/**
+ * N: the phone streams frames continuously while its page is visible (4 Hz keepalive frames outside
+ * play). A locked phone often keeps its TCP socket, so the relay never reports a disconnect; silence this
+ * long is treated as `disconnected` (so Phase 08 auto-pauses), and the next frame brings `connected` back.
+ */
+export const SILENCE_DISCONNECT_MS = 1500;
 
 export interface PhoneInputSourceOptions extends InputSourceOptions {
   filter?: Partial<OneEuroParams>;
   staleMs?: number;
+  /** Frame silence that counts as a disconnect (default SILENCE_DISCONNECT_MS; 0 disables). */
+  silenceDisconnectMs?: number;
 }
 
 export interface PhoneDebug {
@@ -38,6 +46,7 @@ export class PhoneInputSource implements InputSource {
   readonly #fx: OneEuroFilter;
   readonly #fz: OneEuroFilter;
   readonly #staleMs: number;
+  readonly #silenceMs: number;
   readonly #frameYaw: () => number;
   readonly #unsubs: Unsubscribe[] = [];
   #last: ControllerInputFrame | null = null;
@@ -53,6 +62,7 @@ export class PhoneInputSource implements InputSource {
     this.#fx = new OneEuroFilter(opts.filter);
     this.#fz = new OneEuroFilter(opts.filter);
     this.#staleMs = opts.staleMs ?? STALE_INPUT_MS;
+    this.#silenceMs = opts.silenceDisconnectMs ?? SILENCE_DISCONNECT_MS;
     this.#frameYaw = opts.frameYaw ?? (() => 0);
     this.#connected = conn.peerConnected;
     this.#unsubs.push(
@@ -99,6 +109,9 @@ export class PhoneInputSource implements InputSource {
   sample(nowMs: number): InputSample {
     const f = this.#last;
     const yaw = this.#frameYaw();
+    if (f && this.#connected && this.#silenceMs > 0 && nowMs - this.#lastAt > this.#silenceMs) {
+      this.#setConnected(false); // phone locked or backgrounded: no frames even though the socket may linger
+    }
     if (!f || nowMs - this.#lastAt > this.#staleMs) {
       if (!this.#wasStale) {
         this.#fx.reset();

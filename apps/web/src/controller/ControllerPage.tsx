@@ -240,8 +240,12 @@ function HoldButton({
   const set = (pressed: boolean) => session?.setButton(name, pressed);
   const down = (e: ReactPointerEvent<HTMLButtonElement>) => {
     e.preventDefault();
-    e.currentTarget.setPointerCapture?.(e.pointerId);
     set(true);
+    try {
+      e.currentTarget.setPointerCapture?.(e.pointerId); // keep the press if the thumb slides off
+    } catch {
+      // synthetic or already-released pointer
+    }
   };
   const up = () => set(false);
   return (

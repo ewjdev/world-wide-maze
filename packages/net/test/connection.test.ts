@@ -151,6 +151,25 @@ describe('RoomConnection', () => {
     expect(f.sockets).toHaveLength(2);
   });
 
+  test('reconnectIfSilent: a socket that looks open but went quiet (phone locked) is replaced at once', () => {
+    const f = socketFactory();
+    const c = new ControllerConnection({ url: 'ws://x', createSocket: f.create, now, pingIntervalMs: 0 });
+    c.connect();
+    f.last().open();
+    clock = 1000;
+    f.last().receive({ t: 'ping', id: -1, ts: 1 });
+    clock = 2500;
+    expect(c.reconnectIfSilent(3000)).toBe(false);
+    clock = 9000;
+    expect(c.reconnectIfSilent(3000)).toBe(true);
+    expect(f.sockets).toHaveLength(2);
+    expect(f.sockets[0]?.readyState).toBe(3);
+    // Still connecting: no duplicate.
+    expect(c.reconnectIfSilent(3000)).toBe(false);
+    f.last().open();
+    expect(c.state).toBe('open');
+  });
+
   test('4404 room-not-found and 4409 replaced are fatal (no reconnect)', () => {
     for (const [code, err] of [
       [CLOSE_ROOM_NOT_FOUND, 'room-not-found'],

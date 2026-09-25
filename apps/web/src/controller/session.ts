@@ -3,7 +3,8 @@
  *
  * Flow: connect → "Enable tilt" tap (iOS motion permission) → calibrate (first game only, 15 s timeout) →
  * play. Streams 12-byte INPUT frames at ≤ 60 Hz with requestAnimationFrame while visible, plus an
- * immediate frame on every button change. Answers host `state`/`haptic`, keeps the screen awake, and
+ * immediate frame on every button change (and neutral 4 Hz keepalive frames before play, so the host can
+ * detect a locked phone by silence). Answers host `state`/`haptic`, keeps the screen awake, and
  * reconnects right away when the page becomes visible again (phone unlocked).
  *
  * Diagnostics: every notable event is logged with the `[wwm-controller]` prefix, and `diag()` returns a
@@ -91,6 +92,7 @@ export interface ControllerEnv {
 }
 
 const SEND_INTERVAL_MS = 1000 / 60 - 1;
+const IDLE_SEND_INTERVAL_MS = 250;
 const SENSOR_TIMEOUT_MS = 2500;
 const SILENCE_RECONNECT_MS = 3000;
 const ZERO_KEY = 'wwm.controller.zero';
@@ -488,8 +490,16 @@ export class ControllerSession {
 
   #send(force: boolean): void {
     const screen = this.#view.screen;
-    if (screen !== 'play' && screen !== 'calibrate') return;
     const now = this.#env.now();
+    if (screen !== 'play' && screen !== 'calibrate') {
+      // Keepalive frames (neutral, 4 Hz) so the host can tell "page visible" from "phone locked".
+      if (this.conn.isOpen && now - this.#lastSendAt >= IDLE_SEND_INTERVAL_MS) {
+        if (this.conn.sendInput({ tiltX: 0, tiltZ: 0, power: false, jump: false, menu: false })) {
+          this.#lastSendAt = now;
+        }
+      }
+      return;
+    }
     if (!force && now - this.#lastSendAt < SEND_INTERVAL_MS) return;
     const t = this.#orientation ? this.#view.tilt : { tiltX: 0, tiltZ: 0 };
     const c = clampTilt(t);

@@ -105,6 +105,18 @@ describe('PhoneInputSource', () => {
     expect(events.filter((e) => e === 'menu')).toHaveLength(1);
   });
 
+  test('frame silence (phone locked, socket lingering) → disconnected; frames resume → connected', () => {
+    const { src, send, events, sock } = phoneRig();
+    sock.receive({ t: 'peer', role: 'controller', connected: true });
+    send(0, { power: true });
+    src.sample(1000);
+    expect(events).toEqual(['connected']);
+    expect(src.sample(1501)).toMatchObject({ power: false });
+    expect(events).toEqual(['connected', 'disconnected']);
+    send(5000);
+    expect(events).toEqual(['connected', 'disconnected', 'connected']);
+  });
+
   test('connected / disconnected follow the controller peer and the host socket', () => {
     const { sock, events, src, send } = phoneRig();
     sock.receive({ t: 'peer', role: 'controller', connected: true });
