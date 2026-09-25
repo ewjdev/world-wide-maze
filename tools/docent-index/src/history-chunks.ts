@@ -28,6 +28,7 @@ function sectionChunks(anchor: string, heading: string, text: string): CorpusChu
     path: HISTORY_PATH,
     anchor,
     url: `/about#${anchor}`,
+    kind: 'history' as const,
     text: t,
   }));
 }

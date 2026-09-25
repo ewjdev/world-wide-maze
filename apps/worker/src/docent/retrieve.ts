@@ -7,8 +7,10 @@ import {
   type CorpusChunk,
   type CorpusIndex,
   createSearcher,
+  intentWeights,
   type Searcher,
   type SearchHit,
+  weightHits,
 } from '@wwm/docent-index';
 import corpus from './corpus.json' with { type: 'json' };
 
@@ -76,10 +78,23 @@ export function searchText(question: string): string {
  */
 export function retrieve(s: Searcher, rawQuestion: string, previousQuestion?: string): SearchHit[] {
   const question = searchText(rawQuestion);
-  const hits = s.search(expandQuery(question), TOP_K * 2);
+  const hits = weightedSearch(s, question);
   if (previousQuestion && (hits[0]?.score ?? 0) < 6) {
-    const more = s.search(expandQuery(`${question} ${previousQuestion}`), TOP_K * 2);
+    const more = weightedSearch(s, `${question} ${previousQuestion}`);
     if ((more[0]?.score ?? 0) > (hits[0]?.score ?? 0)) return more;
   }
   return hits;
+}
+
+/** BM25 candidates considered before the provenance weighting picks the top `TOP_K * 2`. */
+const CANDIDATES = 60;
+
+/**
+ * BM25, then re-weighted by provenance for what the question is about (`intentWeights`): a question about the
+ * 2013 original favours history over the rebuild's build logs, a question about this rebuild favours the status
+ * summary and build logs over plans that may never have been built.
+ */
+export function weightedSearch(s: Searcher, question: string): SearchHit[] {
+  const hits = s.search(expandQuery(question), CANDIDATES);
+  return weightHits(hits, intentWeights(question)).slice(0, TOP_K * 2);
 }

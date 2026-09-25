@@ -361,6 +361,7 @@ describe('judge', () => {
     title: id,
     path,
     ...(anchor ? { anchor } : {}),
+    kind: 'history' as const,
     text: `text of ${id}`,
   });
   const excerpts = [

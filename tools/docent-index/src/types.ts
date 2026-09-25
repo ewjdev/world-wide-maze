@@ -1,3 +1,16 @@
+/**
+ * What a chunk's source is, so the docent can tell evidence and results from intentions (Phase 15c):
+ * - `history`: evidence about the 2013 original (research notes, the recovered bundle and localization notes, the
+ *   `/about` history data);
+ * - `plan`: a plan or proposal written before or during the build; it may never have been built;
+ * - `build-log`: what an agent actually did in a phase of this rebuild;
+ * - `status`: the maintained summary of what exists today (`docs/facts/`);
+ * - `reference`: a current reference document for the rebuild (the fidelity spec).
+ */
+export type SourceKind = 'history' | 'plan' | 'build-log' | 'status' | 'reference';
+
+export const SOURCE_KINDS: readonly SourceKind[] = ['history', 'plan', 'build-log', 'status', 'reference'];
+
 /** One retrievable section of the corpus (about 300–600 tokens). */
 export interface CorpusChunk {
   /** Stable id: `<path>#<anchor>` plus `~n` when a long section is split. */
@@ -10,6 +23,8 @@ export interface CorpusChunk {
   anchor?: string;
   /** Site link, when the source is rendered on the site (e.g. `/log#phase-10`, `/about#credits`). */
   url?: string;
+  /** Provenance: history, plan, build-log, status or reference (see `SourceKind`). */
+  kind: SourceKind;
   /** Plain text (markdown kept as written; the model reads it). */
   text: string;
 }

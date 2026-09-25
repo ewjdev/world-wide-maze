@@ -1,6 +1,7 @@
 /**
  * Builds the docent corpus index (contracts §10.3): `research/**`, `RESEARCH.md`, `docs/reference/**`,
- * `docs/build-log/**` and the `/about` history data. Nothing under `reference/` (third-party 2013 material,
+ * `docs/build-log/**`, `docs/facts/**` and the `/about` history data. Every chunk is labelled with its
+ * provenance (`kind`: history, plan, build-log, status, reference; see `kinds.ts`). Nothing under `reference/` (third-party 2013 material,
  * gitignored) is ever read.
  */
 import { createHash } from 'node:crypto';
@@ -11,12 +12,13 @@ import { historyChunks } from './history-chunks.ts';
 import type { CorpusChunk, CorpusIndex } from './types.ts';
 
 /** Bump when chunking or tokenizing changes in a way that should invalidate cached answers. */
-export const INDEX_FORMAT = 1;
+export const INDEX_FORMAT = 2;
 
 /** Where the Worker imports the index from (committed; regenerate with `pnpm docent:index`). */
 export const INDEX_OUT = 'apps/worker/src/docent/corpus.json';
 
-const ROOTS = ['research', 'RESEARCH.md', 'docs/reference', 'docs/build-log'];
+/** `docs/facts` is the maintained "what exists today" summary (Phase 15c). */
+const ROOTS = ['research', 'RESEARCH.md', 'docs/reference', 'docs/build-log', 'docs/facts'];
 
 function walk(root: string, rel: string): string[] {
   const abs = join(root, rel);
@@ -58,7 +60,7 @@ export function buildIndex(root: string): CorpusIndex {
   }
   chunks.push(...historyChunks());
   const hash = createHash('sha256')
-    .update(JSON.stringify([INDEX_FORMAT, chunks.map((c) => [c.id, c.title, c.url, c.text])]))
+    .update(JSON.stringify([INDEX_FORMAT, chunks.map((c) => [c.id, c.title, c.url, c.kind, c.text])]))
     .digest('hex')
     .slice(0, 16);
   return { format: INDEX_FORMAT, hash, files: [...files, 'apps/web/src/pages/about/history.ts'], chunks };

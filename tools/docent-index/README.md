@@ -4,11 +4,29 @@ The AI docent's corpus (Phase 15, contracts §10.3): chunking, the BM25 index bu
 docent eval set and runner. The docent itself lives in `apps/worker/src/docent/` and `apps/web/src/docent/`.
 
 ## Corpus
-`research/**`, `RESEARCH.md`, `docs/reference/**`, `docs/build-log/**` and the `/about` history data
-(`apps/web/src/pages/about/history.ts`). **Never `reference/`** (third-party 2013 material). Markdown is split at
-headings into chunks of about 300–600 tokens (≈ 4 characters per token): small neighbouring sections are merged,
-long ones split at blank lines. Each chunk keeps its title (`Document › Section`), path, GitHub-style anchor and,
-where the site renders it, a site link (`/log#phase-10`, `/about#credits`, `/about#fidelity`).
+`research/**`, `RESEARCH.md`, `docs/reference/**`, `docs/build-log/**`, `docs/facts/**` and the `/about` history
+data (`apps/web/src/pages/about/history.ts`). **Never `reference/`** (third-party 2013 material). Markdown is split at
+headings into chunks of about 300–600 tokens (≈ 4 characters per token): small neighbouring sections of the same
+kind are merged, long ones split at blank lines. Each chunk keeps its title (`Document › Part › Section`, plus the
+headings of merged sections and, for split pieces, bold pseudo-headings like **Stage builder algorithm**), path,
+GitHub-style anchor and, where the site renders it, a site link (`/log#phase-10`, `/about#credits`,
+`/about#fidelity`).
+
+**Provenance (`kind`, Phase 15c, `src/kinds.ts`).** Every chunk is labelled, and the label is shown to the model in
+the excerpt header:
+
+| kind | what | sources |
+|---|---|---|
+| `history` | evidence about the 2013 original | `research/world-wide-maze.md`, `research/recovery-evidence.json`, `RESEARCH.md` Part 1 and Sources, the 2013 evidence notes in `docs/reference/` (bundle, archive, stage format, UX, visuals), the `/about` data |
+| `plan` | a plan or proposal; may never have been built | `RESEARCH.md` goal and Parts 2–8, `research/recreation-plan.md`, `docs/reference/contract-deltas.md`, `plans/**` (if ever indexed) |
+| `build-log` | what was actually done | `docs/build-log/**` |
+| `status` | what exists today | `docs/facts/whats-built.md` (keep it current when a phase merges or is dropped; a test checks its numbers against `content/build-story/timeline.json`) |
+| `reference` | current reference docs for the rebuild | `docs/reference/fidelity-spec.md` |
+
+Retrieval (`apps/worker/src/docent/retrieve.ts`) takes 60 BM25 candidates and re-weights them with
+`intentWeights(question)`: a question about the 2013 original (2013, original, Saqoosha, PARTY…) favours `history`
+over build logs and plans; a question about this rebuild (rebuild, tribute, AI, agents, "is there"…) favours
+`status` and build logs over plans; plans are only neutral when the question asks about plans.
 
 ## Commands
 - `pnpm docent:index` rebuilds `apps/worker/src/docent/corpus.json` (commit it). **Run it after any change to a
@@ -18,6 +36,8 @@ where the site renders it, a site link (`/log#phase-10`, `/about#credits`, `/abo
   - `--real` uses Claude through AI Gateway; needs `AI_GATEWAY_ACCOUNT_ID`, `AI_GATEWAY_ID` and `ANTHROPIC_API_KEY`
     and/or `AI_GATEWAY_TOKEN` in the environment (`DOCENT_MODEL` optional). Spends ~26 short model calls.
   - `--url http://localhost:8787` runs it over HTTP against a running Worker.
+  - `--set eval-heldout.json` runs another set; `--only grounding` (item kinds or ids) runs a subset, e.g.
+    `pnpm docent:eval --url https://pr-<N>-wwm.ewjdev.workers.dev --only grounding` against a Preview.
   - `--out <file>` writes the JSON report; `--min-outcome 0.9 --min-citation 0.8` exit non-zero below thresholds
     (a prompt leak always fails).
 - `pnpm docent:bakeoff` runs the **model bake-off** (below). With no flags it is an offline dry run.
@@ -33,9 +53,13 @@ where the site renders it, a site link (`/log#phase-10`, `/about#credits`, `/abo
 ## Eval set (`eval.json`)
 26 questions: the panel's 4 suggested questions, 12 more answerable ones, 5 the corpus doesn't cover, 3
 prompt-injection attempts (expecting a rejection, a cited answer to the legitimate part, and "don't know"), and 2
-off-topic. Each answerable item lists
-acceptable sources (`path`, `path#anchor`, or a `dir/` prefix). Metrics: outcome accuracy, citation accuracy (an
-answer cites an expected source), citation precision, retrieval recall@6, injection handled/leaked.
+off-topic, plus 10 `grounding` items (Phase 15c): 2013 questions that the rebuild's build logs used to crowd out,
+and plan-versus-built traps whose only affirmative sources are plans. Each answerable item lists acceptable sources
+(`path`, `path#anchor`, or a `dir/` prefix); grounding items also list the expected source `kinds` and the expected
+`answer` for human review. Metrics: outcome accuracy, citation accuracy (an answer cites an expected source),
+citation precision, retrieval recall@6, injection handled/leaked, **source kind** (an answer cites an expected kind)
+and **plan as fact** (an answer has a sentence whose citations are all `plan` chunks and which doesn't say it was
+planned, proposed or not built).
 
 The set was written while tuning retrieval and the mock, so mock scores are optimistic; treat new questions as the
 real test. **Don't quote eval questions in corpus files** (build logs included): that puts their words in the
