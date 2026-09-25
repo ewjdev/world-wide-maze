@@ -13,6 +13,7 @@ import type { AppEnv } from '../app-env.ts';
 import { createProvider, type DocentVars, docentSettings } from '../docent/config.ts';
 import { answerDocent, type DocentRun, prepareDocent } from '../docent/engine.ts';
 import { normalizeQuestion } from '../docent/guard.ts';
+import { PROMPT_VERSION } from '../docent/prompt.ts';
 import { INDEX, searcher } from '../docent/retrieve.ts';
 import { sseLive, sseOnce } from '../docent/sse.ts';
 import { BodyTooLargeError, readJsonCapped, tooLarge } from '../security.ts';
@@ -84,7 +85,7 @@ docentRoutes.post('/docent', async (c) => {
   // Answer cache: only questions without history (a follow-up's answer depends on the conversation).
   const cacheable = p.history.length === 0;
   const key = cacheable
-    ? `docent:v${INDEX.format}:${INDEX.hash}:${provider.model}:${(await sha256(normalizeQuestion(p.question))).slice(0, 32)}`
+    ? `docent:v${INDEX.format}.${PROMPT_VERSION}:${INDEX.hash}:${provider.model}:${(await sha256(normalizeQuestion(p.question))).slice(0, 32)}`
     : null;
   if (key) {
     const hit = await env.CACHE.get<CachedAnswer>(key, 'json');

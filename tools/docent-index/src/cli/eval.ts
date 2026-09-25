@@ -7,7 +7,10 @@
  *                                    AI_GATEWAY_ID and ANTHROPIC_API_KEY and/or AI_GATEWAY_TOKEN in the
  *                                    environment (DOCENT_MODEL optional). Spends real tokens (~26 calls).
  *   pnpm docent:eval --url http://localhost:8797   over HTTP against a running Worker (POST /api/docent)
+ *   --set eval-heldout.json          another set in tools/docent-index (default eval.json)
+ *   --only grounding,s3-ai-role      only these item ids or item kinds
  *   --out <file>                     also write the JSON report
+ * Citations are labelled with their source kind; answers that present a plan as fact are flagged (Phase 15c).
  *   --min-outcome 0.8 --min-citation 0.8           exit 1 below these thresholds
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
@@ -21,8 +24,15 @@ import {
   gatewayProvider,
   mockProvider,
 } from '../../../../apps/worker/src/docent/providers.ts';
-import { searcher } from '../../../../apps/worker/src/docent/retrieve.ts';
-import { type EvalSet, formatReport, type Observed, scoreItem, summarize } from '../eval-core.ts';
+import { INDEX, searcher } from '../../../../apps/worker/src/docent/retrieve.ts';
+import {
+  type EvalSet,
+  formatReport,
+  kindResolver,
+  type Observed,
+  scoreItem,
+  summarize,
+} from '../eval-core.ts';
 
 const args = process.argv.slice(2);
 const flag = (name: string) => {
@@ -30,7 +40,11 @@ const flag = (name: string) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const here = dirname(fileURLToPath(import.meta.url));
-const set = JSON.parse(readFileSync(resolve(here, '../../eval.json'), 'utf8')) as EvalSet;
+const setFile = flag('--set') ?? 'eval.json';
+const set = JSON.parse(readFileSync(resolve(here, '../..', setFile), 'utf8')) as EvalSet;
+const only = flag('--only')?.split(',');
+if (only) set.items = set.items.filter((i) => only.includes(i.id) || only.includes(i.kind ?? ''));
+const kindOf = kindResolver(INDEX.chunks);
 const url = flag('--url');
 const real = args.includes('--real');
 
@@ -87,10 +101,20 @@ for (const item of set.items) {
     const res = await fetch(new URL('/api/docent', url), {
       method: 'POST',
       // a distinct client per question, so the per-IP limit doesn't stop the run (only honoured locally)
-      headers: { 'content-type': 'application/json', 'cf-connecting-ip': `198.51.100.${(i++ % 250) + 1}` },
+      // (Cloudflare's edge answers 403 to a request that sets it, so only for a local Worker)
+      headers: {
+        'content-type': 'application/json',
+        ...(/^https?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url)
+          ? { 'cf-connecting-ip': `198.51.100.${(i++ % 250) + 1}` }
+          : {}),
+      },
       body: JSON.stringify(req),
     });
-    o = observe(parseSse(await res.text()), { ms: Date.now() - t0 });
+    const body = await res.text();
+    o = observe(parseSse(body), { ms: Date.now() - t0 });
+    // a non-SSE failure (e.g. a 500 before the docent ran) is an error, not an empty "don't know"
+    if (!res.ok && !body.startsWith('event:'))
+      o = { ...o, outcome: 'error', errorCode: `HTTP ${res.status}`, text: body.slice(0, 200) };
   } else {
     const prepared = prepareDocent(req, searcher());
     const events: DocentEvent[] = [];
@@ -106,7 +130,7 @@ for (const item of set.items) {
     });
   }
   observed[item.id] = o;
-  scores.push(scoreItem(item, o));
+  scores.push(scoreItem(item, o, kindOf));
 }
 
 const label = url

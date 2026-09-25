@@ -151,3 +151,125 @@ None.
 - History sent back by the client is trusted as conversation context (it is capped, user turns are sanitised, and
   every answer must still cite current excerpts); follow-up answers are not cached.
 - `check-deploy-config.mjs` could refuse `DOCENT_PROVIDER=mock` in production (Phase 12 file, not changed).
+
+# Phase 15c (grounding)
+
+- **Agent:** Claude Opus 5.5 (1M context), a Claude Code sub-agent in an isolated git worktree, branch
+  `fix/docent-grounding` (PR against `main`, not merged: merging deploys production, which is the owner's call).
+- **Date:** 2026-09-25, about 21:55Z to 22:40Z.
+
+## Instructions received (summary)
+The live docent (production, `claude-haiku-4-5` through AI Gateway) got two of three spot checks wrong, recorded here
+by eval id. For `g-live-2013-builder` it said the sources don't cover the 2013 stage builder, although `RESEARCH.md`
+Part 1.3 and `research/world-wide-maze.md` do: retrieval ranked the rebuild's Phase 03 build log above them. For
+`g-live-ai-agents` it described never-built items from the `RESEARCH.md` Part 5 plan as things the rebuild does, and
+understated the agents' role. The model repeated what it was given; the corpus mixed plans with records of what was
+built, without labels. `g-live-who-made` was answered well. Fix this at the corpus, retrieval and prompt level
+without special-casing questions: label every chunk's provenance, add a maintained "what exists today" source,
+favour history chunks for 2013 questions, extend the eval with these and similar traps plus a "plan presented as
+fact" check, verify on the PR Preview (at most 15 model calls), and don't merge.
+
+## What was built
+- **Provenance on every chunk** (`tools/docent-index/src/kinds.ts`, `CorpusChunk.kind`; index format 2):
+  - `history`: 2013 evidence (research notes, `RESEARCH.md` Part 1 and Sources, the 2013 evidence notes in
+    `docs/reference/`, the `/about` data).
+  - `plan`: `RESEARCH.md` goal and Parts 2–8, `research/recreation-plan.md`, `contract-deltas.md`, `plans/**`.
+  - `build-log`: `docs/build-log/**`.
+  - `status`: the new `docs/facts/whats-built.md`.
+  - `reference`: the fidelity spec.
+  Small sections of different kinds are never merged into one chunk (before, `RESEARCH.md`'s goal statement and
+  Part 1 shared a chunk). Result: 320 chunks (with this log), of which 53 are history, 31 plan, 221 build-log, 4 status and 11
+  reference.
+- **Headings in chunk titles:** a title is now `Document › Part › Section`, plus the headings of merged sections and,
+  for split pieces, bold pseudo-headings. Before, the 2013 builder steps were titled "1.3 How it was built
+  (continued)", and "The original engineering, condensed" was merged into "What playing involved" without its
+  heading. Title words count three times in BM25.
+- **"What exists today"** (`docs/facts/whats-built.md`, a new corpus root) covers:
+  - the features in the live site, phase by phase;
+  - what is planned but not built: the AI Remix phase, AI theming, naming, music, difficulty and moderation, the
+    vision fallbacks and commentary;
+  - how AI was used: agents wrote the code, tests and logs under an orchestrating session, with the owner directing,
+    approving and doing the physical phone test;
+  - that the docent is the only runtime model call;
+  - the build-story numbers, cited from `content/build-story/timeline.json`. A test checks every number against
+    that file and that the page quotes no eval question.
+- **Retrieval** (`apps/worker/src/docent/retrieve.ts`): 60 BM25 candidates, re-weighted by `intentWeights(question)`,
+  then the top 12. For 2013 intent (2013, original, Saqoosha, PARTY, case study…): history ×1.6, build logs ×0.7,
+  plans ×0.6. For rebuild intent (rebuild, tribute, AI, agents, "is there"…): status ×1.6, build logs ×1.2, plans
+  ×0.6. When both apply, the weights are in between. Plans are neutral only when the question asks about plans.
+- **Prompt** (`prompt.ts`, `PROMPT_VERSION` 2, now part of the answer-cache key): every excerpt header carries
+  `kind` and a one-line `note`, e.g. `kind="plan" note="a plan or proposal; it may never have been built"`. A new
+  rule says:
+  - plans state intentions, never facts, and only build-log, status and reference excerpts establish what exists;
+  - if only plans mention something, say it was planned;
+  - answer 2013 questions from history;
+  - describe the roles of AI and people as the sources state them, without softening or inflating either.
+- **Eval:** 10 `grounding` items in `eval.json`: the three live questions, four plan-versus-built traps, the runtime
+  model, and two 2013 builder specifics. Each has expected source `kinds` and an expected `answer`. `s3-ai-role` now
+  expects the status page or build logs instead of the plans. Scoring changes:
+  - it resolves every citation's kind;
+  - it reports **source kind** accuracy;
+  - it flags **plan as fact**: a sentence whose citations are all `plan` chunks and which doesn't say planned,
+    proposed or not built.
+  `pnpm docent:eval` gained `--set` and `--only`, and the Worker's regression test now also requires kind accuracy
+  ≥ 90% and zero plan-as-fact answers.
+
+## Attempts that failed, and why
+1. The sandbox refused shell heredocs and some one-liners that write files, so edits went through the file tools.
+2. The first retrieval test demanded no plan chunk anywhere in the top 6 for a rebuild question. Without the
+   Worker's query expansion one Part 5 chunk still lands at rank 4–6, which is harmless now that it is labelled.
+   The test now checks that the top 3 contain no plans and that a status chunk ranks first.
+3. The first eval run against the Preview scored every item as an empty "don't know". The runner sets
+   `cf-connecting-ip`, so that each question comes from a distinct client, and Cloudflare's edge answers 403 to a
+   request that sets that header, so no model call was made. The runner now sets the header only for a local Worker,
+   and records a non-SSE HTTP failure as an error instead of an empty answer.
+4. The PR's first Preview smoke test failed on `POST /api/rooms` (500) right after the deploy. The same request
+   succeeded by hand a minute later, so the job was re-run. This PR doesn't touch rooms.
+
+## Manual human interventions
+None.
+
+## Test evidence
+- Mock eval (`pnpm docent:eval`), 36 items: outcome 100% (answer 27/27, don't know 6/6, rejected 3/3), citation
+  accuracy 96%, precision 85%, retrieval recall@6 100%, injection 3/3 with 0 leaked, source kind 100%, plan as fact
+  0. Before (26 items): outcome 100%, citation 88%, precision 79%.
+- Retrieval before and after, for the grounding items (top 6):
+  - `g-live-2013-builder`: before, Phase 03 build logs ranked first and second, with a plan chunk fourth and no
+    Part 1.3 chunk. After, all six are history, including the chunk with the builder steps.
+  - `g-live-ai-agents` / `s3-ai-role`: before, the Part 5 plan was second. After, the two status chunks come first,
+    then build logs, with no plans.
+  - `g-ai-theming`: before, Parts 3 and 5 were in the top 6. After, the status summary is first and there are no
+    plans.
+  - `g-ai-remix`: before, the recreation plan was second. After, the status summary is first.
+- Held-out set with the mock (never tuned against), before → after:
+  - outcomes 16/20 → 15/20; citation accuracy 77% → 69%; recall@6 92% → 92%.
+  - `ho-nagle` loses its answer. Before, the mock answered it from the rebuild's own iPhone test log (a 2026
+    measurement, cited for a 2013 question); now history outranks that log, and the history chunk that covers it
+    uses different words than the question.
+  - `ho-attempts` cites the `RESEARCH.md` Part 1 overview instead of the bundle notes; the bundle notes are still
+    retrieved third.
+  - `ho-time-limit` now cites the right sources.
+  These are the mock's quoting heuristics; the real model reads all six excerpts.
+- **Real model on the PR Preview** (`claude-haiku-4-5`, 10 model calls). On the 10 grounding items: 10/10
+  answered, citation accuracy 100%, source kind 100%, plan as fact 0.
+  - The 2013 builder items cite the "Stage builder algorithm" chunk.
+  - The AI and plan-versus-built items cite the status page and say what was not built.
+  - The credits answer is unchanged in substance.
+  The verbatim answers from before (production) and after (Preview), with review notes, are in
+  `docs/build-log/assets/phase-15c/live-check.md`.
+- Tests: `tools/docent-index/test/provenance.test.ts` (11): kinds by path and part, no merging across kinds,
+  headings and pseudo-headings in titles, intent weights and ranking, the plan-as-fact rule (markers before and
+  after the full stop, hedged and mixed sentences), kind scoring, and the status page's numbers against the
+  timeline. `apps/worker/test/docent.test.ts`: the excerpt header shows the kind, and the prompt has the plan rule.
+  `pnpm check` green.
+
+## Remaining defects and follow-ups
+- `docs/facts/whats-built.md` is hand-maintained. The test pins its numbers to the build story, but its feature
+  list must be updated when a phase merges or is dropped. It could be generated from the status board once the
+  board records merges in a machine-readable form.
+- The plan-as-fact check is lexical: it catches plan-only citations without hedging words, not a plan paraphrased
+  under a build-log citation. The bake-off's LLM judge could add a "cites a plan as fact" verdict.
+- Intent detection is a word list (English, plus a few Japanese words). A free-typed Japanese question falls back to
+  neutral weights, where plans are still down-weighted to 0.8.
+- Build logs' own "follow-ups" sections are proposals too, but they are labelled `build-log`. The prompt's rule
+  covers them only through their wording.

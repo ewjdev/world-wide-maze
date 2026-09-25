@@ -11,10 +11,26 @@ export {
   type Expect,
   formatReport,
   type ItemScore,
+  type KindOf,
+  kindResolver,
   matchesSource,
   type Observed,
+  planAsFact,
   scoreItem,
   summarize,
 } from './eval-core.ts';
+export {
+  intentWeights,
+  KIND_NOTES,
+  type KindWeights,
+  sourceKind,
+  weightHits,
+} from './kinds.ts';
 export { stem, terms, tokenize } from './tokenize.ts';
-export type { CorpusChunk, CorpusIndex, SearchHit } from './types.ts';
+export {
+  type CorpusChunk,
+  type CorpusIndex,
+  type SearchHit,
+  SOURCE_KINDS,
+  type SourceKind,
+} from './types.ts';
