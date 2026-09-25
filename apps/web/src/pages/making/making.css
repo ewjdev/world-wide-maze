@@ -1,0 +1,376 @@
+/* /making. Builds on showcase.css. The viewer is a dark lightbox set into the paper page. */
+
+.mk-head {
+  padding-top: clamp(1.75rem, 4vw, 3rem);
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 0.5rem clamp(2rem, 5vw, 4rem);
+  align-items: end;
+}
+.mk-head .sc-lede {
+  margin: 0;
+  font-size: 1.0625rem;
+  max-width: 34rem;
+}
+.mk-title {
+  font: 500 clamp(2rem, 4vw, 3rem) / 1.02 var(--serif);
+  letter-spacing: -0.03em;
+  margin: 0;
+  text-wrap: balance;
+  max-width: 13ch;
+}
+@media (max-width: 52rem) {
+  .mk-head {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+.mk-picker {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+  margin: 1.25rem 0 0;
+}
+@media (max-width: 40rem) {
+  .mk-picker {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin-right: calc(-1 * var(--gutter));
+    padding-right: var(--gutter);
+  }
+  .mk-chip {
+    white-space: nowrap;
+  }
+}
+.sc a.mk-chip {
+  font: 500 0.8125rem / 1 var(--sans);
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink-2);
+  text-decoration: none;
+  background: var(--panel);
+  transition:
+    border-color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.sc a.mk-chip:hover {
+  border-color: var(--ink-2);
+}
+.sc a.mk-chip[aria-current="page"] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--paper);
+}
+
+.mk-stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem);
+  grid-template-areas:
+    "view side"
+    "controls side"
+    "meta meta";
+  gap: 1rem clamp(1.5rem, 3vw, 2.5rem);
+  margin-top: 1.25rem;
+}
+@media (max-width: 60rem) {
+  .mk-stage {
+    grid-template-columns: 1fr;
+    grid-template-areas: "view" "controls" "side" "meta";
+  }
+}
+.mk-view {
+  grid-area: view;
+  position: relative;
+  height: min(calc(100vh - 17rem), 58rem);
+  min-height: 30rem;
+  background: radial-gradient(120% 90% at 50% 0%, #17394b 0%, #0b1d27 70%), #0b1d27;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  box-shadow: 0 30px 60px -40px rgba(11, 29, 39, 0.8);
+}
+@media (max-width: 60rem) {
+  .mk-view {
+    height: 70vh;
+  }
+}
+.mk-canvas {
+  display: block;
+  image-rendering: auto;
+  border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .mk-canvas {
+    animation: mk-in 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+@keyframes mk-in {
+  from {
+    opacity: 0.35;
+    filter: blur(3px) saturate(0.6);
+  }
+}
+.mk-view__msg {
+  color: #d9e6ec;
+  font: 400 1rem / 1.5 var(--sans);
+  text-align: center;
+  padding: 2rem;
+  max-width: 28rem;
+}
+.mk-3d {
+  position: absolute;
+  inset: 0;
+}
+.mk-3d__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.mk-3d__hud {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  bottom: 0.875rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font: 500 0.8125rem / 1.3 var(--sans);
+  color: var(--ink);
+  pointer-events: none;
+}
+.mk-3d__hud > * {
+  background: rgba(247, 246, 242, 0.88);
+  padding: 0.4rem 0.625rem;
+  border-radius: 4px;
+}
+.mk-3d__hud:empty {
+  display: none;
+}
+.mk-ghost-key::before {
+  content: "";
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  background: rgba(127, 231, 239, 0.7);
+  box-shadow: inset 0 0 0 1.5px var(--teal);
+  margin-right: 0.45rem;
+  vertical-align: -0.05rem;
+}
+
+/* side column */
+.mk-side {
+  grid-area: side;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+.mk-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.mk-steps button {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  gap: 0.875rem;
+  align-items: baseline;
+  width: 100%;
+  padding: 0.6rem 0.25rem;
+  font: 500 0.9375rem / 1.3 var(--sans);
+  color: var(--muted);
+  border-bottom: 1px solid var(--rule-2);
+  cursor: pointer;
+  transition:
+    color 150ms ease-out,
+    background-color 150ms ease-out;
+}
+.mk-steps button:hover {
+  color: var(--ink);
+  background: var(--paper-2);
+}
+.mk-steps button:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: -3px;
+}
+.mk-steps button .sc-mono {
+  font-size: 0.75rem;
+  width: 1rem;
+}
+.mk-steps button[aria-current="step"] {
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: inset 3px 0 0 var(--ink);
+  padding-left: 0.875rem;
+}
+.mk-caption__title {
+  font: 500 1.75rem / 1.1 var(--serif);
+  letter-spacing: -0.02em;
+  margin: 0 0 0.75rem;
+}
+.mk-caption > p {
+  font: 400 1rem / 1.6 var(--serif);
+  margin: 0 0 1.25rem;
+}
+.mk-quote {
+  margin: 0;
+  padding: 1rem 1.125rem 0.875rem;
+  background: var(--paper-2);
+  border-radius: 4px;
+}
+.mk-quote blockquote {
+  margin: 0 0 0.5rem;
+}
+.mk-quote blockquote p {
+  margin: 0;
+  font: italic 400 1.0625rem / 1.5 var(--serif);
+  color: var(--ink-2);
+}
+.mk-quote figcaption {
+  font: 400 0.8125rem / 1.4 var(--sans);
+  color: var(--muted);
+}
+
+/* controls */
+.mk-controls {
+  grid-area: controls;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.mk-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 600 0.9375rem / 1 var(--sans);
+  padding: 0.7rem 1rem;
+  border-radius: 4px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 150ms ease-out,
+    transform 120ms ease-out;
+}
+.mk-btn:hover {
+  background: var(--ink-2);
+}
+.mk-btn:active {
+  transform: translateY(1px);
+}
+.mk-btn svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+.mk-btn--light {
+  background: var(--paper);
+  color: var(--ink);
+  margin-top: 1rem;
+}
+.mk-scrub {
+  flex: 1;
+  display: flex;
+}
+.mk-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+.mk-scrub input {
+  flex: 1;
+  appearance: none;
+  height: 2.25rem;
+  background: transparent;
+  cursor: pointer;
+  --p: 0%;
+}
+.mk-scrub input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--ink) var(--p), var(--rule) var(--p));
+}
+.mk-scrub input::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--ink) var(--p), var(--rule) var(--p));
+}
+.mk-scrub input::-webkit-slider-thumb {
+  appearance: none;
+  width: 1.125rem;
+  height: 1.125rem;
+  margin-top: -7px;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.mk-scrub input::-moz-range-thumb {
+  width: 1.125rem;
+  height: 1.125rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--teal);
+  box-shadow:
+    0 0 0 3px var(--paper),
+    0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.mk-scrub input:focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+}
+.mk-count {
+  font-size: 0.8125rem;
+  color: var(--muted);
+  min-width: 2.5rem;
+  text-align: right;
+}
+.mk-meta {
+  grid-area: meta;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  align-items: baseline;
+  margin: 0;
+  font: 400 0.875rem / 1.5 var(--sans);
+  color: var(--muted);
+}
+.mk-meta strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+.mk-meta span.sc-mono {
+  font-size: 0.8125rem;
+}
+.mk-slices {
+  display: inline-flex;
+  gap: 0.75rem;
+}
+.mk-slices a[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* share-card render mode (?card=1) */
+.mk-card {
+  position: fixed;
+  inset: 0;
+  background: #f8f8f8;
+}
+.mk-card .mk-3d__hud {
+  display: none;
+}

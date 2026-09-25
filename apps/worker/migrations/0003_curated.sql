@@ -9,9 +9,7 @@ CREATE TABLE IF NOT EXISTS curated (
   url         TEXT NOT NULL,
   thumb       TEXT NOT NULL,             -- card image URL (/api/share/<stageId>/card)
   stars       INTEGER NOT NULL DEFAULT 0 CHECK (stars BETWEEN 0 AND 5),  -- Phase 09 difficulty stars
-  position    INTEGER NOT NULL DEFAULT 0,
-  slug        TEXT,                      -- key in content/curated.json
-  license     TEXT,                      -- permission / licence note from the approved proposal
-  added_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+  position    INTEGER NOT NULL DEFAULT 0
 );
+-- Exactly the six columns Phase 07 assumes. Licence/permission notes live in content/curated.json (by run).
 CREATE INDEX IF NOT EXISTS curated_position ON curated (position, run_id);

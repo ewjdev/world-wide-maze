@@ -271,7 +271,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
     expect(await (await api('/api/curated', ip)).json()).toEqual({ runs: [] });
     const env = await server.getWorker().getEnv();
     await env.DB.exec(
-      'CREATE TABLE curated (run_id TEXT PRIMARY KEY, title TEXT, url TEXT, thumb TEXT, stars INTEGER, position INTEGER)',
+      'CREATE TABLE IF NOT EXISTS curated (run_id TEXT PRIMARY KEY, title TEXT, url TEXT, thumb TEXT, stars INTEGER, position INTEGER)',
     );
     await env.DB.prepare('INSERT INTO curated VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
       .bind('r1', 'Example', 'https://example.com/', '/t.webp', 4, 1)

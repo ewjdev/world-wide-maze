@@ -1,0 +1,325 @@
+/*
+ * Ranking components (Phase 10). Self-contained: every colour comes from a custom property with a default, so
+ * Phase 08's screens can re-theme by setting --rk-* on any ancestor, or use data-tone="dark" over the canvas.
+ */
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+.rk {
+  --rk-ink: #16181d;
+  --rk-muted: #595f6b;
+  --rk-paper: #f7f6f2;
+  --rk-panel: #fffefb;
+  --rk-rule: #dcd8ce;
+  --rk-accent: #0b6f79; /* 2013 item teal, darkened for text contrast */
+  --rk-accent-soft: #d6eef0;
+  --rk-danger: #b23a2b; /* elevator red */
+  --rk-focus: #e0a800; /* rail yellow */
+  --rk-sans: "Instrument Sans Variable", "Instrument Sans", system-ui, sans-serif;
+  --rk-mono: "IBM Plex Mono", ui-monospace, monospace;
+  color: var(--rk-ink);
+  font-family: var(--rk-sans);
+  font-size: 1rem;
+  line-height: 1.4;
+}
+.rk[data-tone="dark"] {
+  --rk-ink: #f3f1ea;
+  --rk-muted: #aab0bb;
+  --rk-paper: #11151b;
+  --rk-panel: rgba(17, 21, 27, 0.86);
+  --rk-rule: #343b46;
+  --rk-accent: #6fd6df;
+  --rk-accent-soft: rgba(111, 214, 223, 0.14);
+  --rk-danger: #ff8c7a;
+}
+.rk *,
+.rk *::before,
+.rk *::after {
+  box-sizing: border-box;
+}
+
+/* ── Leaderboard ── */
+.rk-board {
+  background: var(--rk-panel);
+  border: 1px solid var(--rk-rule);
+  border-radius: 6px;
+  padding: 1.25rem 1.25rem 0.75rem;
+  min-width: min(100%, 22rem);
+}
+.rk-board__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+.rk-board__title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.rk-board__sub {
+  color: var(--rk-muted);
+  font-size: 0.8125rem;
+}
+.rk-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.rk-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 0.75rem;
+  color: var(--rk-muted);
+  padding: 0 0 0.5rem;
+  border-bottom: 1px solid var(--rk-rule);
+}
+.rk-table th.rk-num,
+.rk-table td.rk-num {
+  text-align: right;
+}
+.rk-table td {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rk-rule);
+}
+.rk-table tr:last-child td {
+  border-bottom: 0;
+}
+.rk-rank {
+  font-family: var(--rk-mono);
+  color: var(--rk-muted);
+  width: 2.75rem;
+}
+.rk-table tr[data-top="true"] .rk-rank {
+  color: var(--rk-ink);
+  font-weight: 500;
+}
+.rk-name {
+  font-family: var(--rk-mono);
+  overflow-wrap: anywhere;
+}
+.rk-score {
+  font-family: var(--rk-mono);
+  font-weight: 500;
+}
+.rk-table td.rk-time {
+  font-family: var(--rk-mono);
+  color: var(--rk-muted);
+  padding-left: 1rem;
+  width: 5.5rem;
+}
+.rk-table tr[data-you="true"] td {
+  background: var(--rk-accent-soft);
+}
+.rk-table tr[data-you="true"] td:first-child {
+  box-shadow: inset 3px 0 0 var(--rk-accent);
+  padding-left: 0.5rem;
+}
+.rk-you {
+  font-family: var(--rk-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--rk-accent);
+  margin-left: 0.5rem;
+}
+.rk-state {
+  padding: 1.5rem 0 1.25rem;
+  color: var(--rk-muted);
+  font-size: 0.9375rem;
+}
+.rk-state strong {
+  color: var(--rk-ink);
+  font-weight: 600;
+}
+.rk-skel {
+  height: 0.9rem;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--rk-rule), transparent 60%, var(--rk-rule));
+  background-size: 200% 100%;
+  animation: rk-shimmer 1.6s ease-in-out infinite;
+  opacity: 0.6;
+}
+@keyframes rk-shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rk-skel {
+    animation: none;
+  }
+}
+
+/* ── Name entry ── */
+.rk-entry {
+  background: var(--rk-panel);
+  border: 1px solid var(--rk-rule);
+  border-radius: 6px;
+  padding: 1.5rem;
+  max-width: 28rem;
+}
+.rk-entry__score {
+  font-family: var(--rk-mono);
+  font-size: 2.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  margin: 0 0 0.25rem;
+  font-variant-numeric: tabular-nums;
+}
+.rk-entry__lede {
+  color: var(--rk-muted);
+  margin: 0 0 1.25rem;
+}
+.rk-label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.375rem;
+}
+.rk-field {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--rk-rule);
+  border-radius: 4px;
+  background: var(--rk-paper);
+  transition:
+    border-color 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+.rk-field:focus-within {
+  border-color: var(--rk-ink);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--rk-focus) 45%, transparent);
+}
+.rk-field[data-invalid="true"] {
+  border-color: var(--rk-danger);
+}
+.rk-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  font: 500 1.125rem / 1 var(--rk-mono);
+  color: var(--rk-ink);
+  padding: 0.75rem 0.75rem;
+  outline: none;
+}
+.rk-count {
+  font-family: var(--rk-mono);
+  font-size: 0.75rem;
+  color: var(--rk-muted);
+  padding-right: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.rk-hint {
+  font-size: 0.8125rem;
+  color: var(--rk-muted);
+  margin: 0.5rem 0 0;
+  min-height: 1.2em;
+}
+.rk-hint[data-error="true"] {
+  color: var(--rk-danger);
+}
+.rk-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.25rem;
+  flex-wrap: wrap;
+}
+
+/* ── Buttons ── */
+.rk-btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font: 600 0.9375rem / 1 var(--rk-sans);
+  padding: 0.75rem 1.125rem;
+  border-radius: 4px;
+  border: 1px solid var(--rk-ink);
+  background: var(--rk-ink);
+  color: var(--rk-paper);
+  cursor: pointer;
+  transition:
+    transform 120ms ease-out,
+    background-color 150ms ease-out,
+    opacity 150ms ease-out;
+}
+.rk-btn:hover {
+  background: color-mix(in srgb, var(--rk-ink) 86%, var(--rk-accent));
+}
+.rk-btn:active {
+  transform: translateY(1px);
+}
+.rk-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+.rk-btn--quiet {
+  background: transparent;
+  color: var(--rk-ink);
+  border-color: var(--rk-rule);
+}
+.rk-btn--quiet:hover {
+  background: var(--rk-accent-soft);
+}
+.rk-btn:focus-visible,
+.rk-link:focus-visible {
+  outline: 3px solid var(--rk-focus);
+  outline-offset: 2px;
+}
+.rk-btn svg {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+}
+.rk-link {
+  font: 500 0.9375rem / 1 var(--rk-sans);
+  color: var(--rk-muted);
+  background: none;
+  border: 0;
+  padding: 0.75rem 0.25rem;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.rk-link:hover {
+  color: var(--rk-ink);
+}
+.rk-status {
+  font-size: 0.875rem;
+  color: var(--rk-muted);
+}
+
+/* ── Challenge banner ── */
+.rk-challenge {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1.125rem;
+  border-radius: 6px;
+  background: var(--rk-panel);
+  border: 1px solid var(--rk-rule);
+}
+.rk-challenge__score {
+  font: 500 1.5rem / 1 var(--rk-mono);
+  font-variant-numeric: tabular-nums;
+}
+.rk-challenge__text {
+  font-size: 0.9375rem;
+}
+.rk-challenge__text span {
+  display: block;
+  color: var(--rk-muted);
+  font-size: 0.8125rem;
+}
