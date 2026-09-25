@@ -22,6 +22,7 @@ The repo uses pnpm 11 workspaces (`apps/*`, `packages/*`, `tools/*`), Node ≥ 2
 - `pnpm format`: Biome auto-fix (format + organize imports).
 - `pnpm vitest run --project @wwm/<pkg>`: run one package's tests.
 - `pnpm dev`: web (Vite, http://localhost:5173, `/api` proxied) + worker (`wrangler dev`, http://localhost:8787). Run just one with `pnpm --filter web dev` or `pnpm --filter worker dev`.
+- `pnpm dev:phone`: `pnpm dev` plus a Cloudflare quick tunnel (HTTPS, which iOS tilt requires). It prints a `https://….trycloudflare.com` URL and opens the game through it, so the pairing QR code works on a phone. Needs `brew install cloudflared`. No account is required.
 - `pnpm fixture:capture <url> <slug> [--dark]`: capture a page into `fixtures/captures/<slug>/`.
 - `pnpm --filter @wwm/fixture-capture handmade`: regenerate `fixtures/stages/handmade-simple.{json,png}`. `pnpm fixture:texture` regenerates only the PNG.
 - `pnpm ref:fetch`: download the 2013 reference material into `reference/` (Phase 01's `@wwm/ref-fetch`).
