@@ -189,7 +189,7 @@ Notes for dependent phases:
 - The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
 - Offline fixtures use the 1× analysis screenshot as their texture, so text is blocky up close (phase-08 `12-play-hud.jpg`). Live and curated stages built through the service get 2× textures (CCR-07-2). Decide with the user whether offline fixtures also need 2× textures (repo size versus fidelity).
 - Phase 10 follow-ups:
-  - The `/dev/engine` sandbox pulls the BBC fixture into production builds. Gate the dev routes out of prod.
+  - ~~Dev sandbox pulled an internal fixture into prod builds~~: dev routes are gated out of prod (done in the Phase 08 merge).
   - Add an `engine.addGhost()` API (the ghost currently goes through `debug()`).
   - Let `loadRapier()` accept a precompiled WASM module, so the workerd shim can go.
   - Store par times so the scores API can use `par × 0.5`.

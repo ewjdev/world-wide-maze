@@ -165,20 +165,11 @@ describe('plan', () => {
 });
 
 describe('id patching + deploy checks', () => {
-  test('the committed config is refused (placeholders, no domain) but structurally complete', () => {
+  test('the committed config is provisioned (2026-09-25): both targets pass the deploy checks', () => {
     const w = parseJsonc(WRANGLER);
     const m = parseJsonc(MIGRATIONS);
-    const prod = checkDeployConfig('production', w, m, cfg);
-    expect(prod.problems).toEqual([
-      'env.production: D1 DB has a placeholder database_id',
-      'env.production: KV CACHE has a placeholder id',
-      'env.production: no custom domain route (set "domain" in infra/cloudflare.config.json, re-run provision)',
-    ]);
-    const prev = checkDeployConfig('previews', w, m, cfg);
-    expect(prev.problems).toEqual([
-      'env.production.previews: D1 DB has a placeholder database_id',
-      'env.production.previews: KV CACHE has a placeholder id',
-    ]);
+    expect(checkDeployConfig('production', w, m, cfg).problems).toEqual([]);
+    expect(checkDeployConfig('previews', w, m, cfg).problems).toEqual([]);
   });
   test('after provisioning both targets pass, and comments survive', () => {
     const { c, w, m } = provisioned();
