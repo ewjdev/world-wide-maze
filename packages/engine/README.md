@@ -43,6 +43,9 @@ input.frameYaw = engine.cameraYaw();
 | `playGoal(fireworks)` | E: the ball is pulled into the goal, then rises 1500 WU in 2 s (quintIn). Fireworks = remaining whole seconds mod 10, launched 300–800 ms apart. Each is a golden rocket climbing 11–15 m and bursting into a peony, chrysanthemum, ring, willow or double shell (N, `world/fireworks.ts`). The camera pulls back to a vantage point and tilts at most 26° up (N). |
 | `cameraYaw()` | See the yaw convention below. |
 | `resize(w, h)`, `frame(dt)`, `stats()`, `setQuality(q)`, `setPixelLook(on)`, `dispose()` | `stats()` returns fps, draw calls (total, scene, env and post), triangles, tier, backend, `renderer.info.memory` counts and the tier log. |
+| `setPortalState(id, 'open' \| 'offline' \| 'used')` | Phase 13 (N). `offline` greys a gate out (the capture service is unreachable). |
+| `playPortal(id)` | Phase 13 (N): travel. The ball spirals into the gate and shrinks away, the gate surges, the camera glides up to it, sparks burst; resolves after ≈ 1.6 s. The `portal` event pulses the gate and bursts sparks. |
+| `spawnBall(pos, {faceTo})` | Phase 13 (additive): the camera faces `faceTo` instead of the goal. |
 | `debug()` | `{renderer, scene, camera}` for dev tools only. Not a stable API. |
 
 ### Conventions (shared with @wwm/physics, contracts v0.2.2)
@@ -62,6 +65,16 @@ input.frameYaw = engine.cameraYaw();
 - **Items:** one `InstancedMesh` of teal icosahedra (E) that bob and spin in the vertex shader, plus a large-item `InstancedMesh` with a wire shell. Collection writes the collect time into an instanced attribute. The shader pops the item, and a GPU particle burst plays.
 - **Goal** (E): the site title printed in red, yellow and green letters with a white stroke on a ribbon spiralling 20 WU up, a flared wire "vase", and a glowing pad (N). It doubles as the beacon seen from afar.
 - **Effects:** one analytic GPU particle pool for everything (1 draw call): fireworks, pops, dust. Each particle is a camera-facing streak from where it was `trail` seconds ago to where it is now (both analytic, so trails curve), shaded as a capsule with a soft tail, an optional white-hot head and an optional darker rim. The rim and saturated colours are what make sparks read on the near-white sky, where additive light vanishes. The pool is hidden while nothing is alive and instances only the used prefix of its ring. There are also speed streaks while POWER is held, the spawn cage, and the map "YOU" marker (a sprite with a coin-flip spin, N).
+
+## Link portals (Phase 13, N)
+`world/portals.ts`: an upright gate per portal, billboarded to the camera (yaw): a log-spiral vortex disc with a
+white-hot eye, a rim with travelling highlights, a soft halo, a breathing ground ring at the sensor radius
+(`PORTAL_RADIUS_M`), a label card (monogram "favicon" + link text on up to two lines + host) from one canvas
+atlas, and in the map view a light beam and a 4.2× label. The colour comes from the target host
+(`portalColor`, the 2013 roles + a violet), the same colour as the UI. **One InstancedMesh = one draw call** for
+all portals (not in the env-map layer). The glow is carved out of the shown colour (emissive ≤ colour), because
+NodeMaterial adds the emissive to the output and the screen-blended bloom would otherwise tint over-white pixels.
+`node packages/engine/scripts/portal-shots.ts <webBase> <outDir> [--travel]` takes the Phase 13 screenshots in the game.
 
 ## Cameras
 - **Chase** (E, `followcamera`): leash 2.1 WU → 1.94 m, distance 5 WU → 4.63 m at 35°, lerp 0.11 per 60 Hz tick converted to a frame-rate independent α, FOV 70°, near 0.09 m. `camera.up` and the offset lean with 20 % pitch / 50 % roll of the tilt (E). N: instead of the 2013 `y ≥ 0` clamp, the camera raises its elevation until a heightfield line-of-sight test clears the slabs.

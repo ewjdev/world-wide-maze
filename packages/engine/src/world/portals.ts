@@ -25,6 +25,7 @@ import {
   length,
   log,
   max,
+  min,
   mix,
   positionLocal,
   select,
@@ -267,14 +268,14 @@ function portalMaterial(
   // ── vertex: grow in with the intro, surge on travel, face the camera (yaw) ──
   const grow = u.appear.mul(float(1).add(hot.mul(0.12)).add(surgeK.mul(0.45)));
   const p0: N = positionLocal;
-  const labelScale = float(1).add(mapK.mul(1.6));
+  const labelScale = float(1).add(mapK.mul(3.2));
   // gate parts scale about the ground point; the label scales about its own centre and rises in the map view
   const labelLocal = vec3(
     p0.x.mul(labelScale),
-    p0.y.sub(LABEL_Y).mul(labelScale).add(LABEL_Y).add(mapK.mul(2.4)),
+    p0.y.sub(LABEL_Y).mul(labelScale).add(LABEL_Y).add(mapK.mul(4)),
     p0.z,
   ).mul(u.appear);
-  const beamLocal = vec3(p0.x.mul(float(1).add(mapK.mul(2))), p0.y, p0.z);
+  const beamLocal = vec3(p0.x.mul(float(1).add(mapK.mul(4))), p0.y, p0.z);
   const local = select(isPart(4), labelLocal, select(isPart(5), beamLocal, p0.mul(grow)));
   const toCam = cameraPosition.xz.sub(d.xz);
   const yaw = atan(toCam.x, toCam.y);
@@ -317,10 +318,10 @@ function portalMaterial(
   const core = float(1)
     .sub(smoothstep(0, 0.55, r))
     .pow(1.5);
-  const vortexCol = mix(base.mul(0.55), vec3(1, 1, 1), clamp(core.add(surgeK.mul(0.6)), 0, 1)).add(
-    base.mul(arms.mul(0.55).add(fine.mul(0.15))),
-  );
-  const vortexA = smoothstep(1.0, 0.93, r).mul(float(0.62).add(arms.mul(0.3)).add(core.mul(0.2)));
+  // deep portal colour between the arms, pale bright arms, a white-hot eye
+  const armsCol = mix(base.mul(0.42), mix(base, vec3(1, 1, 1), 0.6), arms.mul(0.85).add(fine.mul(0.15)));
+  const vortexCol = mix(armsCol, vec3(1, 1, 1), clamp(core.pow(1.6).add(surgeK.mul(0.6)), 0, 1));
+  const vortexA = smoothstep(1.0, 0.93, r).mul(float(0.8).add(arms.mul(0.2)));
 
   // rim: bright band with travelling highlights
   const dash = sin(t.x.mul(Math.PI * 2 * 6).sub(time.mul(3)))
@@ -334,7 +335,7 @@ function portalMaterial(
   // beam (map markers)
   const beamA = mapK
     .mul(float(1).sub(t.y).pow(1.5))
-    .mul(0.55)
+    .mul(0.9)
     .mul(float(1).sub(abs(t.x.sub(0.5)).mul(2)));
 
   // label: atlas row (v = 0 at the top of the atlas: flipY off)
@@ -356,15 +357,15 @@ function portalMaterial(
       select(isPart(2), haloA, select(isPart(3), breathe.mul(0.9), select(isPart(4), labelA, beamA))),
     ),
   );
-  m.colorNode = color;
-  m.opacityNode = alpha.mul(max(u.appear, float(0)));
+  const shown = clamp(color, 0, 1);
+  m.opacityNode = clamp(alpha.mul(max(u.appear, float(0))), 0, 1);
   const glow = float(1)
     .add(hot.mul(1.4))
     .add(surgeK.mul(1.5))
     .mul(select(offline, float(0.25), float(1)));
   const em = select(
     isPart(0),
-    vortexCol.mul(arms.mul(0.6).add(core.mul(0.8)).add(0.2)).mul(vortexA),
+    vortexCol.mul(arms.mul(0.55).add(core.mul(0.6)).add(0.1)).mul(vortexA),
     select(
       isPart(1),
       rimCol.mul(1.1),
@@ -379,7 +380,12 @@ function portalMaterial(
       ),
     ),
   );
-  setEmissive(m, em.mul(glow));
+  // NodeMaterial adds the emissive to the output colour, and the composite screen-blends the bloom
+  // (colour + bloom × (1 − colour)): an over-white channel would subtract glow and tint the gate. So the glow is
+  // carved out of the shown colour (emissive ≤ colour, colour − emissive + emissive = colour ≤ 1).
+  const glowC = min(clamp(em.mul(glow), 0, 1), shown);
+  m.colorNode = shown.sub(glowC);
+  setEmissive(m, glowC);
   m.alphaTest = 0.003;
   return m;
 }
@@ -397,6 +403,20 @@ function fit(ctx: CanvasRenderingContext2D, text: string, max: number): string {
   let s = text;
   while (s.length > 1 && ctx.measureText(`${s}…`).width > max) s = s.slice(0, -1);
   return `${s.trimEnd()}…`;
+}
+
+/** Up to two lines, word-wrapped; the second ends in an ellipsis if the text is longer. */
+function wrap2(ctx: CanvasRenderingContext2D, text: string, max: number): string[] {
+  const words = text.split(' ');
+  let first = '';
+  let i = 0;
+  for (; i < words.length; i++) {
+    const next = first ? `${first} ${words[i]}` : (words[i] as string);
+    if (ctx.measureText(next).width > max && first) break;
+    first = next;
+  }
+  const rest = words.slice(i).join(' ');
+  return rest ? [fit(ctx, first, max), fit(ctx, rest, max)] : [fit(ctx, first, max)];
 }
 
 const SANS = '"Figtree Variable", Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif';
@@ -447,11 +467,25 @@ function makeAtlas(items: { label: string; href: string }[]): CanvasTexture {
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
     ctx.fillStyle = '#20262d';
-    ctx.font = `700 76px ${SANS}`;
-    ctx.fillText(fit(ctx, it.label, tw), tx, cy + 6);
+    // the link text on one line if it fits at 72 px, else two lines at 58 px; the host underneath
+    ctx.font = `700 72px ${SANS}`;
+    let lines = [it.label];
+    let lh = 72;
+    if (ctx.measureText(it.label).width > tw) {
+      ctx.font = `700 58px ${SANS}`;
+      lh = 60;
+      lines = wrap2(ctx, it.label, tw);
+    }
+    const hostSize = 44;
+    const block = lines.length * lh + 12 + hostSize;
+    let by = cy - block / 2 + lh * 0.8;
+    for (const l of lines) {
+      ctx.fillText(l, tx, by);
+      by += lh;
+    }
     ctx.fillStyle = '#5b6570';
-    ctx.font = `600 50px ${SANS}`;
-    ctx.fillText(fit(ctx, `${host}  ↗`, tw), tx, cy + 68);
+    ctx.font = `600 ${hostSize}px ${SANS}`;
+    ctx.fillText(fit(ctx, `${host}  ↗`, tw), tx, by + 4);
   }
   const tex = new CanvasTexture(cv as never);
   tex.colorSpace = SRGBColorSpace;

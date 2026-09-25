@@ -20,6 +20,17 @@ the hosted capture Worker (Phase 07) both use it, so fixtures and live captures 
 - `pngSize(bytes)` reads a PNG IHDR size.
 - `normalizeUrl(url)` lower-cases the host, strips default ports, the fragment and tracking params, and sorts the query.
 
+## Link targets (Phase 13, contracts §10.1)
+`link` elements (and a `button` inside an `<a href>`) carry `href`: absolute, `http(s)` only, no credentials,
+≤ 2048 characters, normalized exactly like `normalizeUrl` (inlined in the page function). Same-page anchors
+(`#…`, or the page itself), `javascript:`, `mailto:` and other schemes are dropped.
+
+`scripts/resolve-fixture-links.ts` recovers link targets for the legacy Phase 02 fixtures (captured before
+`href` existed) into `fixtures/builder/links/<slug>.json` sidecars: the live page is re-extracted and links are
+matched by text (+ nearest rect for repeated texts, never on Hacker News, whose rows reorder); rotated-off Hacker
+News stories are looked up by exact title in the HN Algolia API. Nothing is invented; unmatched links stay
+without `href`. `@wwm/stage-builder`'s `applyLinkTargets` merges a sidecar (only into the capture it was made for).
+
 ## Extraction rules (summary)
 - **Text ownership.** Each non-blank text node belongs to its nearest non-inline ancestor. `lines` come from `Range.getClientRects()` per text node. Fragments on the same visual line are merged, and rects contained in another rect are dropped.
 - A `text` element fully contained in its nearest emitted `text` ancestor is merged into that ancestor.

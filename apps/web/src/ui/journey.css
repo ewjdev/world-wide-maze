@@ -1,3 +1,4 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced motion must beat the component animations */
 /* biome-ignore-all lint/style/noDescendingSpecificity: modifier and context rules follow their base rules on purpose */
 /*
  * Phase 13 — link portals and web journeys. Extends game.css (same plates, cuts, roles and faces).
@@ -290,10 +291,9 @@
 
 .wwm-journeyhud {
   position: absolute;
-  top: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  max-width: calc(100vw - 460px);
+  right: 22px;
+  bottom: 22px;
+  max-width: calc(100vw - 420px);
   background: rgba(255, 255, 255, 0.88);
   padding: 7px 12px 7px 8px;
   clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
@@ -351,7 +351,6 @@
     display: none;
   }
   .wwm-journeyhud {
-    top: auto;
     bottom: 136px;
     max-width: calc(100vw - 32px);
   }
@@ -411,7 +410,7 @@
 .wwm-jcard__band {
   height: 14px;
   margin: 0 calc(-1 * clamp(22px, 4vw, 48px));
-  width: auto;
+  width: calc(100% + 2 * clamp(22px, 4vw, 48px));
 }
 .wwm-jcard__head {
   display: grid;

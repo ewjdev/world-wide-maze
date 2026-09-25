@@ -1994,12 +1994,23 @@ export class Game {
    * (POWER + forward tilt towards the portal for up to 3 s). Returns false if there is no such portal or no room.
    */
   debugRollIntoPortal(portalId: number, backM = 4.5): boolean {
+    const p = this.#stage()?.portals?.find((x) => x.id === portalId);
+    return !!p && this.#rollTo(p.pos, p.islandId, backM);
+  }
+
+  /** e2e / screenshots: the same, into the goal. */
+  debugRollIntoGoal(backM = 4.5): boolean {
+    const g = this.#stage()?.goal;
+    return !!g && this.#rollTo(g.pos, g.islandId, backM);
+  }
+
+  #rollTo(target: Vec2, islandId: number, backM: number): boolean {
     const stage = this.#stage();
-    const p = stage?.portals?.find((x) => x.id === portalId);
+    const p = { pos: target };
     const d = this.#driver;
     const e = this.#engine;
-    if (!stage || !p || !d || !e || this.#view.phase !== 'play') return false;
-    const isl = stage.islands.find((i) => i.id === p.islandId);
+    if (!stage || !d || !e || this.#view.phase !== 'play') return false;
+    const isl = stage.islands.find((i) => i.id === islandId);
     if (!isl) return false;
     // the free direction on the island: the farthest-reaching of 16 headings (up to backM metres)
     const PX = 13.5;
