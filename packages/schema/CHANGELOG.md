@@ -64,3 +64,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
   missing/invalid token); `ROOM_TOKEN_BYTES` = 16.
 - **CCR-12-3:** `CAPTURE_LIMITS` and `CaptureBundleSchema` limits: `elements` ≤ 20,000, `title` ≤ 512, `url` ≤ 2,048,
   `text` ≤ 120 (unchanged), `lines` ≤ 200 per element. `@wwm/capture-script` clamps `title` and `lines` to match.
+
+## 0.3.0 (planned, see contracts §10)
+- Portal, DomElement.href, SimEvent portal, local capture handoff, docent API.

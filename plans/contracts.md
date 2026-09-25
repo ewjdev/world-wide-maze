@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.7`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.0`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -380,3 +380,47 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **CCR-12b-2, accepted:** the host keeps its tokens in `sessionStorage`. A `#h=<hostToken>&p=<pairToken>` link lets another tab rejoin as host. `/p/<code>` without the host token gets 4401.
 - **CCR-12b-3, accepted:** a malformed token gets HTTP 400 before the WebSocket upgrade.
 - **Open:** the WS token travels in the query string and can appear in Cloudflare request logs. Options are log redaction or moving it to `Sec-WebSocket-Protocol` (a contract change). Decide before production.
+
+---
+
+## 10. v0.3.0: signature features (orchestrator, 2026-09-25)
+
+### 10.1 Link portals (the "World Wide" in World Wide Maze)
+- `DomElement.href?: string`: an absolute `http(s)` URL of at most 2,048 characters. Only for `kind: 'link'` (or a `button` wrapped in an `<a>`). `fragment`, `javascript:`, `mailto:` and similar are dropped at capture.
+- `StageData.portals?: Portal[]`. It's **optional** (missing means `[]`), so existing stages stay valid, and the tag stays `wwm.stage/2`.
+  ```ts
+  export interface Portal {
+    id: number;
+    islandId: number;          // the island built from (or containing) the link element
+    pos: Vec2;                 // inside the island, ≥ BALL_RADIUS_PX clearance, not on start/goal
+    href: string;              // normalized target URL (same normalization as capture)
+    label: string;             // link text, ≤ 60 chars
+    sourceElementId: number;
+  }
+  export const MAX_PORTALS = 6;           // per stage; prefer off-site, distinct, well-labelled links
+  export const PORTAL_RADIUS_M = 0.926;   // sensor like the goal
+  ```
+- **Invariants:**
+  - Portals lie inside their island with clearance.
+  - There are at most `MAX_PORTALS`, with unique `href` values.
+  - `href` passes the capture URL policy shape (http(s), no credentials).
+- **`SimEvent` gains `{ type: 'portal'; portalId: number }`.** It fires once on entering the sensor and re-arms after the ball leaves.
+- **Game rule (N):** entering a portal pauses play and asks "Travel to <label> (<host>)?". Yes builds that URL through `POST /api/stages` and starts its run. Score and spare balls carry over as a **web journey**.
+  - A breadcrumb trail of the sites visited is shown and shareable.
+  - The goal still ends the stage normally. Portals are optional exits.
+
+### 10.2 Local capture handoff (browser extension and bookmarklet)
+- `/play/local` accepts a capture made in the user's own browser. The game page listens for
+  `window.postMessage({ type: 'wwm:capture', version: 1, bundle: CaptureBundle, image: { mime: 'image/png'|'image/webp', bytes: ArrayBuffer } })`
+  **only** from an allowed origin: the extension's content script on the same page, or `window.opener` when it's the bookmarklet tab.
+- The bundle is validated with `parseCapture` (including the v0.2.7 size limits). It's built client-side by `@wwm/stage-builder`, and nothing is uploaded unless the user chooses **Share**. Share then uses `POST /api/stages/upload`: multipart `{bundle, image}` → the same pipeline minus capture, subject to the same limits, rate limits and moderation hook.
+- The source is recorded as `provenance.notes: ['local-capture']`. Shared local captures are unlisted.
+
+### 10.3 AI docent (runtime AI through Cloudflare AI Gateway)
+- `POST /api/docent` `{ question: string (≤ 500 chars), history?: {role:'user'|'assistant', text}[] (≤ 6) }` returns an SSE stream:
+  - `delta {text}` (repeated)
+  - `citations {items: {title, path, anchor?, url?}[]}`
+  - `done {}`, or `error {code, message}`
+- It answers **only** from the project corpus: `research/**`, `docs/reference/**`, `docs/build-log/**`, `RESEARCH.md`, and the `/about` history data. It must cite, and must say it doesn't know when the corpus doesn't cover a question.
+- Error codes: `DOCENT_UNAVAILABLE`, `RATE_LIMITED`, `QUESTION_REJECTED`.
+- Model calls go through **Cloudflare AI Gateway** (config: `AI_GATEWAY_ACCOUNT_ID`, `AI_GATEWAY_ID`, and the provider key as a Worker secret). There's a mock provider for dev and tests. Responses are cached by normalized question. A per-IP and global daily cap stays under a configurable budget.
