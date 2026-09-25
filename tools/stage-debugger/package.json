@@ -1,16 +1,26 @@
 {
   "name": "@wwm/stage-debugger",
-  "version": "0.0.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "description": "Visual debugger that renders each stage-builder step as a toggleable layer over the screenshot.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./draw": "./src/draw.ts"
   },
   "scripts": {
+    "dev": "vite",
+    "report": "node src/cli/report.ts",
+    "goldens": "node src/cli/goldens.ts",
+    "shots": "node src/cli/shots.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@wwm/schema": "workspace:*"
+    "@wwm/schema": "workspace:*",
+    "@wwm/stage-builder": "workspace:*"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0",
+    "vite": "^8.3.1"
   }
 }
