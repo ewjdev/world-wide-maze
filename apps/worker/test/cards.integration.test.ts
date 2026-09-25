@@ -232,6 +232,7 @@ describe('share cards (workerd)', () => {
     expect((await get(`/api/cards/stage/${'e'.repeat(64)}.png`)).status).toBe(404);
     expect((await get('/api/cards/nope/x.png')).status).toBe(404);
     expect((await get('/api/cards/site/other.png')).status).toBe(404);
+    expect((await get('/api/cards/journey/%E0%A4%A.png')).status).toBe(404);
     const page = await (await get(`/s/${web.stageId}`)).text();
     const img = new URL(unesc(tags(page).ogImage ?? ''));
     const r = await get(img.pathname + img.search);

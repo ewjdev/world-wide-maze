@@ -250,7 +250,12 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
   const file = c.req.param('file');
   if (!KINDS.has(kind) || !file.endsWith('.png'))
     return Response.json({ error: 'card not found' }, { status: 404 });
-  const id = decodeURIComponent(file.slice(0, -4));
+  let id: string;
+  try {
+    id = decodeURIComponent(file.slice(0, -4));
+  } catch {
+    return Response.json({ error: 'card not found' }, { status: 404 }); // malformed %-escape
+  }
   const src = await load(c.env, kind, id);
   if (!src) return Response.json({ error: 'card not found' }, { status: 404 });
   const url = new URL(c.req.url);
