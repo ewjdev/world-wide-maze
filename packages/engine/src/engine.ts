@@ -84,6 +84,8 @@ export interface EngineOptions {
   maxDpr?: number;
   /** Override the texture tile limit (tests / low-end emulation). Capped at 4096 anyway. */
   maxTextureSize?: number;
+  /** Override the page-texture anisotropy (default: the device maximum). Evidence / debugging only. */
+  anisotropy?: number;
 }
 
 export interface ControlState {
@@ -417,7 +419,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const scale = iw / s.size.width; // trust the actual image over the metadata
       plan = planTiles(iw, ih, scale, maxTextureSize());
       const tileImgs = await makeTiles(image, plan);
-      textures = makeStageTextures(tileImgs, renderer.getMaxAnisotropy(), stageBin);
+      textures = makeStageTextures(tileImgs, opts.anisotropy ?? renderer.getMaxAnisotropy(), stageBin);
       textures.setPixelLook(false);
       objs = buildStageObjects(s, plan, textures, u, stageBin);
       stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);

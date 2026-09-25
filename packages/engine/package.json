@@ -3,13 +3,14 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "three.js world: textured islands, ocean, ball, glow, camera, performance ladder.",
+  "description": "three.js (WebGPU/WebGL2) world: website islands, faceted pastel ocean, chrome ball, selective glow, cameras, intro, perf ladder.",
   "exports": {
     ".": "./src/index.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "shots": "node scripts/shots.ts"
+    "shots": "node scripts/shots.ts",
+    "ladder": "node scripts/ladder.ts"
   },
   "dependencies": {
     "@wwm/schema": "workspace:*",

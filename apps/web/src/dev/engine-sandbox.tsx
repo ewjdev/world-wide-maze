@@ -204,9 +204,10 @@ function roll(q: [number, number, number, number], dx: number, dz: number): [num
 type Motion = 'route' | 'drive' | 'still';
 
 export default function EngineSandbox() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const hostRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const [stats, setStats] = useState<EngineStats | null>(null);
+  const stageIdRef = useRef('handmade-simple');
   const [stageId, setStageId] = useState(
     () => new URLSearchParams(location.search).get('stage') ?? 'handmade-simple',
   );
@@ -287,6 +288,15 @@ export default function EngineSandbox() {
       S.vel = [(S.pos[0] - x0) / Math.max(dt, 1e-3), S.vy, (S.pos[2] - z0) / Math.max(dt, 1e-3)];
       S.quat = roll(S.quat, S.pos[0] - x0, S.pos[2] - z0);
     }
+    // fake the elevators: platform A follows the ball while it stands on the footprint
+    for (const el of S.stage.elevators) {
+      const mx = (el.a[0] + el.b[0]) / 2 / PX_PER_METER;
+      const mz = (el.a[1] + el.b[1]) / 2 / PX_PER_METER;
+      if (Math.hypot(S.pos[0] - mx, S.pos[2] - mz) < el.width / PX_PER_METER / 2) {
+        const y = Math.min(el.levelHigh, Math.max(el.levelLow, S.pos[1] - 0.5)) * LEVEL_HEIGHT_M;
+        e.setElevators([{ id: el.id, y }]);
+      }
+    }
     const state: BallState = { pos: [...S.pos], quat: [...S.quat], vel: [...S.vel], grounded: S.vy === 0 };
     e.setBall(state);
     e.setControl({ tiltX, tiltZ, power: S.power && S.motion !== 'still' });
@@ -298,10 +308,22 @@ export default function EngineSandbox() {
   useEffect(() => {
     let disposed = false;
     let raf = 0;
-    const canvas = canvasRef.current as HTMLCanvasElement;
+    // A fresh canvas per engine: a disposed WebGL2 renderer loses its context, and a canvas keeps it.
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = 'width:100%;height:100%;display:block';
+    hostRef.current?.appendChild(canvas);
     const forceWebGL = params.get('backend') === 'webgl';
     const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    createEngine({ canvas, quality, forceWebGL, reducedMotion, pixelLook: params.get('pixel') === '1' })
+    const aniso = params.get('aniso');
+    createEngine({
+      canvas,
+      quality,
+      forceWebGL,
+      reducedMotion,
+      pixelLook: params.get('pixel') === '1',
+      maxTextureSize: params.get('maxtex') ? Number(params.get('maxtex')) : undefined,
+      anisotropy: aniso ? Number(aniso) : undefined,
+    })
       .then((engine) => {
         if (disposed) {
           engine.dispose();
@@ -334,6 +356,7 @@ export default function EngineSandbox() {
       (window as unknown as { __cleanup?: () => void }).__cleanup?.();
       engineRef.current?.dispose();
       engineRef.current = null;
+      canvas.remove();
     };
   }, []);
 
@@ -365,6 +388,7 @@ export default function EngineSandbox() {
   }, []);
 
   useEffect(() => {
+    stageIdRef.current = stageId;
     const onReady = () => void loadStage(stageId);
     if (engineRef.current) onReady();
     else window.addEventListener('wwm-engine', onReady, { once: true });
@@ -438,6 +462,46 @@ export default function EngineSandbox() {
       },
       collectNext,
       fire,
+      /** load/unload the current stage 5× and report renderer.info.memory before and after */
+      leakTest: async () => {
+        const e = engineRef.current;
+        if (!e) return null;
+        const id = stageIdRef.current;
+        e.unloadStage();
+        e.frame(1 / 60);
+        const base = e.stats().memory;
+        const peaks: EngineStats['memory'][] = [];
+        for (let i = 0; i < 5; i++) {
+          await loadStage(id);
+          e.frame(1 / 60);
+          peaks.push(e.stats().memory);
+          e.unloadStage();
+          e.frame(1 / 60);
+        }
+        const after = e.stats().memory;
+        await loadStage(id);
+        return { base, peaks, after };
+      },
+      /** create + load + dispose whole engines on a scratch canvas; returns the WebGL/WebGPU errors seen */
+      disposeCycles: async (n = 5) => {
+        const entry = STAGES.find((s) => s.id === stageIdRef.current) ?? STAGES[0];
+        if (!entry) return null;
+        const { stage, textureUrl } = await entry.load();
+        const bmp = await createImageBitmap(await (await fetch(textureUrl)).blob());
+        const out: { i: number; loadedGeometries: number; ok: boolean }[] = [];
+        for (let i = 0; i < n; i++) {
+          const c = document.createElement('canvas');
+          c.width = 320;
+          c.height = 180;
+          const e2 = await createEngine({ canvas: c, quality: 'high' });
+          await e2.loadStage(stage, bmp);
+          e2.frame(1 / 60);
+          const g = e2.stats().memory.geometries;
+          e2.dispose();
+          out.push({ i, loadedGeometries: g, ok: true });
+        }
+        return out;
+      },
     };
     (window as unknown as { wwm: typeof api }).wwm = api;
   });
@@ -450,7 +514,7 @@ export default function EngineSandbox() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#f8f8f8', fontFamily: 'system-ui, sans-serif' }}>
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }} />
+      <div ref={hostRef} style={{ position: 'absolute', inset: 0 }} />
       {!hideUi && (
         <>
           <div style={{ ...panelStyle, top: 12, left: 12, width: 300 }}>

@@ -52,7 +52,7 @@ import {
   SRGBColorSpace,
   Vector3,
 } from 'three/webgpu';
-import { BALL_CORE, BALL_ONEUP, BALL_SHELL } from '../palette.ts';
+import { BALL_CORE, BALL_DARK, BALL_ONEUP, BALL_SHELL } from '../palette.ts';
 import type { Bin } from './bin.ts';
 import { type N, type SharedUniforms, setEmissive } from './shared.ts';
 import { LAYER_ENV } from './stage-world.ts';
@@ -97,7 +97,11 @@ export function buildBall(u: SharedUniforms, bin: Bin, envSize: number): Ball {
   const spec = smoothstep(0.93, 0.99, reflectVector.normalize().dot(vec3(-0.3, 0.9, 0.3).normalize())).mul(
     0.6,
   );
-  const chrome = env.mul(shell).mul(1.02).add(fres.mul(0.22)).add(spec);
+  // E: the 2013 ball had a dark base colour (#20262d) under the reflective Phong shell: reflections of the
+  // lower hemisphere read darker, giving the chrome its contrast against a near-white world.
+  const ry = reflectVector.normalize().y;
+  const horizon = mix(col(BALL_DARK).mul(2.2).add(0.3), vec3(1, 1, 1), smoothstep(-0.55, 0.25, ry));
+  const chrome = env.mul(shell).mul(horizon).mul(1.05).add(fres.mul(0.18)).add(spec);
   // seams: two perpendicular great circles, in ball-local space so they roll with the ball
   const p = positionGeometry.div(BALL_RADIUS_M);
   const band = (x: N) => float(1).sub(smoothstep(0.045, 0.075, abs(x)));

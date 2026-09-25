@@ -94,6 +94,55 @@ const shots: Shot[] = [
     },
   },
   {
+    name: 'elevator',
+    stage: 'handmade-simple',
+    run: async (p) => {
+      await call(p, 'wwm.placeOnRoute(0.7)');
+      await adv(p, 1.2);
+      await call(p, 'wwm.placeOnRoute(0.782); wwm.freeze(true)');
+      await adv(p, 0.05);
+      await call(p, 'wwm.freeze(false); wwm.advance(0.02); wwm.freeze(true)');
+      await adv(p, 0.6);
+    },
+  },
+  {
+    name: 'fall-ripple',
+    stage: 'handmade-simple',
+    run: async (p) => {
+      await call(
+        p,
+        'wwm.placeOnRoute(0.3); wwm.freeze(true); wwm.advance(0.1); wwm.fire({ type: "lost" }); wwm.engine().setView("map")',
+      );
+      await adv(p, 2.2);
+    },
+  },
+  {
+    name: 'intro-skip',
+    stage: 'handmade-simple',
+    run: async (p) => {
+      await call(p, 'wwm.setMotion("still"); void wwm.engine().playIntro({ mode: "full" })');
+      await adv(p, 3);
+      await call(p, 'wwm.engine().skipIntro()');
+      await adv(p, 0.3);
+    },
+  },
+  {
+    name: 'intro-fast-3s',
+    stage: 'handmade-simple',
+    run: async (p) => {
+      await call(p, 'wwm.setMotion("still"); void wwm.engine().playIntro({ mode: "fast" })');
+      await adv(p, 3);
+    },
+  },
+  {
+    name: 'spawn-cage',
+    stage: 'handmade-simple',
+    run: async (p) => {
+      await call(p, 'wwm.setMotion("still"); void wwm.engine().spawnBall()');
+      await adv(p, 1.7);
+    },
+  },
+  {
     name: 'aid-chase',
     stage: 'reference:aid-dcc',
     run: async (p) => {

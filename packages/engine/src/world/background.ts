@@ -138,7 +138,8 @@ export function buildBackground(
   // ripple (E: droplet ripple on ball loss): a ring expanding at 30 m/s for 4 s
   const age = u.time.sub(rippleU.z);
   const dist = p.xz.distance(rippleU.xy);
-  const ring = float(1).sub(smoothstep(0, 14, dist.sub(age.mul(30)).abs()));
+  const ringAt = (r: N) => float(1).sub(smoothstep(0, 9, dist.sub(r).abs()));
+  const ring = max(ringAt(age.mul(30)), ringAt(age.mul(30).sub(22)).mul(0.6));
   const rippleAmt = ring
     .mul(float(1).sub(smoothstep(0, 4, age)))
     .mul(rippleU.w)
@@ -162,7 +163,7 @@ export function buildBackground(
   const base = facet.mul(shimmer);
   const withWire = mix(base, wireCol, lineMask.mul(0.55).mul(rich).mul(detailFade));
   const withDots = mix(withWire, wireCol.mul(0.9), dot.mul(rich).mul(detailFade));
-  gm.colorNode = mix(withDots, vec3(1, 1, 1), rippleAmt.mul(0.7));
+  gm.colorNode = mix(withDots, vec3(1, 1, 1), rippleAmt.mul(0.9));
   const ground = new Mesh(g, gm);
   ground.name = 'ocean';
   ground.frustumCulled = false;
