@@ -7,6 +7,19 @@
     <meta name="description" content="Any website becomes a 3D island maze you steer with your phone. A tribute to the 2013 Chrome Experiment." />
     <meta name="theme-color" content="#f8f8f8" />
     <title>World Wide Maze — revival</title>
+    <!-- Phase 18: the generic link preview for app routes without their own card (e.g. /about, /play/…, and
+         phone-pairing links /c/…, which must stay generic). `/`, `/log` and `/j/…` get theirs from the Worker,
+         which replaces these tags; /s/… and /r/… are Worker pages. The absolute URL is the production site. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="World Wide Maze (tribute)" />
+    <meta property="og:title" content="World Wide Maze: turn any website into a 3D maze" />
+    <meta property="og:description" content="Any website becomes a 3D island maze you steer with your phone. A tribute to the 2013 Chrome Experiment." />
+    <meta property="og:image" content="https://wwm.ewj.dev/api/cards/site/default.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="The WORLD WIDE MAZE wordmark next to a small island maze." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://wwm.ewj.dev/api/cards/site/default.png" />
   </head>
   <body>
     <div id="root"></div>

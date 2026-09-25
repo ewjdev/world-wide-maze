@@ -94,7 +94,8 @@ jobs:
           set -o pipefail
           output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
           printf '%s\n' "$output"
-          url="$(printf '%s' "$output" | jq -er '.preview.urls[0]')"
+          # wrangler prints asset-upload progress before the JSON even with --json: parse from the first line that is "{".
+          url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
           [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
           echo "url=${url%/}" >> "$GITHUB_OUTPUT"
 

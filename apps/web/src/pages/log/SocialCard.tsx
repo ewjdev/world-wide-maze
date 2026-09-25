@@ -6,7 +6,7 @@ import govukShot from '../../../../../fixtures/captures/govuk-card-grid/screensh
 import '../about/showcase.css';
 import { ASSETS } from './assets.ts';
 import { Dial } from './BuildClock.tsx';
-import { assetUrl, BUGS, clock, dur, TL } from './story.ts';
+import { assetUrl, BUGS, clock, dur, FIRST, fmtInt, LATER, TL } from './story.ts';
 import './story.css';
 
 export type CardVariant = 'clock' | 'maze' | 'bugs' | 'og';
@@ -27,28 +27,40 @@ function ClockCard() {
   return (
     <div className="cd-clock">
       <div className="cd-copy">
+        <p className="cd-eyebrow">{FIRST.label}</p>
         <h1 className="cd-title">
-          Built in <span>{dur(TL.wallClock.min)}</span> of wall-clock time
+          Built in <span>{dur(FIRST.wallClock.min)}</span> of wall-clock time
         </h1>
         <p className="cd-sub">
-          {clock(TL.wallClock.start, true)} → {clock(TL.wallClock.end, true)}, from an empty folder
+          {clock(FIRST.wallClock.start, true)} → {clock(FIRST.wallClock.end, true)}, from an empty folder
         </p>
         <dl className="cd-facts">
           <div>
-            <dt>{dur(TL.agents.agentMin)}</dt>
+            <dt>{dur(FIRST.agents.agentMin)}</dt>
             <dd>
-              agent time across {TL.agents.runs} runs, up to {TL.agents.maxConcurrent} at once
+              agent time across {FIRST.agents.runs} runs, up to {FIRST.agents.maxConcurrent} at once
             </dd>
           </div>
           <div>
-            <dt>{TL.owner.messages} messages</dt>
-            <dd>from the owner, {TL.owner.words} words in all</dd>
+            <dt>{FIRST.owner.messages} messages</dt>
+            <dd>from the owner, {fmtInt(FIRST.owner.words)} words in all</dd>
           </div>
           <div>
-            <dt>{TL.tests.passed.toLocaleString('en-US')} tests</dt>
-            <dd>passing, in {TL.git.commits} commits</dd>
+            <dt>
+              {FIRST.tests ? `${fmtInt(FIRST.tests.passed)} tests` : `${fmtInt(FIRST.lines.source)} lines`}
+            </dt>
+            <dd>
+              {FIRST.tests ? 'passing' : 'of source'}, in {FIRST.git.commits} commits
+            </dd>
           </div>
         </dl>
+        {LATER.map((s) => (
+          <p key={s.id} className="cd-later">
+            <strong>{s.label}:</strong> {dur(s.wallClock.min)} more for {s.short}, {dur(s.agents.agentMin)} of
+            agent time. <strong>{dur(TL.wallClock.min)} in all</strong>, {fmtInt(TL.tests.passed)} tests,{' '}
+            {TL.git.commits} commits.
+          </p>
+        ))}
       </div>
       <div className="cd-dial">
         <Dial />

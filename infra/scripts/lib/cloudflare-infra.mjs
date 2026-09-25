@@ -181,7 +181,9 @@ export function loadInfraConfig(raw) {
   };
   if (cfg.domain !== DOMAIN_PLACEHOLDER && !/^[a-z0-9.-]+\.[a-z]{2,}$/i.test(cfg.domain))
     problems.push(`domain: not a hostname: ${cfg.domain}`);
-  for (const k of ['d1', 'r2', 'kv', 'aiGateway'])
+  // Data stores must be separate. The AI Gateway may be shared (owner decision 2026-09-25: one `wwm` gateway,
+  // logging off, so it holds no Preview/production data).
+  for (const k of ['d1', 'r2', 'kv'])
     if (cfg.production[k] && cfg.production[k] === cfg.previews[k])
       problems.push(`previews.${k} must differ from production.${k} (Previews would share production data)`);
   const p = Object.values(cfg.production.rateLimitNamespaceIds ?? {});
@@ -255,9 +257,11 @@ export function parseWhoamiAccounts(stdout) {
 /** @returns {{ kind: Kind, target: Target, name: string }[]} */
 export function desiredResources(cfg) {
   const out = [];
+  // A resource shared by both targets (e.g. one AI Gateway) is listed once, so --apply creates it once.
   for (const target of /** @type {Target[]} */ (['production', 'previews']))
     for (const kind of /** @type {Kind[]} */ (['d1', 'r2', 'kv', 'aiGateway']))
-      out.push({ kind, target, name: cfg[target][kind] });
+      if (!out.some((r) => r.kind === kind && r.name === cfg[target][kind]))
+        out.push({ kind, target, name: cfg[target][kind] });
   return out;
 }
 

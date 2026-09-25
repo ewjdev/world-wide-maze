@@ -1,24 +1,24 @@
 {
-  "commit": "4969885",
-  "command": "pnpm vitest run --reporter=json",
-  "passed": 722,
-  "skipped": 13,
+  "commit": "f265f74",
+  "command": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)",
+  "passed": 922,
+  "skipped": 14,
   "failed": 0,
-  "files": 53,
+  "files": 71,
   "byProject": [
     {
       "project": "apps/worker",
-      "passed": 181,
+      "passed": 237,
       "skipped": 0
     },
     {
       "project": "apps/web",
-      "passed": 128,
+      "passed": 180,
       "skipped": 11
     },
     {
       "project": "packages/stage-builder",
-      "passed": 104,
+      "passed": 108,
       "skipped": 0
     },
     {
@@ -33,12 +33,22 @@
     },
     {
       "project": "packages/physics",
-      "passed": 47,
+      "passed": 51,
       "skipped": 2
     },
     {
+      "project": "tools/build-story",
+      "passed": 36,
+      "skipped": 1
+    },
+    {
       "project": "tools/fixture-capture",
-      "passed": 41,
+      "passed": 34,
+      "skipped": 0
+    },
+    {
+      "project": "apps/extension",
+      "passed": 33,
       "skipped": 0
     },
     {
@@ -47,13 +57,18 @@
       "skipped": 0
     },
     {
-      "project": "packages/capture-script",
-      "passed": 18,
+      "project": "packages/solver",
+      "passed": 20,
       "skipped": 0
     },
     {
-      "project": "packages/solver",
-      "passed": 13,
+      "project": "packages/capture-script",
+      "passed": 19,
+      "skipped": 0
+    },
+    {
+      "project": "tools/docent-index",
+      "passed": 14,
       "skipped": 0
     },
     {

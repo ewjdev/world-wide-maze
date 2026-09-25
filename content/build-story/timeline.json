@@ -1,9 +1,9 @@
 {
   "schema": 1,
   "asOf": {
-    "sha": "4969885",
-    "at": "2026-09-25T09:57:48-07:00",
-    "subject": "Schema 0.3.0 (portals, local capture, docent types); phase plans 13-16; wave 5"
+    "sha": "f265f74",
+    "at": "2026-09-25T11:18:56-07:00",
+    "subject": "Add MIT LICENSE; fill domain, repo URL and code licence in legal drafts"
   },
   "timeZone": "America/Los_Angeles",
   "start": {
@@ -16,11 +16,11 @@
   },
   "wallClock": {
     "start": "2026-09-25T06:44:34Z",
-    "end": "2026-09-25T16:57:48Z",
-    "min": 613.2
+    "end": "2026-09-25T18:18:56Z",
+    "min": 694.4
   },
   "active": {
-    "min": 334.7,
+    "min": 406.6,
     "spans": [
       {
         "start": "2026-09-25T06:46:32.723Z",
@@ -74,8 +74,18 @@
       },
       {
         "start": "2026-09-25T16:50:17.351Z",
-        "end": "2026-09-25T16:57:48Z",
-        "min": 7.5
+        "end": "2026-09-25T18:08:50.656Z",
+        "min": 78.6
+      },
+      {
+        "start": "2026-09-25T18:10:48.766Z",
+        "end": "2026-09-25T18:11:13.632Z",
+        "min": 0.4
+      },
+      {
+        "start": "2026-09-25T18:18:26.556Z",
+        "end": "2026-09-25T18:18:56Z",
+        "min": 0.5
       }
     ],
     "source": {
@@ -100,21 +110,319 @@
     ]
   },
   "agents": {
-    "runs": 20,
-    "phaseRuns": 11,
-    "followUpRuns": 5,
-    "helperRuns": 4,
-    "agentMin": 633.9,
-    "orchestratorMin": 71.5,
-    "maxConcurrent": 5,
-    "maxConcurrentAt": "2026-09-25T08:07:18.105Z",
-    "meanConcurrency": 2.19,
+    "runs": 29,
+    "phaseRuns": 16,
+    "followUpRuns": 7,
+    "helperRuns": 6,
+    "agentMin": 855.8,
+    "orchestratorMin": 98.8,
+    "maxConcurrent": 6,
+    "maxConcurrentAt": "2026-09-25T17:10:13.374Z",
+    "meanConcurrency": 2.4,
     "model": "Claude Opus 5.5 (1M context)",
     "source": {
       "kind": "session",
       "ref": "sources/session.json agents[] (first to last transcript event)"
     }
   },
+  "segments": [
+    {
+      "id": "night-1",
+      "label": "Night 1",
+      "short": "research to a playable, hardened game",
+      "what": "From an empty project folder to the commit that planned wave 5: research, plans, contracts, waves 0–4 and a playable, hardened game.",
+      "end": {
+        "sha": "c9713b9",
+        "at": "2026-09-25T09:57:48-07:00",
+        "subject": "Schema 0.3.0 (portals, local capture, docent types); phase plans 13-16; wave 5"
+      },
+      "wallClock": {
+        "start": "2026-09-25T06:44:34Z",
+        "end": "2026-09-25T16:57:48Z",
+        "min": 613.2
+      },
+      "activeMin": 334.7,
+      "idle": {
+        "min": 241.8,
+        "spans": [
+          {
+            "start": "2026-09-25T12:22:26.324Z",
+            "end": "2026-09-25T14:27:19.409Z",
+            "min": 124.9
+          },
+          {
+            "start": "2026-09-25T14:32:12.969Z",
+            "end": "2026-09-25T16:29:06.707Z",
+            "min": 116.9
+          }
+        ]
+      },
+      "agents": {
+        "runs": 20,
+        "phaseRuns": 11,
+        "followUpRuns": 5,
+        "helperRuns": 4,
+        "agentMin": 633.9,
+        "orchestratorMin": 71.5,
+        "maxConcurrent": 5,
+        "maxConcurrentAt": "2026-09-25T08:07:18.105Z"
+      },
+      "owner": {
+        "messages": 9,
+        "words": 395,
+        "longestAway": {
+          "start": "2026-09-25T09:10:28.513Z",
+          "end": "2026-09-25T14:27:21.656Z",
+          "min": 316.9
+        },
+        "agentMinWhileAway": 361.4
+      },
+      "git": {
+        "commits": 70,
+        "merges": 17,
+        "phaseMerges": 16
+      },
+      "tests": {
+        "commit": "c9713b9",
+        "command": "pnpm vitest run --reporter=json, run at this commit before the pre-publication history rewrite (it was 4969885 then). The rewrite removed seven third-party captures; the same command on the rewritten tree gives 703 passed, 2 failed (both need the removed captures), 13 skipped",
+        "passed": 722,
+        "skipped": 13,
+        "failed": 0,
+        "files": 53,
+        "byProject": [
+          {
+            "project": "apps/worker",
+            "passed": 181,
+            "skipped": 0
+          },
+          {
+            "project": "apps/web",
+            "passed": 128,
+            "skipped": 11
+          },
+          {
+            "project": "packages/stage-builder",
+            "passed": 104,
+            "skipped": 0
+          },
+          {
+            "project": "packages/schema",
+            "passed": 88,
+            "skipped": 0
+          },
+          {
+            "project": "packages/net",
+            "passed": 51,
+            "skipped": 0
+          },
+          {
+            "project": "packages/physics",
+            "passed": 47,
+            "skipped": 2
+          },
+          {
+            "project": "tools/fixture-capture",
+            "passed": 41,
+            "skipped": 0
+          },
+          {
+            "project": "packages/engine",
+            "passed": 33,
+            "skipped": 0
+          },
+          {
+            "project": "packages/capture-script",
+            "passed": 18,
+            "skipped": 0
+          },
+          {
+            "project": "packages/solver",
+            "passed": 13,
+            "skipped": 0
+          },
+          {
+            "project": "tools/batch-eval",
+            "passed": 8,
+            "skipped": 0
+          },
+          {
+            "project": "tools/ref-fetch",
+            "passed": 6,
+            "skipped": 0
+          },
+          {
+            "project": "tools/stage-debugger",
+            "passed": 3,
+            "skipped": 0
+          },
+          {
+            "project": "packages/ai",
+            "passed": 1,
+            "skipped": 0
+          }
+        ],
+        "source": {
+          "kind": "vitest",
+          "ref": "pnpm vitest run --reporter=json, run at this commit before the pre-publication history rewrite (it was 4969885 then). The rewrite removed seven third-party captures; the same command on the rewritten tree gives 703 passed, 2 failed (both need the removed captures), 13 skipped"
+        }
+      },
+      "lines": {
+        "source": 44926,
+        "test": 11390,
+        "files": 322
+      }
+    },
+    {
+      "id": "day-2",
+      "label": "Day 2",
+      "short": "wave 5 and launch prep",
+      "what": "Wave 5 (link portals, the extension, the AI docent, this build story) and launch prep (Cloudflare deploys and previews, legal drafts, the pre-publication scrub, the licence).",
+      "end": {
+        "sha": "f265f74",
+        "at": "2026-09-25T11:18:56-07:00",
+        "subject": "Add MIT LICENSE; fill domain, repo URL and code licence in legal drafts"
+      },
+      "wallClock": {
+        "start": "2026-09-25T16:57:48Z",
+        "end": "2026-09-25T18:18:56Z",
+        "min": 81.1
+      },
+      "activeMin": 71.9,
+      "idle": {
+        "min": 0,
+        "spans": []
+      },
+      "agents": {
+        "runs": 9,
+        "phaseRuns": 5,
+        "followUpRuns": 2,
+        "helperRuns": 2,
+        "agentMin": 222,
+        "orchestratorMin": 27.2,
+        "maxConcurrent": 6,
+        "maxConcurrentAt": "2026-09-25T17:10:13.374Z"
+      },
+      "owner": {
+        "messages": 4,
+        "words": 171,
+        "longestAway": {
+          "start": "2026-09-25T17:08:15.698Z",
+          "end": "2026-09-25T17:44:21.901Z",
+          "min": 36.1
+        },
+        "agentMinWhileAway": 142.9
+      },
+      "git": {
+        "commits": 26,
+        "merges": 7,
+        "phaseMerges": 5
+      },
+      "tests": {
+        "commit": "f265f74",
+        "command": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)",
+        "passed": 922,
+        "skipped": 14,
+        "failed": 0,
+        "files": 71,
+        "byProject": [
+          {
+            "project": "apps/worker",
+            "passed": 237,
+            "skipped": 0
+          },
+          {
+            "project": "apps/web",
+            "passed": 180,
+            "skipped": 11
+          },
+          {
+            "project": "packages/stage-builder",
+            "passed": 108,
+            "skipped": 0
+          },
+          {
+            "project": "packages/schema",
+            "passed": 88,
+            "skipped": 0
+          },
+          {
+            "project": "packages/net",
+            "passed": 51,
+            "skipped": 0
+          },
+          {
+            "project": "packages/physics",
+            "passed": 51,
+            "skipped": 2
+          },
+          {
+            "project": "tools/build-story",
+            "passed": 36,
+            "skipped": 1
+          },
+          {
+            "project": "tools/fixture-capture",
+            "passed": 34,
+            "skipped": 0
+          },
+          {
+            "project": "apps/extension",
+            "passed": 33,
+            "skipped": 0
+          },
+          {
+            "project": "packages/engine",
+            "passed": 33,
+            "skipped": 0
+          },
+          {
+            "project": "packages/solver",
+            "passed": 20,
+            "skipped": 0
+          },
+          {
+            "project": "packages/capture-script",
+            "passed": 19,
+            "skipped": 0
+          },
+          {
+            "project": "tools/docent-index",
+            "passed": 14,
+            "skipped": 0
+          },
+          {
+            "project": "tools/batch-eval",
+            "passed": 8,
+            "skipped": 0
+          },
+          {
+            "project": "tools/ref-fetch",
+            "passed": 6,
+            "skipped": 0
+          },
+          {
+            "project": "tools/stage-debugger",
+            "passed": 3,
+            "skipped": 0
+          },
+          {
+            "project": "packages/ai",
+            "passed": 1,
+            "skipped": 0
+          }
+        ],
+        "source": {
+          "kind": "vitest",
+          "ref": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)"
+        }
+      },
+      "lines": {
+        "source": 58330,
+        "test": 14847,
+        "files": 427
+      }
+    }
+  ],
   "runs": [
     {
       "phase": "01",
@@ -138,7 +446,7 @@
       "log": "phase-01",
       "failedAttempts": 4,
       "merge": {
-        "sha": "e6ab7ec",
+        "sha": "aa1b3c0",
         "at": "2026-09-25T00:44:55-07:00",
         "subject": "Merge phase 01: reference & fidelity spec"
       },
@@ -166,7 +474,7 @@
       "log": "phase-02",
       "failedAttempts": 11,
       "merge": {
-        "sha": "95beca3",
+        "sha": "b1edf99",
         "at": "2026-09-25T00:43:23-07:00",
         "subject": "Merge phase 02: foundation"
       },
@@ -194,7 +502,7 @@
       "log": "phase-02",
       "failedAttempts": null,
       "merge": {
-        "sha": "2978861",
+        "sha": "1e90a6f",
         "at": "2026-09-25T01:05:18-07:00",
         "subject": "Merge phase 02b: schema v0.2"
       },
@@ -222,7 +530,7 @@
       "log": "phase-03",
       "failedAttempts": 13,
       "merge": {
-        "sha": "b8a8192",
+        "sha": "032114c",
         "at": "2026-09-25T01:41:31-07:00",
         "subject": "Merge phase 03: stage builder"
       },
@@ -250,7 +558,7 @@
       "log": "phase-04",
       "failedAttempts": 8,
       "merge": {
-        "sha": "d559ae3",
+        "sha": "41278d1",
         "at": "2026-09-25T01:57:46-07:00",
         "subject": "Merge phase 04: renderer"
       },
@@ -278,7 +586,7 @@
       "log": "phase-05",
       "failedAttempts": 8,
       "merge": {
-        "sha": "30b7a4f",
+        "sha": "6566ab6",
         "at": "2026-09-25T01:34:01-07:00",
         "subject": "Merge phase 05: physics"
       },
@@ -306,7 +614,7 @@
       "log": "phase-06",
       "failedAttempts": 5,
       "merge": {
-        "sha": "e03ec48",
+        "sha": "b8522a7",
         "at": "2026-09-25T01:43:32-07:00",
         "subject": "Merge phase 06: controller, pairing, input"
       },
@@ -334,7 +642,7 @@
       "log": "phase-07",
       "failedAttempts": 7,
       "merge": {
-        "sha": "52efb60",
+        "sha": "e2c55c6",
         "at": "2026-09-25T01:48:13-07:00",
         "subject": "Merge phase 07: capture & stage service; wire real @wwm/stage-builder"
       },
@@ -362,7 +670,7 @@
       "log": "phase-08",
       "failedAttempts": 7,
       "merge": {
-        "sha": "0210bf3",
+        "sha": "e7b6099",
         "at": "2026-09-25T02:56:51-07:00",
         "subject": "Merge phase 08: game integration; gate dev routes out of prod; keep BBC fixture out of the game bundle"
       },
@@ -384,7 +692,7 @@
       "log": "phase-09",
       "failedAttempts": 11,
       "merge": {
-        "sha": "4f3511d",
+        "sha": "ab67b82",
         "at": "2026-09-25T02:59:20-07:00",
         "subject": "Merge phase 09: solver, playability validation, batch eval"
       },
@@ -406,7 +714,7 @@
       "log": null,
       "failedAttempts": null,
       "merge": {
-        "sha": "14be3fe",
+        "sha": "f22c3b7",
         "at": "2026-09-25T02:22:32-07:00",
         "subject": "Merge phase 04b: engine polish (fireworks, idle cost, private-field guard)"
       },
@@ -434,7 +742,7 @@
       "log": "phase-10",
       "failedAttempts": 7,
       "merge": {
-        "sha": "0371944",
+        "sha": "86767f9",
         "at": "2026-09-25T02:48:38-07:00",
         "subject": "Merge phase 10: showcase, leaderboards, sharing"
       },
@@ -462,7 +770,7 @@
       "log": "phase-08",
       "failedAttempts": null,
       "merge": {
-        "sha": "d083b9c",
+        "sha": "0a174c1",
         "at": "2026-09-25T03:44:35-07:00",
         "subject": "Merge phase 08b: leaderboards, ghost race, challenges wired into the game"
       },
@@ -484,7 +792,7 @@
       "log": null,
       "failedAttempts": null,
       "merge": {
-        "sha": "d9bd63a",
+        "sha": "826a30c",
         "at": "2026-09-25T03:57:47-07:00",
         "subject": "Merge phase 03b/05b: builder & physics fixes from solver; solver runs in workerd"
       },
@@ -512,7 +820,7 @@
       "log": "phase-12",
       "failedAttempts": 12,
       "merge": {
-        "sha": "3e1f29b",
+        "sha": "1e55b9d",
         "at": "2026-09-25T04:42:28-07:00",
         "subject": "Merge phase 12 (local): perf report, bundle split, security hardening, load tests, launch docs & drafts"
       },
@@ -576,7 +884,7 @@
       "log": "phase-12",
       "failedAttempts": null,
       "merge": {
-        "sha": "31bbabb",
+        "sha": "1ac6f0c",
         "at": "2026-09-25T05:19:23-07:00",
         "subject": "Merge phase 12b: pairing secret, capture limits, pipeline fixes, iframe guard, deferred Rapier, /log CLS"
       },
@@ -617,6 +925,226 @@
       "failedAttempts": null,
       "merge": null,
       "lane": 2
+    },
+    {
+      "phase": "13",
+      "title": "Link portals",
+      "wave": 5,
+      "kind": "phase",
+      "agentId": "a43d91a043a2afc0d",
+      "span": {
+        "start": "2026-09-25T16:57:57.271Z",
+        "end": "2026-09-25T17:38:44.494Z",
+        "min": 40.8
+      },
+      "running": false,
+      "logWindow": {
+        "start": "2026-09-25T16:58:00Z",
+        "end": "2026-09-25T17:45:00Z",
+        "min": 47,
+        "approx": true,
+        "text": "2026-09-25 ~09:58 → ~10:45 PDT."
+      },
+      "log": "phase-13",
+      "failedAttempts": 5,
+      "merge": {
+        "sha": "48edaf4",
+        "at": "2026-09-25T10:39:25-07:00",
+        "subject": "Merge phase 13: link portals and web journeys"
+      },
+      "lane": 0
+    },
+    {
+      "phase": "14",
+      "title": "Extension",
+      "wave": 5,
+      "kind": "phase",
+      "agentId": "ad4d356a8465a5f48",
+      "span": {
+        "start": "2026-09-25T16:58:04.694Z",
+        "end": "2026-09-25T17:36:39.444Z",
+        "min": 38.6
+      },
+      "running": false,
+      "logWindow": {
+        "start": "2026-09-25T16:58:00Z",
+        "end": "2026-09-25T17:45:00Z",
+        "min": 47,
+        "approx": true,
+        "text": "2026-09-25 ~16:58Z → ~17:45Z."
+      },
+      "log": "phase-14",
+      "failedAttempts": 7,
+      "merge": {
+        "sha": "9306b58",
+        "at": "2026-09-25T10:36:43-07:00",
+        "subject": "Merge phase 14: Maze this page (extension + bookmarklet + upload share)"
+      },
+      "lane": 1
+    },
+    {
+      "phase": "15",
+      "title": "AI docent",
+      "wave": 5,
+      "kind": "phase",
+      "agentId": "a5a09857394ad4ba5",
+      "span": {
+        "start": "2026-09-25T16:58:12.343Z",
+        "end": "2026-09-25T18:04:11.037Z",
+        "min": 66
+      },
+      "running": false,
+      "logWindow": {
+        "start": "2026-09-25T16:50:00Z",
+        "end": "2026-09-25T18:05:00Z",
+        "min": 75,
+        "approx": true,
+        "text": "2026-09-25 ~16:50Z → ~18:05Z."
+      },
+      "log": "phase-15",
+      "failedAttempts": 10,
+      "merge": {
+        "sha": "242aa51",
+        "at": "2026-09-25T11:08:18-07:00",
+        "subject": "Merge phase 15: AI docent (grounded, cited, via Cloudflare AI Gateway)"
+      },
+      "lane": 2
+    },
+    {
+      "phase": "16",
+      "title": "Build story",
+      "wave": 5,
+      "kind": "phase",
+      "agentId": "a43c92214f91c13f7",
+      "span": {
+        "start": "2026-09-25T16:58:19.479Z",
+        "end": "2026-09-25T17:32:22.693Z",
+        "min": 34.1
+      },
+      "running": false,
+      "logWindow": {
+        "start": "2026-09-25T16:58:00Z",
+        "end": "2026-09-25T17:35:00Z",
+        "min": 37,
+        "approx": true,
+        "text": "2026-09-25 ~16:58Z → ~17:35Z."
+      },
+      "log": "phase-16",
+      "failedAttempts": 6,
+      "merge": {
+        "sha": "c343e47",
+        "at": "2026-09-25T10:32:52-07:00",
+        "subject": "Merge phase 16: build story (build clock, AI-found-bugs gallery, social drafts)"
+      },
+      "lane": 3
+    },
+    {
+      "phase": "A3",
+      "title": "Legal drafts",
+      "wave": 5,
+      "kind": "follow-up",
+      "agentId": "a8e30c079e3db646a",
+      "span": {
+        "start": "2026-09-25T17:09:50.489Z",
+        "end": "2026-09-25T17:13:33.988Z",
+        "min": 3.7
+      },
+      "running": false,
+      "logWindow": null,
+      "log": null,
+      "failedAttempts": null,
+      "merge": {
+        "sha": "3023941",
+        "at": "2026-09-25T10:13:39-07:00",
+        "subject": "Merge legal drafts with placeholders (A3)"
+      },
+      "lane": 4
+    },
+    {
+      "phase": "17",
+      "title": "Cloudflare deploys and previews",
+      "wave": 5,
+      "kind": "phase",
+      "agentId": "a376b059a8354fb2f",
+      "span": {
+        "start": "2026-09-25T17:10:13.374Z",
+        "end": "2026-09-25T17:30:16.287Z",
+        "min": 20
+      },
+      "running": false,
+      "logWindow": {
+        "start": "2026-09-25T17:00:00Z",
+        "end": "2026-09-25T17:30:00Z",
+        "min": 30,
+        "approx": true,
+        "text": "2026-09-25, about 17:00Z to 17:30Z."
+      },
+      "log": "phase-17",
+      "failedAttempts": 0,
+      "merge": {
+        "sha": "f24fa16",
+        "at": "2026-09-25T10:30:20-07:00",
+        "subject": "Merge phase 17: Cloudflare production + Worker Previews pipeline, provisioning scripts"
+      },
+      "lane": 5
+    },
+    {
+      "phase": "scrub",
+      "title": "Pre-publication scrub",
+      "wave": 5,
+      "kind": "follow-up",
+      "agentId": "a0707689d110edfb2",
+      "span": {
+        "start": "2026-09-25T17:45:55.482Z",
+        "end": "2026-09-25T18:01:17.016Z",
+        "min": 15.4
+      },
+      "running": false,
+      "logWindow": null,
+      "log": null,
+      "failedAttempts": null,
+      "merge": {
+        "sha": "3377c4e",
+        "at": "2026-09-25T11:01:28-07:00",
+        "subject": "Merge pre-publication content scrub"
+      },
+      "lane": 0
+    },
+    {
+      "phase": "scrub",
+      "title": "Inspect images batch A",
+      "wave": 5,
+      "kind": "helper",
+      "agentId": "a6a5aa290e4944f95",
+      "span": {
+        "start": "2026-09-25T17:46:31.818Z",
+        "end": "2026-09-25T17:47:57.801Z",
+        "min": 1.4
+      },
+      "running": false,
+      "logWindow": null,
+      "log": null,
+      "failedAttempts": null,
+      "merge": null,
+      "lane": 1
+    },
+    {
+      "phase": "scrub",
+      "title": "Inspect images batch B",
+      "wave": 5,
+      "kind": "helper",
+      "agentId": "a48f2fbe9ce0e8bc5",
+      "span": {
+        "start": "2026-09-25T17:46:36.759Z",
+        "end": "2026-09-25T17:48:37.200Z",
+        "min": 2
+      },
+      "running": false,
+      "logWindow": null,
+      "log": null,
+      "failedAttempts": null,
+      "merge": null,
+      "lane": 3
     }
   ],
   "orchestratorTurns": [
@@ -752,13 +1280,53 @@
     },
     {
       "start": "2026-09-25T16:50:17.351Z",
-      "end": "2026-09-25T16:57:48Z",
-      "min": 7.5
+      "end": "2026-09-25T16:58:43.269Z",
+      "min": 8.4
+    },
+    {
+      "start": "2026-09-25T17:08:15.688Z",
+      "end": "2026-09-25T17:10:35.188Z",
+      "min": 2.3
+    },
+    {
+      "start": "2026-09-25T17:13:34.110Z",
+      "end": "2026-09-25T17:13:45.815Z",
+      "min": 0.2
+    },
+    {
+      "start": "2026-09-25T17:30:16.415Z",
+      "end": "2026-09-25T17:35:38.802Z",
+      "min": 5.4
+    },
+    {
+      "start": "2026-09-25T17:36:39.580Z",
+      "end": "2026-09-25T17:42:17.864Z",
+      "min": 5.6
+    },
+    {
+      "start": "2026-09-25T17:44:21.891Z",
+      "end": "2026-09-25T17:48:41.250Z",
+      "min": 4.3
+    },
+    {
+      "start": "2026-09-25T18:01:17.187Z",
+      "end": "2026-09-25T18:08:50.656Z",
+      "min": 7.6
+    },
+    {
+      "start": "2026-09-25T18:10:48.766Z",
+      "end": "2026-09-25T18:11:13.632Z",
+      "min": 0.4
+    },
+    {
+      "start": "2026-09-25T18:18:26.556Z",
+      "end": "2026-09-25T18:18:56Z",
+      "min": 0.5
     }
   ],
   "owner": {
-    "messages": 9,
-    "words": 395,
+    "messages": 13,
+    "words": 566,
     "longestAway": {
       "start": "2026-09-25T09:10:28.513Z",
       "end": "2026-09-25T14:27:21.656Z",
@@ -865,6 +1433,46 @@
           "kind": "session",
           "ref": "content/build-story/sources/session.json"
         }
+      },
+      {
+        "at": "2026-09-25T17:08:15.698Z",
+        "kind": "approval",
+        "label": "Approves the curated list; asks for placeholder legal drafts; offers a Cloudflare account",
+        "words": 97,
+        "source": {
+          "kind": "session",
+          "ref": "content/build-story/sources/session.json"
+        }
+      },
+      {
+        "at": "2026-09-25T17:44:21.901Z",
+        "kind": "approval",
+        "label": "Approves the names, a public repo, the wwm.ewj.dev domain and deploy on merge",
+        "words": 41,
+        "source": {
+          "kind": "session",
+          "ref": "content/build-story/sources/session.json"
+        }
+      },
+      {
+        "at": "2026-09-25T18:10:48.796Z",
+        "kind": "question",
+        "label": "Asks how AI is used, to choose the docent model",
+        "words": 12,
+        "source": {
+          "kind": "session",
+          "ref": "content/build-story/sources/session.json"
+        }
+      },
+      {
+        "at": "2026-09-25T18:18:26.584Z",
+        "kind": "approval",
+        "label": "Approves a docent model bake-off; picks the MIT licence",
+        "words": 21,
+        "source": {
+          "kind": "session",
+          "ref": "content/build-story/sources/session.json"
+        }
       }
     ]
   },
@@ -872,13 +1480,13 @@
     {
       "id": "G0",
       "at": "2026-09-25T01:06:25-07:00",
-      "sha": "728dee8",
+      "sha": "5b0a132",
       "subject": "Schema 0.2.1: CCR resolutions (ramp slope tolerance, item clearance, balanced slices); gate G0 passed"
     },
     {
       "id": "G1",
       "at": "2026-09-25T01:59:34-07:00",
-      "sha": "ff2b94b",
+      "sha": "82384c9",
       "subject": "Gate G1 passed; wave 2 started; polish backlog"
     }
   ],
@@ -886,52 +1494,57 @@
     {
       "version": "0.1.0",
       "at": "2026-09-25T00:18:20-07:00",
-      "sha": "f689e9c"
+      "sha": "71d3cbe"
     },
     {
       "version": "0.2.0",
       "at": "2026-09-25T00:48:57-07:00",
-      "sha": "9b5ed23"
+      "sha": "5b234e7"
     },
     {
       "version": "0.2.1",
       "at": "2026-09-25T01:06:25-07:00",
-      "sha": "728dee8"
+      "sha": "5b0a132"
     },
     {
       "version": "0.2.2",
       "at": "2026-09-25T01:34:32-07:00",
-      "sha": "a08a463"
+      "sha": "ca2aea9"
     },
     {
       "version": "0.2.3",
       "at": "2026-09-25T01:43:39-07:00",
-      "sha": "9efdd02"
+      "sha": "c0eb8ef"
     },
     {
       "version": "0.2.4",
       "at": "2026-09-25T01:50:27-07:00",
-      "sha": "5dd0875"
+      "sha": "6408628"
     },
     {
       "version": "0.2.5",
       "at": "2026-09-25T02:50:19-07:00",
-      "sha": "2bb831f"
+      "sha": "362b3bc"
     },
     {
       "version": "0.2.6",
       "at": "2026-09-25T03:47:48-07:00",
-      "sha": "d01579e"
+      "sha": "5470a38"
     },
     {
       "version": "0.2.7",
       "at": "2026-09-25T04:45:04-07:00",
-      "sha": "a9c6e97"
+      "sha": "cf062cd"
     },
     {
       "version": "0.3.0",
       "at": "2026-09-25T09:51:13-07:00",
-      "sha": "2e7b159"
+      "sha": "aa08e0d"
+    },
+    {
+      "version": "0.3.1",
+      "at": "2026-09-25T10:39:25-07:00",
+      "sha": "8daf506"
     }
   ],
   "preGit": [
@@ -985,40 +1598,40 @@
     }
   ],
   "git": {
-    "commits": 70,
-    "merges": 17,
-    "phaseMerges": 16,
+    "commits": 96,
+    "merges": 24,
+    "phaseMerges": 21,
     "firstCommit": {
-      "sha": "f689e9c",
+      "sha": "71d3cbe",
       "at": "2026-09-25T00:18:20-07:00",
       "subject": "Research and phased build plans"
     },
     "source": {
       "kind": "git",
-      "ref": "git log 4969885 (70 commits)"
+      "ref": "git log f265f74 (96 commits)"
     }
   },
   "tests": {
-    "commit": "4969885",
-    "command": "pnpm vitest run --reporter=json",
-    "passed": 722,
-    "skipped": 13,
+    "commit": "f265f74",
+    "command": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)",
+    "passed": 922,
+    "skipped": 14,
     "failed": 0,
-    "files": 53,
+    "files": 71,
     "byProject": [
       {
         "project": "apps/worker",
-        "passed": 181,
+        "passed": 237,
         "skipped": 0
       },
       {
         "project": "apps/web",
-        "passed": 128,
+        "passed": 180,
         "skipped": 11
       },
       {
         "project": "packages/stage-builder",
-        "passed": 104,
+        "passed": 108,
         "skipped": 0
       },
       {
@@ -1033,12 +1646,22 @@
       },
       {
         "project": "packages/physics",
-        "passed": 47,
+        "passed": 51,
         "skipped": 2
       },
       {
+        "project": "tools/build-story",
+        "passed": 36,
+        "skipped": 1
+      },
+      {
         "project": "tools/fixture-capture",
-        "passed": 41,
+        "passed": 34,
+        "skipped": 0
+      },
+      {
+        "project": "apps/extension",
+        "passed": 33,
         "skipped": 0
       },
       {
@@ -1047,13 +1670,18 @@
         "skipped": 0
       },
       {
-        "project": "packages/capture-script",
-        "passed": 18,
+        "project": "packages/solver",
+        "passed": 20,
         "skipped": 0
       },
       {
-        "project": "packages/solver",
-        "passed": 13,
+        "project": "packages/capture-script",
+        "passed": 19,
+        "skipped": 0
+      },
+      {
+        "project": "tools/docent-index",
+        "passed": 14,
         "skipped": 0
       },
       {
@@ -1079,63 +1707,75 @@
     ],
     "source": {
       "kind": "vitest",
-      "ref": "pnpm vitest run --reporter=json"
+      "ref": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)"
     }
   },
   "lines": {
     "total": {
-      "source": 44926,
-      "test": 11390,
-      "files": 322
+      "source": 58330,
+      "test": 14847,
+      "files": 427
     },
     "byPackage": [
       {
         "dir": "apps/web",
-        "files": 82,
-        "sourceLines": 17669,
-        "testLines": 2055
+        "files": 119,
+        "sourceLines": 24419,
+        "testLines": 2827
       },
       {
         "dir": "apps/worker",
-        "files": 62,
-        "sourceLines": 4858,
-        "testLines": 3181
+        "files": 79,
+        "sourceLines": 6386,
+        "testLines": 4106
       },
       {
         "dir": "packages/engine",
-        "files": 25,
-        "sourceLines": 5108,
+        "files": 27,
+        "sourceLines": 5871,
         "testLines": 515
       },
       {
         "dir": "packages/stage-builder",
-        "files": 29,
-        "sourceLines": 4368,
-        "testLines": 1072
+        "files": 33,
+        "sourceLines": 4771,
+        "testLines": 1312
       },
       {
         "dir": "packages/physics",
-        "files": 23,
-        "sourceLines": 2188,
-        "testLines": 1322
+        "files": 24,
+        "sourceLines": 2229,
+        "testLines": 1421
+      },
+      {
+        "dir": "packages/solver",
+        "files": 18,
+        "sourceLines": 2770,
+        "testLines": 380
       },
       {
         "dir": "packages/schema",
         "files": 19,
-        "sourceLines": 1927,
+        "sourceLines": 1928,
         "testLines": 1198
-      },
-      {
-        "dir": "packages/solver",
-        "files": 17,
-        "sourceLines": 2770,
-        "testLines": 319
       },
       {
         "dir": "packages/net",
         "files": 18,
         "sourceLines": 1596,
         "testLines": 973
+      },
+      {
+        "dir": "apps/extension",
+        "files": 15,
+        "sourceLines": 1600,
+        "testLines": 790
+      },
+      {
+        "dir": "tools/build-story",
+        "files": 15,
+        "sourceLines": 1186,
+        "testLines": 377
       },
       {
         "dir": "tools/batch-eval",
@@ -1145,9 +1785,15 @@
       },
       {
         "dir": "packages/capture-script",
-        "files": 6,
-        "sourceLines": 871,
-        "testLines": 304
+        "files": 7,
+        "sourceLines": 1072,
+        "testLines": 340
+      },
+      {
+        "dir": "tools/docent-index",
+        "files": 12,
+        "sourceLines": 931,
+        "testLines": 157
       },
       {
         "dir": "tools/stage-debugger",
@@ -1180,8 +1826,8 @@
     }
   },
   "buildLogs": {
-    "files": 14,
-    "failedAttempts": 93,
+    "files": 19,
+    "failedAttempts": 121,
     "humanInterventions": 0,
     "source": {
       "kind": "build-log",

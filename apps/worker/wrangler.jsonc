@@ -17,6 +17,10 @@
   "compatibility_flags": ["nodejs_compat"],
   "observability": { "enabled": true, "head_sampling_rate": 1 },
 
+  // Phase 18 share cards: fonts and the practice-stage texture are bundled as binary (Data) modules.
+  // (Inherited by env.production and its Previews.)
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf", "**/*.png"], "fallthrough": true }],
+
   // Build jobs run in the BuildJob Durable Object; the builder is CPU-heavy on tall pages (Phase 03), so
   // raise the per-invocation CPU limit (Workers Paid, "standard" usage model; max 300 000 ms).
   "limits": { "cpu_ms": 300000 },
@@ -126,7 +130,9 @@
         "directory": "../web/dist",
         "binding": "ASSETS",
         "not_found_handling": "single-page-application",
-        "run_worker_first": ["/api/*", "/s/*"]
+        // Phase 18: `/`, `/log` and `/j/*` get their own link-preview tags (the Worker serves the app shell with
+        // them), `/r/*` are score permalinks. Everything else stays asset-first.
+        "run_worker_first": ["/api/*", "/s/*", "/r/*", "/j/*", "/", "/log"]
       },
       "vars": {
         "CAPTURE_BACKEND": "browser-run",
@@ -211,7 +217,7 @@
           "ROOM_STATS": "0",
           "TELEMETRY_INGEST": "0",
           "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
-          "AI_GATEWAY_ID": "wwm-preview",
+          "AI_GATEWAY_ID": "wwm", // one gateway for production and Previews (owner decision 2026-09-25)
           "DOCENT_DAILY_LIMIT": "50",
           "DOCENT_PROVIDER": "auto",
           "DOCENT_MODEL": "claude-haiku-4-5",

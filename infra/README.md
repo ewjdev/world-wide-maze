@@ -192,7 +192,23 @@ The docent (`POST /api/docent`, the "Ask the docent" panel on `/about` and `/log
    - `DOCENT_LIMIT_PER_HOUR`: per IP.
    - `DOCENT_MAX_TOKENS`.
    - `DOCENT_MODEL`: default `claude-haiku-4-5`.
+   - `DOCENT_EFFORT`: `low`…`max`, for models that take `output_config.effort` (Claude Sonnet 5, Opus 5, Opus 5.5; ignored on Haiku 4.5). Unset = the model's default. Models that think (Sonnet 5, the Opus line) count thinking against `DOCENT_MAX_TOKENS`, so give them `"1024"`.
    - `DOCENT_CACHE_TTL_DAYS`.
    - Runtime kill switch: the KV key `kill:docent` in `CACHE`.
 4. **Check it:** ask a suggested question on `/about`. The answer must not start with "Offline mode". Then run the real-model eval, about 26 short calls:
    `AI_GATEWAY_ACCOUNT_ID=… AI_GATEWAY_ID=wwm ANTHROPIC_API_KEY=… pnpm docent:eval --real`.
+5. **Pick the model (bake-off, Phase 15b).** `pnpm docent:bakeoff` runs both eval sets (`eval.json` and the held-out `eval-heldout.json`) across a model matrix through the production docent engine and the gateway, has `claude-opus-5` judge every held-out answer for claims the excerpts don't support, and recommends the cheapest config with **zero unsupported claims on the held-out set and p50 time-to-first-token ≤ 1.5 s**. The matrix, prices, judge, cap and rule are in `tools/docent-index/bakeoff.config.json`.
+   - Without `--yes` it only prints the up-front cost estimate. With `--yes` it refuses to start if the estimate is above the spend cap (`--max-cost`, default $2), and stops starting new calls once the recorded spend reaches it. Output: `tools/docent-index/bakeoff/<timestamp>/{report.md,report.html,judge-sample.md,results.jsonl}` (gitignored; copy what you keep into `docs/build-log/assets/`).
+   - Use the gateway you'll serve from (`wwm`), or `wwm-preview` so the production spend limit isn't touched. The run sends `cf-aig-skip-cache: true`, so a gateway cache can't flatter the latencies.
+   ```sh
+   export AI_GATEWAY_ACCOUNT_ID=… AI_GATEWAY_ID=wwm ANTHROPIC_API_KEY=…   # and/or AI_GATEWAY_TOKEN=…
+   pnpm docent:bakeoff --real                                                # estimate only, no calls
+   pnpm docent:bakeoff --real --yes --limit 1 --configs haiku-4-5            # smoke test, a few cents
+   # within ~$2 (estimate $1.94): held-out set, three configs
+   pnpm docent:bakeoff --real --yes --sets heldout --configs haiku-4-5,sonnet-5,opus-5-5@low
+   # the full matrix on both sets (estimate $5.70): needs a higher cap
+   pnpm docent:bakeoff --real --yes --max-cost 6
+   # interrupted or capped? continue in the same directory (finished answers are not re-asked)
+   pnpm docent:bakeoff --real --yes --resume tools/docent-index/bakeoff/<timestamp>
+   ```
+   The estimates are deliberately high: they assume the Opus-line tokenizer uses 1.3× Haiku's tokens and that every question reaching the model gets a judged answer. Then read `judge-sample.md` (all flagged answers plus a random sample) and check that the judge's verdicts are fair before trusting the recommendation. Set `DOCENT_MODEL` / `DOCENT_EFFORT` (and `DOCENT_MAX_TOKENS`) to the result. `pnpm docent:bakeoff` with no flags is the offline dry run: no keys, no calls, and fake numbers.

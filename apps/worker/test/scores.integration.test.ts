@@ -198,7 +198,8 @@ describe('scores + share (workerd)', () => {
       ],
     });
     expect(ok.status).toBe(201);
-    expect(await ok.json()).toEqual({ rank: 1 });
+    // Phase 18: + the entry's permalink id (`/r/<scoreId>`)
+    expect(await ok.json()).toEqual({ rank: 1, scoreId: expect.stringMatching(/^[A-Za-z0-9_-]{16}$/) });
     await submit({
       kind: 'run',
       name: 'second',
@@ -214,9 +215,14 @@ describe('scores + share (workerd)', () => {
     const r = await api(`/s/${stage.stageId}?beat=1479&by=replayer`, newIp());
     expect(r.status).toBe(200);
     const html = await r.text();
-    expect(html).toContain('<meta property="og:image" content="http://localhost/api/share/');
+    // Phase 18: the rendered invite card; link parameters stay out of the preview (no spoofable numbers)…
+    expect(html).toContain(
+      `<meta property="og:image" content="http://localhost/api/cards/stage/${stage.stageId}.png?v=`,
+    );
     expect(html).toContain('<meta name="twitter:card" content="summary_large_image">');
-    expect(html).toContain('Beat replayer’s 1,479 points');
+    expect(html).not.toContain('1,479');
+    expect(html).not.toContain('replayer’s');
+    // …but still reach the game's challenge banner.
     expect(html).toContain(`/play/${stage.stageId}?beat=1479&amp;by=replayer`);
     const evil = await (await api(`/s/${stage.stageId}?beat=1&by=%3Cscript%3E`, newIp())).text();
     expect(evil).not.toContain('<script>');

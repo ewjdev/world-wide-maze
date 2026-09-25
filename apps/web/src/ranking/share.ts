@@ -34,15 +34,63 @@ export function shareText(title: string, score?: number): string {
 
 export type ShareOutcome = 'shared' | 'copied' | 'cancelled' | 'failed';
 
-/** Web Share API where available (mobile), else copy the link. */
-export async function shareLink(data: { url: string; title: string; text: string }): Promise<ShareOutcome> {
+// ── Phase 18: score permalinks and share-card images ────────────────────────────────────────────────
+
+/** A submitted stage score: its link preview is the score card, drawn from the server's row. */
+export function scoreUrl(origin: string, stageId: string, scoreId: string): string {
+  return `${origin.replace(/\/$/, '')}/s/${encodeURIComponent(stageId)}/r/${encodeURIComponent(scoreId)}`;
+}
+
+/** A run-board entry (the session total). */
+export function runUrl(origin: string, scoreId: string): string {
+  return `${origin.replace(/\/$/, '')}/r/${encodeURIComponent(scoreId)}`;
+}
+
+/** The card image the Worker renders for a link (same origin; `/api/cards/<kind>/<id>.png`). */
+export function cardImage(kind: 'stage' | 'score' | 'run' | 'journey' | 'site', id: string): string {
+  return `/api/cards/${kind}/${encodeURIComponent(id)}.png`;
+}
+
+/** The card as a file for the Web Share API (null when it can't be fetched, e.g. offline). */
+export async function fetchCardFile(src: string, name = 'world-wide-maze.png'): Promise<File | null> {
+  try {
+    const res = await fetch(src);
+    if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('image/')) return null;
+    return new File([await res.blob()], name, { type: 'image/png' });
+  } catch {
+    return null;
+  }
+}
+
+/** Phones and tablets get the share sheet; desktops copy the link (a share sheet there is rarely wanted). */
+function prefersShareSheet(): boolean {
+  return typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+}
+
+/**
+ * Web Share on touch devices (with the card image attached when the browser can share files, the link in the
+ * text so it survives apps that drop `url` next to a file), else copy the link.
+ */
+export async function shareLink(data: {
+  url: string;
+  title: string;
+  text: string;
+  file?: File | null;
+}): Promise<ShareOutcome> {
   const nav = typeof navigator === 'undefined' ? undefined : navigator;
-  if (nav?.share && (!nav.canShare || nav.canShare(data))) {
-    try {
-      await nav.share(data);
-      return 'shared';
-    } catch (e) {
-      if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled';
+  if (nav?.share && prefersShareSheet()) {
+    const plain = { url: data.url, title: data.title, text: data.text };
+    const withFile = data.file
+      ? { files: [data.file], title: data.title, text: `${data.text}\n${data.url}` }
+      : null;
+    const payload = withFile && nav.canShare?.(withFile) ? withFile : plain;
+    if (!nav.canShare || nav.canShare(payload)) {
+      try {
+        await nav.share(payload);
+        return 'shared';
+      } catch (e) {
+        if (e instanceof DOMException && e.name === 'AbortError') return 'cancelled';
+      }
     }
   }
   try {

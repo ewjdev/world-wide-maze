@@ -73,5 +73,13 @@ Web fonts (Figtree, Instrument Sans, Newsreader, Unbounded, IBM Plex Mono) come 
 under the SIL Open Font License and are not stored in this repository. Other dependencies are installed from npm
 under their own licences (see `pnpm-lock.yaml`).
 
+The share-card renderer (Phase 18) embeds four static, subset instances of two of those fonts in the Worker,
+stored in `apps/worker/src/cards/fonts/`: Unbounded Black and Bold (Copyright 2022 The Unbounded Project Authors,
+https://github.com/googlefonts/unbounded) and Figtree SemiBold and ExtraBold (Copyright 2022 The Figtree Project
+Authors, https://github.com/erikdkennedy/figtree), both under the SIL Open Font License 1.1
+(`apps/worker/src/cards/fonts/OFL.txt`). They were instanced and subset from the Google Fonts variable TTFs with
+fonttools (`build-fonts.sh`); the font names are unchanged (no Reserved Font Names are declared). The cards are
+rasterised with resvg (`@resvg/resvg-wasm`, MPL-2.0), used unmodified from npm.
+
 ## Licence
 The project's own code is released under the [MIT License](LICENSE). Third-party pages in `fixtures/` keep their own licences (see above); no original 2013 World Wide Maze assets are included.

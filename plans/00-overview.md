@@ -250,3 +250,4 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
     - `ANTHROPIC_API_KEY` (production and Preview base config).
     - The legal placeholders (operator, contact, jurisdiction, date, address).
     - Running the bake-off once keys exist.
+| 18 | in progress | feat/share-cards | — | dynamic OG share cards (invite, high score, run rank, journey) rendered in the Worker, R2-cached; draft PR → launch/config-legal-story |

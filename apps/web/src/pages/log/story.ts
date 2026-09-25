@@ -5,7 +5,7 @@
  */
 import bugsJson from '../../../../../content/build-story/bugs.json';
 import timelineJson from '../../../../../content/build-story/timeline.json';
-import type { Run, Timeline } from '../../../../../tools/build-story/src/types.ts';
+import type { Run, Segment, Timeline } from '../../../../../tools/build-story/src/types.ts';
 
 export const TL = timelineJson as unknown as Timeline;
 
@@ -46,7 +46,14 @@ export const BUGS = bugsJson as unknown as {
   other: OtherBug[];
 };
 
-export type { Run, Timeline };
+export type { Run, Segment, Timeline };
+
+/**
+ * The first stretch is the headline (Night 1: the original overnight claim, measured exactly as first published);
+ * the later ones are shown after it, never folded into it.
+ */
+export const FIRST = TL.segments[0] as Segment;
+export const LATER = TL.segments.slice(1);
 
 const ms = (iso: string) => Date.parse(iso);
 
@@ -103,6 +110,7 @@ export const WAVE_NAMES: Record<number, string> = {
   2: 'Integration and solver',
   3: 'Showcase and fixes',
   4: 'Launch hardening',
+  5: 'Tribute features and launch prep',
 };
 
 /** Top-level runs and their helpers, grouped by wave, in start order. */

@@ -1,0 +1,36 @@
+{
+  "notes": "Docent model bake-off settings (pnpm docent:bakeoff). Prices are USD per million tokens, Anthropic first-party rates from the claude-api skill's model table (cached 2026-06-24); check https://claude.com/pricing before a real run. Cache read/write are only billed if prompt caching kicks in (the docent's prompt is below the minimum cacheable size, so expect zero). `estimate` holds the assumptions behind the up-front cost estimate only; real runs record the API's own usage.",
+  "prices": {
+    "claude-haiku-4-5": { "input": 1, "output": 5, "cacheRead": 0.1, "cacheWrite": 1.25 },
+    "claude-sonnet-5": { "input": 2, "output": 10, "cacheRead": 0.2, "cacheWrite": 2.5 },
+    "claude-opus-5-5": { "input": 4, "output": 20, "cacheRead": 0.2, "cacheWrite": 5 },
+    "claude-opus-5": { "input": 5, "output": 25, "cacheRead": 0.5, "cacheWrite": 6.25 }
+  },
+  "matrix": [
+    { "id": "haiku-4-5", "model": "claude-haiku-4-5" },
+    { "id": "sonnet-5", "model": "claude-sonnet-5" },
+    { "id": "opus-5-5@low", "model": "claude-opus-5-5", "effort": "low" },
+    { "id": "opus-5-5@medium", "model": "claude-opus-5-5", "effort": "medium" },
+    { "id": "opus-5@low", "model": "claude-opus-5", "effort": "low" }
+  ],
+  "maxTokens": 1024,
+  "concurrency": 4,
+  "maxCostUsd": 2,
+  "judge": { "model": "claude-opus-5", "effort": "medium", "maxTokens": 4096, "scope": "heldout" },
+  "recommend": { "set": "heldout", "maxUnsupportedAnswers": 0, "maxP50TtftMs": 1500 },
+  "estimate": {
+    "charsPerToken": 4,
+    "tokenizerFactor": { "claude-haiku-4-5": 1, "default": 1.3 },
+    "outputTokens": {
+      "haiku-4-5": 180,
+      "sonnet-5": 450,
+      "opus-5-5@low": 360,
+      "opus-5-5@medium": 650,
+      "opus-5@low": 360,
+      "default": 500
+    },
+    "judgeSystemTokens": 450,
+    "judgeAnswerTokens": 250,
+    "judgeOutputTokens": 500
+  }
+}

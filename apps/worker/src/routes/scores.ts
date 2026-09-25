@@ -47,6 +47,18 @@ export const MAX_BODY_BYTES = 12 * 1024 * 1024;
  */
 export const VERIFY_MAX_TICKS = 36_000;
 
+/**
+ * Phase 18: a random, unguessable permalink id for a score (16 base64url chars = 96 bits), used by
+ * `/s/:stageId/r/:scoreId` and `/r/:scoreId` share cards.
+ */
+export function newShareId(): string {
+  const b = crypto.getRandomValues(new Uint8Array(12));
+  return btoa(String.fromCharCode(...b))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+}
+export const SHARE_ID_RE = /^[A-Za-z0-9_-]{16}$/;
+
 const bad = (message: string, status = 400) => Response.json({ error: 'bad request', message }, { status });
 
 async function loadStage(c: { get: (k: 'services') => AppEnv['Variables']['services'] }, stageId: string) {
@@ -224,6 +236,7 @@ scoresRoutes.post('/', async (c) => {
       return Response.json({ error: 'implausible score', message: plaus.reason }, { status: 422 });
 
     let verified = 0;
+    let detail: string | null = null;
     let note: string | undefined;
     let replayKey: string | null = null;
     if (replay) {
@@ -243,6 +256,13 @@ scoresRoutes.post('/', async (c) => {
           { status: 422 },
         );
       verified = v.status === 'verified' ? 1 : 0;
+      // Phase 18: the server's own breakdown, for share cards (never the client's claim).
+      if (v.status === 'verified')
+        detail = JSON.stringify({
+          small: v.result.small,
+          large: v.result.large,
+          timeBonus: v.result.timeBonus,
+        });
       if (v.status === 'unverified') note = v.reason;
       replayKey = `replays/${req.stageId}/${crypto.randomUUID()}.json`;
       await c.env.STAGES.put(
@@ -252,11 +272,12 @@ scoresRoutes.post('/', async (c) => {
       );
     }
     const timeMs = Math.round(req.timeMs);
+    const scoreId = newShareId();
     await c.env.DB.prepare(
-      `INSERT INTO scores (stage_id, name, score, time_ms, replay_key, verified, created_at, ip_hash)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
+      `INSERT INTO scores (stage_id, name, score, time_ms, replay_key, verified, created_at, ip_hash, share_id, detail_json)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)`,
     )
-      .bind(req.stageId, req.name, req.score, timeMs, replayKey, verified, now, ipHash)
+      .bind(req.stageId, req.name, req.score, timeMs, replayKey, verified, now, ipHash, scoreId, detail)
       .run();
     const ahead = await c.env.DB.prepare(
       `SELECT COUNT(DISTINCT name) AS n FROM scores
@@ -264,9 +285,9 @@ scoresRoutes.post('/', async (c) => {
     )
       .bind(req.stageId, req.name, req.score, timeMs)
       .first<{ n: number }>();
-    // `verified`/`note` are additions to the contract's {rank}; clients may ignore them.
-    return c.json<SubmitScoreResponse & { verified: boolean; note?: string }>(
-      { rank: (ahead?.n ?? 0) + 1, verified: verified === 1, ...(note ? { note } : {}) },
+    // `verified`/`note` (CCR-10-2) and `scoreId` (Phase 18, CCR-18-1) are additions to the contract's {rank}.
+    return c.json<SubmitScoreResponse & { verified: boolean; note?: string; scoreId: string }>(
+      { rank: (ahead?.n ?? 0) + 1, verified: verified === 1, ...(note ? { note } : {}), scoreId },
       201,
     );
   }
@@ -295,16 +316,26 @@ scoresRoutes.post('/', async (c) => {
       );
   }
   const timeMs = Math.round(req.stages.reduce((a, s) => a + s.timeMs, 0));
+  const scoreId = newShareId();
   await c.env.DB.prepare(
-    `INSERT INTO run_scores (run_id, name, total_score, time_ms, stages_json, created_at, ip_hash)
-     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)`,
+    `INSERT INTO run_scores (run_id, name, total_score, time_ms, stages_json, created_at, ip_hash, share_id)
+     VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)`,
   )
-    .bind(req.runId ?? null, req.name, req.totalScore, timeMs, JSON.stringify(req.stages), now, ipHash)
+    .bind(
+      req.runId ?? null,
+      req.name,
+      req.totalScore,
+      timeMs,
+      JSON.stringify(req.stages),
+      now,
+      ipHash,
+      scoreId,
+    )
     .run();
   const ahead = await c.env.DB.prepare(
     'SELECT COUNT(DISTINCT name) AS n FROM run_scores WHERE name != ?1 AND total_score > ?2',
   )
     .bind(req.name, req.totalScore)
     .first<{ n: number }>();
-  return c.json<SubmitScoreResponse>({ rank: (ahead?.n ?? 0) + 1 }, 201);
+  return c.json<SubmitScoreResponse & { scoreId: string }>({ rank: (ahead?.n ?? 0) + 1, scoreId }, 201);
 });

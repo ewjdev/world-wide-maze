@@ -13,6 +13,8 @@ export interface RunLabel {
   kind: RunKind;
   /** docs/build-log file (without .md) and which "Start / end" line in it (0 = first). */
   log?: { slug: string; window: number };
+  /** For runs merged without a "Merge phase XX" subject: the merge commit's subject prefix. */
+  mergeSubject?: string;
 }
 
 /** Keyed by the description the orchestrator gave each sub-agent when launching it. */
@@ -122,10 +124,68 @@ export const RUN_LABELS: Record<string, RunLabel> = {
     kind: 'follow-up',
     log: { slug: 'phase-12', window: 1 },
   },
-  'Phase 13 link portals': { phase: '13', title: 'Link portals', wave: 5, kind: 'phase' },
-  'Phase 14 extension and bookmarklet': { phase: '14', title: 'Extension', wave: 5, kind: 'phase' },
-  'Phase 15 AI docent': { phase: '15', title: 'AI docent', wave: 5, kind: 'phase' },
-  'Phase 16 build story': { phase: '16', title: 'Build story', wave: 5, kind: 'phase' },
+  'Phase 13 link portals': {
+    phase: '13',
+    title: 'Link portals',
+    wave: 5,
+    kind: 'phase',
+    log: { slug: 'phase-13', window: 0 },
+  },
+  'Phase 14 extension and bookmarklet': {
+    phase: '14',
+    title: 'Extension',
+    wave: 5,
+    kind: 'phase',
+    log: { slug: 'phase-14', window: 0 },
+  },
+  'Phase 15 AI docent': {
+    phase: '15',
+    title: 'AI docent',
+    wave: 5,
+    kind: 'phase',
+    log: { slug: 'phase-15', window: 0 },
+  },
+  'Phase 16 build story': {
+    phase: '16',
+    title: 'Build story',
+    wave: 5,
+    kind: 'phase',
+    log: { slug: 'phase-16', window: 0 },
+  },
+  'Fill legal drafts with placeholders': {
+    phase: 'A3',
+    title: 'Legal drafts',
+    wave: 5,
+    kind: 'follow-up',
+    mergeSubject: 'Merge legal drafts',
+  },
+  'Phase 17 Cloudflare previews pipeline': {
+    phase: '17',
+    title: 'Cloudflare deploys and previews',
+    wave: 5,
+    kind: 'phase',
+    log: { slug: 'phase-17', window: 0 },
+  },
+  'Pre-publication content scrub': {
+    phase: 'scrub',
+    title: 'Pre-publication scrub',
+    wave: 5,
+    kind: 'follow-up',
+    mergeSubject: 'Merge pre-publication content scrub',
+  },
+  'Docent model bake-off harness': {
+    phase: '15b',
+    title: 'Docent model bake-off',
+    wave: 5,
+    kind: 'follow-up',
+  },
+  'Refresh build story post-purge': {
+    phase: '16b',
+    title: 'Build story refresh',
+    wave: 5,
+    kind: 'follow-up',
+    log: { slug: 'phase-16', window: 1 },
+  },
 };
 
 export const WAVES: Record<number, string> = {
@@ -134,7 +194,7 @@ export const WAVES: Record<number, string> = {
   2: 'Wave 2 · integration and solver',
   3: 'Wave 3 · showcase and fixes',
   4: 'Wave 4 · launch hardening',
-  5: 'Wave 5 · next-level tribute',
+  5: 'Wave 5 · next-level tribute and launch prep',
 };
 
 /**
@@ -151,7 +211,48 @@ export const OWNER_LABELS: Record<string, { kind: string; label: string }> = {
   '2026-09-25T16:29': { kind: 'bug report', label: 'Reports that repeated dev:phone runs collide' },
   '2026-09-25T16:41': { kind: 'planning', label: 'Asks for the remaining features' },
   '2026-09-25T16:50': { kind: 'approval', label: 'Chooses to launch sooner; approves wave 5' },
+  '2026-09-25T17:08': {
+    kind: 'approval',
+    label: 'Approves the curated list; asks for placeholder legal drafts; offers a Cloudflare account',
+  },
+  '2026-09-25T17:44': {
+    kind: 'approval',
+    label: 'Approves the names, a public repo, the wwm.ewj.dev domain and deploy on merge',
+  },
+  '2026-09-25T18:10': { kind: 'question', label: 'Asks how AI is used, to choose the docent model' },
+  '2026-09-25T18:18': { kind: 'approval', label: 'Approves a docent model bake-off; picks the MIT licence' },
 };
+
+export interface SegmentDef {
+  id: string;
+  label: string;
+  /** A few words, for tight spaces (the share card). */
+  short: string;
+  what: string;
+  /**
+   * The subject (prefix) of the commit that closes the stretch; null = the snapshot. A subject, not a SHA: SHAs
+   * change when history is rewritten (it was, before publication), subjects don't.
+   */
+  endsAt: string | null;
+}
+
+/** The stretches of the build, in order. Night 1 is the original overnight claim, kept exactly as first measured. */
+export const SEGMENTS: SegmentDef[] = [
+  {
+    id: 'night-1',
+    label: 'Night 1',
+    short: 'research to a playable, hardened game',
+    what: 'From an empty project folder to the commit that planned wave 5: research, plans, contracts, waves 0–4 and a playable, hardened game.',
+    endsAt: 'Schema 0.3.0 (portals, local capture, docent types); phase plans 13-16; wave 5',
+  },
+  {
+    id: 'day-2',
+    label: 'Day 2',
+    short: 'wave 5 and launch prep',
+    what: 'Wave 5 (link portals, the extension, the AI docent, this build story) and launch prep (Cloudflare deploys and previews, legal drafts, the pre-publication scrub, the licence).',
+    endsAt: null,
+  },
+];
 
 export const TIME_ZONE = 'America/Los_Angeles';
 

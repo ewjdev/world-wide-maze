@@ -16,6 +16,8 @@ jobs:
       CI: 'true'
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # build-story traceability tests check every cited commit
 
       - uses: pnpm/action-setup@v4 # version comes from package.json "packageManager"
 

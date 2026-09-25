@@ -40,6 +40,18 @@
     {
       "at": "2026-09-25T17:08:15.698Z",
       "words": 97
+    },
+    {
+      "at": "2026-09-25T17:44:21.901Z",
+      "words": 41
+    },
+    {
+      "at": "2026-09-25T18:10:48.796Z",
+      "words": 12
+    },
+    {
+      "at": "2026-09-25T18:18:26.584Z",
+      "words": 21
     }
   ],
   "turns": [
@@ -158,6 +170,30 @@
     {
       "start": "2026-09-25T17:13:34.110Z",
       "end": "2026-09-25T17:13:45.815Z"
+    },
+    {
+      "start": "2026-09-25T17:30:16.415Z",
+      "end": "2026-09-25T17:35:38.802Z"
+    },
+    {
+      "start": "2026-09-25T17:36:39.580Z",
+      "end": "2026-09-25T17:42:17.864Z"
+    },
+    {
+      "start": "2026-09-25T17:44:21.891Z",
+      "end": "2026-09-25T17:48:41.250Z"
+    },
+    {
+      "start": "2026-09-25T18:01:17.187Z",
+      "end": "2026-09-25T18:08:50.656Z"
+    },
+    {
+      "start": "2026-09-25T18:10:48.766Z",
+      "end": "2026-09-25T18:11:13.632Z"
+    },
+    {
+      "start": "2026-09-25T18:18:26.556Z",
+      "end": "2026-09-25T18:25:23.545Z"
     }
   ],
   "agents": [
@@ -347,8 +383,8 @@
       "depth": 1,
       "parentId": null,
       "start": "2026-09-25T16:57:57.271Z",
-      "end": "2026-09-25T17:14:44.431Z",
-      "notifiedAt": null
+      "end": "2026-09-25T17:38:44.494Z",
+      "notifiedAt": "2026-09-25T17:38:44.600Z"
     },
     {
       "id": "ad4d356a8465a5f48",
@@ -356,8 +392,8 @@
       "depth": 1,
       "parentId": null,
       "start": "2026-09-25T16:58:04.694Z",
-      "end": "2026-09-25T17:14:19.113Z",
-      "notifiedAt": null
+      "end": "2026-09-25T17:36:39.444Z",
+      "notifiedAt": "2026-09-25T17:36:39.582Z"
     },
     {
       "id": "a5a09857394ad4ba5",
@@ -365,8 +401,8 @@
       "depth": 1,
       "parentId": null,
       "start": "2026-09-25T16:58:12.343Z",
-      "end": "2026-09-25T17:14:22.139Z",
-      "notifiedAt": null
+      "end": "2026-09-25T18:04:11.037Z",
+      "notifiedAt": "2026-09-25T18:04:11.199Z"
     },
     {
       "id": "a43c92214f91c13f7",
@@ -374,8 +410,8 @@
       "depth": 1,
       "parentId": null,
       "start": "2026-09-25T16:58:19.479Z",
-      "end": "2026-09-25T17:14:43.947Z",
-      "notifiedAt": null
+      "end": "2026-09-25T17:32:22.693Z",
+      "notifiedAt": "2026-09-25T17:32:22.815Z"
     },
     {
       "id": "a8e30c079e3db646a",
@@ -392,7 +428,52 @@
       "depth": 1,
       "parentId": null,
       "start": "2026-09-25T17:10:13.374Z",
-      "end": "2026-09-25T17:14:41.201Z",
+      "end": "2026-09-25T17:30:16.287Z",
+      "notifiedAt": "2026-09-25T17:30:16.419Z"
+    },
+    {
+      "id": "a0707689d110edfb2",
+      "description": "Pre-publication content scrub",
+      "depth": 1,
+      "parentId": null,
+      "start": "2026-09-25T17:45:55.482Z",
+      "end": "2026-09-25T18:01:17.016Z",
+      "notifiedAt": "2026-09-25T18:01:17.191Z"
+    },
+    {
+      "id": "a6a5aa290e4944f95",
+      "description": "Inspect images batch A",
+      "depth": 2,
+      "parentId": "a0707689d110edfb2",
+      "start": "2026-09-25T17:46:31.818Z",
+      "end": "2026-09-25T17:47:57.801Z",
+      "notifiedAt": null
+    },
+    {
+      "id": "a48f2fbe9ce0e8bc5",
+      "description": "Inspect images batch B",
+      "depth": 2,
+      "parentId": "a0707689d110edfb2",
+      "start": "2026-09-25T17:46:36.759Z",
+      "end": "2026-09-25T17:48:37.200Z",
+      "notifiedAt": null
+    },
+    {
+      "id": "a86df87712f6270a4",
+      "description": "Docent model bake-off harness",
+      "depth": 1,
+      "parentId": null,
+      "start": "2026-09-25T18:22:07.761Z",
+      "end": "2026-09-25T18:28:51.520Z",
+      "notifiedAt": null
+    },
+    {
+      "id": "aeb20c07f438135d9",
+      "description": "Refresh build story post-purge",
+      "depth": 1,
+      "parentId": null,
+      "start": "2026-09-25T18:22:17.962Z",
+      "end": "2026-09-25T18:29:26.068Z",
       "notifiedAt": null
     }
   ],

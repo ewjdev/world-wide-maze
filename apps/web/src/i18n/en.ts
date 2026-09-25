@@ -187,6 +187,7 @@ export const en = {
     challengeShare: 'Challenge a friend', // N
     challengeText: 'I scored {{score}} in a 3D maze of “{{title}}” on World Wide Maze. Beat me?', // N
     shareFailed: 'Couldn’t share. Copy the address bar instead.',
+    cardAlt: 'Link preview: “{{title}}” as a maze', // N (Phase 18)
   },
   ranking: {
     title: 'Ranking',
@@ -217,6 +218,11 @@ export const en = {
     stagesHeading: 'Your stages',
     stageRank: '{{rank}} on this stage',
     verified: 'replay verified',
+    // N (Phase 18): score permalinks and their link-preview cards
+    shareStage: 'Share',
+    shareStageLabel: 'Share your score on {{title}}',
+    stageShareText: 'I scored {{score}} in a 3D maze of “{{title}}” on World Wide Maze. Beat me?',
+    cardAlt: 'Link preview: {{rank}} on the World Wide Maze leaderboard',
     errors: {
       name: 'Use a–z, 0–9 and _ only.',
       profanity: 'That name isn’t allowed. Please pick another.',

@@ -150,17 +150,22 @@ describe('plan', () => {
     expect(row('previews', 'r2')?.action).toBe('create');
     expect(row('previews', 'kv')).toMatchObject({ action: 'exists', id: 'kvp' });
     expect(row('production', 'aiGateway')?.action).toBe('manual');
-    expect(plan).toHaveLength(8);
+    expect(plan).toHaveLength(7); // 3 data stores × 2 targets + 1 shared AI Gateway
     expect(formatPlan(plan)[0]).toMatch(/ok .*production D1 +wwm {2}\(prod-uuid\)/);
   });
-  test('with an API token, gateways are diffed too', () => {
-    const plan = planResources(desiredResources(cfg), {
-      d1: new Map(),
-      kv: new Map(),
-      r2: new Set(),
-      aiGateway: new Set(['wwm']),
-    });
-    expect(plan.filter((p) => p.kind === 'aiGateway').map((p) => p.action)).toEqual(['exists', 'create']);
+  test('with an API token, gateways are diffed too; a shared gateway is planned once', () => {
+    const gw = (existing: Set<string>) =>
+      planResources(desiredResources(cfg), {
+        d1: new Map(),
+        kv: new Map(),
+        r2: new Set(),
+        aiGateway: existing,
+      })
+        .filter((p) => p.kind === 'aiGateway')
+        .map((p) => p.action);
+    // cfg shares one gateway (`wwm`) between production and Previews (owner decision 2026-09-25)
+    expect(gw(new Set(['wwm']))).toEqual(['exists']);
+    expect(gw(new Set())).toEqual(['create']);
   });
 });
 

@@ -4,6 +4,7 @@
 import { createServices } from './config.ts';
 import { createApp } from './router.ts';
 import { handleRooms } from './routes/rooms.ts';
+import { sweepCards } from './routes/share.ts';
 import { withSecurityHeaders } from './security.ts';
 
 export { BuildJob } from './build-job.ts';
@@ -34,5 +35,8 @@ export default {
     const { store, settings, log } = createServices(env, { requestId: 'cron' });
     const r = await store.sweep(settings.retentionDays);
     log.info('retention sweep', { ...r, days: settings.retentionDays });
+    // Phase 18: rendered share cards are a cache; old ones go (a deleted score's card can't be served anyway).
+    const cards = await sweepCards(env, settings.retentionDays);
+    log.info('card sweep', cards);
   },
 } satisfies ExportedHandler<Env>;

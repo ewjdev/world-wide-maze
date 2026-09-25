@@ -42,11 +42,20 @@ function field(md: string, name: RegExp): string | null {
   return null;
 }
 
-/** "2026-09-25 ~08:05Z → ~08:45Z", "2026-09-25 about 07:18Z → about 07:50Z", "2026-09-25, about 08:05Z to 08:45Z". */
+/**
+ * "2026-09-25 ~08:05Z → ~08:45Z", "2026-09-25 about 07:18Z → about 07:50Z", "2026-09-25, about 08:05Z to 08:45Z",
+ * "2026-09-25 ~09:58 → ~10:45 PDT". Minutes are UTC from midnight of `date` (they can pass 1440).
+ */
 export function parseWindow(text: string | null): LogSummary['window'] {
   if (!text) return null;
   const date = /(\d{4}-\d{2}-\d{2})/.exec(text)?.[1];
-  const times = [...text.matchAll(/(\d{1,2}):(\d{2})\s*Z/g)].map((m) => Number(m[1]) * 60 + Number(m[2]));
+  let times = [...text.matchAll(/(\d{1,2}):(\d{2})\s*Z/g)].map((m) => Number(m[1]) * 60 + Number(m[2]));
+  // "~09:58 → ~10:45 PDT": Pacific times, converted to UTC
+  const pacific = /\b(PDT|PST)\b/.exec(text)?.[1];
+  if (times.length < 2 && pacific) {
+    const offset = pacific === 'PDT' ? 7 * 60 : 8 * 60;
+    times = [...text.matchAll(/(\d{1,2}):(\d{2})/g)].map((m) => Number(m[1]) * 60 + Number(m[2]) + offset);
+  }
   if (!date || times.length < 2) return null;
   const [startMin, endMin] = times as [number, number];
   return {

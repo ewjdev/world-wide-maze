@@ -11,6 +11,9 @@
  *  4. Build failure: a forbidden URL (real worker 400) and a blocked capture (mocked SSE) show the fallback
  *     screen, and a curated alternative (client-side fixture build) plays.
  *
+ * CI hardening (phase-12 build log): the engine runs on WebGPU locally and on WebGL2 in CI (browser-env.ts);
+ * a local-only test loses the WebGPU device mid-run and checks the engine carries on quietly on WebGL2.
+ *
  * Phase 08b (leaderboards, Phase 10 components, ghosts). `handmade-simple` is also seeded into the Worker's R2/D1
  * as a service-built stage, so `/play/<its stageId>` is a stage the scores API knows:
  *  5. Replay run on the service stage → the stage board on the result → the recorded replay equals the stream
@@ -31,6 +34,14 @@ import { type Browser, type BrowserContext, chromium, devices, type Page } from 
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { finishStage, SMALL_CREDIT_DELAY_SEC } from '../src/game/rules.ts';
+import {
+  browserEnv,
+  CHROMIUM_ARGS,
+  CI_HOOKS,
+  EXPECTED_BACKEND,
+  IN_CI,
+  SOFTWARE_GL_NOISE,
+} from './browser-env.ts';
 
 const HAS_CHROMIUM = existsSync(chromium.executablePath()) || !!process.env.CI;
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -44,7 +55,6 @@ const SERVICE_ID = HANDMADE.stageId;
 const REPLAY = JSON.parse(
   readFileSync(new URL('../../../fixtures/replays/handmade-simple.keyboard.json', import.meta.url), 'utf8'),
 ) as InputSample[];
-const GPU = ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
 
 type Harness = ReturnType<typeof import('wrangler').createTestHarness>;
 
@@ -69,7 +79,12 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
 
   function watch(page: Page, who: string) {
     page.on('console', (m) => {
-      if ((m.type() === 'error' || m.type() === 'warning') && !DEV_NOISE.test(m.text()))
+      const t = m.text();
+      if (
+        (m.type() === 'error' || m.type() === 'warning') &&
+        !DEV_NOISE.test(t) &&
+        !SOFTWARE_GL_NOISE.test(t)
+      )
         problems.push(`${who} [${m.type()}] ${m.text()}`);
     });
     page.on('pageerror', (e) => problems.push(`${who} [pageerror] ${e.message}`));
@@ -84,13 +99,19 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       return d ? { ...d, engine: null } : null;
     });
 
+  const engineStats = (p: Page) => p.evaluate(() => window.__wwmGame?.debugState().engine ?? null);
+
   async function desk(hooks: Record<string, unknown>, extra?: (ctx: BrowserContext) => Promise<void>) {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    await ctx.addInitScript((h) => {
-      localStorage.setItem('wwm.howtoSeen', '1');
-      localStorage.setItem('wwm.tutorialDone', '1');
-      (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = h;
-    }, hooks);
+    await browserEnv(ctx);
+    await ctx.addInitScript(
+      (h) => {
+        localStorage.setItem('wwm.howtoSeen', '1');
+        localStorage.setItem('wwm.tutorialDone', '1');
+        (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = h;
+      },
+      { ...CI_HOOKS, ...hooks },
+    );
     await extra?.(ctx);
     const page = await ctx.newPage();
     watch(page, 'host');
@@ -165,7 +186,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     });
     await server.listen();
     base = (server.resolvedUrls?.local[0] ?? 'http://127.0.0.1:5290/').replace(/\/$/, '');
-    browser = await chromium.launch({ args: GPU });
+    browser = await chromium.launch({ args: CHROMIUM_ARGS });
   }, 120_000);
 
   afterAll(async () => {
@@ -219,6 +240,8 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await page.waitForFunction(() => !!document.querySelector('.wwm-intro__skip'), null, { timeout: 10_000 });
     await page.keyboard.press('Space'); // skip the intro
     await waitPhase(page, 'play', 30_000);
+    // WebGPU on a real GPU (locally); WebGL2 in CI, where the pages have no WebGPU (browser-env.ts).
+    expect((await engineStats(page))?.backend).toBe(EXPECTED_BACKEND);
     await waitPhase(page, 'goal', 90_000);
     const atGoal = await state(page);
     expect(atGoal?.driver).toBe('lockstep');
@@ -242,7 +265,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('e2e_bot');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
     expect(problems).toEqual([]);
     await page.context().close();
@@ -284,12 +307,16 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('e2e_bot');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('server');
     await page.getByTestId('stage-verified').waitFor(); // the Worker re-simulated the replay and accepted it
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await page.getByTestId('tab-stage-0').click();
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     expect(await page.getByTestId('rank-board').textContent()).toContain(
       expected.stageScore.toLocaleString('en-US'),
     );
@@ -310,7 +337,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     expect(ghost.inputs).toHaveLength(goalTick);
     await shot(page, 'b-05-ranking-submitted-stage-tab');
     await page.getByTestId('tab-run').click();
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await shot(page, 'b-04-ranking-submitted');
     expect(problems).toEqual([]);
     await page.context().close();
@@ -376,7 +405,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     const verdict = page.getByTestId('challenge-verdict');
     await verdict.waitFor({ timeout: 20_000 });
     expect(await verdict.textContent()).toBe('17 points short of mika’s 1,500.'); // 1484 vs 1500
-    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot');
+    await expect
+      .poll(() => page.getByTestId('res-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot');
     await page.waitForTimeout(400);
     await shot(page, 'b-06-result-board-challenge');
     await page.setViewportSize({ width: 820, height: 1100 });
@@ -386,7 +417,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await page.getByTestId('res-finish').click();
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').waitFor();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('2nd'); // ties rank behind e2e_bot
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('2nd'); // ties rank behind e2e_bot
     await page.waitForTimeout(700);
     await shot(page, 'b-07-ranking-entry');
     expect(problems).toEqual([]);
@@ -403,15 +434,19 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     });
     await page.goto(`${base}/play/${SERVICE_ID}`);
     await waitPhase(page, 'result', 150_000);
-    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot'); // online: server board
+    await expect
+      .poll(() => page.getByTestId('res-board').textContent(), { timeout: 15_000 })
+      .toContain('e2e_bot'); // online: server board
     await page.context().setOffline(true); // the connection drops before the name is entered
     await page.getByTestId('res-finish').click();
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('offline_ana');
     await page.getByTestId('name-submit').click();
-    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
-    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('offline_ana');
+    await expect
+      .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
+      .toContain('offline_ana');
     expect(await page.getByTestId('ranking').textContent()).toContain('can’t be reached');
     await shot(page, 'b-08-ranking-offline');
     // Nothing reached the server.
@@ -424,6 +459,57 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     expect(problems).toEqual([]);
     await page.context().close();
   }, 180_000);
+
+  // Local only: CI has no WebGPU to lose (browser-env.ts). The engine must switch to WebGL2 by itself, log one
+  // warning and no error, and the run must go on from where it was.
+  test.skipIf(IN_CI)(
+    'WebGPU device lost mid-run → WebGL2, quietly, and the run goes on',
+    async () => {
+      const page = await desk({ replay: REPLAY, lockstep: true, noAutoPause: true, skipIntro: true });
+      await page.goto(`${base}/`);
+      await page.getByTestId('start').click();
+      await waitPhase(page, 'pairing');
+      await page.getByTestId('play-keyboard').click();
+      await waitPhase(page, 'select');
+      await page.getByTestId('site-practice').click();
+      await waitPhase(page, 'play', 60_000);
+      expect((await engineStats(page))?.backend).toBe('webgpu');
+      const tick0 = (await state(page))?.tick ?? 0;
+      const canvases0 = await page.locator('canvas.wwm-canvas').count();
+      // What a GPU reset looks like to three.js: the device is gone and `device.lost` resolves with a reason
+      // other than "destroyed" (three ignores that one, so it is delivered here by hand).
+      await page.evaluate(() => {
+        const r = window.__wwmGame?.engine?.debug().renderer as unknown as {
+          backend: { device: GPUDevice };
+          onDeviceLost(info: { api: string; message: string; reason: string | null }): void;
+        };
+        r.backend.device.destroy();
+        r.onDeviceLost({ api: 'WebGPU', message: 'e2e: simulated GPU reset', reason: 'unknown' });
+      });
+      await expect.poll(async () => (await engineStats(page))?.backend, { timeout: 20_000 }).toBe('webgl2');
+      // the new renderer draws frames, and the run carries on
+      const renderCalls = () =>
+        page.evaluate(
+          () =>
+            (window.__wwmGame?.engine?.debug().renderer.info as { calls?: number } | undefined)?.calls ?? 0,
+        );
+      const calls0 = await renderCalls();
+      await expect.poll(renderCalls, { timeout: 20_000 }).toBeGreaterThan(calls0 + 30);
+      await expect
+        .poll(async () => (await state(page))?.tick ?? 0, { timeout: 20_000 })
+        .toBeGreaterThan(tick0 + 60);
+      expect((await state(page))?.phase).toBe('play');
+      // one canvas: the WebGL2 one took the WebGPU one's place
+      expect(await page.locator('canvas.wwm-canvas').count()).toBe(canvases0);
+      const warned = problems.filter((m) => m.includes('[@wwm/engine] WebGPU device lost'));
+      expect(warned).toHaveLength(1);
+      expect(warned[0]).toMatch(/^host \[warning\]/);
+      problems.splice(problems.indexOf(warned[0] as string), 1);
+      expect(problems).toEqual([]);
+      await page.context().close();
+    },
+    180_000,
+  );
 
   describe('phone', () => {
     let host: Page;
