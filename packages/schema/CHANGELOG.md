@@ -46,3 +46,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.2.2
 - SLAB_THICKNESS_M, RAIL_HEIGHT_M, ELEVATOR_MIN_PLATFORM_PX; documented frameYaw/quat/elevator conventions (contracts §9).
+
+## 0.2.4
+- computeRunId; CONTRACT_VERSION synced; capture screenshot is 1x analysis image, stage textures 2x.

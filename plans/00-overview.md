@@ -160,8 +160,8 @@ Notes for dependent phases:
 | 03 | merged | main | G1 ✅ (own criteria) | 315/315 stages valid; recognizable islands; builder 0.3.0 |
 | 04 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 05 | merged | main | G1 ✅ (own criteria) | deterministic Rapier; 1000/1000 tunneling; aid-dcc traversable |
-| 06 | merged | main | G1 partial | e2e 10/10 emulated + tunnel; physical iPhone test pending, Android pending |
-| 07 | in progress | worktree | — | Wave 1 started 2026-09-25 |
+| 06 | merged | main | G1 ✅ iPhone | iPhone 17 Pro: 60 Hz, p95 interval 21 ms, 0 lost; lock/reconnect unverified; Android pending |
+| 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
 | 08 | not started | | | |
 | 09 | not started | | | |
 | 10 | not started | | | |

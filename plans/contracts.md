@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.3`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.4`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -344,3 +344,12 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **Relay keepalive:** the relay sends pings with **negative** ids and consumes their pongs itself.
 - **Controller keepalive:** outside play, the controller sends neutral INPUT frames at 4 Hz. The host treats 1.5 s of silence as disconnected, which catches suspended iOS pages whose sockets stay open.
 - **`GET /api/rooms/:code/stats`:** relay diagnostics for dev only. Phase 12 must gate it or remove it in production.
+
+**v0.2.4, from the Phase 07 CCRs (orchestrator, 2026-09-25):**
+- **CCR-07-1:** `computeRunId(captureId, seed, builderVersion, difficulty)` is now in `@wwm/schema`. It hashes `run|captureId|seed|builderVersion|difficulty`.
+- **CCR-07-2, accepted:** `CaptureBundle.screenshot` is the **1× analysis image** (`scale: 1`), because a full DPR-2 page can exceed the Worker's 128 MB. **DPR 2 applies only to the per-slice stage textures** (`stage.texture.scale = 2`). This supersedes the G0 note "screenshot.scale = 2".
+- **CCR-07-3, accepted:**
+  - The KV key is `run:<normUrl>:<difficulty>:<builderVersion>`, plus `:seed=<n>` only when the client chose a seed.
+  - The default seed = `hashString(normalizedUrl)`, so popular pages share stages.
+- **`CONTRACT_VERSION`** in code is now kept in sync (`0.2.4`).
+- **Real builder wired into the worker.** Live capture plus build of the 7 fixture URLs (local Chromium): slice 0 ready in 0.96–4.69 s (p50 2.6 s), with the build step 37–169 ms.

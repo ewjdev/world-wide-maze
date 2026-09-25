@@ -32,3 +32,16 @@ export function computeStageId(
     );
   return sha256Hex(`${captureId}|${sliceIndex}|${seed >>> 0}|${builderVersion}|${difficulty}`);
 }
+
+/**
+ * contracts §7 (v0.2.4): runId = sha256("run" | captureId | seed | builderVersion | difficulty) — one run is
+ * every slice of one capture built with one seed/builder/difficulty.
+ */
+export function computeRunId(
+  captureId: string,
+  seed: number,
+  builderVersion: string,
+  difficulty: 'easy' | 'normal' | 'hard',
+): Promise<string> {
+  return sha256Hex(`run|${captureId}|${seed >>> 0}|${builderVersion}|${difficulty}`);
+}

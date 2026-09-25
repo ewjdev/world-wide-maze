@@ -1,17 +1,6 @@
-import { type Difficulty, hashString, sha256Hex } from '@wwm/schema';
+import { type Difficulty, hashString } from '@wwm/schema';
 
-/**
- * runId = sha256(captureId | seed | builderVersion | difficulty): one run = every slice of one capture built
- * with one seed/builder/difficulty. LOCAL until the orchestrator adds `computeRunId` to @wwm/schema (CCR-07-1).
- */
-export function computeRunId(
-  captureId: string,
-  seed: number,
-  builderVersion: string,
-  difficulty: Difficulty,
-): Promise<string> {
-  return sha256Hex(`run|${captureId}|${seed >>> 0}|${builderVersion}|${difficulty}`);
-}
+export { computeRunId } from '@wwm/schema';
 
 /** Default seed when the client sends none: stable per normalized URL, so popular pages share stages. */
 export function defaultSeed(normalizedUrl: string): number {
