@@ -208,8 +208,8 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
 | 13 | in progress | worktree | — | link portals |
 | 14 | in progress | worktree | — | extension + bookmarklet |
 | 15 | in progress | worktree | — | AI docent |
-| 16 | in progress | worktree | — | build story |
-| 17 | in progress | worktree | — | Cloudflare: production `wwm` + Worker Previews per PR; provisioning scripts (dry-run default); not run |
+| 16 | merged | main | — | build clock 10 h 13 min (computed); AI-found-bugs gallery; social PNGs + LinkedIn draft (content/build-story) |
+| 17 | merged | main | — | env.production + Worker Previews; provision.mjs (dry-run default); preview.yml/deploy.yml inert until enabled; nothing run |
 - **A2 done (2026-09-25):** the owner approved the curated list (12 runs; 4 pending permission). **A3:** legal drafts are being filled with placeholders for another agent's review.
 - **A3 (2026-09-25):** the legal drafts are filled in, with a reviewer README listing 8 placeholders, 30 defaults and 12 lawyer questions. **Implementation gaps to close before publishing** (from the README):
   - Delete scores after 12 months, and strip IP hashes after 30 days.
