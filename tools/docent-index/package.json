@@ -1,0 +1,21 @@
+{
+  "name": "@wwm/docent-index",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "AI docent corpus: chunks the project's research and build record into a BM25 index bundled into the Worker, plus the docent eval set and runner.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "build-index": "node src/cli/build.ts",
+    "eval": "node src/cli/eval.ts"
+  },
+  "dependencies": {
+    "@wwm/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}

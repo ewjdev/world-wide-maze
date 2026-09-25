@@ -169,3 +169,30 @@ cover it.
 - Previews share the account's Browser Run concurrency with production, which is why their build caps are lower.
 - `wrangler tail` can't target Previews. Use the Preview's *Logs* / *Metrics* tabs in the dashboard.
 - Service bindings from a Preview reach production Workers. This Worker has none.
+
+## AI docent: Cloudflare AI Gateway + Anthropic key (Phase 15)
+The docent (`POST /api/docent`, the "Ask the docent" panel on `/about` and `/log`) calls Claude through **Cloudflare AI Gateway**'s Anthropic endpoint, `https://gateway.ai.cloudflare.com/v1/<ACCOUNT_ID>/<GATEWAY_ID>/anthropic`. Until this is set up, `pnpm dev` uses the offline mock and deployed environments answer `DOCENT_UNAVAILABLE`. Nothing else is affected.
+
+1. **Gateways:**
+   - Dashboard → **AI → AI Gateway → Create**: `wwm` (production) and `wwm-preview` (Previews).
+   - **Turn "Collect logs" off** (the privacy draft promises this).
+   - Add a rate limit and a spend limit.
+   - Optional: create an authentication token (`Run` permission) and switch on Authenticated Gateway.
+   - `AI_GATEWAY_ACCOUNT_ID` and `AI_GATEWAY_ID` are already set in `wrangler.jsonc` (`env.production.vars` and `env.production.previews.vars`).
+2. **Secrets** (never in the repo):
+   ```sh
+   cd apps/worker
+   pnpm exec wrangler secret put ANTHROPIC_API_KEY --env production                  # production
+   pnpm exec wrangler preview base-config secret put ANTHROPIC_API_KEY --env production   # new Previews
+   # if the gateway is authenticated, also AI_GATEWAY_TOKEN (sent as cf-aig-authorization), both places
+   ```
+   Alternatively, store the Anthropic key **in the gateway** (Provider keys / BYOK) and set only `AI_GATEWAY_TOKEN`.
+3. **Budget settings** (vars):
+   - `DOCENT_DAILY_LIMIT`: model calls per rolling 24 h. `"0"` turns the docent off.
+   - `DOCENT_LIMIT_PER_HOUR`: per IP.
+   - `DOCENT_MAX_TOKENS`.
+   - `DOCENT_MODEL`: default `claude-haiku-4-5`.
+   - `DOCENT_CACHE_TTL_DAYS`.
+   - Runtime kill switch: the KV key `kill:docent` in `CACHE`.
+4. **Check it:** ask a suggested question on `/about`. The answer must not start with "Offline mode". Then run the real-model eval, about 26 short calls:
+   `AI_GATEWAY_ACCOUNT_ID=… AI_GATEWAY_ID=wwm ANTHROPIC_API_KEY=… pnpm docent:eval --real`.

@@ -9,6 +9,7 @@ import { Hono } from 'hono';
 import type { AppEnv } from './app-env.ts';
 import { createServices } from './config.ts';
 import { errorResponse, toServiceError } from './errors.ts';
+import { docentRoutes } from './routes/docent.ts';
 import { scoresRoutes } from './routes/scores.ts';
 import { shareRoutes } from './routes/share.ts';
 import { stagesRoutes } from './routes/stages.ts';
@@ -39,6 +40,7 @@ export function createApp(): Hono<AppEnv> {
   app.route('/', shareRoutes); // Phase 10: /s/:stageId, /api/share/:stageId/card
   app.route('/api/stages', uploadRoutes); // Phase 14: POST /api/stages/upload (local capture → shared run)
   app.route('/api', telemetryRoutes); // Phase 12: POST /api/t (off unless TELEMETRY_INGEST=1)
+  app.route('/api', docentRoutes); // Phase 15: POST /api/docent (AI docent, SSE)
 
   app.notFound(() => Response.json({ error: 'not found' }, { status: 404 }));
   app.onError((err, c) => {

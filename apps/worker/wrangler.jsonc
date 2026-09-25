@@ -51,7 +51,13 @@
     // Phase 15 docent (Cloudflare AI Gateway → Anthropic). Empty here = the deterministic mock provider.
     "AI_GATEWAY_ACCOUNT_ID": "",
     "AI_GATEWAY_ID": "",
-    "DOCENT_DAILY_LIMIT": "200"
+    "DOCENT_DAILY_LIMIT": "200",
+    "DOCENT_PROVIDER": "auto",
+    "DOCENT_MODEL": "claude-haiku-4-5",
+    "DOCENT_MAX_TOKENS": "600",
+    "DOCENT_LIMIT_PER_HOUR": "20",
+    "DOCENT_CACHE_TTL_DAYS": "7",
+    "DOCENT_MOCK_DELAY_MS": "25"
     // Secrets (not vars): IP_HASH_SALT, ANTHROPIC_API_KEY. Locally: apps/worker/.dev.vars (see .dev.vars.example).
   },
 
@@ -140,7 +146,13 @@
         "TELEMETRY_INGEST": "0",
         "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
         "AI_GATEWAY_ID": "wwm",
-        "DOCENT_DAILY_LIMIT": "500"
+        "DOCENT_DAILY_LIMIT": "500",
+        "DOCENT_PROVIDER": "auto",
+        "DOCENT_MODEL": "claude-haiku-4-5",
+        "DOCENT_MAX_TOKENS": "600",
+        "DOCENT_LIMIT_PER_HOUR": "20",
+        "DOCENT_CACHE_TTL_DAYS": "7",
+        "DOCENT_MOCK_DELAY_MS": "0"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
       "d1_databases": [
@@ -200,7 +212,13 @@
           "TELEMETRY_INGEST": "0",
           "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
           "AI_GATEWAY_ID": "wwm-preview",
-          "DOCENT_DAILY_LIMIT": "50"
+          "DOCENT_DAILY_LIMIT": "50",
+          "DOCENT_PROVIDER": "auto",
+          "DOCENT_MODEL": "claude-haiku-4-5",
+          "DOCENT_MAX_TOKENS": "600",
+          "DOCENT_LIMIT_PER_HOUR": "20",
+          "DOCENT_CACHE_TTL_DAYS": "7",
+          "DOCENT_MOCK_DELAY_MS": "0"
         },
         "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-preview" }],
         "d1_databases": [

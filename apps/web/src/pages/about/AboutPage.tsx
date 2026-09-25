@@ -7,6 +7,7 @@ import { marked } from 'marked';
 import { Fragment } from 'react';
 import { Link } from 'react-router';
 import govuk from '../../../../../fixtures/builder/govuk-card-grid.normal.seed1.json';
+import { DocentPanel } from '../../docent/DocentPanel.tsx';
 import { FIDELITY, type Mark, markCounts } from './fidelity.ts';
 import { CREDITS, GAPS, ORIGINAL_ASSETS_NOTE, SONG, type Source, SRC, TECH, TIMELINE } from './history.ts';
 import { ShowcaseFrame } from './ShowcaseFrame.tsx';
@@ -331,6 +332,9 @@ export function AboutPage() {
             </p>
           </div>
         </section>
+
+        {/* Phase 15: AI docent */}
+        <DocentPanel />
 
         <section className="sc-section" aria-labelledby="sources-h" id="sources">
           <h2 className="sc-h2" id="sources-h">

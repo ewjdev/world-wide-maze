@@ -79,9 +79,9 @@ describe('/log build story', () => {
     expect(html).toContain('Nothing here compares this effort');
   });
 
-  test('a docent can mount without restructuring the page', () => {
+  test('the Phase 15 docent is mounted on the page', () => {
     const src = readFileSync(new URL('./LogPage.tsx', import.meta.url), 'utf8');
-    expect(src).toContain('PHASE 15 DOCENT SLOT');
+    expect(src).toContain('<DocentPanel');
   });
 });
 

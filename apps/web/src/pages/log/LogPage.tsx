@@ -8,6 +8,7 @@
 import { marked } from 'marked';
 import { useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router';
+import { DocentPanel } from '../../docent/DocentPanel.tsx';
 import { ShowcaseFrame } from '../about/ShowcaseFrame.tsx';
 import { ASSETS } from './assets.ts';
 import { BugGallery } from './BugGallery.tsx';
@@ -84,8 +85,6 @@ function BuildRecord() {
       <BugGallery />
       <ThenNow />
 
-      {/* ── PHASE 15 DOCENT SLOT ── mount the AI docent here, e.g. `<DocentPanel page="log" />`. */}
-
       <section className="sc-section lg-head" aria-labelledby="record">
         <h2 className="sc-h2" id="record">
           The build record
@@ -113,6 +112,9 @@ function BuildRecord() {
           </p>
         </div>
       </section>
+
+      {/* Phase 15: AI docent */}
+      <DocentPanel variant="compact" />
 
       <section className="sc-section" aria-labelledby="ledger">
         <h2 className="sc-h2" id="ledger">
