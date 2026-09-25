@@ -166,7 +166,7 @@ Notes for dependent phases:
 | 09 | merged | main | G2 ✅ (solver) | 94.1% solved @normal (≥90% target); par p50 49.8 s, max 133 s; 5 builder issues filed → 03b |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
-| 12 | not started | | | |
+| 12 | in progress (local-only) | worktree | — | no deploy/resources; drafts for approval |
 
 ### Gate log
 - **G0 ✅ (2026-09-25):** contracts v0.2.x reconciled with the 2013 evidence. The converted 2013 stage validates, apart from the intentional width minimums.
