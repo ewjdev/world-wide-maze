@@ -125,7 +125,7 @@ describe('contract surface', () => {
     });
     expect(schema.DEFAULT_VIEWPORT).toEqual({ width: 1280, height: 800 });
     expect(schema.BALL_RADIUS_PX).toBe(6.75);
-    expect(schema.CONTRACT_VERSION).toBe('0.2.4');
+    expect(schema.CONTRACT_VERSION).toBe('0.2.5');
     // Removed in 0.2.0.
     expect('OCEAN_Y_M' in schema).toBe(false);
     expect('MAX_TILT' in schema).toBe(false);

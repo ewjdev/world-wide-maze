@@ -164,7 +164,7 @@ Notes for dependent phases:
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
 | 08 | in progress | worktree | — | Wave 2 started 2026-09-25 |
 | 09 | in progress | worktree | — | Wave 2 started 2026-09-25 |
-| 10 | in progress | worktree | — | started early (parallel w/ 08) 2026-09-25 |
+| 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
 | 12 | not started | | | |
 
@@ -184,3 +184,9 @@ Notes for dependent phases:
 - ~~Private three.js field~~: isolated and guarded in 04b (`three-private.ts`, with a loud test). Only used by the manual clock.
 - The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
 - Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase.
+- Phase 10 follow-ups:
+  - The `/dev/engine` sandbox pulls the BBC fixture into production builds. Gate the dev routes out of prod.
+  - Add an `engine.addGhost()` API (the ghost currently goes through `debug()`).
+  - Let `loadRapier()` accept a precompiled WASM module, so the workerd shim can go.
+  - Store par times so the scores API can use `par × 0.5`.
+  - The worker bundle is 3.7 MB gzipped with Rapier, so the Workers Paid plan is required.

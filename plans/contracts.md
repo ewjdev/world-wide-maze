@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.4`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.5`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -353,3 +353,10 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
   - The default seed = `hashString(normalizedUrl)`, so popular pages share stages.
 - **`CONTRACT_VERSION`** in code is now kept in sync (`0.2.4`).
 - **Real builder wired into the worker.** Live capture plus build of the 7 fixture URLs (local Chromium): slice 0 ready in 0.96–4.69 s (p50 2.6 s), with the build step 37–169 ms.
+
+**v0.2.5, from the Phase 10 CCRs (orchestrator, 2026-09-25):**
+- **CCR-10-1:** `SubmitStageScoreRequest.replay` is `VersionedReplay {physicsVersion, inputs} | Replay`. A bare array is legacy and is stored unverified.
+- **CCR-10-2:** `SubmitScoreResponse` gains optional `verified` and `note` fields.
+- **New endpoint:** `GET /api/scores/stage/:stageId/ghost` returns the #1 replay track for ghost racing.
+- **Share page:** `GET /s/:stageId?beat=&by=`, plus a card image at `GET /api/share/:stageId/card`.
+- **G3 check (orchestrator):** every credit, date and award on `/about` (`apps/web/src/pages/about/history.ts`) was cross-checked against `research/world-wide-maze.md`. No unsupported claims found.

@@ -174,6 +174,7 @@ export const InputSampleSchema = z.object({
   jump: z.boolean(),
 });
 export const ReplaySchema = z.array(InputSampleSchema);
+export const VersionedReplaySchema = z.object({ physicsVersion: z.string().min(1), inputs: ReplaySchema });
 
 // §6 ---------------------------------------------------------------------------------------------
 
@@ -265,7 +266,7 @@ export const SubmitScoreRequestSchema = z.discriminatedUnion('kind', [
     name: ScoreNameSchema,
     score: z.int().min(0),
     timeMs: z.number().min(0),
-    replay: ReplaySchema.optional(),
+    replay: z.union([VersionedReplaySchema, ReplaySchema]).optional(),
   }),
   z.object({
     kind: z.literal('run'),
@@ -277,7 +278,11 @@ export const SubmitScoreRequestSchema = z.discriminatedUnion('kind', [
       .min(1),
   }),
 ]);
-export const SubmitScoreResponseSchema = z.object({ rank: z.int().min(1) });
+export const SubmitScoreResponseSchema = z.object({
+  rank: z.int().min(1),
+  verified: z.boolean().optional(),
+  note: z.string().optional(),
+});
 export const ScoresResponseSchema = z.object({
   entries: z.array(z.object({ name: z.string(), score: finite, timeMs: finite.optional(), at: z.string() })),
 });

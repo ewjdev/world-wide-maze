@@ -256,6 +256,11 @@ export type CreateSimulationFn = () => Promise<Simulation>;
 
 /** A replay is `InputSample[]` at SIM_HZ (contracts §5). */
 export type Replay = InputSample[];
+/** contracts §9 v0.2.2/v0.2.5: a replay tagged with the physics build that recorded it. */
+export interface VersionedReplay {
+  physicsVersion: string;
+  inputs: Replay;
+}
 
 // ================================================================================================
 // §6 Controller protocol (packages/net)
@@ -412,7 +417,7 @@ export interface SubmitStageScoreRequest {
   name: string;
   score: number;
   timeMs: number;
-  replay?: Replay;
+  replay?: VersionedReplay | Replay; // bare array = legacy, stored unverified
 }
 /** `POST /api/scores`, global run board (as 2013's single top-10 of session totals). */
 export interface SubmitRunScoreRequest {
@@ -425,6 +430,8 @@ export interface SubmitRunScoreRequest {
 export type SubmitScoreRequest = SubmitStageScoreRequest | SubmitRunScoreRequest;
 export interface SubmitScoreResponse {
   rank: number;
+  verified?: boolean; // replay re-simulated and matched
+  note?: string;
 }
 
 /** `GET /api/scores/stage/:stageId` · `GET /api/scores/run`. `at` is an ISO timestamp. */

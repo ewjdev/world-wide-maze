@@ -49,3 +49,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.2.4
 - computeRunId; CONTRACT_VERSION synced; capture screenshot is 1x analysis image, stage textures 2x.
+
+## 0.2.5
+- VersionedReplay; SubmitScoreResponse.verified/note.
