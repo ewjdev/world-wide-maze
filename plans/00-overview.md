@@ -205,8 +205,8 @@ Notes for dependent phases:
 
 ### Wave 5 (2026-09-25): "next-level tribute" for the LinkedIn showcase
 Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare AI Gateway. Phases 13–16 run in parallel, and contracts v0.3.0 are in `@wwm/schema`.
-| 13 | in progress | worktree | — | link portals |
-| 14 | in progress | worktree | — | extension + bookmarklet |
+| 13 | merged | main | — | ≤6 portals/stage on real links; journey trail + /j share; E2E; builder 0.5.0; 46 draw calls |
+| 14 | merged | main | — | MV3 extension E2E (click → maze); bookmarklet sketch mode; POST /api/stages/upload; not published |
 | 15 | in progress | worktree | — | AI docent |
 | 16 | merged | main | — | build clock 10 h 13 min (computed); AI-found-bugs gallery; social PNGs + LinkedIn draft (content/build-story) |
 | 17 | merged | main | — | env.production + Worker Previews; provision.mjs (dry-run default); preview.yml/deploy.yml inert until enabled; nothing run |
@@ -220,3 +220,11 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
   - Source and licence shown for featured stages.
   - `/privacy`, `/terms` and `/takedown` routes.
   - A LICENSE file.
+- Wave 5 follow-ups:
+  - Rebuild the extension after the portals merge (`pnpm --filter @wwm/extension build`).
+  - `/j/` server-rendered OG card.
+  - Result-screen share for local runs points at `/play/local`.
+  - Phone prompt UI for portals.
+  - Eval captures lack link data.
+  - Merge `fixtures/builder/links` into the captures, or recapture.
+  - Regenerate the build story after wave 5.
