@@ -13,6 +13,7 @@ import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
 import { GameBoards } from '../game/leaderboard.ts';
 import { createI18n } from '../i18n/index.ts';
 import { readChallenge } from '../ranking/share.ts';
+import { observeGame } from '../telemetry/index.ts';
 import { Screens } from './Screens.tsx';
 
 const GameCtx = createContext<Game | null>(null);
@@ -73,8 +74,10 @@ export function GameApp({ deepLink, roomCode }: GameAppProps) {
     });
     window.__wwmGame = g;
     setGame(g);
+    const stopFunnel = observeGame(g); // Phase 12: no-op unless telemetry is enabled at build time
     void g.mount(el);
     return () => {
+      stopFunnel();
       g.dispose();
       if (window.__wwmGame === g) window.__wwmGame = undefined;
       document.body.classList.remove('wwm-body');

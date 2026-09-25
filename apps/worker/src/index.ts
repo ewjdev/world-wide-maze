@@ -4,6 +4,7 @@
 import { createServices } from './config.ts';
 import { createApp } from './router.ts';
 import { handleRooms } from './routes/rooms.ts';
+import { withSecurityHeaders } from './security.ts';
 
 export { BuildJob } from './build-job.ts';
 export { Limiter } from './limiter.ts';
@@ -13,9 +14,11 @@ const app = createApp();
 
 export default {
   async fetch(request, env, ctx): Promise<Response> {
-    const rooms = await handleRooms(request, env); // Phase 06: /api/rooms/*
-    if (rooms) return rooms;
-    return app.fetch(request, env, ctx);
+    const res =
+      (await handleRooms(request, env)) ?? // Phase 06: /api/rooms/*
+      (await app.fetch(request, env, ctx));
+    // Phase 12: security headers on every Worker response (static assets get theirs from `_headers`).
+    return withSecurityHeaders(request, res);
   },
 
   // Retention (task 9): delete non-curated runs older than RETENTION_DAYS.

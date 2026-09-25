@@ -20,6 +20,8 @@ function num(v: string | undefined, fallback: number): number {
 
 export interface Settings {
   buildLimitPerHour: number;
+  /** Phase 12: all new builds across all clients per hour. */
+  globalBuildLimitPerHour: number;
   browserMaxConcurrency: number;
   captureBudgetMs: number;
   slice0BudgetMs: number;
@@ -30,6 +32,7 @@ export interface Settings {
 export function settings(env: Env): Settings {
   return {
     buildLimitPerHour: num(env.BUILD_LIMIT_PER_HOUR, 10),
+    globalBuildLimitPerHour: num(env.GLOBAL_BUILD_LIMIT_PER_HOUR, 600),
     browserMaxConcurrency: num(env.BROWSER_MAX_CONCURRENCY, 2),
     captureBudgetMs: num(env.CAPTURE_BUDGET_MS, 20_000),
     slice0BudgetMs: num(env.SLICE0_BUDGET_MS, 30_000),

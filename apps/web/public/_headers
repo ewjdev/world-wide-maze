@@ -1,0 +1,19 @@
+# Phase 12: security headers for the web app, served as Workers static assets (apps/worker wrangler.jsonc
+# env.staging / env.production "assets"). Worker responses (/api/*, /s/*) get theirs from
+# apps/worker/src/security.ts. Verified against the production build in docs/launch/performance.md
+# ("CSP check"): no violations on /, /play, /c, /about, /making, /log.
+#
+# CSP notes: 'wasm-unsafe-eval' = Rapier instantiates its inlined WASM; font-src data: = @fontsource CSS inlines
+# small font subsets; blob: images = texture decoding; connect-src 'self' covers same-origin wss:// in current
+# browsers (CSP Level 3).
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; worker-src 'self'; connect-src 'self'; img-src 'self' data: blob:; font-src 'self' data:; style-src 'self'; media-src 'self' blob:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Cross-Origin-Opener-Policy: same-origin
+  Permissions-Policy: accelerometer=(self), gyroscope=(self), magnetometer=(), camera=(), microphone=(), geolocation=(), payment=(), usb=(), fullscreen=(self), screen-wake-lock=(self)
+  Strict-Transport-Security: max-age=31536000
+
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

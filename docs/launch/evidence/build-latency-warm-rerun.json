@@ -1,0 +1,555 @@
+{
+  "mode": "latency",
+  "base": "http://localhost:8898",
+  "when": "2026-09-25T11:26:49.926Z",
+  "urls": 24,
+  "coldDone": 0,
+  "coldMs": {
+    "p50": null,
+    "p95": null,
+    "max": null
+  },
+  "warmHits": 21,
+  "warmMs": {
+    "p50": 2,
+    "p95": 4
+  },
+  "failures": [
+    {
+      "url": "https://example.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 20
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.5
+      }
+    },
+    {
+      "url": "https://news.ycombinator.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 4
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.2
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Labyrinth",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 5
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Maze",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 4
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Marble_(toy)",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://www.gov.uk/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Range/getClientRects",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/grid",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.python.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://www.rust-lang.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.1
+      }
+    },
+    {
+      "url": "https://www.w3.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 5,
+        "message": "site answered HTTP 403"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://www.iana.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.ietf.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.5
+      }
+    },
+    {
+      "url": "https://www.debian.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2
+      }
+    },
+    {
+      "url": "https://www.gnu.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_TIMEOUT",
+        "ms": 5,
+        "message": "capture exceeded its time budget"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 1.9
+      }
+    },
+    {
+      "url": "https://www.kernel.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://nodejs.org/en",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.7
+      }
+    },
+    {
+      "url": "https://www.mozilla.org/en-US/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.1
+      }
+    },
+    {
+      "url": "https://www.wikipedia.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.9
+      }
+    },
+    {
+      "url": "https://lobste.rs/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.nasa.gov/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 1.9
+      }
+    },
+    {
+      "url": "https://www.bbc.co.uk/news",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 10,
+        "message": "could not load the page"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 1.8
+      }
+    },
+    {
+      "url": "https://www.chromeexperiments.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 1.9
+      }
+    }
+  ],
+  "rows": [
+    {
+      "url": "https://example.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 20
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.5
+      }
+    },
+    {
+      "url": "https://news.ycombinator.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 4
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.2
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Labyrinth",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 5
+      },
+      "warm": {
+        "status": 200,
+        "ms": 4
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Maze",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 4
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://en.wikipedia.org/wiki/Marble_(toy)",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://www.gov.uk/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/API/Range/getClientRects",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/grid",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.python.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.3
+      }
+    },
+    {
+      "url": "https://www.rust-lang.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.1
+      }
+    },
+    {
+      "url": "https://www.w3.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 5,
+        "message": "site answered HTTP 403"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 2.6
+      }
+    },
+    {
+      "url": "https://www.iana.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.ietf.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.5
+      }
+    },
+    {
+      "url": "https://www.debian.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2
+      }
+    },
+    {
+      "url": "https://www.gnu.org/",
+      "cold": {
+        "outcome": "error:CAPTURE_TIMEOUT",
+        "ms": 5,
+        "message": "capture exceeded its time budget"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 1.9
+      }
+    },
+    {
+      "url": "https://www.kernel.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://nodejs.org/en",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.7
+      }
+    },
+    {
+      "url": "https://www.mozilla.org/en-US/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 3
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.1
+      }
+    },
+    {
+      "url": "https://www.wikipedia.org/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 3.9
+      }
+    },
+    {
+      "url": "https://lobste.rs/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 2.2
+      }
+    },
+    {
+      "url": "https://www.nasa.gov/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 1.9
+      }
+    },
+    {
+      "url": "https://www.bbc.co.uk/news",
+      "cold": {
+        "outcome": "error:CAPTURE_BLOCKED",
+        "ms": 10,
+        "message": "could not load the page"
+      },
+      "warm": {
+        "status": 202,
+        "ms": 1.8
+      }
+    },
+    {
+      "url": "https://www.chromeexperiments.com/",
+      "cold": {
+        "outcome": "already-cached",
+        "ms": 2
+      },
+      "warm": {
+        "status": 200,
+        "ms": 1.9
+      }
+    }
+  ]
+}

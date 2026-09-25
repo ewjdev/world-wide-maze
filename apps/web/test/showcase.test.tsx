@@ -4,7 +4,7 @@ import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { renderToString } from 'react-dom/server';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { describe, expect, test } from 'vitest';
+import { beforeAll, describe, expect, test } from 'vitest';
 import { AboutPage } from '../src/pages/about/AboutPage.tsx';
 import { FIDELITY, markCounts, marksIn, parseFidelitySpec } from '../src/pages/about/fidelity.ts';
 import { CREDITS, SRC, TIMELINE } from '../src/pages/about/history.ts';
@@ -21,7 +21,7 @@ import {
   sampleTrack,
   shareUrl,
 } from '../src/ranking/index.ts';
-import { routes } from '../src/routes.tsx';
+import { renderRoute } from './render-route.tsx';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const at = (path: string, el: React.ReactElement) =>
@@ -30,9 +30,10 @@ const at = (path: string, el: React.ReactElement) =>
   );
 
 describe('/about', () => {
-  const html = renderToString(
-    <RouterProvider router={createMemoryRouter(routes, { initialEntries: ['/about'] })} />,
-  );
+  let html = '';
+  beforeAll(async () => {
+    html = await renderRoute('/about');
+  });
   test('renders through the app routes, with every credit and the caveats', () => {
     for (const c of CREDITS) expect(html).toContain(c.name);
     expect(html).toContain('KAISOKU TOKYO');

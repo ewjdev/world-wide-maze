@@ -1,0 +1,23 @@
+page /: csp violations 1, console 0, CSP header true
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+page /about: csp violations 0, console 0, CSP header true
+page /making: csp violations 1, console 0, CSP header true
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+page /log: csp violations 0, console 0, CSP header true
+page /c/123456: csp violations 1, console 0, CSP header true
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+page /p/123456: csp violations 1, console 0, CSP header true
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+practice ×1: 907 frames, 59.5 fps, p50 16.7 p95 18.3 p99 18.6 max 133.4 ms, >25 0.1%, >33 0.1%, >50 0.1%, tier 0 (webgpu, 45 draws), to-play 4269 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+fixture-hn-front ×1: 905 frames, 59.9 fps, p50 16.7 p95 18.3 p99 18.7 max 33.3 ms, >25 0.1%, >33 0%, >50 0%, tier 0 (webgpu, 45 draws), to-play 4247 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+fixture-wikipedia-article~3 ×1: 906 frames, 59.9 fps, p50 16.7 p95 18.3 p99 18.6 max 49.7 ms, >25 0.1%, >33 0.1%, >50 0%, tier 0 (webgpu, 44 draws), to-play 4257 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+practice ×20: 912 frames, 56.1 fps, p50 16.7 p95 18.5 p99 33.3 max 833.1 ms, >25 1.5%, >33 0.7%, >50 0.2%, tier 0 (webgpu, 45 draws), to-play 4236 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+fixture-hn-front ×20: 909 frames, 55.9 fps, p50 16.7 p95 18.6 p99 33.2 max 831.8 ms, >25 1.4%, >33 0.9%, >50 0.4%, tier 0 (webgpu, 45 draws), to-play 4241 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+fixture-wikipedia-article~3 ×20: 916 frames, 56.4 fps, p50 16.7 p95 18.5 p99 32.8 max 815.8 ms, >25 1.2%, >33 0.8%, >50 0.1%, tier 0 (webgpu, 43 draws), to-play 4267 ms, csp 1, console 0
+   script-src eval @ src-C6aPluDx.js:1:2546 enforce
+wrote docs/launch/evidence/frames-dpr2-throttle20.json

@@ -12,14 +12,21 @@ import { errorResponse, toServiceError } from './errors.ts';
 import { scoresRoutes } from './routes/scores.ts';
 import { shareRoutes } from './routes/share.ts';
 import { stagesRoutes } from './routes/stages.ts';
+import { telemetryRoutes } from './routes/telemetry.ts';
+import { clientIp, crossSiteRefused, isCrossSite } from './security.ts';
 
 export function createApp(): Hono<AppEnv> {
   const app = new Hono<AppEnv>();
 
   app.use('*', async (c, next) => {
     const requestId = c.req.header('cf-ray') ?? crypto.randomUUID();
-    c.set('ip', c.req.header('cf-connecting-ip') ?? 'local');
+    c.set('ip', clientIp(c.req.raw)); // Phase 12: IPv6 keyed on its /64
     c.set('services', createServices(c.env, { requestId }));
+    // Phase 12: no cross-site state changes (builds, scores, telemetry) from other sites' pages.
+    if (c.req.method !== 'GET' && c.req.method !== 'HEAD' && isCrossSite(c.req.raw)) {
+      c.get('services').log.warn('cross-site request refused', { path: c.req.path, method: c.req.method });
+      return crossSiteRefused();
+    }
     await next();
   });
 
@@ -29,6 +36,7 @@ export function createApp(): Hono<AppEnv> {
   app.route('/api', stagesRoutes);
   app.route('/api/scores', scoresRoutes); // Phase 10
   app.route('/', shareRoutes); // Phase 10: /s/:stageId, /api/share/:stageId/card
+  app.route('/api', telemetryRoutes); // Phase 12: POST /api/t (off unless TELEMETRY_INGEST=1)
 
   app.notFound(() => Response.json({ error: 'not found' }, { status: 404 }));
   app.onError((err, c) => {

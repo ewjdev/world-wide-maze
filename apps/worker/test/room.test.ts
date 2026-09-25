@@ -262,6 +262,35 @@ describe('Room DO relay', () => {
     host.ws.close(1000);
   });
 
+  test('Phase 12: oversized frames close the socket with 1009', async () => {
+    const code = await newRoom();
+    const host = await connect(code, 'host');
+    const ctl = await connect(code, 'controller');
+    ctl.ws.send(new ArrayBuffer(65));
+    expect((await ctl.closed).code).toBe(1009);
+    host.ws.send(JSON.stringify({ t: 'state', pad: 'x'.repeat(5000) }));
+    expect((await host.closed).code).toBe(1009);
+  });
+
+  test('Phase 12: a flood beyond the token bucket is dropped, not relayed', async () => {
+    const code = await newRoom();
+    const host = await connect(code, 'host');
+    const ctl = await connect(code, 'controller');
+    for (let seq = 1; seq <= 500; seq++)
+      ctl.ws.send(encodeInput({ seq, power: false, jump: false, menu: false, tiltX: 0, tiltZ: 0 }));
+    await until(() => host.frames.length >= 290, 5000);
+    await new Promise((r) => setTimeout(r, 300));
+    // burst 300 (+ a few tokens refilled while sending); the rest was dropped
+    expect(host.frames.length).toBeGreaterThanOrEqual(300);
+    expect(host.frames.length).toBeLessThan(400);
+    const stats = (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as {
+      dropped: { rate: number };
+    };
+    expect(stats.dropped.rate).toBe(500 - host.frames.length);
+    ctl.ws.close(1000);
+    host.ws.close(1000);
+  });
+
   test('keepalive pings measure per-role RTT; pongs to relay pings are not forwarded', async () => {
     const code = await newRoom();
     const host = await connect(code, 'host');

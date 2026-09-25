@@ -21,11 +21,13 @@ import {
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
 import { errorResponse, ServiceError } from '../errors.ts';
+import { BodyTooLargeError, readJsonCapped, tooLarge } from '../security.ts';
 import {
   BOARD_SIZE,
   checkName,
   checkStageScore,
   hashIp,
+  ipHashSecret,
   parseReplay,
   type ReplayEnvelope,
   type ReplayScore,
@@ -165,9 +167,14 @@ scoresRoutes.get('/stage/:stageId/ghost', async (c) => {
 
 scoresRoutes.post('/', async (c) => {
   const { log } = c.get('services');
-  const len = Number(c.req.header('content-length') ?? 0);
-  if (len > MAX_BODY_BYTES) return bad('body too large', 413);
-  const raw = (await c.req.json().catch(() => null)) as Record<string, unknown> | null;
+  // Phase 12: the cap holds for chunked bodies too (no content-length), not just for honest clients.
+  let raw: Record<string, unknown> | null;
+  try {
+    raw = (await readJsonCapped(c.req.raw, MAX_BODY_BYTES)) as Record<string, unknown> | null;
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) return tooLarge(e);
+    throw e;
+  }
   if (!raw || typeof raw !== 'object') return bad('invalid JSON body');
 
   // Contract replay envelope handling (see parseReplay): validate it apart from the schema's bare array.
@@ -200,7 +207,7 @@ scoresRoutes.post('/', async (c) => {
   if (!rl.ok)
     return errorResponse(new ServiceError('RATE_LIMITED', 'too many score submissions', rl.retryAfterSec));
 
-  const ipHash = await hashIp(c.get('ip'));
+  const ipHash = await hashIp(c.get('ip'), ipHashSecret(c.env as { IP_HASH_SALT?: string }, log));
   const now = new Date().toISOString();
 
   if (req.kind === 'stage') {

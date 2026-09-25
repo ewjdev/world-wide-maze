@@ -302,10 +302,47 @@ export function replayMatches(claimed: number, r: ReplayScore): boolean {
 
 // ── misc ───────────────────────────────────────────────────────────────────────────────────────────
 
-/** sha256(day | ip), 32 hex chars. Rotates daily so stored hashes can't be joined across days. */
-export async function hashIp(ip: string, now = new Date()): Promise<string> {
+/**
+ * Dev-only fallback for the `IP_HASH_SALT` secret. Staging and production must set the secret
+ * (`wrangler secret put IP_HASH_SALT --env <env>`, see infra/README.md); without it the hash of an IPv4
+ * address could be reversed by trying all 2^32 addresses (security review #11).
+ */
+export const DEV_IP_HASH_SALT = 'wwm-dev-only-ip-hash-salt';
+
+let warnedNoSalt = false;
+/** The HMAC key for IP hashes: the `IP_HASH_SALT` secret, else the dev default (with one warning). */
+export function ipHashSecret(
+  env: { IP_HASH_SALT?: string },
+  log?: { warn(msg: string, f?: Record<string, unknown>): void },
+): string {
+  const s = env.IP_HASH_SALT;
+  if (s && s.length >= 16) return s;
+  if (!warnedNoSalt) {
+    warnedNoSalt = true;
+    log?.warn('IP_HASH_SALT is not set (or shorter than 16 chars); using the dev default');
+  }
+  return DEV_IP_HASH_SALT;
+}
+
+/**
+ * HMAC-SHA-256(secret, day | ip), 32 hex chars. Rotates daily so stored hashes can't be joined across days,
+ * and needs the secret, so they can't be brute-forced back to an address.
+ */
+export async function hashIp(
+  ip: string,
+  secret: string = DEV_IP_HASH_SALT,
+  now = new Date(),
+): Promise<string> {
   const day = now.toISOString().slice(0, 10);
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`wwm-scores|${day}|${ip}`));
+  const enc = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    enc.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign'],
+  );
+  const buf = await crypto.subtle.sign('HMAC', key, enc.encode(`wwm-scores|${day}|${ip}`));
   return [...new Uint8Array(buf)]
     .slice(0, 16)
     .map((b) => b.toString(16).padStart(2, '0'))
