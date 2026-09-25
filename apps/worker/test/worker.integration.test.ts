@@ -260,11 +260,17 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
 
   test('read rate limit: 100 reads per minute per IP', async () => {
     const ip = newIp();
+    // The limiter counts in fixed 60 s windows, so on a slow runner the burst can straddle a window boundary and the
+    // count restarts. Keep reading until the first 429: it must come after at least 100 allowed reads and no later
+    // than two windows' worth (200), and nothing but 200s may precede it.
     const statuses: number[] = [];
-    for (let i = 0; i < 101; i++) statuses.push((await api('/api/curated', ip)).status);
-    expect(statuses.slice(0, 100).every((s) => s === 200)).toBe(true);
-    expect(statuses[100]).toBe(429);
-  }, 30_000);
+    while (statuses.length < 205 && statuses.at(-1) !== 429)
+      statuses.push((await api('/api/curated', ip)).status);
+    const first429 = statuses.indexOf(429);
+    expect(first429).toBeGreaterThanOrEqual(100);
+    expect(first429).toBeLessThanOrEqual(200);
+    expect(statuses.slice(0, first429).every((s) => s === 200)).toBe(true);
+  }, 60_000);
 
   test('curated list reads Phase 10’s `curated` table (empty until it exists); 404s for unknown ids', async () => {
     const ip = newIp();
