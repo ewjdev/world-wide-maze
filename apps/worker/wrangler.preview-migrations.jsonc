@@ -1,0 +1,17 @@
+// D1 migrations for the Worker Previews database (Phase 17), per the Cloudflare docs pattern
+// (Workers → Previews → Resources → "D1 migrations"). It must point at the SAME database as
+// env.production.previews.d1_databases in wrangler.jsonc (provision.mjs writes both; check-deploy-config.mjs
+// verifies they match). All PRs share this one preview database, so migrations must stay backward compatible.
+//
+//   pnpm exec wrangler d1 migrations apply PREVIEW_DB --remote --config wrangler.preview-migrations.jsonc
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "d1_databases": [
+    {
+      "binding": "PREVIEW_DB",
+      "database_name": "wwm-preview",
+      "database_id": "00000000-0000-0000-0000-000000000003",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

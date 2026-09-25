@@ -1,3 +1,4 @@
-# Copy to .dev.vars for local secrets (gitignored). Staging/production: `wrangler secret put IP_HASH_SALT --env <env>`.
+# Copy to .dev.vars for local secrets (gitignored). Deployed: `wrangler secret put IP_HASH_SALT --env production` and
+# `wrangler preview base-config secret put IP_HASH_SALT --env production` (Previews); see infra/README.md.
 # Without it the Worker uses a built-in dev default and logs a warning.
 IP_HASH_SALT=change-me-to-32-random-characters

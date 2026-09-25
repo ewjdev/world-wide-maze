@@ -7,7 +7,7 @@ account; every command was checked locally against `wrangler dev` unless it says
 ## 1. What's running
 | Piece | Where | Notes |
 |---|---|---|
-| Web app (Vite build) | Workers static assets of Worker `wwm` / `wwm-staging` | Security headers from `apps/web/public/_headers`; SPA fallback; free, uncounted requests |
+| Web app (Vite build) | Workers static assets of Worker `wwm` (and of each PR's Worker Preview `pr-<N>`) | Security headers from `apps/web/public/_headers`; SPA fallback; free, uncounted requests |
 | API Worker (Hono) | same Worker, `run_worker_first` for `/api/*`, `/s/*` | `apps/worker/src` |
 | Room relay | Durable Object `Room`, one per 6-digit code | WebSocket Hibernation; logs `svc: wwm-room` |
 | Build jobs | DO `BuildJob` (alarm runs capture → build → store) | `cpu_ms` 300 000 |
@@ -44,10 +44,11 @@ account; every command was checked locally against `wrangler dev` unless it says
 4. Leaderboards: scan the top 20 of `/api/scores/run` for implausible names/scores (see §5.4).
 
 ## 4. Deploy, verify, roll back
-- **Staging:** merge to `main` → `.github/workflows/deploy.yml` (job `staging`) builds the web app, applies D1
-  migrations, deploys `wwm-staging`, runs the smoke test.
-- **Production:** push a tag `vX.Y.Z` → job `production` waits for approval in the GitHub Environment
-  `production` → deploy → smoke test.
+- **PR Previews (Phase 17):** every PR → `.github/workflows/preview.yml` → Worker Preview `pr-<N>` of `wwm`
+  (preview D1/R2/KV, own Durable Objects), smoke test, URL in a sticky PR comment; deleted when the PR closes.
+- **Production:** merge to `main` → `.github/workflows/deploy.yml` → `pnpm check`, D1 migrations, `wrangler deploy
+  --env production`, smoke test; waits for approval only if the GitHub Environment `production` has required
+  reviewers (infra/README.md).
 - **Roll back** (Worker code + assets together; D1 migrations are *not* rolled back, so migrations must stay
   backward compatible):
   ```sh
@@ -56,7 +57,8 @@ account; every command was checked locally against `wrangler dev` unless it says
   pnpm exec wrangler rollback <version-id> --env production --message "rollback: <reason>"
   node ../../infra/scripts/smoke.mjs https://<DOMAIN>
   ```
-  **Not yet tested** (needs a real deployment) — the G4 checklist requires one rehearsal on staging.
+  **Not yet tested** (needs a real deployment) — the G4 checklist requires one rehearsal (right after the first
+  production deploy, before announcing; or on an optional staging Worker, infra/README.md).
 
 ## 5. Incidents
 ### 5.1 Capture abuse, cost spike or a bad page in the news → kill switch

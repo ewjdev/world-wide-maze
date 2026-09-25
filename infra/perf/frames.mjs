@@ -4,7 +4,7 @@
  * CSP / console check of every page. Needs the production build served the way it will be deployed:
  *
  *   pnpm --filter @wwm/web build
- *   (cd apps/worker && npx wrangler dev --env staging --port 8899)      # Worker + static assets + _headers
+ *   (cd apps/worker && npx wrangler dev --env production --port 8899)   # Worker + static assets + _headers
  *   node infra/perf/frames.mjs http://localhost:8899 [--seconds 20] [--throttle 1,4] [--headless] [--out f.json]
  *
  * Method: Chromium (Playwright) with the real GPU (ANGLE/Metal on macOS), 1440×900 viewport, DPR 1 by default
