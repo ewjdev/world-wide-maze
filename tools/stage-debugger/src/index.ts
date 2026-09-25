@@ -1,2 +1,2 @@
-/** @wwm/stage-debugger — scaffold created by Phase 02; implemented by Phase 03. */
-export const STAGE_DEBUGGER_NAME = '@wwm/stage-debugger';
+/** @wwm/stage-debugger: the drawing module is reusable (Phase 10 "how it's made" view). */
+export * from './draw.ts';

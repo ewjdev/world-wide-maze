@@ -149,6 +149,16 @@ importers:
       '@wwm/schema':
         specifier: workspace:*
         version: link:../../packages/schema
+      '@wwm/stage-builder':
+        specifier: workspace:*
+        version: link:../../packages/stage-builder
+    devDependencies:
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+      vite:
+        specifier: ^8.3.1
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15)
 
 packages:
 
