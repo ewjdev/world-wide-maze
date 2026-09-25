@@ -2,7 +2,15 @@
  * buildTimeline(): git history + build logs + the session extract + file birth times + a Vitest report → the
  * Timeline. Pure: every input is passed in, so the tests can feed fixtures and get the same numbers every time.
  */
-import { OWNER_LABELS, RUN_LABELS, type RunLabel, TIME_ZONE, UNKNOWNS } from './annotations.ts';
+import {
+  OWNER_LABELS,
+  RUN_LABELS,
+  type RunLabel,
+  SEGMENTS,
+  type SegmentDef,
+  TIME_ZONE,
+  UNKNOWNS,
+} from './annotations.ts';
 import { gateOf, mergedPhase } from './git.ts';
 import {
   clip,
@@ -22,6 +30,7 @@ import type {
   FileBirths,
   PackageLines,
   Run,
+  Segment,
   SessionExtract,
   Span,
   TestCounts,
@@ -39,6 +48,36 @@ export interface TimelineInputs {
   logs: { slug: string; md: string }[];
   /** A stretch with nothing running for at least this long counts as idle. */
   idleThresholdMin?: number;
+  /** The stretches to measure separately (default: annotations.ts SEGMENTS). */
+  segments?: SegmentDef[];
+  /** Lines at each segment's closing commit, by segment id (the last segment uses `lines`). */
+  segmentLines?: Record<string, PackageLines[]>;
+  /** Vitest counts at each segment's closing commit, by segment id (the last segment uses `tests`). */
+  segmentTests?: Record<string, TestCounts>;
+}
+
+/** The commit a segment ends at: the first whose subject starts with `endsAt`, or the snapshot. */
+export function segmentEnd(commits: Commit[], def: SegmentDef): Commit | undefined {
+  if (def.endsAt === null) return commits[commits.length - 1];
+  const at = def.endsAt;
+  return commits.find((c) => c.subject.startsWith(at));
+}
+
+const sumLines = (lines: PackageLines[]) =>
+  lines.reduce(
+    (a, p) => ({ source: a.source + p.sourceLines, test: a.test + p.testLines, files: a.files + p.files }),
+    { source: 0, test: 0, files: 0 },
+  );
+
+/** The longest stretch between two consecutive moments. */
+function longestGap(moments: number[], fallback: number): Interval {
+  let away: Interval = { start: fallback, end: fallback };
+  for (let k = 1; k < moments.length; k++) {
+    const a = moments[k - 1] ?? 0;
+    const b = moments[k] ?? 0;
+    if (b - a > away.end - away.start) away = { start: a, end: b };
+  }
+  return away;
 }
 
 const span = (i: Interval): Span => ({ start: iso(i.start), end: iso(i.end), min: minutes(i.end - i.start) });
@@ -93,7 +132,10 @@ export function buildTimeline(inp: TimelineInputs): Timeline {
     const s = toMs(a.start);
     const e = running ? asOf : Math.min(asOf, toMs(a.end));
     const w = label.log ? logWindows(logs.get(label.log.slug) ?? '')[label.log.window] : undefined;
-    const merge = merges.find((c) => mergedPhase(c) === label.phase);
+    const subject = label.mergeSubject;
+    const merge = subject
+      ? inp.commits.find((c) => c.parents.length > 1 && c.subject.startsWith(subject))
+      : merges.find((c) => mergedPhase(c) === label.phase);
     return {
       phase: label.phase,
       title: label.title,
@@ -134,12 +176,10 @@ export function buildTimeline(inp: TimelineInputs): Timeline {
 
   // ── the owner ──
   const msgs = inp.session.ownerMessages.filter((m) => toMs(m.at) >= wall.start && toMs(m.at) <= asOf);
-  let away: Interval = { start: wall.start, end: wall.start };
-  for (let k = 1; k < msgs.length; k++) {
-    const a = toMs(msgs[k - 1]?.at ?? '');
-    const b = toMs(msgs[k]?.at ?? '');
-    if (b - a > away.end - away.start) away = { start: a, end: b };
-  }
+  const away = longestGap(
+    msgs.map((m) => toMs(m.at)),
+    wall.start,
+  );
   const session = { kind: 'session' as const, ref: 'content/build-story/sources/session.json' };
   const touchpoints: Timeline['owner']['touchpoints'] = msgs.map((m) => {
     const l = OWNER_LABELS[m.at.slice(0, 16)];
@@ -168,10 +208,72 @@ export function buildTimeline(inp: TimelineInputs): Timeline {
     return g ? [{ id: g, at: c.at, sha: c.sha.slice(0, 7), subject: c.subject }] : [];
   });
 
-  const t = inp.lines.reduce(
-    (a, p) => ({ source: a.source + p.sourceLines, test: a.test + p.testLines, files: a.files + p.files }),
-    { source: 0, test: 0, files: 0 },
-  );
+  const t = sumLines(inp.lines);
+  const testsOf = (c: TestCounts) => ({ ...c, source: { kind: 'vitest' as const, ref: c.command } });
+
+  // ── segments: the same measurements over each stretch ──
+  const segments: Segment[] = [];
+  let from = wall.start;
+  for (const def of inp.segments ?? SEGMENTS) {
+    const end = segmentEnd(inp.commits, def);
+    if (!end) continue; // the snapshot predates this stretch's closing commit
+    const to = toMs(end.at);
+    if (to <= from) continue;
+    const isLast = end === head;
+    const w: Interval = { start: from, end: to };
+    const inW = (at: string) => toMs(at) > from && toMs(at) <= to;
+    const segRuns = runs.filter((_, k) => {
+      const s = runIntervals[k]?.start ?? 0;
+      return s >= from && s < to;
+    });
+    const clipped = clip(runIntervals, from, to);
+    const segActive = union(clip(active, from, to));
+    const segIdle = gaps(segActive, from, to, threshold * 60_000);
+    const segConc = maxConcurrency(clipped);
+    const segMsgs = msgs.filter((m) => toMs(m.at) >= from && toMs(m.at) <= to);
+    const segAway = longestGap(
+      segMsgs.map((m) => toMs(m.at)),
+      from,
+    );
+    const segCommits = inp.commits.filter((c) => inW(c.at) || (segments.length === 0 && toMs(c.at) === from));
+    const segTests = isLast ? inp.tests : inp.segmentTests?.[def.id];
+    const segLines = isLast ? inp.lines : inp.segmentLines?.[def.id];
+    if (!segLines) throw new Error(`no line counts for segment ${def.id} (${end.sha.slice(0, 7)})`);
+    segments.push({
+      id: def.id,
+      label: def.label,
+      short: def.short,
+      what: def.what,
+      end: { sha: end.sha.slice(0, 7), at: end.at, subject: end.subject },
+      wallClock: span(w),
+      activeMin: minutes(total(segActive)),
+      idle: { min: minutes(total(segIdle)), spans: segIdle.map(span) },
+      agents: {
+        runs: segRuns.length,
+        phaseRuns: segRuns.filter((r) => r.kind === 'phase').length,
+        followUpRuns: segRuns.filter((r) => r.kind === 'follow-up').length,
+        helperRuns: segRuns.filter((r) => r.kind === 'helper').length,
+        agentMin: minutes(total(clipped)),
+        orchestratorMin: minutes(total(clip(turns, from, to))),
+        maxConcurrent: segConc.max,
+        maxConcurrentAt: Number.isNaN(segConc.at) ? iso(from) : iso(segConc.at),
+      },
+      owner: {
+        messages: segMsgs.length,
+        words: segMsgs.reduce((a, m) => a + m.words, 0),
+        longestAway: span(segAway),
+        agentMinWhileAway: minutes(total(clip(runIntervals, segAway.start, segAway.end))),
+      },
+      git: {
+        commits: segCommits.length,
+        merges: segCommits.filter((c) => c.parents.length > 1).length,
+        phaseMerges: segCommits.filter((c) => mergedPhase(c)).length,
+      },
+      tests: segTests ? testsOf(segTests) : null,
+      lines: sumLines(segLines),
+    });
+    from = to;
+  }
 
   return {
     schema: 1,
@@ -210,6 +312,7 @@ export function buildTimeline(inp: TimelineInputs): Timeline {
       model: facts.model,
       source: { kind: 'session', ref: 'sources/session.json agents[] (first to last transcript event)' },
     },
+    segments,
     runs,
     orchestratorTurns: turns.map(span),
     owner: {
@@ -231,7 +334,7 @@ export function buildTimeline(inp: TimelineInputs): Timeline {
       firstCommit: { sha: first.sha.slice(0, 7), at: first.at, subject: first.subject },
       source: { kind: 'git', ref: `git log ${head.sha.slice(0, 7)} (${inp.commits.length} commits)` },
     },
-    tests: { ...inp.tests, source: { kind: 'vitest', ref: inp.tests.command } },
+    tests: testsOf(inp.tests),
     lines: {
       total: t,
       byPackage: inp.lines,

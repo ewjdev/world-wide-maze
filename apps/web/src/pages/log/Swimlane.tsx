@@ -1,16 +1,32 @@
 /**
- * The night, phase by phase: one lane per agent run on the wall-clock axis, grouped by wave, with the gates as
+ * The build, phase by phase (Night 1, then any later stretch, split by a marker): one lane per agent run on the wall-clock axis, grouped by wave, with the gates as
  * milestones, the owner's messages on their own lane and the idle stretches shaded. Select a run for its details.
  */
 import { type CSSProperties, useState } from 'react';
 import { WAVE_COLOR } from './BuildClock.tsx';
-import { clock, dur, frac, hourTicks, phaseAnchor, type Run, runsByWave, TL, WAVE_NAMES } from './story.ts';
+import {
+  clock,
+  dur,
+  FIRST,
+  frac,
+  hourTicks,
+  LATER,
+  phaseAnchor,
+  type Run,
+  runsByWave,
+  TL,
+  WAVE_NAMES,
+} from './story.ts';
 
 const pos = (start: string, end: string): CSSProperties => ({
   left: `${(frac(start) * 100).toFixed(3)}%`,
   width: `${Math.max(0.35, (frac(end) - frac(start)) * 100).toFixed(3)}%`,
 });
 const at = (iso: string): CSSProperties => ({ left: `${(frac(iso) * 100).toFixed(3)}%` });
+/** Runs ending near the right edge carry their duration before the bar, where there's room. */
+const nearEnd = (r: Run) => frac(r.merge?.at ?? r.span.end) > 0.9;
+/** "Night 1" never splits across lines. */
+const nb = (s: string) => s.replace(/ /g, '\u00a0');
 
 function Details({ run }: { run: Run & { helpers: Run[] } }) {
   const anchor = phaseAnchor(run);
@@ -88,7 +104,9 @@ export function Swimlane() {
   return (
     <section className="sc-section sl-section" aria-labelledby="night">
       <h2 className="sc-h2" id="night">
-        The night, phase by phase
+        {LATER.length
+          ? `${nb(FIRST.label)} and ${LATER.map((s) => nb(s.label.toLowerCase())).join(', ')}, phase by phase`
+          : 'The night, phase by phase'}
       </h2>
       <p className="sc-note sl-intro">
         Each bar is one agent’s run, timed from its own transcript. Waves ran in parallel copies of the
@@ -113,6 +131,11 @@ export function Swimlane() {
             {TL.idle.spans.map((s) => (
               <span key={s.start} className="sl-idle" style={pos(s.start, s.end)}>
                 <span>nothing running · {dur(s.min)}</span>
+              </span>
+            ))}
+            {LATER.map((s) => (
+              <span key={s.id} className="sl-seg" style={at(s.wallClock.start)}>
+                <span>{s.label}</span>
               </span>
             ))}
             {TL.gates.map((g) => (
@@ -173,9 +196,16 @@ export function Swimlane() {
                     </span>
                     <span
                       className="sl-dur sc-mono"
-                      style={at(
-                        r.merge && Date.parse(r.merge.at) > Date.parse(r.span.end) ? r.merge.at : r.span.end,
-                      )}
+                      data-before={nearEnd(r)}
+                      style={
+                        nearEnd(r)
+                          ? { right: `${(100 - frac(r.span.start) * 100).toFixed(3)}%` }
+                          : at(
+                              r.merge && Date.parse(r.merge.at) > Date.parse(r.span.end)
+                                ? r.merge.at
+                                : r.span.end,
+                            )
+                      }
                     >
                       {dur(r.span.min)}
                     </span>
@@ -209,6 +239,11 @@ export function Swimlane() {
         <li>
           <span className="sl-key__gate" /> gate passed
         </li>
+        {LATER.length ? (
+          <li>
+            <span className="sl-key__seg" /> where {FIRST.label.toLowerCase()} ends
+          </li>
+        ) : null}
         <li>
           <span className="sl-key__idle" /> {TL.idle.thresholdMin} min or more with nothing running
         </li>

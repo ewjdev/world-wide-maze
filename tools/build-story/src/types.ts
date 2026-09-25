@@ -95,6 +95,45 @@ export interface Run {
   lane: number;
 }
 
+/**
+ * One stretch of the build (e.g. "Night 1", "Day 2"), measured exactly like the whole: the same interval rules
+ * applied to [start, end]. Where each stretch ends is an annotation (a commit subject in annotations.ts SEGMENTS);
+ * every number is computed.
+ */
+export interface Segment {
+  id: string;
+  /** Annotation: "Night 1". */
+  label: string;
+  /** Annotation: the same, in a few words. */
+  short: string;
+  /** Annotation: what happened in it, in words. */
+  what: string;
+  /** The commit that closes it (the snapshot for the last one). */
+  end: { sha: string; at: string; subject: string };
+  wallClock: Span;
+  activeMin: number;
+  idle: { min: number; spans: Span[] };
+  agents: {
+    /** Runs that started inside the stretch. */
+    runs: number;
+    phaseRuns: number;
+    followUpRuns: number;
+    helperRuns: number;
+    /** Agent time inside the stretch (runs clipped to it). */
+    agentMin: number;
+    orchestratorMin: number;
+    maxConcurrent: number;
+    maxConcurrentAt: string;
+  };
+  owner: { messages: number; words: number; longestAway: Span; agentMinWhileAway: number };
+  /** Commits whose author time falls inside the stretch (the first one also counts the start instant). */
+  git: { commits: number; merges: number; phaseMerges: number };
+  /** Test counts at the closing commit, when a Vitest report exists for it. */
+  tests: (TestCounts & { source: SourceRef }) | null;
+  /** Lines in code files at the closing commit. */
+  lines: { source: number; test: number; files: number };
+}
+
 export interface Timeline {
   schema: 1;
   /** The snapshot: everything is measured up to HEAD's commit time. */
@@ -121,6 +160,8 @@ export interface Timeline {
     model: string | null;
     source: SourceRef;
   };
+  /** The same measurements per stretch of the build, in order; together they cover start → asOf. */
+  segments: Segment[];
   runs: Run[];
   orchestratorTurns: Span[];
   owner: {
