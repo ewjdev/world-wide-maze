@@ -78,4 +78,8 @@ export const routes: RouteObject[] = [
   },
   // The phone controller renders without the desktop layout.
   { path: '/c/:code', element: <ControllerPage /> }, // Phase 06
+  {
+    path: '/dev/engine',
+    lazy: async () => ({ Component: (await import('./dev/engine-sandbox.tsx')).default }),
+  },
 ];
