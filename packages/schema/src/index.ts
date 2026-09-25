@@ -8,6 +8,7 @@ export * from './errors.ts';
 export * from './geometry.ts';
 export * from './ids.ts';
 export * from './rng.ts';
+export * from './slice.ts';
 export * from './space.ts';
 export * from './types.ts';
 export * from './validate.ts';

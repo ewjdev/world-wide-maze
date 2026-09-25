@@ -1,36 +1,76 @@
 /**
- * Shared constants (contracts.md §1). Values marked "contract" are copied verbatim from contracts.md;
+ * Shared constants (contracts §1). Values marked "contract" are copied verbatim from contracts.md;
  * the few marked "derived" are named in contracts.md prose/comments and given a constant here so nobody
- * hard-codes them.
+ * hard-codes them. "E" = evidenced by the recovered 2013 build (docs/reference/fidelity-spec.md).
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.1.0';
+export const CONTRACT_VERSION = '0.2.0';
 
-// --- contract §1 ---------------------------------------------------------------------------------
-export const PX_PER_METER = 40; // ball diameter ≈ 40 page px
+// --- contract §1: scale --------------------------------------------------------------------------
+/** 1 ball diameter = 1 m = 13.5 px (2013: 10.8 px of a 1024 stage). */
+export const PX_PER_METER = 13.5;
 export const BALL_RADIUS_M = 0.5;
-export const LEVEL_HEIGHT_M = 1.5; // one "level" step (the original islands had integer levels)
-export const MIN_BRIDGE_WIDTH_PX = 100; // ≥ 2.5 × ball diameter
-export const MIN_ISLAND_SIZE_PX = 120;
-export const OCEAN_Y_M = -6; // below this = fell
+/** `level` is a float in ball diameters (2013 island heights ≈ 9–23 D). */
+export const LEVEL_HEIGHT_M = 1.0;
+/** Max ramp slope |Δh| / horizontal length, 10° (E). */
+export const MAX_RAMP_SLOPE = 0.176;
+/** 2.5 D (2013 decks 1.6–3.6 D). */
+export const MIN_BRIDGE_WIDTH_PX = 34;
+/** 2 D. */
+export const MIN_ISLAND_SIZE_PX = 27;
+export const DEFAULT_VIEWPORT = { width: 1280, height: 800 } as const;
+/** Capture height cap (page CSS px). */
+export const MAX_PAGE_HEIGHT_PX = 6000;
+/** One stage slice ≈ 1.33 × width (2013: 1024 × 1358). Longer pages → more stages in a run. */
+export const MAX_STAGE_HEIGHT_PX = 1700;
+/** Screenshots at 2× for close-range sharpness. */
+export const CAPTURE_DPR = 2;
+/** At most this many large items per stage (E, case study). */
+export const MAX_LARGE_ITEMS = 6;
+
+// --- contract §1: simulation (E, converted from 2013 world units at 0.926 m/WU) -------------------
 export const SIM_HZ = 120;
-// Faithful scoring from the recovered 2013 desktop bundle (common/config)
+/** ×2 while falling. */
+export const GRAVITY_MPS2 = 46.3;
+export const JUMP_DELTA_V_MPS = 16.7;
+/** Jump only if the ball touched something within this window. */
+export const JUMP_GRACE_SEC = 0.1;
+/** Phone pitch limit ±45°. */
+export const MAX_TILT_PITCH = 0.785;
+/** Phone roll limit ±20°. */
+export const MAX_TILT_ROLL = 0.349;
+/** Keyboard tilt ±25° on both axes. */
+export const KEYBOARD_TILT = 0.436;
+export const ITEM_PICKUP_RADIUS_M = 0.926;
+export const GOAL_RADIUS_M = 0.926;
+export const GOAL_SENSOR_HEIGHT_M = 1.85;
+export const ELEVATOR_COOLDOWN_SEC = 2;
+/** 'fell' when ball.y < (lowest island top − FALL_DEPTH_M). */
+export const FALL_DEPTH_M = 9;
+/** 'lost' fires this long after 'fell'. */
+export const FALL_LOST_DELAY_SEC = 3;
+
+// --- contract §1: rules (E, recovered common/config) ----------------------------------------------
+/** Fixed per stage; resets on every respawn. */
+export const TIME_LIMIT_SEC_DEFAULT = 300;
+/** SPARE balls; game over when spares < 0 (4 attempts). */
 export const NUM_BALLS = 3;
 export const SMALL_SCORE = 1;
 export const LARGE_SCORE = 100;
-export const TIME_SCORE = 5; // per remaining second at goal
+/** × remaining whole seconds at goal. */
+export const TIME_SCORE = 5;
+/** Each multiple crossed in the run total → +1 spare if spares < 3. */
 export const ONEUP_SCORE = 3000;
 
-// --- derived (named in contracts.md comments) ----------------------------------------------------
-/** contracts §2: page height cap for captures. */
-export const MAX_PAGE_HEIGHT_PX = 6000;
-/** contracts §2: default capture viewport. */
-export const DEFAULT_VIEWPORT = { width: 1280, height: 800 } as const;
-/** contracts §5: tilt clamp for `InputSample.tiltX/tiltZ`, radians. */
-export const MAX_TILT = 0.44;
-/** contracts §3 invariants: min clearance of items/restart points from the island edge, page px (= 20). */
+// --- derived (named in contracts.md prose/comments) ----------------------------------------------
+/** contracts §3 invariants: min clearance of items/restart points/start from the island edge, px (= 6.75). */
 export const BALL_RADIUS_PX = BALL_RADIUS_M * PX_PER_METER;
+/** contracts §9 (v0.1.0): bridge / elevator endpoints must be on, or within this many px of, their island. */
+export const ENDPOINT_TOLERANCE_PX = 20;
+/** contracts §3 Elevator.travelSec default: 1 + ELEVATOR_TRAVEL_SEC_PER_M × Δh_m (cubicInOut). */
+export const ELEVATOR_TRAVEL_BASE_SEC = 1;
+export const ELEVATOR_TRAVEL_SEC_PER_M = 0.162;
 /** contracts §6: host treats controller input as stale after this many ms. */
 export const INPUT_STALE_MS = 250;
 /** contracts §6: 6-digit room code. */

@@ -1,6 +1,6 @@
 {
   "name": "@wwm/ref-fetch",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "description": "Downloads and hash-verifies the 2013 World Wide Maze reference artifacts into reference/ (gitignored) and converts the WWMMM stage to StageData.",
@@ -12,5 +12,8 @@
     "convert": "node src/wwmmm-to-stage.ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@wwm/schema": "workspace:*"
   }
 }

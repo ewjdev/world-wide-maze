@@ -8,6 +8,7 @@ export {
   type CaptureResult,
   capturePage,
   normalizeUrl,
+  pngSize,
 } from './capture.ts';
 export { type ExtractedPage, type ExtractOptions, extractPage } from './extract.ts';
 export { pageExpression } from './page-expr.ts';

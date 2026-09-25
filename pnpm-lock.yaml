@@ -138,7 +138,11 @@ importers:
         specifier: ^4.23.15
         version: 4.23.15
 
-  tools/ref-fetch: {}
+  tools/ref-fetch:
+    dependencies:
+      '@wwm/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
 
   tools/stage-debugger:
     dependencies:

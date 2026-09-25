@@ -1,5 +1,5 @@
 /**
- * Contract types, transcribed from plans/contracts.md (v0.1.0). Section numbers refer to that file.
+ * Contract types, transcribed from plans/contracts.md (v0.2.0). Section numbers refer to that file.
  * Do not add fields here without a Contract Change Request; the orchestrator owns this file after Phase 02.
  */
 
@@ -9,15 +9,16 @@
 
 export interface CaptureBundle {
   schema: 'wwm.capture/1';
-  captureId: string; // sha256(normalizedUrl + capturedAt)
+  captureId: string; // computeCaptureId(normalizedUrl | capturedAt)
   url: string; // normalized final URL after redirects
   title: string;
   capturedAt: string; // ISO
-  viewport: { width: number; height: number }; // default 1280 × 800
-  page: { width: number; height: number }; // full scrollable size, height capped (MAX_PAGE_HEIGHT_PX = 6000)
-  screenshot: { path: string; width: number; height: number; format: 'png' | 'webp' };
-  backgroundColor: string; // computed <body>/<html> bg, "#rrggbb"
-  elements: DomElement[];
+  viewport: { width: number; height: number };
+  page: { width: number; height: number }; // CSS px; width = viewport width; height ≤ MAX_PAGE_HEIGHT_PX
+  /** width/height are IMAGE px (= CSS px × scale); scale = device px per CSS px (CAPTURE_DPR; legacy fixtures 1). */
+  screenshot: { path: string; width: number; height: number; format: 'png' | 'webp'; scale: number };
+  backgroundColor: string; // "#rrggbb"
+  elements: DomElement[]; // rects in PAGE CSS px (not slice-local)
 }
 
 export type ElementKind =
@@ -40,7 +41,7 @@ export interface Rect {
   y: number;
   w: number;
   h: number;
-} // page px
+}
 
 export interface DomElement {
   id: number;
@@ -56,22 +57,40 @@ export interface DomElement {
 }
 
 // ================================================================================================
-// §3 Level: StageData (Builder → Renderer, Physics, Solver, Storage). Everything in page px except level.
+// §3 Level: StageData (Builder → Renderer, Physics, Solver, Storage). Every coordinate is in STAGE-LOCAL
+// px (origin = top-left of the slice) except `level`. A long page becomes several stages played as a run.
 // ================================================================================================
 
 export type Vec2 = [number, number];
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
+/** Which part of the page a stage covers (page CSS px). */
+export interface StageSlice {
+  index: number; // 0-based
+  count: number; // total slices of the capture
+  y: number; // page-space origin of this stage
+  height: number;
+}
+
 export interface StageData {
-  schema: 'wwm.stage/1';
-  stageId: string; // sha256(captureId + seed + builderVersion + difficulty)
+  schema: 'wwm.stage/2';
+  stageId: string; // computeStageId(captureId | slice.index | seed | builderVersion | difficulty)
   builderVersion: string; // semver of packages/stage-builder
   seed: number; // uint32
   difficulty: Difficulty;
-  source: { url: string; title: string; captureId: string; pageWidth: number; pageHeight: number };
-  texture: { path: string; width: number; height: number }; // the screenshot the island tops sample
-  timeLimitSec: number;
+  source: {
+    url: string;
+    title: string;
+    captureId: string;
+    pageWidth: number;
+    pageHeight: number;
+    slice: StageSlice; // page-space origin of this stage
+  };
+  size: { width: number; height: number }; // stage extent in local px
+  /** Image covering exactly `size`; scale = image px per stage px. UV = local px / (texture size / scale). */
+  texture: { path: string; width: number; height: number; scale: number };
+  timeLimitSec: number; // default TIME_LIMIT_SEC_DEFAULT
   islands: Island[];
   bridges: Bridge[];
   elevators: Elevator[];
@@ -83,10 +102,10 @@ export interface StageData {
 
 export interface Island {
   id: number;
-  contour: Vec2[]; // outer ring, CCW, simplified, no self-intersection
-  holes: Vec2[][]; // CW rings
-  level: number; // integer height step
-  guardrails: Vec2[][]; // open polylines along the edge, gaps at bridge mouths
+  contour: Vec2[]; // outer ring: positive shoelace area in (x right, y down) coords — use isCCW()
+  holes: Vec2[][]; // opposite orientation
+  level: number; // FLOAT, top height in LEVEL_HEIGHT_M units (ball diameters)
+  guardrails: Vec2[][]; // open polylines along the edge, gaps at bridge/elevator mouths
   restartPoints: Vec2[];
   sourceElementIds: number[]; // DomElement ids that formed this island
 }
@@ -97,23 +116,25 @@ export interface Bridge {
   from: number;
   to: number; // island ids
   a: Vec2;
-  b: Vec2; // centerline endpoints on each island edge
-  width: number; // px, ≥ MIN_BRIDGE_WIDTH_PX
-  type: BridgeType; // ramp when endpoint levels differ by 1
-  levelA: number;
+  b: Vec2; // centerline endpoints on each island edge (2013: cardinal directions)
+  width: number; // ≥ MIN_BRIDGE_WIDTH_PX
+  type: BridgeType; // 'ramp' iff levelA ≠ levelB
+  levelA: number; // = island levels; |Δlevel·LEVEL_HEIGHT_M| / (|b−a| / PX_PER_METER) ≤ MAX_RAMP_SLOPE
   levelB: number;
 }
 
+/** E: 2013 bridge type 1 — trigger-activated lift across a short gap. */
 export interface Elevator {
-  // for level differences > 1
   id: number;
-  islandFrom: number;
+  islandFrom: number; // = lower island
   islandTo: number;
-  pos: Vec2;
-  size: number;
+  a: Vec2; // footprint like a bridge: lower platform at a, upper at b
+  b: Vec2;
+  width: number;
   levelLow: number;
   levelHigh: number;
-  periodSec: number;
+  travelSec: number; // default 1 + 0.162 × Δh_m, cubicInOut
+  cooldownSec: number; // default ELEVATOR_COOLDOWN_SEC
 }
 
 export type ItemKind = 'small' | 'large';
@@ -133,7 +154,14 @@ export interface Goal {
   radius: number;
 }
 
-export type DropReason = 'too-small' | 'fixed' | 'offscreen' | 'background' | 'merged' | 'other';
+export type DropReason =
+  | 'too-small'
+  | 'fixed'
+  | 'offscreen'
+  | 'background'
+  | 'merged'
+  | 'out-of-slice'
+  | 'other';
 export interface Provenance {
   keptElementIds: number[];
   dropped: { elementId: number; reason: DropReason }[];
@@ -151,10 +179,12 @@ export interface RGBAImage {
 }
 export interface BuildInput {
   capture: CaptureBundle;
-  image: RGBAImage; // decoded screenshot (decoding is the caller's job)
+  image: RGBAImage; // full decoded screenshot (image px = page px × capture.screenshot.scale)
+  sliceIndex: number; // 0-based; slice = [i·MAX_STAGE_HEIGHT_PX, min(+MAX_STAGE_HEIGHT_PX, page.height))
   seed: number;
   difficulty: StageData['difficulty'];
 }
+/** `stage.texture.path = ''` — the caller crops + stores the texture and fills it in. */
 export interface BuildResult {
   stage: StageData;
   debug: DebugLayers;
@@ -170,23 +200,33 @@ export interface DebugLayers {
 }
 /** Signature of `buildStage` in @wwm/stage-builder: pure, deterministic, no I/O, no DOM. */
 export type BuildStageFn = (input: BuildInput) => BuildResult;
+/** Signature of `sliceCount` (implemented in @wwm/schema slice.ts; re-exported by @wwm/stage-builder). */
+export type SliceCountFn = (capture: CaptureBundle) => number;
 
 // ================================================================================================
 // §5 Simulation API (implemented by packages/physics)
 // ================================================================================================
 
+/**
+ * Tilt model (E): tilt ROTATES THE GRAVITY VECTOR (it doesn't push the ball), expressed in the camera's
+ * yaw frame (forward = away from the camera). Tilt only acts while `power` is held; on release the target
+ * tilt returns to 0.
+ */
 export interface InputSample {
-  // what the sim consumes each tick (after filtering)
-  tiltX: number; // radians, + = roll right, clamped ±MAX_TILT (0.44)
-  tiltZ: number; // radians, + = pitch toward player
-  power: boolean; // held: tilt acts (faithful: "hold POWER while tilting")
+  tiltX: number; // rad, roll (+ = right), |·| ≤ MAX_TILT_ROLL (keyboard ≤ KEYBOARD_TILT)
+  tiltZ: number; // rad, pitch (+ = away from camera/forward), |·| ≤ MAX_TILT_PITCH
+  frameYaw: number; // rad, heading of the frame tilt is relative to (renderer camera yaw; solver chooses its own)
+  power: boolean;
   jump: boolean; // edge-triggered by the sim
 }
 
 export type SimEvent =
   | { type: 'item'; itemId: number; kind: 'small' | 'large' }
   | { type: 'goal' }
-  | { type: 'fell'; restartAt: Vec2 }
+  | { type: 'fell'; restartAt: Vec2 } // restart = nearest restart point on the last-touched island
+  | { type: 'lost' } // FALL_LOST_DELAY_SEC after 'fell'
+  | { type: 'island'; islandId: number } // first contact with a different island
+  | { type: 'elevator'; elevatorId: number; phase: 'start' | 'end' }
   | { type: 'landed'; impact: number }
   | { type: 'bump'; impact: number };
 
@@ -197,10 +237,17 @@ export interface BallState {
   grounded: boolean;
 }
 
+/** What `Simulation.step` returns. `elevators[].y` is the current platform height (world m). */
+export interface SimStepResult {
+  ball: BallState;
+  events: SimEvent[];
+  elevators: { id: number; y: number }[];
+}
+
 export interface Simulation {
   // same interface in worker and headless (Node) builds
   load(stage: StageData): Promise<void>;
-  step(input: InputSample): { ball: BallState; events: SimEvent[] }; // advances exactly 1/SIM_HZ
+  step(input: InputSample): SimStepResult; // advances exactly 1/SIM_HZ
   reset(to?: Vec2): void;
   dispose(): void;
 }
@@ -216,6 +263,7 @@ export type Replay = InputSample[];
 
 export type GamePhase =
   | 'title'
+  | 'howto'
   | 'pairing'
   | 'calibrate'
   | 'select'
@@ -223,24 +271,27 @@ export type GamePhase =
   | 'intro'
   | 'countdown'
   | 'play'
-  | 'paused'
+  | 'paused' // = map view: physics + timer stopped
+  | 'falling'
+  | 'restarting'
   | 'goal'
   | 'timeup'
   | 'gameover'
   | 'result'
-  | 'ranking';
+  | 'ranking'
+  | 'error';
 
 export type RoomRole = 'host' | 'controller';
-export type HapticPattern = 'item' | 'fall' | 'goal';
+export type HapticPattern = 'item' | 'large' | 'fall' | 'goal';
 
-/** Decoded form of the 12-byte binary INPUT frame (controller → host). */
+/** Decoded form of the 12-byte binary INPUT frame (controller → host). The host adds `frameYaw`. */
 export interface ControllerInputFrame {
   seq: number; // u16, wraps
   power: boolean; // bit0
   jump: boolean; // bit1
   menu: boolean; // bit2
-  tiltX: number; // f32 radians
-  tiltZ: number; // f32 radians
+  tiltX: number; // f32 radians, calibrated, roll
+  tiltZ: number; // f32 radians, calibrated, pitch
 }
 
 export interface PeerMessage {
@@ -259,6 +310,19 @@ export interface HapticMessage {
   t: 'haptic';
   pattern: HapticPattern;
 } // host → controller
+/** Optional (E: 2013 sent this): ≤ 10 Hz ball position for a phone mini-map. */
+export interface PosMessage {
+  t: 'pos';
+  x: number;
+  y: number;
+  heading: number;
+} // host → controller
+/** Optional (E: typing on the phone). */
+export interface TextMessage {
+  t: 'text';
+  field: 'url' | 'name';
+  value: string;
+} // controller → host
 export interface CalibratedMessage {
   t: 'calibrated';
 } // controller → host
@@ -278,6 +342,8 @@ export type ControlMessage =
   | PeerMessage
   | StateMessage
   | HapticMessage
+  | PosMessage
+  | TextMessage
   | CalibratedMessage
   | PingMessage
   | PongMessage;
@@ -305,24 +371,33 @@ export interface CreateStageRequest {
   difficulty?: Difficulty;
   seed?: number;
 }
-/** `POST /api/stages` → `202 {jobId}` or `200 {stageId}` if cached. */
-export type CreateStageResponse = { jobId: string } | { stageId: string };
+/** `POST /api/stages` → `202 {jobId}` or `200 {runId, stageIds[]}` if cached. */
+export type CreateStageResponse = { jobId: string } | { runId: string; stageIds: string[] };
 
 /** `GET /api/jobs/:jobId` server-sent events. The SSE `event:` name is `type`; `data:` is the rest as JSON. */
 export type JobEvent =
   | { type: 'progress'; step: string; pct: number }
-  | { type: 'done'; stageId: string }
+  | { type: 'done'; runId: string; stageIds: string[] }
   | { type: 'error'; code: ApiErrorCode; message: string };
 
+/** `GET /api/runs/:runId`: all slices of one page capture, in play order. */
+export interface RunResponse {
+  runId: string;
+  url: string;
+  title: string;
+  stageIds: string[];
+}
+
 /** `GET /api/curated`. */
-export interface CuratedStage {
-  stageId: string;
+export interface CuratedRun {
+  runId: string;
   title: string;
   url: string;
   thumb: string;
+  stars: number;
 }
 export interface CuratedResponse {
-  stages: CuratedStage[];
+  runs: CuratedRun[];
 }
 
 /** `POST /api/rooms`. */
@@ -330,23 +405,33 @@ export interface CreateRoomResponse {
   code: string; // 6 digits
 }
 
-/** `POST /api/scores`. */
-export interface SubmitScoreRequest {
+/** `POST /api/scores`, per-stage board. */
+export interface SubmitStageScoreRequest {
+  kind: 'stage';
   stageId: string;
   name: string;
   score: number;
   timeMs: number;
   replay?: Replay;
 }
+/** `POST /api/scores`, global run board (as 2013's single top-10 of session totals). */
+export interface SubmitRunScoreRequest {
+  kind: 'run';
+  runId?: string;
+  name: string;
+  totalScore: number;
+  stages: { stageId: string; score: number; timeMs: number }[];
+}
+export type SubmitScoreRequest = SubmitStageScoreRequest | SubmitRunScoreRequest;
 export interface SubmitScoreResponse {
   rank: number;
 }
 
-/** `GET /api/scores/:stageId`. `at` is an ISO timestamp. */
+/** `GET /api/scores/stage/:stageId` · `GET /api/scores/run`. `at` is an ISO timestamp. */
 export interface ScoreEntry {
   name: string;
   score: number;
-  timeMs: number;
+  timeMs?: number;
   at: string;
 }
 export interface ScoresResponse {
