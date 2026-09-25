@@ -109,7 +109,7 @@
       // Custom domain (HTTPS on your own domain; iOS only grants motion sensors on secure origins). Filled in by
       // provision.mjs from infra/cloudflare.config.json "domain":
       // [{ "pattern": "<domain>", "custom_domain": true }]. Needs the "Workers Routes: Edit" zone permission once.
-      "routes": [],
+      "routes": [{ "pattern": "wwm.ewj.dev", "custom_domain": true }],
       "workers_dev": false,
       // Required for Preview URLs on workers.dev: pr-<N>-wwm.<account-subdomain>.workers.dev (HTTPS).
       "preview_urls": true,
@@ -138,7 +138,7 @@
         "CAPTURE_ENABLED": "1",
         "ROOM_STATS": "0",
         "TELEMETRY_INGEST": "0",
-        "AI_GATEWAY_ACCOUNT_ID": "",
+        "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
         "AI_GATEWAY_ID": "wwm",
         "DOCENT_DAILY_LIMIT": "500"
       },
@@ -147,11 +147,11 @@
         {
           "binding": "DB",
           "database_name": "wwm",
-          "database_id": "00000000-0000-0000-0000-000000000002",
+          "database_id": "68d408cd-47b7-4313-a361-09fbe3996a35",
           "migrations_dir": "migrations"
         }
       ],
-      "kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000002" }],
+      "kv_namespaces": [{ "binding": "CACHE", "id": "fcf10fbc42ef404391736d38c6117739" }],
       "browser": { "binding": "BROWSER" },
       "ratelimits": [
         { "name": "READ_LIMITER", "namespace_id": "7201", "simple": { "limit": 100, "period": 60 } },
@@ -198,7 +198,7 @@
           "CAPTURE_ENABLED": "1",
           "ROOM_STATS": "0",
           "TELEMETRY_INGEST": "0",
-          "AI_GATEWAY_ACCOUNT_ID": "",
+          "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
           "AI_GATEWAY_ID": "wwm-preview",
           "DOCENT_DAILY_LIMIT": "50"
         },
@@ -207,11 +207,11 @@
           {
             "binding": "DB",
             "database_name": "wwm-preview",
-            "database_id": "00000000-0000-0000-0000-000000000003",
+            "database_id": "fd5ce3d4-5df4-442c-97fd-50e266ecd7a5",
             "migrations_dir": "migrations"
           }
         ],
-        "kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000003" }],
+        "kv_namespaces": [{ "binding": "CACHE", "id": "dae2b404a2df454cae5b348f46860a4f" }],
         "browser": { "binding": "BROWSER" },
         "ratelimits": [
           { "name": "READ_LIMITER", "namespace_id": "7301", "simple": { "limit": 100, "period": 60 } },

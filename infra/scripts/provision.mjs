@@ -163,6 +163,9 @@ async function listExisting() {
   const d1 = parseD1List(wrangler(['d1', 'list', '--json']).stdout);
   const kv = parseKvList(wrangler(['kv', 'namespace', 'list']).stdout);
   const r2 = parseR2List(wrangler(['r2', 'bucket', 'list']).stdout);
+  // `r2 bucket list` shows only the first page on accounts with many buckets, so ask for ours by name.
+  for (const r of desiredResources(cfg).filter((x) => x.kind === 'r2' && !r2.has(x.name)))
+    if (wrangler(['r2', 'bucket', 'info', r.name], { allowFail: true }).ok) r2.add(r.name);
   let aiGateway = null;
   if (apiToken) {
     try {

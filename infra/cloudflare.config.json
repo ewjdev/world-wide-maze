@@ -2,7 +2,7 @@
   "$comment": "Single source of Cloudflare resource NAMES (Phase 17). Ids are written by `node infra/scripts/provision.mjs --apply` into apps/worker/wrangler.jsonc and apps/worker/wrangler.preview-migrations.jsonc. Change a name here, then re-run provision (dry-run first) and `node infra/scripts/check-deploy-config.mjs all`.",
   "worker": "wwm",
   "wranglerEnv": "production",
-  "domain": "{{DOMAIN}}",
+  "domain": "wwm.ewj.dev",
   "production": {
     "d1": "wwm",
     "r2": "wwm-stages",
