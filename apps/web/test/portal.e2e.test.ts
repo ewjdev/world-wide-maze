@@ -17,6 +17,7 @@ import { computeRunId, type StageData, validateStage } from '@wwm/schema';
 import { type Browser, chromium, type Page, type Route } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { browserEnv, CHROMIUM_ARGS } from './browser-env.ts';
 
 const HAS_CHROMIUM = existsSync(chromium.executablePath()) || !!process.env.CI;
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -24,7 +25,6 @@ const HANDMADE = JSON.parse(
   readFileSync(new URL('../../../fixtures/stages/handmade-simple.json', import.meta.url), 'utf8'),
 ) as StageData;
 const PNG = readFileSync(new URL('../../../fixtures/stages/handmade-simple.png', import.meta.url));
-const GPU = ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
 
 const A = 'a1'.repeat(32);
 const B = 'b2'.repeat(32);
@@ -76,7 +76,7 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
     });
     await server.listen();
     base = (server.resolvedUrls?.local[0] ?? 'http://127.0.0.1:5293/').replace(/\/$/, '');
-    browser = await chromium.launch({ args: GPU });
+    browser = await chromium.launch({ args: CHROMIUM_ARGS });
   }, 120_000);
 
   afterAll(async () => {
@@ -131,6 +131,7 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
 
   async function open(online: boolean) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    await browserEnv(ctx);
     await ctx.addInitScript(() => {
       localStorage.setItem('wwm.howtoSeen', '1');
       localStorage.setItem('wwm.tutorialDone', '1');

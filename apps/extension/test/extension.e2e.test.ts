@@ -47,9 +47,19 @@ declare global {
 const SHOTS = process.env.WWM_SHOTS
   ? fileURLToPath(new URL('../../../docs/build-log/assets/phase-14/', import.meta.url))
   : null;
-const GPU = ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
+/**
+ * Locally the game runs on the real GPU's WebGPU. GitHub-hosted runners have no GPU and Chromium's software
+ * WebGPU loses its device at random, so in CI the pages run as a browser without WebGPU and the engine picks
+ * WebGL2 (SwiftShader) up front (same as apps/web/test/browser-env.ts; phase-12 build log).
+ */
+const IN_CI = !!process.env.CI;
+const GPU = IN_CI
+  ? ['--enable-unsafe-swiftshader']
+  : ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
 /** Dev-only noise also seen by the Phase 08 e2e (StrictMode double mount of sockets). */
 const NOISE = /WebSocket is closed before the connection is established|\[vite\]|Download the React DevTools/;
+/** CI (no GPU): ANGLE's "GPU stall due to ReadPixels" performance note (apps/web/test/browser-env.ts). */
+const SOFTWARE_GL_NOISE = /GL Driver Message \(OpenGL, Performance, [^)]*\): GPU stall due to ReadPixels/;
 
 async function shot(page: Page, name: string, fullPage = false) {
   if (SHOTS) await page.screenshot({ path: `${SHOTS}${name}.jpg`, type: 'jpeg', quality: 86, fullPage });
@@ -69,7 +79,8 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
 
   function watch(page: Page, who: string) {
     page.on('console', (m) => {
-      if ((m.type() === 'error' || m.type() === 'warning') && !NOISE.test(m.text()))
+      const t = m.text();
+      if ((m.type() === 'error' || m.type() === 'warning') && !NOISE.test(t) && !SOFTWARE_GL_NOISE.test(t))
         problems.push(`${who} [${m.type()}] ${m.text()}`);
     });
     page.on('pageerror', (e) => problems.push(`${who} [pageerror] ${e.message}`));
@@ -149,6 +160,10 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
         ...GPU,
       ],
     });
+    if (IN_CI)
+      await ctx.addInitScript(() => {
+        delete (Navigator.prototype as { gpu?: unknown }).gpu;
+      });
     await ctx.addInitScript(() => {
       if (location.port && location.hostname === 'localhost') {
         localStorage.setItem('wwm.howtoSeen', '1');
@@ -334,8 +349,10 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
     const mazify = await ctx.newPage();
     watch(mazify, 'mazify');
     await mazify.goto(`${game}/mazify`);
-    const href = (await mazify.getByTestId('bookmarklet').getAttribute('href')) as string;
-    expect(href.startsWith('javascript:')).toBe(true);
+    // the page swaps the bookmarklet URL in from an effect (MazifyPage.tsx): `/mazify` until then
+    const bookmarklet = mazify.getByTestId('bookmarklet');
+    await expect.poll(() => bookmarklet.getAttribute('href'), { timeout: 20_000 }).toMatch(/^javascript:/);
+    const href = (await bookmarklet.getAttribute('href')) as string;
     await shot(mazify, '07-mazify', true);
     await mazify.close();
 
