@@ -38,31 +38,10 @@ import { decodePng, readPngHeader } from '../image/png.ts';
 import { webpSize } from '../image/webp.ts';
 import { type PipelineDeps, runBuildJob, type StageStore } from '../pipeline.ts';
 import { BodyTooLargeError, tooLarge } from '../security.ts';
+import { LOCAL_CAPTURE_NOTE, UPLOAD_LIMITS } from './upload-limits.ts';
 import { encodePngRows } from './upload-png.ts';
 
-/** Upload limits. These add to the v0.2.7 `CaptureBundle` limits that `parseCapture` enforces. */
-export const UPLOAD_LIMITS = {
-  /** The whole multipart body. */
-  bodyBytes: 40 * 1024 * 1024,
-  /** The `bundle` JSON part. */
-  bundleBytes: 8 * 1024 * 1024,
-  /** The `image` PNG part. */
-  imageBytes: 16 * 1024 * 1024,
-  /**
-   * Analysis image pixels. The Worker decodes it to RGBA (4 B/px), sometimes twice, under a 128 MB isolate.
-   * 8 MP is a 1280 × 6000 page at scale 1 with room to spare.
-   */
-  imagePixels: 8_000_000,
-  /** Largest `page.width`, in CSS px. */
-  pageWidth: 2560,
-  /** One `texture<i>` part. */
-  textureBytes: 12 * 1024 * 1024,
-  /** Slice textures are at scale 1 to 2 (CAPTURE_DPR). */
-  textureScaleMax: 2,
-} as const;
-
-/** `provenance.notes` tag for stages built from a local capture (contracts §10.2). */
-export const LOCAL_CAPTURE_NOTE = 'local-capture';
+export { LOCAL_CAPTURE_NOTE, UPLOAD_LIMITS };
 
 const PNG_SIG = [0x89, 0x50, 0x4e, 0x47];
 const isPng = (b: Uint8Array) => PNG_SIG.every((v, i) => b[i] === v);
@@ -85,7 +64,8 @@ const bad = (e: BadUpload) =>
 /** Read the body with a hard cap (whatever `content-length` claims) and parse it as multipart. */
 async function readForm(req: Request): Promise<FormData> {
   const ct = req.headers.get('content-type') ?? '';
-  if (!/^multipart\/form-data\s*;\s*boundary=/i.test(ct)) throw new BadUpload(`expected multipart/form-data, got ${ct || 'no content-type'}`, 415);
+  if (!/^multipart\/form-data\s*;\s*boundary=/i.test(ct))
+    throw new BadUpload(`expected multipart/form-data, got ${ct || 'no content-type'}`, 415);
   const declared = Number(req.headers.get('content-length') ?? Number.NaN);
   const max = UPLOAD_LIMITS.bodyBytes;
   if (Number.isFinite(declared) && declared > max) throw new BodyTooLargeError(max);
@@ -176,7 +156,10 @@ export async function validateUpload(form: FormData): Promise<ValidUpload> {
     throw new BadUpload(
       `"image" is ${head.width}×${head.height}, the bundle says ${shot.width}×${shot.height}`,
     );
-  if (!near(shot.width, bundle.page.width * shot.scale) || !near(shot.height, bundle.page.height * shot.scale))
+  if (
+    !near(shot.width, bundle.page.width * shot.scale) ||
+    !near(shot.height, bundle.page.height * shot.scale)
+  )
     throw new BadUpload('screenshot size does not match page size × scale');
 
   const count = sliceCount(bundle);
@@ -202,7 +185,9 @@ export async function validateUpload(form: FormData): Promise<ValidUpload> {
       if (!(scale >= 0.99 && scale <= UPLOAD_LIMITS.textureScaleMax + 0.01))
         throw new BadUpload(`"texture${i}" scale ${scale.toFixed(2)} is outside 1–2`);
       if (!near(size.height, r.height * scale))
-        throw new BadUpload(`"texture${i}" is ${size.width}×${size.height}, expected height ${r.height * scale}`);
+        throw new BadUpload(
+          `"texture${i}" is ${size.width}×${size.height}, expected height ${r.height * scale}`,
+        );
       textures.push({
         sliceIndex: i,
         y: r.y,
@@ -290,7 +275,9 @@ function unlistedStore(s: StageStore): StageStore {
 async function uploadCaptureId(bundle: CaptureBundle, png: Uint8Array): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', png as Uint8Array<ArrayBuffer>);
   const imageHash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
-  return sha256Hex(`upload|${CONTRACT_VERSION.split('.')[0]}|${bundle.url}|${bundle.capturedAt}|${imageHash}`);
+  return sha256Hex(
+    `upload|${CONTRACT_VERSION.split('.')[0]}|${bundle.url}|${bundle.capturedAt}|${imageHash}`,
+  );
 }
 
 export const uploadRoutes = new Hono<AppEnv>();
@@ -303,7 +290,11 @@ uploadRoutes.post('/upload', async (c) => {
   // Same kill switch as POST /api/stages: while new builds are paused, local captures still play locally.
   if (c.env.CAPTURE_ENABLED === '0' || (await c.env.CACHE.get('kill:capture')) !== null)
     return errorResponse(
-      new ServiceError('RATE_LIMITED', 'sharing new mazes is paused right now; your maze still plays here', 3600),
+      new ServiceError(
+        'RATE_LIMITED',
+        'sharing new mazes is paused right now; your maze still plays here',
+        3600,
+      ),
     );
 
   let up: ValidUpload;
@@ -380,9 +371,7 @@ uploadRoutes.post('/upload', async (c) => {
     elements: bundle.elements.length,
     ms: Date.now() - t0,
   });
-  return c.json<CreateStageResponse>(
-    { runId: result.runId, stageIds: result.stageIds },
-    200,
-    { 'cache-control': 'no-store' },
-  );
+  return c.json<CreateStageResponse>({ runId: result.runId, stageIds: result.stageIds }, 200, {
+    'cache-control': 'no-store',
+  });
 });

@@ -17,7 +17,7 @@ import {
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { createTestHarness } from 'wrangler';
 import { readPngHeader } from '../src/image/png.ts';
-import { LOCAL_CAPTURE_NOTE, UPLOAD_LIMITS } from '../src/routes/upload.ts';
+import { LOCAL_CAPTURE_NOTE, UPLOAD_LIMITS } from '../src/routes/upload-limits.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const configPath = resolve(root, 'apps/worker/wrangler.jsonc');
@@ -126,7 +126,11 @@ describe('POST /api/stages/upload (workerd)', () => {
 
   test('the same capture claiming another run’s captureId cannot overwrite it', async () => {
     const a = (await (await upload(local(HN))).json()) as { stageIds: string[] };
-    const forged = JSON.stringify({ ...HN.bundle, captureId: 'f'.repeat(64), url: 'https://intranet.example/dashboard' });
+    const forged = JSON.stringify({
+      ...HN.bundle,
+      captureId: 'f'.repeat(64),
+      url: 'https://intranet.example/dashboard',
+    });
     const b = (await (await upload({ bundle: forged, image: HN.png })).json()) as { stageIds: string[] };
     const sa = parseStage(await (await get(`/api/stages/${a.stageIds[0]}`)).json());
     const sb = parseStage(await (await get(`/api/stages/${b.stageIds[0]}`)).json());

@@ -1,0 +1,298 @@
+/*
+ * "Maze this page" popup. The game's world at pocket size (apps/web/src/ui/game.css): fog-white sky, a white
+ * chamfered plate, the four 2013 colour roles, Unbounded for display and Figtree for UI (bundled, no network).
+ */
+@font-face {
+  font-family: "Unbounded Variable";
+  src: url("fonts/unbounded-latin-wght-normal.woff2") format("woff2");
+  font-weight: 200 900;
+  font-display: block;
+}
+@font-face {
+  font-family: "Figtree Variable";
+  src: url("fonts/figtree-latin-wght-normal.woff2") format("woff2");
+  font-weight: 300 900;
+  font-display: block;
+}
+
+:root {
+  --ink: #20262d;
+  --ink-2: #4b555f;
+  --ink-3: #6b7580;
+  --sky: #f8f8f8;
+  --paper: #ffffff;
+  --line: rgba(32, 38, 45, 0.14);
+  --red: #e0524f;
+  --red-deep: #c23b38;
+  --green: #3f9a4c;
+  --go: #2e7a3a;
+  --blue: #4f9fd6;
+  --yellow: #f2c230;
+  --display: "Unbounded Variable", "Hiragino Sans", sans-serif;
+  --ui: "Figtree Variable", "Hiragino Sans", system-ui, sans-serif;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--sky);
+}
+body {
+  width: 348px;
+  color: var(--ink);
+  font: 500 14px / 1.45 var(--ui);
+  -webkit-font-smoothing: antialiased;
+}
+p,
+h1,
+h2,
+ol {
+  margin: 0;
+}
+
+.pop {
+  display: grid;
+  gap: 14px;
+  padding: 16px 16px 14px;
+  background: var(--sky);
+}
+
+.pop__head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.mark {
+  display: grid;
+  grid-template-columns: repeat(2, 9px);
+  gap: 2px;
+}
+.mark i {
+  display: block;
+  height: 8px;
+  clip-path: polygon(2px 0, 100% 0, 100% calc(100% - 2px), calc(100% - 2px) 100%, 0 100%, 0 2px);
+}
+.mark .r {
+  background: var(--red);
+}
+.mark .g {
+  background: var(--green);
+}
+.mark .b {
+  background: var(--blue);
+}
+.mark .y {
+  background: var(--yellow);
+}
+.pop__brand {
+  font: 800 11px / 1 var(--display);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.pop__page {
+  display: grid;
+  gap: 4px;
+}
+.pop__title {
+  font: 800 23px / 1.05 var(--display);
+  letter-spacing: -0.025em;
+}
+.pop__host {
+  color: var(--ink-2);
+  font-weight: 600;
+  min-height: 1.45em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* steps: a column of small plates, the current one lit */
+.steps {
+  list-style: none;
+  padding: 12px 14px;
+  display: grid;
+  gap: 7px;
+  background: var(--paper);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.step {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink-3);
+  transition: color 200ms;
+}
+.step i {
+  width: 12px;
+  height: 12px;
+  background: #e3e6e9;
+  clip-path: polygon(3px 0, 100% 0, 100% calc(100% - 3px), calc(100% - 3px) 100%, 0 100%, 0 3px);
+}
+.step.is-done {
+  color: var(--ink-2);
+}
+.step.is-done i {
+  background: var(--green);
+}
+.step.is-now {
+  color: var(--ink);
+  font-weight: 700;
+}
+.step.is-now i {
+  background: var(--ink);
+  animation: pulse 900ms var(--ease) infinite alternate;
+}
+.step__count {
+  font: 700 12px / 1 var(--display);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+@keyframes pulse {
+  to {
+    transform: scale(0.72) rotate(45deg);
+  }
+}
+
+/* progress: the colour-role strip filling left to right */
+.bar {
+  height: 6px;
+  background: #e8eaec;
+  overflow: hidden;
+  clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+}
+.bar__fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    var(--red) 0 25%,
+    var(--green) 0 50%,
+    var(--blue) 0 75%,
+    var(--yellow) 0
+  );
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 500ms var(--ease);
+}
+
+.notice {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px 14px;
+  background: #fbeceb;
+  color: var(--ink);
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+}
+.notice[data-kind="restricted"] {
+  background: #fdf5d8;
+}
+.notice[hidden] {
+  display: none;
+}
+.notice__title {
+  font: 700 14px / 1.2 var(--display);
+}
+.notice[data-kind="error"] .notice__title {
+  color: var(--red-deep);
+}
+.notice__body {
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+
+.pop[data-state="restricted"] .steps,
+.pop[data-state="restricted"] .bar,
+.pop[data-state="error"] .bar {
+  display: none;
+}
+
+.pop__private {
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+
+.btn {
+  appearance: none;
+  border: 0;
+  justify-self: start;
+  min-height: 34px;
+  padding: 0 14px;
+  font: 700 13px / 1 var(--ui);
+  cursor: pointer;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: transform 140ms var(--ease);
+}
+.btn:hover {
+  transform: translateY(-1px);
+}
+.btn:focus-visible,
+.settings summary:focus-visible,
+.settings input:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+  clip-path: none;
+}
+.btn--ink {
+  background: var(--ink);
+  color: #fff;
+}
+.btn--ghost {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+}
+
+.settings {
+  border-top: 1.5px solid var(--line);
+  padding-top: 10px;
+}
+.settings summary {
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.settings__form {
+  display: grid;
+  gap: 8px;
+  padding-top: 8px;
+}
+.settings__hint,
+.settings__msg {
+  font-size: 12px;
+  color: var(--ink-3);
+}
+.settings__row {
+  display: flex;
+  gap: 8px;
+}
+.settings input {
+  flex: 1;
+  min-width: 0;
+  font:
+    500 13px / 1 ui-monospace,
+    "SF Mono",
+    Menlo,
+    monospace;
+  color: var(--ink);
+  background: var(--paper);
+  border: 0;
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  padding: 8px 9px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .step.is-now i {
+    animation: none;
+  }
+  .bar__fill,
+  .btn {
+    transition: none;
+  }
+}

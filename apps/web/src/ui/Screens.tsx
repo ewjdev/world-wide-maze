@@ -10,6 +10,7 @@ import { formatCode, QrCode } from '../controller/index.ts';
 import { type CatalogEntry, FIXTURES, PRACTICE } from '../game/catalog.ts';
 import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
+import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { PlayLayer } from './Play.tsx';
 import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
@@ -434,6 +435,7 @@ function Select() {
         >
           {bad ? t('select.invalidUrl') : t('select.tip')}
         </p>
+        <SelectHint /> {/* Phase 14: bookmarklet + /mazify */}
       </header>
       <div className="wwm-select__body">
         <SiteCard entry={PRACTICE} featured />

@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>World Wide Maze</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="pop" data-state="idle">
+      <header class="pop__head">
+        <span class="mark" aria-hidden="true"><i class="r"></i><i class="g"></i><i class="b"></i><i class="y"></i></span>
+        <span class="pop__brand" data-s="brand">World Wide Maze</span>
+      </header>
+
+      <section class="pop__page" aria-live="polite">
+        <h1 class="pop__title" data-s="action">Maze this page</h1>
+        <p class="pop__host" id="host"></p>
+      </section>
+
+      <ol class="steps" id="steps" aria-label="Progress"></ol>
+      <div class="bar" aria-hidden="true"><span class="bar__fill" id="bar"></span></div>
+
+      <section class="notice" id="notice" hidden>
+        <h2 class="notice__title" id="notice-title">Notice</h2>
+        <p class="notice__body" id="notice-body"></p>
+        <button type="button" class="btn btn--ink" id="retry" hidden data-s="retry">Try again</button>
+      </section>
+
+      <p class="pop__private" data-s="private"></p>
+
+      <details class="settings" id="settings">
+        <summary data-s="settings">Game address</summary>
+        <form class="settings__form" id="origin-form">
+          <p class="settings__hint" data-s="settingsHint"></p>
+          <div class="settings__row">
+            <input id="origin" name="origin" type="text" spellcheck="false" autocomplete="off" />
+            <button type="submit" class="btn btn--ghost" data-s="save">Save</button>
+          </div>
+          <p class="settings__msg" id="origin-msg" role="status"></p>
+        </form>
+      </details>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

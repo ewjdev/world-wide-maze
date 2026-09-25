@@ -24,6 +24,37 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(@types/node@26.6.2)(vite@8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15))
 
+  apps/extension:
+    dependencies:
+      '@wwm/capture-script':
+        specifier: workspace:*
+        version: link:../../packages/capture-script
+      '@wwm/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+    devDependencies:
+      '@fontsource-variable/figtree':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/unbounded':
+        specifier: ^5.3.0
+        version: 5.3.0
+      esbuild:
+        specifier: 0.28.2
+        version: 0.28.2
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
+      vite:
+        specifier: ^8.3.1
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15)
+      wrangler:
+        specifier: 4.140.0
+        version: 4.140.0(@types/node@26.6.2)
+
   apps/web:
     dependencies:
       '@fontsource-variable/figtree':
@@ -41,6 +72,9 @@ importers:
       '@fontsource/ibm-plex-mono':
         specifier: ^5.3.0
         version: 5.3.0
+      '@wwm/capture-script':
+        specifier: workspace:*
+        version: link:../../packages/capture-script
       '@wwm/engine':
         specifier: workspace:*
         version: link:../../packages/engine
