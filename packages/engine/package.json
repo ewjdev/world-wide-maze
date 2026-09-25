@@ -8,9 +8,15 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "shots": "node scripts/shots.ts"
   },
   "dependencies": {
-    "@wwm/schema": "workspace:*"
+    "@wwm/schema": "workspace:*",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@types/three": "^0.186.0",
+    "playwright": "^1.63.0"
   }
 }
