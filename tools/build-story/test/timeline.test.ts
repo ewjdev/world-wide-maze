@@ -5,7 +5,7 @@ import { gaps, lanes, maxConcurrency, total, union } from '../src/intervals.ts';
 import { countLines, linesByPackage } from '../src/lines.ts';
 import { logWindows } from '../src/logs.ts';
 import { extractSession, ownerText, wordCount } from '../src/session.ts';
-import { buildTimeline } from '../src/timeline.ts';
+import { buildTimeline, type TimelineInputs } from '../src/timeline.ts';
 
 /** The fixture is readable text; turn it into what `git log --format=GIT_LOG_FORMAT` prints. */
 const fixtureLog = readFileSync(new URL('./fixtures/git-log.txt', import.meta.url), 'utf8')
@@ -104,7 +104,7 @@ const phase01md = [
   'None.',
 ].join('\n');
 
-const timeline = buildTimeline({
+const inputs: TimelineInputs = {
   commits,
   contractVersions: [{ version: '0.1.0', at: commits[0]?.at ?? '', sha: 'c01aaaa' }],
   session,
@@ -112,7 +112,8 @@ const timeline = buildTimeline({
   tests: { commit: 'c09aaaa', command: 'vitest', passed: 12, skipped: 1, failed: 0, files: 3, byProject: [] },
   lines: [{ dir: 'packages/a', files: 2, sourceLines: 100, testLines: 40 }],
   logs: [{ slug: 'phase-01', md: phase01md }],
-});
+};
+const timeline = buildTimeline(inputs);
 
 describe('git log', () => {
   test('parses records, merges, gates', () => {
@@ -225,15 +226,63 @@ describe('buildTimeline', () => {
   });
 });
 
+describe('segments', () => {
+  const tl = buildTimeline({
+    ...inputs,
+    segments: [
+      { id: 'night-1', label: 'Night 1', short: 'a', what: 'up to G0', endsAt: 'Schema 0.2.1' },
+      { id: 'day-2', label: 'Day 2', short: 'b', what: 'the rest', endsAt: null },
+      {
+        id: 'later',
+        label: 'Later',
+        short: 'c',
+        what: 'not reached yet',
+        endsAt: 'A commit that does not exist',
+      },
+    ],
+    segmentLines: { 'night-1': [{ dir: 'packages/a', files: 1, sourceLines: 50, testLines: 5 }] },
+    segmentTests: { 'night-1': { ...inputs.tests, commit: 'c04aaaa', passed: 3 } },
+  });
+  test('each stretch is measured like the whole, and they add up to it', () => {
+    expect(tl.segments.map((s) => [s.id, s.end.sha, s.wallClock.start, s.wallClock.end])).toEqual([
+      ['night-1', 'c04aaaa', t('07:10'), '2026-09-25T08:06:25Z'],
+      ['day-2', 'c09aaaa', '2026-09-25T08:06:25Z', t('11:00')],
+    ]);
+    const [a, b] = tl.segments;
+    // runs that start inside; agent time clipped: 07:40→08:06:25 (26.4) + 08:00→08:06:25 (6.4)
+    expect(a?.agents).toMatchObject({ runs: 2, agentMin: 32.8, maxConcurrent: 2 });
+    expect(b?.agents).toMatchObject({ runs: 2, helperRuns: 1 });
+    expect((a?.agents.agentMin ?? 0) + (b?.agents.agentMin ?? 0)).toBeCloseTo(tl.agents.agentMin, 5);
+    expect([a?.git.commits, b?.git.commits]).toEqual([4, 5]);
+    expect([a?.owner.messages, b?.owner.messages]).toEqual([2, 1]);
+    expect(a?.idle.min).toBe(0);
+    expect(b?.idle.spans[0]).toMatchObject({ start: t('08:40'), end: t('10:30') });
+    // earlier stretches take their counts at their own closing commit; the last one the snapshot's
+    expect(a?.lines).toEqual({ source: 50, test: 5, files: 1 });
+    expect(a?.tests?.passed).toBe(3);
+    expect(b?.lines.source).toBe(100);
+    expect(b?.tests?.passed).toBe(12);
+  });
+  test('a closing commit needs its line counts', () => {
+    expect(() =>
+      buildTimeline({
+        ...inputs,
+        segments: [{ id: 'x', label: 'X', short: 'x', what: '', endsAt: 'Schema 0.2.1' }],
+      }),
+    ).toThrow(/no line counts/);
+  });
+});
+
 describe('build logs and lines', () => {
   test('every window in a log, in order', () => {
     const w = logWindows(
-      '- **Start / end:** 2026-09-25 ~07:20Z → ~07:45Z.\n\n# Phase 02b\n- **Start / end:** 2026-09-25 ~07:50Z → ~08:10Z.\n- **Time:** 2026-09-25, about 23:50Z to 00:20Z.',
+      '- **Start / end:** 2026-09-25 ~07:20Z → ~07:45Z.\n\n# Phase 02b\n- **Start / end:** 2026-09-25 ~07:50Z → ~08:10Z.\n- **Time:** 2026-09-25, about 23:50Z to 00:20Z.\n- **Start / end:** 2026-09-25 ~09:58 → ~10:45 PDT.',
     );
     expect(w.map((x) => [x.start, x.end])).toEqual([
       [t('07:20'), t('07:45')],
       [t('07:50'), t('08:10')],
       [t('23:50'), '2026-09-26T00:20:00Z'],
+      [t('16:58'), t('17:45')],
     ]);
   });
   test('lines of code per package, tests apart, fixtures skipped', () => {

@@ -6,9 +6,11 @@
  *   - files.json: birth times of the research and plan files written before the first commit;
  *   - tests.json: test counts from a Vitest JSON report.
  *
- *   node tools/build-story/src/cli/collect.ts [--session <file.jsonl>] [--root <owner checkout>] [--vitest <report.json>]
+ *   node tools/build-story/src/cli/collect.ts [--session <file.jsonl>] [--root <owner checkout>]
+ *     [--vitest <report.json> --vitest-root <tree it ran in> --rev <commit it ran at>]
  *
- * Without --vitest it runs `pnpm vitest run --reporter=json` (about 2–3 minutes).
+ * Without --vitest it runs `pnpm vitest run --reporter=json` here (about 2–3 minutes). For a clean count at the
+ * snapshot, run it in a `git archive <rev>` extract instead and pass the report, the extract's path and the rev.
  */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
@@ -24,7 +26,13 @@ const out = join(repo, 'content/build-story/sources');
 const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim();
 
 const { values } = parseArgs({
-  options: { session: { type: 'string' }, root: { type: 'string' }, vitest: { type: 'string' } },
+  options: {
+    session: { type: 'string' },
+    root: { type: 'string' },
+    vitest: { type: 'string' },
+    'vitest-root': { type: 'string' },
+    rev: { type: 'string', default: 'HEAD' },
+  },
 });
 
 /** The owner's checkout (worktrees share its .git), where file birth times and the session live. */
@@ -77,7 +85,9 @@ console.log(`files: ${births.files.map((f) => `${f.path} ${f.born}`).join(', ')}
 
 // ── tests ──
 let reportFile = values.vitest;
-const command = 'pnpm vitest run --reporter=json';
+const command = values['vitest-root']
+  ? `pnpm vitest run --reporter=json, in a clean extract of ${values.rev} (git archive)`
+  : 'pnpm vitest run --reporter=json';
 if (!reportFile) {
   reportFile = join(tmpdir(), `wwm-vitest-${process.pid}.json`);
   try {
@@ -99,7 +109,7 @@ interface VitestReport {
 const report = JSON.parse(readFileSync(reportFile, 'utf8')) as VitestReport;
 const byProject = new Map<string, { passed: number; skipped: number }>();
 for (const f of report.testResults) {
-  const rel = relative(repo, f.name);
+  const rel = relative(resolve(values['vitest-root'] ?? repo), f.name);
   const project = /^((?:apps|packages|tools)\/[^/]+)/.exec(rel)?.[1] ?? 'other';
   const row = byProject.get(project) ?? { passed: 0, skipped: 0 };
   for (const a of f.assertionResults) {
@@ -109,7 +119,7 @@ for (const f of report.testResults) {
   byProject.set(project, row);
 }
 const tests: TestCounts = {
-  commit: git('rev-parse', '--short', 'HEAD'),
+  commit: git('rev-parse', '--short', values.rev ?? 'HEAD'),
   command,
   passed: report.numPassedTests,
   skipped: report.numPendingTests + report.numTodoTests,

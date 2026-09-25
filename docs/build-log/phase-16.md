@@ -34,10 +34,10 @@
 - **Docent slot**: `{/* ── PHASE 15 DOCENT SLOT ── … */}` in `LogPage.tsx`, between the story and the build record.
 - `LogPage` became a thin router (card or page). The asset glob moved to `assets.ts`, and the old "Build record" h1 is now an h2 below the story. Phase 10's summary table and the unedited logs are unchanged.
 
-**Per-issue before/after images** (`docs/build-log/assets/phase-16/issues/`). For each BI repro I extracted the tree at `af7db69` (the Phase 09 merge: builder 0.3.0, physics 0.1.0) to `/tmp` with `git archive`, installed it offline, and rendered the same crop with `tools/batch-eval/src/cli/thumb.ts --width 3840 --crop …` in both trees. The "What the solver reported" lines for BI-1 and BI-2 are the old solver's actual output from those runs:
+**Per-issue before/after images** (`docs/build-log/assets/phase-16/issues/`). For each BI repro I extracted the tree at `2354e42` (the Phase 09 commit: builder 0.3.0, physics 0.1.0; `af7db69` before the history rewrite) to `/tmp` with `git archive`, installed it offline, and rendered the same crop with `tools/batch-eval/src/cli/thumb.ts --width 3840 --crop …` in both trees. The "What the solver reported" lines for BI-1 and BI-2 are the old solver's actual output from those runs:
 - `eval-go-dev:0:easy:2`: FAIL narrow-neck, "island 9 is split by a neck narrower than the ball; the bridge 31 mouth is cut off". After: OK in 72.4 s.
 - `eval-python-home:1:normal:2`: FAIL elevator-blocked, "no room for the ball beyond the arrival end of elevator 0 (platform ends at the island edge)". After: OK in 45.1 s.
-- BI-5 re-checked: `govuk-card-grid:0:normal:1` and `:hard:1` at `af7db69` render to **byte-identical PNGs** (`cmp`); at HEAD they differ.
+- BI-5 re-checked: `govuk-card-grid:0:normal:1` and `:hard:1` at `2354e42` render to **byte-identical PNGs** (`cmp`); at HEAD they differ.
 - For BI-2 I avoided the log's first repro (lite.cnn, political headlines) in favour of python.org's, which the log also lists.
 
 ## Computed headline numbers (snapshot `4969885`)
@@ -108,3 +108,60 @@ None.
 - **Session data isn't in git history.** `sources/session.json` is the committed evidence. Re-running `collect.ts` needs the owner's `~/.claude/projects/…` transcripts.
 - **Lockfile:** adding `@wwm/build-story` added an importer entry to `pnpm-lock.yaml` (outside my paths, unavoidable for a new workspace package).
 - **The draft post** is `content/build-story/linkedin-draft.md`. The ✱ lines are the ones to keep exact. The iPhone test duration ("a few minutes") comes from the device-test log, not the timeline.
+
+---
+
+# Phase 16b: build story refresh (after the history rewrite and wave 5)
+
+- **Agent:** Claude Opus 5.5 (1M context), run as a Claude Code sub-agent in an isolated git worktree (branch `worktree-agent-aeb20c07f438135d9`).
+- **Start / end:** 2026-09-25 ~18:22Z → ~18:45Z.
+
+## Instructions received (summary)
+- The history was rewritten with git-filter-repo before publication, so every SHA the story cited was dead and the traceability tests skipped silently. Map them with `.git/filter-repo/commit-map` and make those tests fail instead.
+- Re-run the pipeline at HEAD so the story includes wave 5 and launch prep. Keep the original overnight window as its own labelled "Night 1" figure, with day 2 as a second segment. Refresh the draft post (numbers, live URL, repo), the share PNGs and these screenshots. Don't post, don't push, don't stop processes I didn't start.
+
+## What changed
+- **SHAs remapped:** `4969885` → `c9713b9` (the night-1 snapshot), `af7db69` → `2354e42` (the Phase 09 commit used for the before renders), `96414f5` → `a31beba` (the `ref:fetch` fix), and every merge, gate and contract-version SHA in `timeline.json` (rebuilt from git).
+- **Traceability can't rot silently any more** (`test/content.test.ts`): a new test gathers every commit that `timeline.json`, `bugs.json`, the draft and the test-count sources cite, and fails on any missing one. The deep-equal and quote tests now fail too, where they used to skip. They skip only in a shallow clone (`git rev-parse --is-shallow-repository`). Before the draft was fixed, this test caught the stale `4969885` in it.
+- **Segments** (`Timeline.segments`): each stretch is measured with the same rules as the whole build, over its own window: wall clock, active and idle time, runs started, agent time clipped to the window, concurrency, owner messages, commits, and lines and tests at its closing commit. Where a stretch ends is an annotation (`SEGMENTS` in `annotations.ts`), matched by **commit subject** rather than SHA so it survives rewrites. Night 1 ends at "Schema 0.3.0 …; wave 5". Day 2 ends at the snapshot.
+- **Night 1 test count:** the rewritten `c9713b9` tree lacks the seven removed captures. Re-running the suite there gives 703 passed, 2 failed (both need those captures) and 13 skipped. So `sources/tests-night-1.json` keeps the count measured at the time (722/13/0), and its `command` field says where that count came from. Lines at night 1 (44,926) recompute identically from the rewritten tree.
+- **Snapshot tests:** `sources/tests.json` is now measured in a clean `git archive f265f74` extract (`collect.ts --vitest … --vitest-root … --rev …`, new options), not the working tree.
+- **Labels:** `RUN_LABELS` for phases 13–17 (with their logs), legal drafts (A3), the scrub, the docent bake-off and this refresh. `mergeSubject` finds merges that aren't "Merge phase XX". `OWNER_LABELS` for the four day-2 messages. Wave 5 has a colour (violet).
+- **`parse-log.ts`** reads Pacific windows (`~09:58 → ~10:45 PDT`, Phase 13's log). Tested.
+- **Page:** the hero is "Night 1 · 11:44 pm → 9:57 am / Built in 10 h 13 min" with the night-1 facts. A "Day 2" block and an "in all" line follow it. The dial shows the whole build, with a violet tick at 9:57 am and "+1h 21m day 2" in its centre. The swimlane has a "Day 2" marker, and durations near the right edge sit before their bars.
+- **Fixed on the way:**
+  - The dial's start tick was at 12 o'clock for every snapshot, because SVG `transform="rotate(…deg)"` ignores the unit.
+  - The share PNGs were 1328×715, not 1200×627: `.sc.cd` lacked `box-sizing: border-box`. They're now exactly 1200×627 (og 1200×630).
+
+## Computed headline numbers (snapshot `f265f74`, 11:18:56 am PT)
+| | Night 1 (06:44:34Z → 16:57:48Z, `c9713b9`) | Day 2 (→ 18:18:56Z, `f265f74`) | In all |
+|---|---|---|---|
+| Wall clock | **10 h 13 min** (613.2) | **1 h 21 min** (81.1) | **11 h 34 min** (694.4) |
+| Active / idle | 5 h 35 min (334.7) / 4 h 2 min in 2 stretches | 1 h 12 min (71.9) / 0 | 6 h 47 min / 4 h 2 min |
+| Agent time | 10 h 34 min (633.9), 20 runs, max 5 | 3 h 42 min (222.0), 9 runs, max 6 at 17:10Z | 14 h 16 min (855.8), 29 runs, max 6 |
+| Owner | 9 messages, 395 words | 4 messages, 171 words | 13, 566 |
+| Commits | 70 | 26 | 96 |
+| Tests (passed / skipped) | 722 / 13 (measured before the rewrite) | 922 / 14 at `f265f74` | 922 |
+| Source + test lines | 44,926 + 11,390 | 58,330 + 14,847 at `f265f74` | |
+
+The old draft's table said `active.min` = 335.2. The committed value was 334.7 (both display as 5 h 35 min). The table now cites 334.7.
+
+## Attempts that failed, and why
+1. The first dial render put the day-2 tick at 12 o'clock. The cause was the SVG `rotate()` unit (see above), which also affected the original start tick.
+2. `social.ts` output was measured with `sips` and turned out not to be 1200×627, as described above.
+3. `pnpm check` under full load had one failure in the extension's bookmarklet E2E, which passes when run alone (33/33). The docent corpus hash went stale because it indexes `docs/build-log/**`, including this log, so I regenerated `apps/worker/src/docent/corpus.json` with `pnpm docent:index`. That file is outside my paths, but it's a derived artifact.
+
+## Manual human interventions
+None.
+
+## Test evidence
+- `tools/build-story`: 43 tests, including segment unit tests on the fixture log (hand-computed clip values), a missing-closing-commit error, the PDT window, stale-SHA detection, and a check that the segments add up to the whole.
+- `apps/web/src/pages/log/build-story.test.tsx`: 13 tests. Night 1 is labelled and complete, and day 2 and the total are shown.
+- `pnpm check`: green (see the hand-off report).
+- Screenshots re-rendered and reviewed: `docs/build-log/assets/phase-16/log-{desktop,mobile}-*.png`. The social PNGs are in `content/build-story/social/`.
+
+## Remaining defects and follow-ups
+- CI's `actions/checkout` is shallow, so the git-traceability tests skip there. `fetch-depth: 0` in `.github/workflows/ci.yml` (not my path) would enforce them in CI too.
+- The docent bake-off and this refresh started after `f265f74`, so they aren't in the snapshot. Their labels are ready for the next rebuild.
+- `/log` still says "The source repository is not public yet" until `VITE_REPO_URL` is set at build time.
+- OG tags for `/log` are still not served (see above).

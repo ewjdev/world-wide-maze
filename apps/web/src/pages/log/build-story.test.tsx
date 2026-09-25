@@ -5,7 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { renderRoute } from '../../../test/render-route.tsx';
 import { CARD_VARIANTS } from './SocialCard.tsx';
-import { BUGS, clock, dur, fmtInt, hourTicks, runsByWave, TL } from './story.ts';
+import { BUGS, clock, dur, FIRST, fmtInt, hourTicks, LATER, runsByWave, TL } from './story.ts';
 
 const decode = (html: string) =>
   html
@@ -22,24 +22,52 @@ describe('/log build story', () => {
     html = decode(await renderRoute('/log'));
   });
 
-  test('the hero states the wall clock and its breakdown, all from timeline.json', () => {
+  test('the hero states Night 1 as its own labelled figure, with its breakdown, from timeline.json', () => {
+    expect(FIRST.id).toBe('night-1');
+    expect(html).toContain(
+      `>${FIRST.label} · ${clock(FIRST.wallClock.start)} → ${clock(FIRST.wallClock.end)}<`,
+    );
     expect(html).toMatch(
-      new RegExp(`<h1[^>]*>Built in <span[^>]*>${dur(TL.wallClock.min)}</span> of wall-clock time</h1>`),
+      new RegExp(`<h1[^>]*>Built in <span[^>]*>${dur(FIRST.wallClock.min)}</span> of wall-clock time</h1>`),
     );
     for (const s of [
-      clock(TL.wallClock.start, true),
-      clock(TL.wallClock.end, true),
+      clock(FIRST.wallClock.start, true),
+      clock(FIRST.wallClock.end, true),
+      FIRST.end.sha,
+      dur(FIRST.activeMin),
+      dur(FIRST.idle.min),
+      dur(FIRST.agents.agentMin),
+      `${FIRST.owner.messages} messages`,
+      fmtInt(FIRST.owner.words),
+      `${fmtInt(FIRST.tests?.passed ?? 0)} tests`,
+      fmtInt(FIRST.lines.source),
+      `${FIRST.git.commits} commits`,
+    ])
+      expect(html).toContain(s);
+  });
+
+  test('later stretches follow as their own segment, then the total to the snapshot', () => {
+    expect(LATER.length).toBeGreaterThan(0);
+    for (const s of LATER)
+      for (const x of [
+        s.label,
+        `${dur(s.wallClock.min)} more`,
+        dur(s.agents.agentMin),
+        `${s.agents.runs} runs`,
+        `${s.owner.messages} messages`,
+        `${s.git.commits} commits`,
+      ])
+        expect(html).toContain(x);
+    for (const x of [
+      `${dur(TL.wallClock.min)}</strong> in all`,
       TL.asOf.sha,
-      dur(TL.active.min),
-      dur(TL.idle.min),
-      dur(TL.agents.agentMin),
-      `${TL.owner.messages} messages`,
-      fmtInt(TL.owner.words),
+      clock(TL.wallClock.end, true),
       `${fmtInt(TL.tests.passed)} tests`,
       fmtInt(TL.lines.total.source),
       `${TL.git.commits} commits`,
+      dur(TL.agents.agentMin),
     ])
-      expect(html).toContain(s);
+      expect(html).toContain(x);
   });
 
   test('formatting: the wall clock is end − start, shown in the owner’s time zone', () => {
@@ -49,6 +77,7 @@ describe('/log build story', () => {
     expect(dur(34)).toBe('34 min');
     expect(clock('2026-09-25T06:44:34Z')).toBe('11:44 pm'); // PDT
     expect(clock('2026-09-25T16:57:48Z', true)).toBe('9:57 am, Sep 25');
+    expect(dur(694.4)).toBe('11 h 34 min');
     expect(hourTicks().every((t) => /^\d{1,2} (am|pm)$/.test(t.label))).toBe(true);
   });
 

@@ -9,6 +9,9 @@ hand-written inputs are the labels in `src/annotations.ts` (which phase a run wa
 # 1. local-only sources → content/build-story/sources/ (commit them)
 node tools/build-story/src/cli/collect.ts            # runs the whole Vitest suite for the test count (~2–3 min)
 node tools/build-story/src/cli/collect.ts --vitest /tmp/report.json   # or reuse a `vitest run --reporter=json` report
+# or count tests in a clean extract of the snapshot (what the committed tests.json uses):
+#   git archive <sha> | tar -x -C /tmp/snap && (cd /tmp/snap && pnpm i --offline && pnpm vitest run --reporter=json --outputFile=/tmp/report.json)
+#   node tools/build-story/src/cli/collect.ts --vitest /tmp/report.json --vitest-root /private/tmp/snap --rev <sha>
 
 # 2. the timeline, measured up to a commit's time (default HEAD)
 node tools/build-story/src/cli/build.ts --rev <sha>
@@ -19,6 +22,18 @@ node tools/build-story/src/cli/social.ts --url http://localhost:5288 --pages
 ```
 After merging more work: run all three with `--rev HEAD`, and add a `RUN_LABELS` entry for each new agent
 description (unlabelled runs show up with their raw description and wave −1).
+
+## Segments: Night 1, then Day 2
+`timeline.json` `segments[]` measures each stretch of the build with the same rules as the whole (fields below,
+over the stretch's own window; agent time clipped to it). Where a stretch ends is the only hand-written part:
+`SEGMENTS` in `src/annotations.ts`, matched by **commit subject** (SHAs change when history is rewritten; they
+did before publication). Night 1 is the original overnight claim and stays the page's headline; later stretches
+are shown after it. Lines and tests for an earlier stretch are taken at its closing commit
+(`sources/tests-<id>.json` for the Vitest counts).
+
+## Stale commit ids fail the tests
+`test/content.test.ts` checks that every commit `timeline.json`, `bugs.json`, the draft and the test sources cite
+exists. It skips only in a shallow clone. After a history rewrite, map old ids with `.git/filter-repo/commit-map`.
 
 ## Sources and what each number means
 | Field | Source | Method |

@@ -1,5 +1,5 @@
 {
-  "$comment": "The /log bug gallery. Rules (enforced by tools/build-story/test/bugs.test.ts): every `quote` appears verbatim in its `file` (ignoring markdown emphasis and line wraps); the plain-language fields (`title`, `plain`) contain no numbers, so every figure on the page comes from a quote or from timeline.json; every image exists. `saw` is the solver's own failure message, re-produced by the command in `sawCommand`.",
+  "$comment": "The /log bug gallery. Rules (enforced by tools/build-story/test/content.test.ts): every `quote` appears verbatim in its `file` (ignoring markdown emphasis and line wraps); the plain-language fields (`title`, `plain`) contain no numbers, so every figure on the page comes from a quote or from timeline.json; every image exists. `saw` is the solver's own failure message, re-produced by the command in `sawCommand`.",
   "batch": {
     "title": "819 generated stages, before and after the fixes",
     "quotes": [
@@ -28,7 +28,7 @@
       "plain": "A text block and its thinner caption line became one island, joined by a strip of land narrower than the ball. A bridge landed on the far side, so the ball could never reach it without discovering a jump that nothing on screen explains.",
       "repro": "eval-go-dev 0 easy 2",
       "saw": "island 9 is split by a neck narrower than the ball; the bridge 31 mouth is cut off",
-      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-go-dev:0:easy:2 (at af7db69, builder 0.3.0)",
+      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-go-dev:0:easy:2 (at 2354e42, builder 0.3.0)",
       "evidence": {
         "file": "docs/build-log/phase-09-builder-issues.md",
         "quote": "narrow-neck 13 → 0, jump-solved 57 → 0, audit split stages 241 → 0"
@@ -49,7 +49,7 @@
       "plain": "Elevator platforms have rails along their sides, so the ball boards and leaves at the ends. On thin strips of headline text, a platform end sat right at the island’s edge: the ball could ride it, but not step off.",
       "repro": "eval-python-home 1 normal 2",
       "saw": "no room for the ball beyond the arrival end of elevator 0 (platform ends at the island edge)",
-      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-python-home:1:normal:2 (at af7db69, builder 0.3.0)",
+      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-python-home:1:normal:2 (at 2354e42, builder 0.3.0)",
       "evidence": {
         "file": "docs/build-log/phase-09-builder-issues.md",
         "quote": "elevator-blocked 37 → 0"
@@ -112,7 +112,7 @@
       "plain": "Only one parameter depended on difficulty, and it was zero for both normal and hard. The solver noticed that every hard stage had exactly the normal geometry.",
       "repro": "govuk-card-grid 0 hard 1",
       "saw": "All 273 hard stages have exactly the normal geometry, with only the stageId differing",
-      "sawCommand": "docs/build-log/phase-09-builder-issues.md, BI-5; re-checked for Phase 16: the normal and hard renders at af7db69 are byte-identical PNGs",
+      "sawCommand": "docs/build-log/phase-09-builder-issues.md, BI-5; re-checked for Phase 16: the normal and hard renders at 2354e42 are byte-identical PNGs",
       "evidence": {
         "file": "docs/build-log/phase-09-builder-issues.md",
         "quote": "hard builds exactly the normal geometry | — | 273/273 hard stages"
@@ -181,7 +181,7 @@
       "plain": "The download script was called “fetch”, and pnpm has a built-in fetch command, so the shortcut ran pnpm’s command instead of the project’s. Adding “run” fixed it.",
       "kind": "bug",
       "evidence": {
-        "file": "git:96414f5",
+        "file": "git:a31beba",
         "quote": "Post-merge fixes: ref:fetch script, /reference/ ignore, vitest for ref-fetch, formatting"
       },
       "diff": [

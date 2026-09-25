@@ -1,24 +1,24 @@
 {
-  "commit": "f265f74",
-  "command": "pnpm vitest run --reporter=json, in a clean extract of f265f74 (git archive)",
-  "passed": 922,
-  "skipped": 14,
+  "commit": "c9713b9",
+  "command": "pnpm vitest run --reporter=json, run at this commit before the pre-publication history rewrite (it was 4969885 then). The rewrite removed seven third-party captures; the same command on the rewritten tree gives 703 passed, 2 failed (both need the removed captures), 13 skipped",
+  "passed": 722,
+  "skipped": 13,
   "failed": 0,
-  "files": 71,
+  "files": 53,
   "byProject": [
     {
       "project": "apps/worker",
-      "passed": 237,
+      "passed": 181,
       "skipped": 0
     },
     {
       "project": "apps/web",
-      "passed": 180,
+      "passed": 128,
       "skipped": 11
     },
     {
       "project": "packages/stage-builder",
-      "passed": 108,
+      "passed": 104,
       "skipped": 0
     },
     {
@@ -33,22 +33,12 @@
     },
     {
       "project": "packages/physics",
-      "passed": 51,
+      "passed": 47,
       "skipped": 2
     },
     {
-      "project": "tools/build-story",
-      "passed": 36,
-      "skipped": 1
-    },
-    {
       "project": "tools/fixture-capture",
-      "passed": 34,
-      "skipped": 0
-    },
-    {
-      "project": "apps/extension",
-      "passed": 33,
+      "passed": 41,
       "skipped": 0
     },
     {
@@ -57,18 +47,13 @@
       "skipped": 0
     },
     {
-      "project": "packages/solver",
-      "passed": 20,
-      "skipped": 0
-    },
-    {
       "project": "packages/capture-script",
-      "passed": 19,
+      "passed": 18,
       "skipped": 0
     },
     {
-      "project": "tools/docent-index",
-      "passed": 14,
+      "project": "packages/solver",
+      "passed": 13,
       "skipped": 0
     },
     {
