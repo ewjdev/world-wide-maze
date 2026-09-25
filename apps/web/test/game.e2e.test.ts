@@ -1,6 +1,6 @@
 /**
- * Phase 08 end-to-end: the real game in Chromium (Vite dev server) against the real Worker + Room DO in
- * workerd (wrangler `unstable_startWorker`).
+ * Phase 08 end-to-end: the real game in Chromium (Vite dev server) against the real Worker + Room DO + local
+ * D1/R2 in workerd (wrangler `createTestHarness`).
  *
  *  1. Keyboard full run on handmade-simple with the Phase 05 replay injected as the input source (lockstep
  *     sim) → result screen with exactly the score the Node replay + the rules predict.
@@ -11,12 +11,22 @@
  *  4. Build failure: a forbidden URL (real worker 400) and a blocked capture (mocked SSE) show the fallback
  *     screen, and a curated alternative (client-side fixture build) plays.
  *
+ * Phase 08b (leaderboards, Phase 10 components, ghosts). `handmade-simple` is also seeded into the Worker's R2/D1
+ * as a service-built stage, so `/play/<its stageId>` is a stage the scores API knows:
+ *  5. Replay run on the service stage → the stage board on the result → the recorded replay equals the stream
+ *     the sim consumed → name → ranked on the server's run board and stage board, replay verified.
+ *  6. "Race the #1 run" on a challenge link → the #1 replay (from 5) is a ghost ball that moves; toggles off.
+ *  7. Challenge link with the replay → the result answers the friend's score; the #1 shows on the stage board.
+ *  8. Offline at the ranking → the score is saved and ranked on this device; nothing reaches the server.
+ *
+ * `WWM_SHOTS=1` also writes the 08b screenshots (docs/build-log/assets/phase-08/b-*.jpg).
+ *
  * Needs Playwright Chromium; skipped locally without it, required in CI.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { replay } from '@wwm/physics';
-import type { InputSample, StageData } from '@wwm/schema';
+import { computeRunId, type InputSample, type StageData } from '@wwm/schema';
 import { type Browser, type BrowserContext, chromium, devices, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
@@ -28,18 +38,30 @@ const WORKER_CONFIG = fileURLToPath(new URL('../../worker/wrangler.jsonc', impor
 const HANDMADE = JSON.parse(
   readFileSync(new URL('../../../fixtures/stages/handmade-simple.json', import.meta.url), 'utf8'),
 ) as StageData;
+const HANDMADE_PNG = readFileSync(new URL('../../../fixtures/stages/handmade-simple.png', import.meta.url));
+/** The practice stage seeded as a service stage: its id is a `/play/:stageId` link the scores API knows. */
+const SERVICE_ID = HANDMADE.stageId;
 const REPLAY = JSON.parse(
   readFileSync(new URL('../../../fixtures/replays/handmade-simple.keyboard.json', import.meta.url), 'utf8'),
 ) as InputSample[];
 const GPU = ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist'];
 
-type Worker = Awaited<ReturnType<typeof import('wrangler').unstable_startWorker>>;
+type Harness = ReturnType<typeof import('wrangler').createTestHarness>;
+
+/** 08b screenshots: `WWM_SHOTS=1` writes them to docs/build-log/assets/phase-08/ (reviewed by hand). */
+const SHOTS = process.env.WWM_SHOTS
+  ? fileURLToPath(new URL('../../../docs/build-log/assets/phase-08/', import.meta.url))
+  : null;
+async function shot(page: Page, name: string) {
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}${name}.jpg`, type: 'jpeg', quality: 85 });
+}
 
 /** Known dev-only noise: React StrictMode mounts the phone controller twice, closing the first socket. */
 const DEV_NOISE = /WebSocket is closed before the connection is established/;
 
 describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
-  let worker: Worker;
+  let harness: Harness;
+  let api = '';
   let server: ViteDevServer;
   let browser: Browser;
   let base = '';
@@ -63,7 +85,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     });
 
   async function desk(hooks: Record<string, unknown>, extra?: (ctx: BrowserContext) => Promise<void>) {
-    const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
+    const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     await ctx.addInitScript((h) => {
       localStorage.setItem('wwm.howtoSeen', '1');
       localStorage.setItem('wwm.tutorialDone', '1');
@@ -76,18 +98,65 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
   }
 
   beforeAll(async () => {
-    const { unstable_startWorker } = await import('wrangler');
-    worker = await unstable_startWorker({
-      config: WORKER_CONFIG,
-      dev: {
-        server: { hostname: '127.0.0.1', port: 0 },
-        inspector: false,
-        persist: false,
-        logLevel: 'error',
-      },
-    } as Parameters<typeof unstable_startWorker>[0]);
-    await worker.ready;
-    process.env.WWM_API_URL = (await worker.url).toString().replace(/\/$/, '');
+    // wrangler's test harness (as the worker's own integration tests): real Worker + Room DO + local D1/R2, and
+    // access to the bindings, so the practice stage can be seeded into R2 like a stage the service built (08b).
+    const { createTestHarness } = await import('wrangler');
+    harness = createTestHarness();
+    await harness.update({ workers: [{ configPath: WORKER_CONFIG }] });
+    const { url } = await harness.listen();
+    const w = harness.getWorker<{
+      STAGES: { put(key: string, value: unknown, opts?: unknown): Promise<unknown> };
+      DB: { prepare(sql: string): { bind(...v: unknown[]): { run(): Promise<unknown> } } };
+    }>();
+    await w.applyD1Migrations('DB' as never);
+    const env = await w.getEnv();
+    // As the build pipeline stores it (apps/worker/src/store.ts): stage JSON + texture in R2, run + stage rows.
+    const cap = HANDMADE.source.captureId;
+    const textureKey = `textures/${cap}/0.webp`;
+    const stage = { ...HANDMADE, texture: { ...HANDMADE.texture, path: `${SERVICE_ID}/texture` } };
+    await env.STAGES.put(`stages/${SERVICE_ID}.json`, JSON.stringify(stage));
+    await env.STAGES.put(textureKey, new Uint8Array(HANDMADE_PNG), {
+      httpMetadata: { contentType: 'image/png' },
+    });
+    const runId = await computeRunId(cap, HANDMADE.seed, HANDMADE.builderVersion, HANDMADE.difficulty);
+    const now = new Date().toISOString();
+    await env.DB.prepare(
+      `INSERT INTO runs (run_id, url, title, capture_id, slice_count, difficulty, seed, builder_version, status, created_at)
+       VALUES (?1, ?2, ?3, ?4, 1, ?5, ?6, ?7, 'complete', ?8)`,
+    )
+      .bind(
+        runId,
+        'https://practice.example/',
+        'Handmade practice',
+        cap,
+        HANDMADE.difficulty,
+        HANDMADE.seed,
+        HANDMADE.builderVersion,
+        now,
+      )
+      .run();
+    await env.DB.prepare(
+      `INSERT INTO stages (stage_id, run_id, slice_index, url, title, capture_id, builder_version, texture_key,
+         islands, bridges, elevators, items, created_at)
+       VALUES (?1, ?2, 0, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12)`,
+    )
+      .bind(
+        SERVICE_ID,
+        runId,
+        'https://practice.example/',
+        'Handmade practice',
+        cap,
+        HANDMADE.builderVersion,
+        textureKey,
+        HANDMADE.islands.length,
+        HANDMADE.bridges.length,
+        HANDMADE.elevators.length,
+        HANDMADE.items.length,
+        now,
+      )
+      .run();
+    api = url.toString().replace(/\/$/, '');
+    process.env.WWM_API_URL = api;
     server = await createServer({
       root: WEB_ROOT,
       configFile: `${WEB_ROOT}vite.config.ts`,
@@ -102,8 +171,25 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
   afterAll(async () => {
     await browser?.close();
     await server?.close();
-    await worker?.dispose();
+    await harness?.close();
   });
+
+  /** Expected score of the fixture replay, from the same replay in Node and the rules module. */
+  async function expectation() {
+    const node = await replay(HANDMADE, REPLAY);
+    const goalTick = node.goalTick;
+    let small = 0;
+    let large = 0;
+    for (const { event } of node.events) {
+      if (event.type === 'item') event.kind === 'small' ? small++ : large++;
+    }
+    const timeInt = Math.round(HANDMADE.timeLimitSec - goalTick / 120);
+    const expected = finishStage(
+      { total: small + 100 * large, spares: 3 },
+      { timeInt, small, large, cleared: true },
+    );
+    return { goalTick, small, large, timeInt, expected };
+  }
 
   test('keyboard full run with the Phase 05 replay → result with the expected score', async () => {
     // Expected score from the same replay in Node and the rules module.
@@ -151,15 +237,193 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       `[e2e] replay goal tick ${goalTick}, ${timeInt} s left, ${large} large + ${small} small → ${expected.score.total}`,
     );
 
-    // Finish → ranking with the name entry, submit → ranked.
+    // Finish → ranking (Phase 10 NameEntry). The practice stage is built in the browser: device boards.
     await page.getByTestId('res-finish').click();
     await waitPhase(page, 'ranking');
     await page.getByTestId('name-input').fill('e2e_bot');
     await page.getByTestId('name-submit').click();
     await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
     expect(problems).toEqual([]);
     await page.context().close();
   }, 240_000);
+
+  test('08b: replay run on a service stage → stage board → name → server run + stage boards, replay verified', async () => {
+    const { goalTick, small, large, expected } = await expectation();
+    const page = await desk({
+      replay: REPLAY,
+      lockstep: true,
+      timeScale: 3,
+      noAutoPause: true,
+      skipIntro: true,
+    });
+    await page.goto(`${base}/play/${SERVICE_ID}`);
+    await waitPhase(page, 'result', 150_000);
+    const total = page.locator('[data-testid=res-total][data-final]:not([data-final=""])');
+    await total.waitFor({ timeout: 20_000 });
+    expect(Number(await total.getAttribute('data-final'))).toBe(expected.score.total);
+
+    // The stage board sits next to the tally; the service stage has no scores yet.
+    await page.getByTestId('res-board').waitFor();
+    await expect
+      .poll(() => page.getByTestId('result').textContent())
+      .toContain('No scores on this stage yet');
+
+    // 08b: the replay the game recorded is exactly the stream the lockstep sim consumed.
+    const recorded = await page.evaluate(() => window.__wwmGame?.debugReplays() ?? []);
+    expect(recorded).toHaveLength(1);
+    const rec = recorded[0]?.replay;
+    expect(rec?.inputs.length).toBe(goalTick);
+    expect(rec?.inputs).toEqual(REPLAY.slice(0, goalTick));
+    const again = await replay(HANDMADE, rec?.inputs ?? [], { stopAtGoal: true });
+    expect(again.goalTick).toBe(goalTick);
+    expect(again.events.filter((e) => e.event.type === 'item')).toHaveLength(small + large);
+
+    // Finish → ranking with the name entry (Phase 10 NameEntry), submit → ranked on the server's boards.
+    await page.getByTestId('res-finish').click();
+    await waitPhase(page, 'ranking');
+    await page.getByTestId('name-input').fill('e2e_bot');
+    await page.getByTestId('name-submit').click();
+    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('server');
+    await page.getByTestId('stage-verified').waitFor(); // the Worker re-simulated the replay and accepted it
+    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await page.getByTestId('tab-stage-0').click();
+    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    expect(await page.getByTestId('rank-board').textContent()).toContain(
+      expected.stageScore.toLocaleString('en-US'),
+    );
+    const stageBoard = (await (await fetch(`${api}/api/scores/stage/${HANDMADE.stageId}`)).json()) as {
+      entries: { name: string; score: number; timeMs: number }[];
+    };
+    expect(stageBoard.entries[0]).toMatchObject({ name: 'e2e_bot', score: expected.stageScore });
+    expect(stageBoard.entries[0]?.timeMs).toBe(Math.round((goalTick * 1000) / 120));
+    const runBoard = (await (await fetch(`${api}/api/scores/run`)).json()) as {
+      entries: { name: string; score: number }[];
+    };
+    expect(runBoard.entries[0]).toMatchObject({ name: 'e2e_bot', score: expected.stageScore });
+    const ghost = (await (await fetch(`${api}/api/scores/stage/${HANDMADE.stageId}/ghost`)).json()) as {
+      name: string;
+      inputs: unknown[];
+    };
+    expect(ghost.name).toBe('e2e_bot');
+    expect(ghost.inputs).toHaveLength(goalTick);
+    await shot(page, 'b-05-ranking-submitted-stage-tab');
+    await page.getByTestId('tab-run').click();
+    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('e2e_bot');
+    await shot(page, 'b-04-ranking-submitted');
+    expect(problems).toEqual([]);
+    await page.context().close();
+  }, 240_000);
+
+  test('ghost race: "Race the #1 run" on a challenge link renders the #1 replay as a ghost ball', async () => {
+    // Runs after the first test, whose verified replay is now the stage's #1. The player stays idle, so the
+    // ghost rolls away from the start.
+    const page = await desk({ noAutoPause: true, timeScale: 1 });
+    await page.goto(`${base}/play/${SERVICE_ID}?beat=1500&by=mika`);
+    await waitPhase(page, 'intro', 60_000);
+    await page.getByTestId('challenge-banner').waitFor();
+    expect(await page.getByTestId('challenge-banner').textContent()).toContain('mika');
+    const toggle = page.getByTestId('ghost-toggle');
+    await toggle.waitFor({ timeout: 30_000 }); // the ghost is fetched and its track re-simulated
+    expect(await toggle.textContent()).toContain('e2e_bot');
+    expect(await toggle.getAttribute('aria-pressed')).toBe('false');
+    await toggle.click();
+    expect(await toggle.getAttribute('aria-pressed')).toBe('true');
+    await page.waitForTimeout(1200);
+    await shot(page, 'b-01-intro-ghost-challenge');
+    await page.getByTestId('intro-skip').click(); // skip the intro (Space would toggle the focused ghost button)
+    await waitPhase(page, 'countdown', 30_000);
+    await shot(page, 'b-02-countdown-ghost');
+    await waitPhase(page, 'play', 30_000);
+    await page.getByTestId('ghost-racing').waitFor();
+    await page.waitForTimeout(700);
+    await shot(page, 'b-03-play-ghost');
+    const ghostPos = () =>
+      page.evaluate(() => {
+        const m = window.__wwmGame?.engine?.debug().scene.getObjectByName('wwm-ghost');
+        return m ? { visible: m.visible, p: m.position.toArray() } : null;
+      });
+    const a = await ghostPos();
+    await page.waitForTimeout(2500);
+    const b = await ghostPos();
+    expect(a?.visible).toBe(true);
+    const moved = Math.hypot((b?.p[0] ?? 0) - (a?.p[0] ?? 0), (b?.p[2] ?? 0) - (a?.p[2] ?? 0));
+    console.log(`[e2e] ghost moved ${moved.toFixed(2)} m in 2.5 s`);
+    expect(moved).toBeGreaterThan(0.5);
+    // Toggling off removes it.
+    await page.keyboard.press('KeyM');
+    await waitPhase(page, 'paused');
+    await page.waitForTimeout(1200);
+    await shot(page, 'b-03b-map-ghost');
+    await page.getByTestId('ghost-toggle').click();
+    await expect.poll(ghostPos).toBeNull();
+    expect(problems).toEqual([]);
+    await page.context().close();
+  }, 180_000);
+
+  test("challenge link: the result answers the friend's score; the stage board shows the #1", async () => {
+    const page = await desk({
+      replay: REPLAY,
+      lockstep: true,
+      timeScale: 3,
+      noAutoPause: true,
+      skipIntro: true,
+    });
+    await page.goto(`${base}/play/${SERVICE_ID}?beat=1500&by=mika`);
+    await waitPhase(page, 'goal', 120_000);
+    await waitPhase(page, 'result', 30_000);
+    const verdict = page.getByTestId('challenge-verdict');
+    await verdict.waitFor({ timeout: 20_000 });
+    expect(await verdict.textContent()).toBe('17 points short of mika’s 1,500.'); // 1484 vs 1500
+    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot');
+    await page.waitForTimeout(400);
+    await shot(page, 'b-06-result-board-challenge');
+    await page.setViewportSize({ width: 820, height: 1100 });
+    await page.waitForTimeout(300);
+    await shot(page, 'b-09-result-narrow');
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.getByTestId('res-finish').click();
+    await waitPhase(page, 'ranking');
+    await page.getByTestId('name-input').waitFor();
+    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('2nd'); // ties rank behind e2e_bot
+    await page.waitForTimeout(700);
+    await shot(page, 'b-07-ranking-entry');
+    expect(problems).toEqual([]);
+    await page.context().close();
+  }, 180_000);
+
+  test('offline fallback: connection lost → the score is ranked and kept on this device', async () => {
+    const page = await desk({
+      replay: REPLAY,
+      lockstep: true,
+      timeScale: 3,
+      noAutoPause: true,
+      skipIntro: true,
+    });
+    await page.goto(`${base}/play/${SERVICE_ID}`);
+    await waitPhase(page, 'result', 150_000);
+    await expect.poll(() => page.getByTestId('res-board').textContent()).toContain('e2e_bot'); // online: server board
+    await page.context().setOffline(true); // the connection drops before the name is entered
+    await page.getByTestId('res-finish').click();
+    await waitPhase(page, 'ranking');
+    await page.getByTestId('name-input').fill('offline_ana');
+    await page.getByTestId('name-submit').click();
+    await expect.poll(() => page.getByTestId('rank-value').textContent()).toBe('1st');
+    expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('device');
+    await expect.poll(() => page.getByTestId('rank-board').textContent()).toContain('offline_ana');
+    expect(await page.getByTestId('ranking').textContent()).toContain('can’t be reached');
+    await shot(page, 'b-08-ranking-offline');
+    // Nothing reached the server.
+    const board = (await (await fetch(`${api}/api/scores/run`)).json()) as { entries: { name: string }[] };
+    expect(board.entries.map((e) => e.name)).not.toContain('offline_ana');
+    // Vite's dev client notices the lost connection (dev server only); that is this test's subject.
+    for (let i = problems.length - 1; i >= 0; i--)
+      if (/Failed to load resource|ERR_INTERNET_DISCONNECTED|\[vite\]/.test(problems[i] ?? ''))
+        problems.splice(i, 1);
+    expect(problems).toEqual([]);
+    await page.context().close();
+  }, 180_000);
 
   describe('phone', () => {
     let host: Page;

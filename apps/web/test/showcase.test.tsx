@@ -143,7 +143,7 @@ describe('ranking', () => {
       },
     });
     const sub = { stageId: 's', name: 'mika', score: 10, timeMs: 1000 };
-    expect(await client.submitStage(sub)).toEqual({ ok: true, rank: 3, verified: true });
+    expect(await client.submitStage(sub)).toEqual({ ok: true, rank: 3, verified: true, stored: 'server' });
     expect(JSON.parse(String(calls[0]?.[1]?.body))).toMatchObject({ kind: 'stage', stageId: 's' });
     expect(await client.submitStage(sub)).toMatchObject({ ok: false, error: 'profanity' });
     expect(await client.submitStage(sub)).toMatchObject({

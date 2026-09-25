@@ -104,6 +104,35 @@ export const en = {
   intro: {
     skip: 'Press any key to skip', // N
   },
+  ghost: {
+    toggle: 'Race the #1 run', // N (Phase 10 ghosts)
+    by: '{{name}} · {{score}} pts',
+    key: 'G',
+    racing: 'Racing {{name}}',
+  },
+  challenge: {
+    challenged: '{{name}} challenged you',
+    aFriend: 'A friend',
+    goal: 'Finish above this score to win.',
+    won: 'You beat {{by}}’s {{beat}}!',
+    lost: '{{diff}} points short of {{by}}’s {{beat}}.',
+    friend: 'your friend',
+  },
+  boards: {
+    loading: 'Loading scores',
+    errorTitle: 'Scores couldn’t load.',
+    errorBody: 'Check the connection and try again.',
+    time: 'Time',
+    you: 'you',
+    stage: 'This stage',
+    stageEmpty: 'No scores on this stage yet. Finish the session and add your name to set the first one.',
+    runs: 'All sites',
+    runsSub: 'Session totals, every player',
+    deviceSub: 'Saved on this device',
+    offline: 'The ranking server can’t be reached, so scores are kept on this device.', // N
+    deviceStage: 'This site isn’t on the ranking server, so its scores are kept on this device.', // N
+    tabs: 'Boards',
+  },
   hud: {
     time: 'TIME',
     score: 'SCORE',
@@ -155,6 +184,9 @@ export const en = {
     share: 'Share',
     shared: 'Link copied',
     shareText: 'I just conquered a 3D maze of “{{title}}” on World Wide Maze!', // E: tweet.stage
+    challengeShare: 'Challenge a friend', // N
+    challengeText: 'I scored {{score}} in a 3D maze of “{{title}}” on World Wide Maze. Beat me?', // N
+    shareFailed: 'Couldn’t share. Copy the address bar instead.',
   },
   ranking: {
     title: 'Ranking',
@@ -175,6 +207,25 @@ export const en = {
     rankCol: 'Rank',
     nameCol: 'Name',
     scoreCol: 'Points',
+    lede: 'Add your name to the ranking, or skip.', // N (E: skip = not submitted)
+    nameLabel: 'Name',
+    namePlaceholder: 'your_name',
+    hint: 'Lowercase letters, numbers and _, as in 2013.', // E: [a-z0-9_]
+    sending: 'Sending…',
+    skipped: 'Not submitted.',
+    savedDevice: 'Saved on this device.',
+    stagesHeading: 'Your stages',
+    stageRank: '{{rank}} on this stage',
+    verified: 'replay verified',
+    errors: {
+      name: 'Use a–z, 0–9 and _ only.',
+      profanity: 'That name isn’t allowed. Please pick another.',
+      implausible: 'This score couldn’t be accepted.',
+      'rate-limited': 'Too many submissions from this connection. Wait a few minutes and try again.',
+      'not-found': 'This stage isn’t on the ranking server.',
+      network: 'No connection. Check it and try again.',
+      server: 'The ranking is having trouble. Try again in a moment.',
+    },
   },
   disconnect: {
     title: 'Reconnect your phone', // N

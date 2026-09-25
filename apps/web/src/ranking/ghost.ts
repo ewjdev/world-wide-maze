@@ -9,7 +9,7 @@
 import type { Engine } from '@wwm/engine';
 import type { InputSample, StageData } from '@wwm/schema';
 import { BALL_RADIUS_M, SIM_HZ } from '@wwm/schema';
-import { Mesh, MeshBasicMaterial, SphereGeometry } from 'three/webgpu';
+import { IcosahedronGeometry, Mesh, MeshBasicMaterial, SphereGeometry } from 'three/webgpu';
 
 export interface GhostTrack {
   hz: number;
@@ -75,6 +75,11 @@ export interface GhostStyle {
   opacity?: number;
   /** Size multiplier (e.g. larger in the map view so it reads from far away). */
   scale?: number;
+  /**
+   * `solid` (default): one translucent sphere. `holo` (the game, 08b): a faint shell inside a faceted wire cage,
+   * so the ghost reads as "not a ball" next to the player's and matches the world's wireframe goal/items.
+   */
+  look?: 'solid' | 'holo';
 }
 
 /** A translucent ball in the engine scene that replays `track`. */
@@ -91,6 +96,22 @@ export function createGhostBall(engine: Engine, track: GhostTrack, style: GhostS
   mesh.name = 'wwm-ghost';
   mesh.renderOrder = 10;
   mesh.scale.setScalar(style.scale ?? 1);
+  let cageGeo: IcosahedronGeometry | null = null;
+  let cageMat: MeshBasicMaterial | null = null;
+  if (style.look === 'holo') {
+    mat.opacity = Math.min(mat.opacity, 0.22);
+    cageGeo = new IcosahedronGeometry(BALL_RADIUS_M * 1.04, 1);
+    cageMat = new MeshBasicMaterial({
+      color: style.color ?? 0x2fd3e0,
+      wireframe: true,
+      transparent: true,
+      opacity: 0.9,
+      depthWrite: false,
+    });
+    const cage = new Mesh(cageGeo, cageMat);
+    cage.renderOrder = 11;
+    mesh.add(cage);
+  }
   scene.add(mesh);
   const pose = { pos: [0, 0, 0], quat: [0, 0, 0, 1] };
   // A scaled-up ghost still rests on the surface.
@@ -109,6 +130,8 @@ export function createGhostBall(engine: Engine, track: GhostTrack, style: GhostS
       scene.remove(mesh);
       geo.dispose();
       mat.dispose();
+      cageGeo?.dispose();
+      cageMat?.dispose();
     },
   };
 }

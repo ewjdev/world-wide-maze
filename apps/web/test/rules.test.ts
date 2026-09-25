@@ -1,7 +1,6 @@
 import type { StageData } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
 import handmade from '../../../fixtures/stages/handmade-simple.json' with { type: 'json' };
-import { LocalLeaderboard } from '../src/game/leaderboard.ts';
 import {
   addScore,
   countItems,
@@ -110,9 +109,10 @@ describe('restart point (E)', () => {
 });
 
 describe('names and ranks', () => {
-  test('E: names are sanitised to [a-z0-9_]', () => {
-    expect(sanitizeName('Ana María!')).toBe('ana-mar-a-');
+  test('E: names are sanitised to [a-z0-9_] (N: as the scores API accepts them)', () => {
+    expect(sanitizeName('Ana María!')).toBe('ana_maria');
     expect(sanitizeName('player_1')).toBe('player_1');
+    expect(sanitizeName('dash-y')).toBe('dash_y');
   });
   test('ordinals', () => {
     expect([1, 2, 3, 4, 11, 12, 13, 21, 22, 101].map(ordinal)).toEqual([
@@ -127,23 +127,5 @@ describe('names and ranks', () => {
       '22nd',
       '101st',
     ]);
-  });
-});
-
-describe('LocalLeaderboard (stub for Phase 10)', () => {
-  test('ranks run totals, best first', async () => {
-    const m = new Map<string, string>();
-    const lb = new LocalLeaderboard({
-      getItem: (k) => m.get(k) ?? null,
-      setItem: (k, v) => void m.set(k, v),
-    });
-    expect(await lb.rankFor(500)).toBe(1);
-    expect((await lb.submitRun({ kind: 'run', name: 'a', totalScore: 500, stages: [] })).rank).toBe(1);
-    expect((await lb.submitRun({ kind: 'run', name: 'b', totalScore: 900, stages: [] })).rank).toBe(1);
-    expect((await lb.submitRun({ kind: 'run', name: 'c', totalScore: 100, stages: [] })).rank).toBe(3);
-    expect(await lb.rankFor(600)).toBe(2);
-    expect((await lb.topRuns()).map((e) => e.name)).toEqual(['b', 'a', 'c']);
-    await lb.submitStage({ kind: 'stage', stageId: 's', name: 'a', score: 10, timeMs: 1000 });
-    expect((await lb.topStage('s'))[0]?.timeMs).toBe(1000);
   });
 });

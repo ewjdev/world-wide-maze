@@ -21,15 +21,35 @@ export interface ShareButtonProps {
   score?: number;
   name?: string | null;
   origin?: string;
-  tone?: 'light' | 'dark';
+  tone?: 'light' | 'dark' | 'game';
   quiet?: boolean;
+  /**
+   * Share this URL instead of `/s/:stageId`. For stages the server doesn't have (offline fixtures, the practice
+   * stage), whose share page would 404: the game passes `/play/<ref>?beat=&by=`.
+   */
+  href?: string;
+  /** Share text (default: `shareText(title, score)`). */
+  text?: string;
+  labels?: Partial<ShareLabels>;
+  /** Extra class on the button (the game uses its own button styles). */
+  buttonClassName?: string;
 }
 
-const FEEDBACK: Record<ShareOutcome, string> = {
-  shared: 'Shared',
-  copied: 'Link copied',
-  cancelled: '',
-  failed: 'Couldn’t share. Copy the address bar instead.',
+export interface ShareLabels {
+  challenge: string;
+  share: string;
+  feedback: Record<ShareOutcome, string>;
+}
+
+export const SHARE_LABELS: ShareLabels = {
+  challenge: 'Challenge a friend',
+  share: 'Share this maze',
+  feedback: {
+    shared: 'Shared',
+    copied: 'Link copied',
+    cancelled: '',
+    failed: 'Couldn’t share. Copy the address bar instead.',
+  },
 };
 
 /** Web Share on phones, copy-link elsewhere. The link opens `/s/:stageId`, which has the card image. */
@@ -41,7 +61,12 @@ export function ShareButton({
   origin,
   tone = 'light',
   quiet = false,
+  href,
+  text,
+  labels,
+  buttonClassName,
 }: ShareButtonProps) {
+  const L = { ...SHARE_LABELS, ...labels };
   const [outcome, setOutcome] = useState<ShareOutcome | null>(null);
   useEffect(() => {
     if (!outcome) return;
@@ -58,41 +83,60 @@ export function ShareButton({
     >
       <button
         type="button"
-        className={quiet ? 'rk-btn rk-btn--quiet' : 'rk-btn'}
+        className={buttonClassName ?? (quiet ? 'rk-btn rk-btn--quiet' : 'rk-btn')}
         onClick={async () =>
           setOutcome(
             await shareLink({
-              url: shareUrl(base, stageId, challenge),
+              url: href ?? shareUrl(base, stageId, challenge),
               title,
-              text: shareText(title, score),
+              text: text ?? shareText(title, score),
             }),
           )
         }
       >
         <ShareIcon />
-        {score !== undefined ? 'Challenge a friend' : 'Share this maze'}
+        {score !== undefined ? L.challenge : L.share}
       </button>
       <span className="rk-status" role="status" aria-live="polite">
-        {outcome ? FEEDBACK[outcome] : ''}
+        {outcome ? L.feedback[outcome] : ''}
       </span>
     </span>
   );
 }
 
 /** Shown on /play when the link carried `?beat=` (from a friend's share). */
+export interface ChallengeLabels {
+  /** "<by> challenged you" with the name already rendered; `null` = anonymous. */
+  challenged: (by: string | null) => { before: string; after: string };
+  aFriend: string;
+  goal: string;
+}
+
+export const CHALLENGE_LABELS: ChallengeLabels = {
+  challenged: () => ({ before: '', after: ' challenged you' }),
+  aFriend: 'A friend',
+  goal: 'Finish above this score to win.',
+};
+
 export function ChallengeBanner({
   challenge,
   tone = 'light',
+  labels,
 }: {
   challenge: Challenge;
-  tone?: 'light' | 'dark';
+  tone?: 'light' | 'dark' | 'game';
+  labels?: Partial<ChallengeLabels>;
 }) {
+  const L = { ...CHALLENGE_LABELS, ...labels };
+  const words = L.challenged(challenge.by);
   return (
-    <div className="rk rk-challenge" data-tone={tone} role="note">
+    <div className="rk rk-challenge" data-tone={tone} role="note" data-testid="challenge-banner">
       <span className="rk-challenge__score">{challenge.beat.toLocaleString('en-US')}</span>
       <span className="rk-challenge__text">
-        {challenge.by ? <strong className="rk-name">{challenge.by}</strong> : 'A friend'} challenged you
-        <span>Finish above this score to win.</span>
+        {words.before}
+        {challenge.by ? <strong className="rk-name">{challenge.by}</strong> : L.aFriend}
+        {words.after}
+        <span>{L.goal}</span>
       </span>
     </div>
   );

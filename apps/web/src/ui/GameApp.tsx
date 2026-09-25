@@ -10,8 +10,9 @@ import { createContext, useContext, useEffect, useRef, useState, useSyncExternal
 import { I18nextProvider } from 'react-i18next';
 import { AudioManager } from '../audio/audio.ts';
 import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
-import { LocalLeaderboard } from '../game/leaderboard.ts';
+import { GameBoards } from '../game/leaderboard.ts';
 import { createI18n } from '../i18n/index.ts';
+import { readChallenge } from '../ranking/share.ts';
 import { Screens } from './Screens.tsx';
 
 const GameCtx = createContext<Game | null>(null);
@@ -55,7 +56,12 @@ export function GameApp({ deepLink, roomCode }: GameAppProps) {
     const g = new Game({
       origin: '',
       audio: new AudioManager(),
-      leaderboard: new LocalLeaderboard(),
+      // `?offline=1`: preservation mode, scores stay on this device (no server calls for boards or ghosts).
+      boards: new GameBoards(
+        params.has('offline') ? { fetch: () => Promise.reject(new Error('offline')) } : {},
+      ),
+      physics: params.get('physics') === 'worker' ? 'worker' : 'lockstep',
+      challenge: deepLink ? readChallenge(params) : null,
       reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
       forceWebGL: params.get('backend') === 'webgl',
       deepLink,
