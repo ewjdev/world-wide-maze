@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.0`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.1`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -424,3 +424,14 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - It answers **only** from the project corpus: `research/**`, `docs/reference/**`, `docs/build-log/**`, `RESEARCH.md`, and the `/about` history data. It must cite, and must say it doesn't know when the corpus doesn't cover a question.
 - Error codes: `DOCENT_UNAVAILABLE`, `RATE_LIMITED`, `QUESTION_REJECTED`.
 - Model calls go through **Cloudflare AI Gateway** (config: `AI_GATEWAY_ACCOUNT_ID`, `AI_GATEWAY_ID`, and the provider key as a Worker secret). There's a mock provider for dev and tests. Responses are cached by normalized question. A per-IP and global daily cap stays under a configurable budget.
+
+**v0.3.1, from the Phase 14 CCRs (orchestrator, 2026-09-25):**
+- **CCR-14-1:** `LocalCaptureMessage.image` is optional or null. A DOM-only bookmarklet capture renders in **sketch mode** with a generated texture.
+- **CCR-14-2:** `POST /api/stages/upload` is multipart:
+  - Parts: `bundle` (JSON), `image` (PNG), and optional `texture0…N-1` (per-slice textures at scale 1–2).
+  - Limits: body ≤ 40 MB, bundle ≤ 8 MB, image ≤ 16 MB and ≤ 8 MP, each texture ≤ 12 MB, page width ≤ 2,560.
+  - The capture id is always derived on the server.
+  - Returns `200 {runId, stageIds}`.
+- **CCR-14-3:** the worker's `SliceTexture.contentType` is `'image/webp' | 'image/png'`.
+- **CCR-14-4:** `provenance.notes` may include `'local-capture'` and `'sketch-mode'`.
+- `/play/local` drops `Cross-Origin-Opener-Policy`, which the bookmarklet handoff needs. Every other header, including CSP, still applies.

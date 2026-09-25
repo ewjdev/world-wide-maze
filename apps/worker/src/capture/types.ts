@@ -19,7 +19,7 @@ export interface SliceTexture {
   heightPx: number;
   /** Image px per CSS px (CAPTURE_DPR). */
   scale: number;
-  contentType: 'image/webp';
+  contentType: 'image/webp' | 'image/png';
   bytes: Uint8Array;
 }
 

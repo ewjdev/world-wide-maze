@@ -67,3 +67,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.3.0 (planned, see contracts §10)
 - Portal, DomElement.href, SimEvent portal, local capture handoff, docent API.
+
+## 0.3.1
+- LocalCaptureMessage.image optional (sketch mode).

@@ -478,7 +478,8 @@ export interface LocalCaptureMessage {
   type: 'wwm:capture';
   version: 1;
   bundle: CaptureBundle;
-  image: { mime: 'image/png' | 'image/webp'; bytes: ArrayBuffer };
+  /** Omitted/null = DOM-only bookmarklet capture ("sketch mode", contracts v0.3.1). */
+  image?: { mime: 'image/png' | 'image/webp'; bytes: ArrayBuffer } | null;
 }
 
 /** §10.3 AI docent. */
