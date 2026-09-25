@@ -5,7 +5,7 @@
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.2.6';
+export const CONTRACT_VERSION = '0.2.7';
 
 // --- contract §1: scale --------------------------------------------------------------------------
 /** 1 ball diameter = 1 m = 13.5 px (2013: 10.8 px of a 1024 stage). */
@@ -81,3 +81,22 @@ export const ROOM_CODE_LENGTH = 6;
 export const SLAB_THICKNESS_M = 0.463; // E: 0.5 WU island slab
 export const RAIL_HEIGHT_M = 0.556; // R: rail collider/visual height; rails sit just OUTSIDE the edge line (and outside bridge deck width)
 export const ELEVATOR_MIN_PLATFORM_PX = 18.75; // E: platform length = max(|b−a|, this) along a→b, ending at b
+
+// --- contract §9 v0.2.7 --------------------------------------------------------------------------
+/** CCR-12-3: `CaptureBundleSchema` size limits (a capture larger than this is rejected by `parseCapture`). */
+export const CAPTURE_LIMITS = {
+  elements: 20_000,
+  title: 512,
+  url: 2048,
+  text: 120,
+  linesPerElement: 200,
+} as const;
+/** CCR-12-2: pairing / host tokens are 128 random bits, base64url without padding (22 chars). */
+export const ROOM_TOKEN_BYTES = 16;
+/** CCR-12-2: WebSocket close code for a missing or invalid room token (contracts §9, next to 4400/4404/4409). */
+export const ROOM_CLOSE_CODES = {
+  badRequest: 4400,
+  unauthorized: 4401,
+  notFound: 4404,
+  replaced: 4409,
+} as const;

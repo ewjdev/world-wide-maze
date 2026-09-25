@@ -1,8 +1,12 @@
 /**
  * `/c/:code`: the phone controller (Phase 06). Full-screen and portrait: MENU at the top, a live tilt
  * indicator, and JUMP (left thumb) + a big POWER hold button (right thumb) at the bottom.
+ *
+ * Pairing secret (contracts v0.2.7): the QR link is `/c/<code>#p=<pairToken>`. The token is read from the
+ * fragment, remembered in sessionStorage (reloads and reconnects keep it) and removed from the address bar.
+ * A typed code (`/c/<code>` with no token) still works while no other phone is connected.
  */
-import { isRoomCode } from '@wwm/net';
+import { isRoomCode, resolvePairToken } from '@wwm/net';
 import {
   type FormEvent,
   type PointerEvent as ReactPointerEvent,
@@ -53,7 +57,11 @@ function ControllerForCode({ code }: { code: string }) {
   const [session, setSession] = useState<ControllerSession | null>(null);
   const fallback = useMemo(() => initialView(code), [code]);
   useEffect(() => {
-    const s = new ControllerSession(code, browserEnv());
+    const env = browserEnv();
+    const pairToken = resolvePairToken(code, location.hash, env.storage);
+    // Keep the secret out of the address bar (screenshots, shared links, history).
+    if (location.hash) history.replaceState(history.state, '', `${location.pathname}${location.search}`);
+    const s = new ControllerSession(code, { ...env, pairToken });
     s.start();
     setSession(s);
     (window as unknown as { __wwmController?: ControllerSession }).__wwmController = s;
@@ -99,7 +107,9 @@ function Status({ view }: { view: ControllerView }) {
       : '—'
     : view.connection === 'reconnecting'
       ? t.reconnecting
-      : t.connecting;
+      : view.connection === 'closed'
+        ? '—' // terminal screens (not found / replaced / refused) explain themselves
+        : t.connecting;
   return (
     <div
       className="wwmc-status"
@@ -148,6 +158,15 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           <p>{t.replaced}</p>
           <button type="button" className="wwmc-cta" onClick={() => location.reload()}>
             {t.takeOver}
+          </button>
+        </div>
+      );
+    case 'unauthorized':
+      return (
+        <div className="wwmc-card" data-testid="unauthorized">
+          <p>{t.unauthorized}</p>
+          <button type="button" className="wwmc-cta" onClick={() => location.reload()}>
+            {t.retry}
           </button>
         </div>
       );

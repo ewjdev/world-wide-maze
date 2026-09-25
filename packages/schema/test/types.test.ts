@@ -8,6 +8,7 @@ import type {
   ApiError,
   CaptureBundle,
   ControlMessage,
+  CreateRoomResponse,
   CreateStageRequest,
   CreateStageResponse,
   CuratedResponse,
@@ -42,6 +43,7 @@ describe('Zod ⇔ TS types', () => {
     expectTypeOf<z.infer<typeof schema.CuratedResponseSchema>>().toEqualTypeOf<CuratedResponse>();
     expectTypeOf<z.infer<typeof schema.SubmitScoreRequestSchema>>().toEqualTypeOf<SubmitScoreRequest>();
     expectTypeOf<z.infer<typeof schema.ScoresResponseSchema>>().toEqualTypeOf<ScoresResponse>();
+    expectTypeOf<z.infer<typeof schema.CreateRoomResponseSchema>>().toEqualTypeOf<CreateRoomResponse>();
   });
 
   test('§5 shapes (no Zod schema; checked structurally)', () => {
@@ -125,7 +127,7 @@ describe('contract surface', () => {
     });
     expect(schema.DEFAULT_VIEWPORT).toEqual({ width: 1280, height: 800 });
     expect(schema.BALL_RADIUS_PX).toBe(6.75);
-    expect(schema.CONTRACT_VERSION).toBe('0.2.6');
+    expect(schema.CONTRACT_VERSION).toBe('0.2.7');
     // Removed in 0.2.0.
     expect('OCEAN_Y_M' in schema).toBe(false);
     expect('MAX_TILT' in schema).toBe(false);
@@ -215,6 +217,23 @@ describe('contract surface', () => {
     );
     expect(schema.JobEventSchema.safeParse({ type: 'done', stageId: 'a' }).success).toBe(false);
     expect(schema.CreateStageResponseSchema.safeParse({ runId: 'r', stageIds: ['a'] }).success).toBe(true);
+  });
+
+  test('v0.2.7 rooms: CreateRoomResponse carries two base64url tokens; close codes', () => {
+    const tok = 'AAAAAAAAAAAAAAAAAAAAAA'; // 16 bytes → 22 chars
+    const R = schema.CreateRoomResponseSchema;
+    expect(R.safeParse({ code: '123456', hostToken: tok, pairToken: `${tok.slice(1)}_` }).success).toBe(true);
+    expect(R.safeParse({ code: '123456' }).success).toBe(false);
+    expect(R.safeParse({ code: '123456', hostToken: tok, pairToken: 'short' }).success).toBe(false);
+    expect(R.safeParse({ code: '123456', hostToken: tok, pairToken: `${tok}+/=` }).success).toBe(false);
+    expect(schema.ROOM_TOKEN_BYTES).toBe(16);
+    expect(schema.ROOM_CLOSE_CODES).toEqual({
+      badRequest: 4400,
+      unauthorized: 4401,
+      notFound: 4404,
+      replaced: 4409,
+    });
+    expectTypeOf<schema.RoomCloseCode>().toEqualTypeOf<4400 | 4401 | 4404 | 4409>();
   });
 
   test('score submissions: stage and run kinds', () => {

@@ -2,7 +2,7 @@
 
 Legend: ✅ done with evidence · 🟡 partly done / done locally only · ❌ not done · 👤 **needs the user** (account
 owner, a physical device, or an approval an agent can't give).
-Status as of Phase 12 (local-only pass, 2026-09-25). **G4 is not met yet**: production doesn't exist, and several
+Status as of Phase 12 (local-only pass, 2026-09-25), updated by Phase 12b (security and pipeline follow-ups). **G4 is not met yet**: production doesn't exist, and several
 items need the user.
 
 ## Gates and approvals
@@ -31,18 +31,18 @@ items need the user.
 | 13 | Fresh-browser end-to-end playthrough on production | ❌ 👤 | Locally: e2e suite green on the lazy-loaded build (docs/build-log/phase-12.md). Production pending |
 | 14 | Phone onboarding on the device matrix | 🟡 👤 | iPhone 17 Pro Safari ✅ (phase-06-device-test.md). Missing: 2nd iOS version, 2 Android devices, desktop Safari/Firefox/Edge, permission denial, backgrounding, rotation, reconnect, keyboard-only — table below |
 | 15 | Curated stages load with capture disabled (kill switch) | 🟡 | Kill switch implemented and verified locally: [evidence/kill-switch.txt](evidence/kill-switch.txt). Curated set itself pending (#3) |
-| 16 | Performance report with real measurements | 🟡 | [performance.md](performance.md): M5 Max measured; integrated-GPU and midrange desktops, filmed controller latency and time-to-first-control with 5 fresh users need people/hardware 👤 |
+| 16 | Performance report with real measurements | 🟡 | [performance.md](performance.md): M5 Max measured; 12b re-run: `/` 1,940 → 874 KiB (Rapier deferred to stage load, `.wasm` asset), `/log` CLS 0.17/0.20 → 0.063/0.003, Best practices 100 everywhere ([evidence/lighthouse-12b.json](evidence/lighthouse-12b.json)). Integrated-GPU and midrange desktops, filmed controller latency and time-to-first-control with 5 fresh users need people/hardware 👤 |
 
 ## Security and abuse
 | # | Item | Status | Evidence |
 |---|---|---|---|
 | 17 | Security review of Worker + web | ✅ | performance.md §6 and docs/build-log/phase-12.md (fixed/open lists) |
-| 18 | SSRF suite re-verified | ✅ (local) | `pnpm vitest run --project @wwm/worker test/url-policy.test.ts test/capture-guard.test.ts` green; production config keeps `DEV_ALLOWED_HOSTS=""` (checked by `check-deploy-config.mjs` and `test/security.test.ts`) |
-| 19 | CSP / security headers | ✅ (local) | `_headers` + `src/security.ts`; 0 CSP violations except zod's caught eval probe (performance.md §6) |
-| 20 | Input size limits, DO message size + rate caps | ✅ | `security.ts` body caps; Room DO caps with tests (`test/room.test.ts`) |
+| 18 | SSRF suite re-verified | ✅ (local) | `pnpm vitest run --project @wwm/worker test/url-policy.test.ts test/capture-guard.test.ts` green; production config keeps `DEV_ALLOWED_HOSTS=""` (checked by `check-deploy-config.mjs` and `test/security.test.ts`). 12b: iframe/popup bypass suite (13 real-Chromium cases incl. cross-site OOPIF, nested, srcdoc/data/blob/javascript frames, `<object>`/`<embed>`, popups); found and fixed a `WebSocketStream` leak from every frame (apps/worker/README.md "SSRF policy"). Not yet run against real Browser Run 👤 |
+| 19 | CSP / security headers | ✅ (local) | `_headers` + `src/security.ts`; **0 CSP violations** on every page since 12b (zod jitless, contracts v0.2.7; performance.md §6, [evidence/cls-csp-12b.txt](evidence/cls-csp-12b.txt)) |
+| 20 | Input size limits, DO message size + rate caps | ✅ | `security.ts` body caps; Room DO caps with tests (`test/room.test.ts`); 12b: `CaptureBundle` limits (elements ≤ 20,000, title ≤ 512, url ≤ 2,048, lines ≤ 200/element; `packages/schema/test/limits.test.ts`) |
 | 21 | `/api/rooms/:code/stats` gated out of production | ✅ | `ROOM_STATS=0` in staging/production; tests in `rooms-route.test.ts`, `security.test.ts` |
-| 22 | Load tests (200 rooms @ 60 Hz, 50-build burst) | 🟡 | Local only: performance.md §5. Re-run against staging 👤 |
-| 23 | Pairing secret (room hijack by code guessing) | ❌ | Open CCR (phase-12 hand-off); mitigated by per-IP limits only |
+| 22 | Load tests (200 rooms @ 60 Hz, 50-build burst) | 🟡 | Local only: performance.md §7. 12b: burst re-run after the queue/budget fix: 10 done + 40 `CAPTURE_TIMEOUT` → 27 done + 23 `RATE_LIMITED` (busy), 0 timeouts; retries of failed URLs now start fresh jobs ([before](evidence/load-builds-semaphore-12b-before.json) / [after](evidence/load-builds-semaphore-12b-after.json)). Re-run against staging 👤 |
+| 23 | Pairing secret (room hijack by code guessing) | ✅ (local) | 12b, contracts v0.2.7 CCR-12-2: host and pair tokens (128-bit, digests only in the DO, constant-time compare), QR link `/c/<code>#p=<token>`, typed code only while no live controller, 4401 otherwise. Attack tests: `apps/worker/test/room.test.ts` "ATTACK…", `apps/web/test/controller.e2e.test.ts` (11/11 on a local stack), game e2e intruder check. Real phones not re-tested 👤 |
 
 ## Device matrix (to fill in with the user)
 | Browser / device | Pairing | Permission denied | Backgrounding | Rotation | Reconnect | Keyboard-only |

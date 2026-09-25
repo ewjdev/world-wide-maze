@@ -93,10 +93,30 @@ What changed: every page is a lazy route (`apps/web/src/routes.tsx`); `vendor-th
 stable chunks; `@dimforge/rapier3d-compat` (the non-deterministic build, used only by the physics package's Node
 benchmark) is aliased to a stub in the web build. On the default (lockstep) path the physics worker chunk is never
 requested. Game route JS, gzip: vendor-react 95 + GameApp 56 + vendor-three 241 + engine 23 + schema/zod 27 +
-physics 11 + **Rapier 1,069** KiB. Rapier's inlined base64 WASM is now the dominant download; the next step
-(Phase 05) would be loading the `.wasm` file directly (≈ 30 % smaller, streaming compile) and deferring it until a
-stage loads — `/` currently loads it for the attract mode.
+physics 11 + **Rapier 1,069** KiB. Rapier's inlined base64 WASM was then the dominant download (done in 12b, below).
 i18n (en + ja strings) is ~18 KiB raw inside GameApp; not worth a separate request.
+
+**Phase 12b task 5: Rapier as a `.wasm` asset, loaded only when a stage loads.** A Vite plugin
+(`rapierWasmAsset` in `apps/web/vite.config.ts`, page + physics-worker bundles) rewrites the compat package's one
+`init()` argument (the 2.7 MB base64 literal) to the URL of the package's byte-identical
+`dist/rapier_wasm3d_bg.wasm`, emitted as a hashed asset; wasm-bindgen then fetches it with
+`WebAssembly.instantiateStreaming` (served as `application/wasm`; the CSP's `'wasm-unsafe-eval'` covers it). Node
+and workerd (`loadRapier({ wasmModule })`) still use the untouched package. The game now creates its physics driver
+when the first stage starts building (`#ensureDriver` in `apps/web/src/game/game.ts`, in parallel with the build),
+so the title/attract (`/`) never downloads Rapier. Measured on `vite preview` builds with Playwright (every
+same-origin response, gzip level 9 / brotli computed per body; `infra/perf/transfer.mjs`, same logic as
+`infra/perf/requests.mjs`):
+
+| KiB | Before (12b) | After (12b) |
+|---|---|---|
+| `/` (title + attract stage): JS gz / all transfer gz | 1,598 / 1,681 (Rapier included) | **529 / 612** (no Rapier) |
+| `/play/practice` to phase `play` (lockstep, default): all transfer gz | 1,625 | **1,334** |
+| `/play/practice?physics=worker` to `play`: all transfer gz | 1,664 | **1,372** |
+| Rapier on the game path, raw / gz / br | `rapier` chunk 2,822 / 1,069 / 786 | `.wasm` 2,000 / 750 / 549 + `rapier` glue chunk 154 / 28 / 24 |
+| Physics worker chunk (only `?physics=worker`), raw / gz | 2,949 / 1,108 | 281 / 67 (+ the same `.wasm`) |
+
+Rapier on the game path: 1,069 → 778 KiB gz (−27 %), 786 → 572 KiB br; the WASM compiles while it streams instead
+of after a base64 decode on the main thread.
 
 ## 5. Core Web Vitals (lab) — Lighthouse 12.8.2
 `node infra/perf/lighthouse.mjs` against the local production build. Mobile = Lighthouse default (Moto G Power
@@ -115,17 +135,51 @@ so it isn't separately auditable here.
 | `/log` | mobile | 69 | 4.23 s | 4.00 s | 0 ms | 0.167 | 529 KiB | 100 | 100 |
 | `/log` | desktop | 89 | 0.86 s | 0.84 s | 0 ms | 0.204 | 529 KiB | 100 | 100 |
 
-Findings: "Best practices" 96 on `/` and `/c` is the DevTools issue raised by zod's `new Function` feature probe
-being blocked by the CSP (see §6; harmless, fix is a one-line CCR). `/log` has a CLS of 0.17–0.20 (images without
-reserved size, Phase 10). Mobile LCP ≈ 4 s on the showcase pages is font + CSS loading under slow 4G.
+Findings (Phase 12 run): "Best practices" 96 on `/` and `/c` was the DevTools issue raised by zod's
+`new Function` feature probe being blocked by the CSP (see §6). `/log` had a CLS of 0.17–0.20. Mobile LCP ≈ 4 s on
+the showcase pages is font + CSS loading under slow 4G.
+
+**Phase 12b re-run** (same machine, same script, `evidence/lighthouse-12b.json`), after zod jitless (contracts
+v0.2.7), Rapier deferred to stage load (§4) and metric-matched fallback fonts on the showcase pages:
+
+| Page | Preset | Perf | LCP | FCP | TBT | CLS | Transfer | A11y | Best pr. |
+|---|---|---|---|---|---|---|---|---|---|
+| `/` (title, attract mode) | mobile | 74 | 4.40 s | 3.41 s | 79 ms | 0 | **874 KiB** | 100 | **100** |
+| `/` | desktop | 98 | 0.99 s | 0.76 s | 0 ms | 0 | **874 KiB** | 100 | **100** |
+| `/about` | mobile | 77 | 4.07 s | 3.99 s | 0 ms | 0 | 488 KiB | 100 | 100 |
+| `/about` | desktop | 99 | 0.86 s | 0.82 s | 0 ms | 0.006 | 488 KiB | 100 | 100 |
+| `/c/123456` (phone controller) | mobile | 98 | 2.13 s | 1.82 s | 0 ms | 0 | 147 KiB | 100 | **100** |
+| `/c/123456` | desktop | 100 | 0.49 s | 0.41 s | 0 ms | 0 | 147 KiB | 100 | **100** |
+| `/log` | mobile | **86** | 3.32 s | 3.09 s | 0 ms | **0.063** | 539 KiB | 100 | 100 |
+| `/log` | desktop | **99** | 0.86 s | 0.84 s | 0 ms | **0.003** | 539 KiB | 100 | 100 |
+
+- **`/log` CLS cause** (found with a `layout-shift` observer, `evidence/cls-csp-12b.txt`): not the images (they are
+  lazy and far below the fold) but the **web-font swap**. fontsource declares `font-display: swap`; Georgia is
+  wider than Newsreader at the page's optical sizes, so the lede re-wrapped by one line (33 px) when Newsreader
+  arrived and pushed everything below it, and the nav changed width with Instrument Sans. **Fix**
+  (`apps/web/src/pages/about/showcase.css`): `"Newsreader Fallback"` = `local(Georgia)` with `size-adjust: 92%`,
+  `ascent-override: 80.4%`, `descent-override: 28.3%`, and `"Instrument Sans Fallback"` = `local(Arial)` with
+  `size-adjust: 101.7%`, `ascent-override: 95%`, `descent-override: 24.5%`, placed in the font stacks right after
+  the web fonts. Tuned by comparing every text block's box with the web fonts blocked vs loaded (1350 px and 412 px
+  wide): identical line counts afterwards. The remaining 0.063 on mobile is one paragraph during a transient state
+  where only some of Newsreader's subset files have arrived (below the 0.1 "good" threshold). Fallback metrics only
+  apply where Georgia/Arial exist (macOS, Windows, iOS); Android falls through to its own serif unchanged.
+- `/` transfer 1,940 → 874 KiB: Rapier is no longer downloaded for the title/attract screen (§4).
+- "Best practices" is 100 everywhere: the zod `eval` probe is gone (§6).
+- Not fixed, found on the way: `/making` has CLS ≈ 0.07 (412 px) / 0.14 (1350 px) from its chip row re-wrapping and
+  the demo canvas resizing after load (Phase 10 page; not in the Lighthouse set). Tracked in
+  docs/build-log/phase-12.md "open".
 
 ## 6. Security headers and CSP check
 Method: `infra/perf/frames.mjs` registers a `securitypolicyviolation` listener on every page and stage run;
 `infra/scripts/smoke.mjs` checks the headers.
 - Pages `/`, `/about`, `/making`, `/log`, `/c/:code`, `/p/:code` and all 6 stage runs: **no console errors**, and
-  **one CSP report per page load**: `script-src eval` from zod's `allowsEval` probe (`new Function('')` in a
-  try/catch; zod then uses its interpreted path, so behaviour is unchanged). Fix without loosening the CSP:
-  `z.config({ jitless: true })` in `@wwm/schema` (CCR, orchestrator-owned package).
+  (Phase 12) **one CSP report per page load**: `script-src eval` from zod's `allowsEval` probe (`new Function('')` in a
+  try/catch; zod then uses its interpreted path, so behaviour is unchanged).
+- **Phase 12b: fixed.** `@wwm/schema` now calls `z.config({ jitless: true })` (contracts v0.2.7, CCR-12-1), which
+  skips the probe. Production build, `securitypolicyviolation` listener: **0 reports** on `/`, `/c/123456`, `/about`,
+  `/log`, `/making` at 1350 px and 412 px (`evidence/cls-csp-12b.txt`); Lighthouse "Best practices" 100 on `/` and
+  `/c` (was 96). Unit test: `packages/schema/test/limits.test.ts` spies on the `Function` constructor while parsing.
 - The strict policy (`style-src 'self'` without `'unsafe-inline'`, `script-src 'self' 'wasm-unsafe-eval'`) caused
   no other violation, including WebGPU rendering, the builder and physics workers, fonts and textures.
 - Smoke test of the staging config (stats gate on 404, cross-site POST 403, API CSP): 7/7 PASS
@@ -165,14 +219,29 @@ allowed, local Browser Run Chrome, real builder.
 | Default limits (10 builds / hour / IP) | **10 × 202, 40 × 429** `RATE_LIMITED` "at most 10 new builds per hour" | 10 done | 11.4 s / 18.6 s |
 | Per-IP limit raised to 1000 (exercises the browser semaphore, `BROWSER_MAX_CONCURRENCY` = 2) | 50 × 202 | **10 done, 40 × `CAPTURE_TIMEOUT`** | 11.7 s / 19.7 s |
 
-The per-IP limit degrades as designed. The semaphore run exposed a real issue (Phase 07, `pipeline.ts`, not
-changed here because another agent owns it this wave): the 20 s capture budget starts **before** waiting for a
-browser slot, so queued jobs time out with `CAPTURE_TIMEOUT` ("capture exceeded its time budget") instead of
-waiting or failing with `RATE_LIMITED`. With 2 slots and ~4 s per capture, only ~10 of a 50-job burst can
-finish inside 20 s. Fix: start the budget after `gate.acquire()`, and turn a long queue wait into
-`RATE_LIMITED` with a retry hint. In the UI all of these land on the build-error screen with the featured stages
-as alternatives (covered by the e2e test "build failure → fallback screen → curated alternative plays").
-The new global cap (`GLOBAL_BUILD_LIMIT_PER_HOUR`) wasn't reached in this test.
+The per-IP limit degrades as designed. The semaphore run exposed a real issue (Phase 07, `pipeline.ts`): the
+20 s capture budget started **before** waiting for a browser slot, so queued jobs timed out with `CAPTURE_TIMEOUT`
+("capture exceeded its time budget") instead of waiting or failing with `RATE_LIMITED`. With 2 slots and ~4 s per
+capture, only ~10 of a 50-job burst could finish inside 20 s. In the UI all of these land on the build-error screen
+with the featured stages as alternatives (covered by the e2e test "build failure → fallback screen → curated
+alternative plays"). The new global cap (`GLOBAL_BUILD_LIMIT_PER_HOUR`) wasn't reached in this test.
+
+**Phase 12b fix and re-run.** The job now waits for a browser slot first (it stays `queued`; after 45 s without a
+slot it ends with `RATE_LIMITED` "all capture browsers are busy"), and the capture (20 s) and slice-0 (30 s)
+budgets start once the slot is held. A job that fails before `done` also deletes its own `job:<key>` dedupe entry,
+so a retry starts a fresh job. Same machine and command, per-IP limit 1000, `BROWSER_MAX_CONCURRENCY` = 2, plus
+`--retry-failed 5` (re-POST 5 failed URLs right after the burst), run once on the old `pipeline.ts` and once on the
+new one (`evidence/load-builds-semaphore-12b-{before,after}.json`):
+
+| `pipeline.ts` | Job outcomes (50 × 202) | `done` p50 / p95 | Retry of 5 failed URLs |
+|---|---|---|---|
+| before (Phase 12) | 10 done, **40 × `CAPTURE_TIMEOUT`** | 12.3 s / 20.5 s | **5 of 5 got the failed job back** (replayed `CAPTURE_TIMEOUT`) |
+| after (12b) | **27 done**, 23 × `RATE_LIMITED` "all capture browsers are busy", **0 × `CAPTURE_TIMEOUT`** | 25.1 s / 45.8 s | 5 of 5 fresh jobs, **5 done** |
+
+Worker log for the "after" run: queue wait p50 18 s, max 43.5 s; capture itself p50 3.0 s, max 3.6 s (it never came
+near its 20 s budget). Throughput is bounded by the 2 local browser slots (≈ 0.5 captures/s); the 45 s queue limit
+turns the rest into a clear, retryable busy error. On Browser Run the slot count is the account's concurrency
+limit.
 
 ### 7.3 Kill switch
 With KV `kill:capture` set: a cached URL still returns its run (200), a new URL gets `429 RATE_LIMITED`
@@ -188,7 +257,8 @@ node infra/perf/lighthouse.mjs http://localhost:8899                    # §5
 node infra/perf/requests.mjs http://localhost:8899                      # §4 chunk check
 node tests/load/rooms.mjs http://localhost:8899 --rooms 200 --spoof-ips # §7.1
 (cd apps/worker && npx wrangler dev --port 8898 --var DEV_ALLOWED_HOSTS:127.0.0.1:8897)
-node tests/load/builds.mjs burst http://localhost:8898                  # §7.2
+node tests/load/builds.mjs burst http://localhost:8898 --retry-failed 5 # §7.2 (add --var BUILD_LIMIT_PER_HOUR:1000)
 node tests/load/builds.mjs latency http://localhost:8898                # §3 (raise BUILD_LIMIT_PER_HOUR)
 node infra/scripts/bundle-report.mjs                                    # §4
+node infra/perf/transfer.mjs http://localhost:4311                      # §4 12b (vite preview of a build)
 ```

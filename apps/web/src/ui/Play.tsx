@@ -358,7 +358,7 @@ function DisconnectHold() {
   const v = useView();
   const { t } = useTranslation();
   const code = v.room.code;
-  const link = code ? pairingUrl(location.origin, code) : null;
+  const link = code ? pairingUrl(location.origin, code, v.room.pairToken) : null;
   const btn = useRef<HTMLButtonElement>(null);
   useEffect(() => btn.current?.focus(), []);
   return (

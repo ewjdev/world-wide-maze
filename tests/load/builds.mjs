@@ -13,6 +13,9 @@
  * Add `--var BUILD_LIMIT_PER_HOUR:1000` to the Worker to exercise the browser semaphore instead
  * (BROWSER_MAX_CONCURRENCY slots, 45 s wait, then RATE_LIMITED over SSE).
  *
+ * `--retry-failed [k]` (Phase 12b): right after the burst, re-POST up to k (default 5) URLs whose jobs failed and
+ * report whether the Worker handed back the failed job (stale in-flight dedupe) or started a fresh one.
+ *
  * Mode `latency` (task 1): cold and warm build latency for real public URLs, one at a time:
  *   (cd apps/worker && npx wrangler dev --port 8898 --var BUILD_LIMIT_PER_HOUR:1000)
  *   node tests/load/builds.mjs latency http://localhost:8898 [--urls file.txt]
@@ -135,7 +138,10 @@ async function burst() {
   console.log(`fixture site on 127.0.0.1:${port}; ${n} concurrent POSTs to ${base}`);
   const t0 = performance.now();
   const posts = await Promise.all(
-    Array.from({ length: n }, (_, i) => post(`http://127.0.0.1:${port}/?v=${Date.now()}-${i}`)),
+    Array.from({ length: n }, async (_, i) => {
+      const url = `http://127.0.0.1:${port}/?v=${Date.now()}-${i}`;
+      return { ...(await post(url)), url };
+    }),
   );
   const statuses = {};
   for (const p of posts) statuses[p.status] = (statuses[p.status] ?? 0) + 1;
@@ -144,9 +150,33 @@ async function burst() {
   const results = await Promise.all(
     jobs.map(async (p) => {
       const r = await follow(p.body.jobId, 180_000);
-      return { ...r, ms: performance.now() - p.t0 };
+      return { ...r, ms: performance.now() - p.t0, url: p.url, jobId: p.body.jobId };
     }),
   );
+  let retry = null;
+  if (rest.includes('--retry-failed')) {
+    const k = Number(opt('--retry-failed', '5')) || 5;
+    const failed = results.filter((r) => r.outcome !== 'done').slice(0, k);
+    const again = await Promise.all(
+      failed.map(async (r) => {
+        const p2 = await post(r.url);
+        const sameJob = p2.body?.jobId === r.jobId;
+        const f = p2.status === 202 && !sameJob ? await follow(p2.body.jobId, 180_000) : null;
+        return {
+          status: p2.status,
+          sameJob,
+          outcome: f?.outcome ?? (sameJob ? `replayed:${r.outcome}` : null),
+        };
+      }),
+    );
+    const outcomes = {};
+    for (const a of again) outcomes[a.outcome] = (outcomes[a.outcome] ?? 0) + 1;
+    retry = {
+      retried: again.length,
+      sameFailedJobReturned: again.filter((a) => a.sameJob).length,
+      outcomes,
+    };
+  }
   server.close();
   const outcomes = {};
   for (const r of results) outcomes[r.outcome] = (outcomes[r.outcome] ?? 0) + 1;
@@ -170,7 +200,11 @@ async function burst() {
     },
     jobOutcomes: outcomes,
     doneMs: { p50: percentile(doneMs, 0.5), p95: percentile(doneMs, 0.95), max: percentile(doneMs, 1) },
-    errorSamples: results.filter((r) => r.outcome !== 'done').slice(0, 3),
+    errorSamples: results
+      .filter((r) => r.outcome !== 'done')
+      .slice(0, 3)
+      .map(({ url: _u, jobId: _j, ...r }) => r),
+    ...(retry ? { retryFailed: retry } : {}),
   };
   console.log(JSON.stringify(result, null, 2));
   return result;

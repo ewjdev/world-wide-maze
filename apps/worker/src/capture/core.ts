@@ -85,11 +85,36 @@ export interface CoreOptions {
   textureQuality?: number;
 }
 
-/** Removes network APIs that CDP `Fetch` cannot intercept. Runs before any page script, in every frame. */
+/**
+ * Network APIs whose traffic CDP `Fetch` cannot see (sockets, WebRTC, and workers, whose own sockets we
+ * can't see either). `WebSocketStream` leaked from every realm before it was listed (capture-guard tests);
+ * the Direct Sockets classes are listed defensively (Chromium exposes them only to isolated web apps).
+ */
+export const UNGUARDED_APIS = [
+  'WebSocket',
+  'WebSocketStream',
+  'WebTransport',
+  'RTCPeerConnection',
+  'webkitRTCPeerConnection',
+  'Worker',
+  'SharedWorker',
+  'TCPSocket',
+  'TCPServerSocket',
+  'UDPSocket',
+] as const;
+
+/**
+ * Init script for every realm: removes `UNGUARDED_APIS` and disables `window.open` (popups are never
+ * useful to a capture). Playwright's `addInitScript` runs it in every frame and popup of the context,
+ * including a synchronously created about:blank iframe before the parent can touch its `contentWindow`,
+ * srcdoc/data:/blob:/javascript: frames, `<object>`/`<embed>` and cross-site (out-of-process) iframes:
+ * the child-realm tests in capture-guard.test.ts verify each of these against a counting internal server.
+ */
 export const DISABLE_UNGUARDED_APIS = `(() => {
-  for (const k of ['WebSocket', 'WebTransport', 'RTCPeerConnection', 'webkitRTCPeerConnection', 'Worker', 'SharedWorker']) {
+  for (const k of ${JSON.stringify(UNGUARDED_APIS)}) {
     try { Object.defineProperty(globalThis, k, { value: undefined, configurable: false, writable: false }); } catch {}
   }
+  try { Object.defineProperty(globalThis, 'open', { value: function open() { return null; }, configurable: false, writable: false }); } catch {}
 })();`;
 
 /** Enable browser-wide request interception and route every request through `guard`. */

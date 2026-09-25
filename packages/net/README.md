@@ -7,10 +7,13 @@ Owned by Phase 06. Contract types come from `@wwm/schema`; nothing here redeclar
 ## API
 
 **Rooms and connections** (`connection.ts`, `rooms-api.ts`)
-- `createRoom(origin)` → `'123456'` (`POST /api/rooms`), `roomWsUrl(origin, code, role)`, `pairingUrl(origin, code)`, `isRoomCode(s)`.
+- `createRoom(origin)` → `{code, hostToken, pairToken}` (`POST /api/rooms`, validated with the schema's zod), `roomWsUrl(origin, code, role, token?)`, `pairingUrl(origin, code, pairToken?)` → `/c/<code>#p=<pairToken>`, `isRoomCode(s)`, `isRoomToken(s)`.
+- **Pairing secret (contracts v0.2.7, CCR-12-2).** The host always connects with its `hostToken`. The phone's token rides in the pairing URL's **fragment**, so it never reaches the server in the page request or a Referer:
+  - `resolvePairToken(code, location.hash, sessionStorage)`: the `#p=` token wins and is remembered per code in `sessionStorage` (`wwm.pair.<code>`), so reloads and reconnects keep it; otherwise the remembered one; otherwise `null` = the typed-code path (admitted by the relay only while no live controller is connected). `forgetPairToken(code, storage)` after a 4401.
+  - Host: `rememberHostRoom(code, {hostToken, pairToken}, sessionStorage)` / `recallHostRoom(code, location.hash, sessionStorage)` let `/p/<code>` rejoin after a reload; a `#h=<hostToken>&p=<pairToken>` fragment also works (another tab).
 - `HostConnection` / `ControllerConnection` (`{ url, createSocket?, now?, pingIntervalMs?, backoffInitialMs?, backoffMaxMs? }`):
   - `connect()`, `close()`, `reconnectNow()`, `reconnectIfSilent(ms)` (phone unlocked: replace a socket that looks open but went quiet).
-  - Auto-reconnect with exponential backoff (250 ms doubling to 5 s, ±25 % jitter). Close 4404 (room not found), 4409 (replaced by a newer socket of the same role) and 4400 are fatal and emit `error`.
+  - Auto-reconnect with exponential backoff (250 ms doubling to 5 s, ±25 % jitter). Close 4404 (room not found), 4409 (replaced by a newer socket of the same role), 4401 (`unauthorized`: missing or wrong room token) and 4400 are fatal and emit `error`.
   - Events: `state`, `open`, `close`, `error`, `peer(role, connected)`, `message(ControlMessage)` (validated with the schema's zod), `rtt(ms)`, and on the host `input(frame, atMs)`.
   - Answers every `ping` with a `pong`; pings the peer every second and tracks end-to-end RTT in `conn.rtt` (p50/p95).
   - `ControllerConnection.sendInput({tiltX, tiltZ, power, jump, menu})` encodes the 12-byte frame (seq assigned, wraps) and skips frames while the socket is backed up.

@@ -53,10 +53,15 @@ await check('GET /api/curated (kill-switch fallback list)', async () => {
   expect(r.status === 200 && Array.isArray(j.runs), `status ${r.status}`);
   return `${j.runs.length} curated runs`;
 });
-await check('POST /api/rooms → 6-digit code', async () => {
+await check('POST /api/rooms → 6-digit code + tokens', async () => {
   const r = await fetch(`${base}/api/rooms`, { method: 'POST' });
   const j = await r.json();
   expect(r.status === 200 && /^\d{6}$/.test(j.code), `status ${r.status}`);
+  expect(
+    /^[\w-]{22}$/.test(j.hostToken ?? '') && /^[\w-]{22}$/.test(j.pairToken ?? ''),
+    'missing room tokens (v0.2.7)',
+  );
+  expect(r.headers.get('cache-control') === 'no-store', 'room response must be no-store');
   const s = await fetch(`${base}/api/rooms/${j.code}/stats`);
   expect(dev ? s.status === 200 : s.status === 404, `stats gate: ${s.status} (expected ${dev ? 200 : 404})`);
   return `room ${j.code}, stats ${s.status}`;

@@ -53,9 +53,17 @@ export interface StageStore {
     info: { status: 'complete' | 'partial'; timingsMs: Record<string, number> },
   ): Promise<void>;
   cacheRun(cacheKey: string, runId: string): Promise<void>;
+  /**
+   * Phase 12b: forget the in-flight dedupe entry (`job:<cacheKey>`) if it still points at `jobId`, so a retry
+   * after a failure starts a fresh job instead of replaying this one's error.
+   */
+  clearInflightJob(cacheKey: string, jobId: string): Promise<void>;
 }
 
-/** Global cap on concurrent browser sessions. `acquire` throws RATE_LIMITED when it can't get a slot. */
+/**
+ * Global cap on concurrent browser sessions. `acquire` waits for a slot (the job stays `queued`) and throws
+ * RATE_LIMITED, with a retry hint, when it can't get one in time.
+ */
 export interface BrowserGate {
   acquire(): Promise<() => Promise<void>>;
 }
@@ -70,9 +78,12 @@ export interface PipelineDeps {
   store: StageStore;
   gate?: BrowserGate;
   log: Logger;
-  /** Capture budget from capture start (task 3: 20 s). */
+  /**
+   * Capture budget from capture start (task 3: 20 s). Phase 12b: "capture start" is when the job holds a
+   * browser slot, so time spent queued for the browser semaphore never counts against it.
+   */
   captureBudgetMs?: number;
-  /** Slice-0 budget from capture start (E: 2013 used 30 s). */
+  /** Slice-0 budget from capture start, i.e. after the browser slot is acquired (E: 2013 used 30 s). */
   slice0BudgetMs?: number;
   now?: () => Date;
 }
@@ -114,8 +125,9 @@ export async function runBuildJob(
   const timings: Record<string, number> = {};
   const t0 = Date.now();
   const since = (t: number) => Date.now() - t;
-  const captureDeadline = t0 + (deps.captureBudgetMs ?? 20_000);
-  const slice0Deadline = t0 + (deps.slice0BudgetMs ?? 30_000);
+  // Set once a browser slot is held (Phase 12b: queueing for the semaphore is not capture time).
+  let captureDeadline = Number.POSITIVE_INFINITY;
+  let slice0Deadline = Number.POSITIVE_INFINITY;
   const progress = (step: keyof typeof PROGRESS) => emit({ type: 'progress', step, pct: PROGRESS[step] });
   const log = deps.log.child({ jobId: params.jobId, url: params.url });
 
@@ -123,10 +135,16 @@ export async function runBuildJob(
   let runId: string;
   const stageIds: string[] = [];
   try {
-    await progress('capturing');
+    // Wait for a browser slot first (the job stays `queued`; the gate throws RATE_LIMITED if the wait is too
+    // long), and only then start the capture and slice-0 clocks.
+    const tQueue = Date.now();
     const release = deps.gate ? await deps.gate.acquire() : async () => {};
+    timings.queue = since(tQueue);
     const tCap = Date.now();
+    captureDeadline = tCap + (deps.captureBudgetMs ?? 20_000);
+    slice0Deadline = tCap + (deps.slice0BudgetMs ?? 30_000);
     try {
+      await progress('capturing');
       out = await deps.capturer.capture({
         url: params.url,
         deadline: captureDeadline,
@@ -261,7 +279,7 @@ export async function runBuildJob(
     await deps.store.putStage(stage0, { runId, textureKey: textureKeys[1] as string });
     await deps.store.cacheRun(params.cacheKey, runId);
     timings.store = since(tS);
-    timings.slice0 = since(t0);
+    timings.slice0 = since(t0); // includes the queue wait (timings.queue), i.e. what the player waited
     stageIds.push(stage0.stageId);
     log.info('slice 0 ready', { runId, stageId: stage0.stageId, slices: count, timings });
     await emit({ type: 'done', runId, stageIds: [...stageIds] });
@@ -293,7 +311,11 @@ export async function runBuildJob(
       log.error('job failed after done', { error: err.message });
       return null;
     }
-    log.warn('job failed', { code: err.code, error: err.message, ms: since(t0) });
+    log.warn('job failed', { code: err.code, error: err.message, ms: since(t0), queueMs: timings.queue });
+    // Phase 12b: a retry must start a fresh job, not get this failed job's id back from the dedupe entry.
+    await deps.store.clearInflightJob(params.cacheKey, params.jobId).catch((ce: unknown) => {
+      log.warn('could not clear the in-flight entry', { error: String(ce) });
+    });
     await emit({ type: 'error', code: err.code, message: err.message });
     return null;
   }

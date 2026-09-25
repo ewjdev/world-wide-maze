@@ -7,6 +7,11 @@
  * detect a locked phone by silence). Answers host `state`/`haptic`, keeps the screen awake, and
  * reconnects right away when the page becomes visible again (phone unlocked).
  *
+ * Pairing secret (contracts v0.2.7): the page passes the pair token it found in the URL fragment `#p=` or in
+ * sessionStorage (`resolvePairToken`), and every (re)connect presents it. Without one (typed code) the relay
+ * admits the phone only while no other controller is live; a refusal (4401) shows the `unauthorized` screen and
+ * forgets a stale remembered token so "Try again" falls back to the typed-code path.
+ *
  * Diagnostics: every notable event is logged with the `[wwm-controller]` prefix, and `diag()` returns a
  * snapshot (the page exposes it as `window.__wwmController`). The relay's `/api/rooms/:code/stats`
  * mirrors input rate, button presses, `calibrated` and RTT for remote verification.
@@ -18,6 +23,7 @@ import {
   ControllerConnection,
   clampTilt,
   DEFAULT_NEUTRAL_GRAVITY,
+  forgetPairToken,
   indicator,
   type OrientationAngles,
   orientationToTilt,
@@ -35,6 +41,7 @@ export type ControllerScreen =
   | 'connecting'
   | 'not-found'
   | 'replaced'
+  | 'unauthorized'
   | 'enable'
   | 'requesting'
   | 'denied'
@@ -89,6 +96,10 @@ export interface ControllerEnv {
   requestFullscreenAndLock?: () => Promise<unknown>;
   createSocket?: WebSocketFactory;
   log?: (...args: unknown[]) => void;
+  /** v0.2.7: the pair token (from `#p=` or sessionStorage via `resolvePairToken`); null = typed code. */
+  pairToken?: string | null;
+  /** Where the pair token is remembered (sessionStorage); forgotten after a 4401. Defaults to `storage`. */
+  tokenStorage?: Pick<Storage, 'getItem' | 'setItem' | 'removeItem'> | null;
 }
 
 const SEND_INTERVAL_MS = 1000 / 60 - 1;
@@ -132,7 +143,7 @@ export class ControllerSession {
     this.#env = env;
     this.#zero = this.#loadZero();
     this.conn = new ControllerConnection({
-      url: roomWsUrl(env.origin, code, 'controller'),
+      url: roomWsUrl(env.origin, code, 'controller', env.pairToken),
       now: env.now,
       ...(env.createSocket ? { createSocket: env.createSocket } : {}),
     });
@@ -169,8 +180,14 @@ export class ControllerSession {
       }),
       c.on('close', (i) => this.#log(`socket closed code=${i.code} reconnect=${i.willReconnect}`)),
       c.on('error', (e) => {
-        this.#log(`fatal: ${e}`);
-        this.#patch({ screen: e === 'replaced' ? 'replaced' : 'not-found' });
+        this.#log(
+          `fatal: ${e}${e === 'unauthorized' ? (this.#env.pairToken ? ' (pair token refused)' : ' (code only, another phone is connected)') : ''}`,
+        );
+        if (e === 'unauthorized' && this.#env.pairToken)
+          forgetPairToken(this.code, this.#env.tokenStorage ?? this.#env.storage);
+        this.#patch({
+          screen: e === 'replaced' ? 'replaced' : e === 'unauthorized' ? 'unauthorized' : 'not-found',
+        });
       }),
       c.on('peer', (role, connected) => {
         if (role !== 'host') return;
@@ -525,6 +542,7 @@ export class ControllerSession {
     return {
       code: this.code,
       screen: this.#view.screen,
+      paired: this.#env.pairToken ? 'token' : 'code',
       permission: this.#view.permission,
       connection: this.conn.state,
       hostConnected: this.#view.hostConnected,

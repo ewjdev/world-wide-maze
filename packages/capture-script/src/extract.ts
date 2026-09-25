@@ -416,7 +416,11 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
       z: r.z,
       fixed: r.fixed,
     };
-    if (r.lines.length > 0) e.lines = mergeLines(r.lines, r.fontSize ?? 16).map(toRect);
+    // Contract v0.2.7 (CCR-12-3): ≤ 200 line boxes per element (literal: this function runs in the page).
+    if (r.lines.length > 0)
+      e.lines = mergeLines(r.lines, r.fontSize ?? 16)
+        .slice(0, 200)
+        .map(toRect);
     if (r.bg) e.bg = r.bg;
     if (r.text) e.text = r.text;
     if (r.fontSize) e.fontSize = r.fontSize;
@@ -436,7 +440,7 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
   return {
     schema: 'wwm.capture/1',
     url,
-    title: clean(doc.title ?? ''),
+    title: clean(doc.title ?? '').slice(0, 512), // contract v0.2.7: title ≤ 512
     viewport: { width: window.innerWidth, height: window.innerHeight },
     page: { width: pageW, height: pageH },
     backgroundColor: pageBg,

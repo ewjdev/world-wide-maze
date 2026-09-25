@@ -43,6 +43,10 @@ test('the shipped .wasm is byte-identical to the inlined copy (same binary → s
   const inlined = Buffer.from(b64 as string, 'base64');
   const sha = (b: Uint8Array) => createHash('sha256').update(b).digest('hex');
   expect(sha(inlined)).toBe(sha(wasmBytes));
+  // 12b: the web build (apps/web/vite.config.ts `rapierWasmAsset`) swaps exactly this init argument for the
+  // .wasm asset URL; a package upgrade that changes it must be caught here as well as in `vite build`.
+  const initArg = /module_or_path:[\w$]+\.toByteArray\("[A-Za-z0-9+/=]{100000,}"\)\.buffer/g;
+  expect(mjs.match(initArg)).toHaveLength(1);
 });
 
 test('without a module, loading fails like workerd (and the failure is not cached)', async () => {

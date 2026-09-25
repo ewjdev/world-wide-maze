@@ -55,9 +55,17 @@ interface Client {
   next(pred: (m: Record<string, unknown>) => boolean, ms?: number): Promise<Record<string, unknown>>;
 }
 
-function connect(code: string, role: string, answerPings = true): Promise<Client> {
+interface Room {
+  code: string;
+  hostToken: string;
+  pairToken: string;
+}
+
+/** `token`: a string to send, or omitted (typed-code controller / missing host token). */
+function connect(code: string, role: string, token?: string, answerPings = true): Promise<Client> {
   return new Promise((resolve, reject) => {
-    const ws = new NodeWS(`${base.replace(/^http/, 'ws')}/api/rooms/${code}/ws?role=${role}`);
+    const q = token === undefined ? '' : `&token=${encodeURIComponent(token)}`;
+    const ws = new NodeWS(`${base.replace(/^http/, 'ws')}/api/rooms/${code}/ws?role=${role}${q}`);
     ws.binaryType = 'arraybuffer';
     const texts: Record<string, unknown>[] = [];
     const frames: ArrayBuffer[] = [];
@@ -115,13 +123,17 @@ function connect(code: string, role: string, answerPings = true): Promise<Client
   });
 }
 
-async function newRoom(): Promise<string> {
+async function newRoom(): Promise<Room> {
   const res = await fetch(`${base}/api/rooms`, { method: 'POST' });
   expect(res.status).toBe(200);
-  const body = (await res.json()) as { code: string };
+  const body = (await res.json()) as Room;
   expect(body.code).toMatch(/^\d{6}$/);
-  return body.code;
+  return body;
 }
+/** Host with its token. */
+const hostOf = (r: Room, answerPings = true) => connect(r.code, 'host', r.hostToken, answerPings);
+/** Controller that scanned the QR code (pair token). */
+const phoneOf = (r: Room, answerPings = true) => connect(r.code, 'controller', r.pairToken, answerPings);
 
 const until = async (cond: () => boolean, ms = 3000) => {
   const end = Date.now() + ms;
@@ -133,19 +145,23 @@ const until = async (cond: () => boolean, ms = 3000) => {
 
 describe('Room DO relay', () => {
   test('POST /api/rooms allocates distinct 6-digit codes', async () => {
-    const codes = new Set(await Promise.all(Array.from({ length: 5 }, newRoom)));
-    expect(codes.size).toBe(5);
+    const rooms = await Promise.all(Array.from({ length: 5 }, newRoom));
+    expect(new Set(rooms.map((r) => r.code)).size).toBe(5);
+    // v0.2.7: two distinct 128-bit base64url tokens per room, never reused.
+    const tokens = rooms.flatMap((r) => [r.hostToken, r.pairToken]);
+    for (const t of tokens) expect(t).toMatch(/^[A-Za-z0-9_-]{22}$/);
+    expect(new Set(tokens).size).toBe(10);
   });
 
   test('relays binary input and JSON both ways, with peer notifications', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
+    const room = await newRoom();
+    const host = await hostOf(room);
     expect(await host.next((m) => m.t === 'peer')).toEqual({
       t: 'peer',
       role: 'controller',
       connected: false,
     });
-    const ctl = await connect(code, 'controller');
+    const ctl = await phoneOf(room);
     expect(await ctl.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: true });
     expect(await host.next((m) => m.t === 'peer')).toEqual({
       t: 'peer',
@@ -183,13 +199,14 @@ describe('Room DO relay', () => {
     host.ws.close(1000);
   });
 
-  test('a new controller replaces the old one with notice (4409); host sees no disconnect', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
+  test('a new controller with the pair token replaces the old one (4409); host sees no disconnect', async () => {
+    const room = await newRoom();
+    const { code } = room;
+    const host = await hostOf(room);
     await host.next((m) => m.t === 'peer' && m.connected === false);
-    const c1 = await connect(code, 'controller');
+    const c1 = await connect(code, 'controller'); // typed code (no controller yet: allowed)
     await host.next((m) => m.t === 'peer' && m.connected === true);
-    const c2 = await connect(code, 'controller');
+    const c2 = await phoneOf(room);
     // The relay sends Close 4409 at once. (Browsers fire `close` ≤ 2 s later because wrangler dev keeps the
     // TCP connection open after the handshake; undici waits 30 s, so check the state instead.)
     await until(() => c1.ws.readyState !== OPEN);
@@ -203,7 +220,8 @@ describe('Room DO relay', () => {
     c2.ws.send(encodeInput({ seq: 1, power: false, jump: true, menu: false, tiltX: 0, tiltZ: 0 }));
     await until(() => host.frames.length === 1);
     const stats = (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as { log: string[] };
-    expect(stats.log.some((l) => l.includes('controller connected (replaced previous)'))).toBe(true);
+    expect(stats.log.some((l) => l.includes('controller connected by code'))).toBe(true);
+    expect(stats.log.some((l) => l.includes('controller connected by token (replaced previous)'))).toBe(true);
     c2.ws.close(1000);
     host.ws.close(1000);
   });
@@ -212,7 +230,7 @@ describe('Room DO relay', () => {
     const ghost = await connect('100000', 'host').catch(() => null);
     // The upgrade is accepted then closed with an app code so the browser can tell the user.
     if (ghost) expect((await ghost.closed).code).toBe(4404);
-    const code = await newRoom();
+    const { code } = await newRoom();
     const bad = await connect(code, 'spectator').catch(() => null);
     if (bad) expect((await bad.closed).code).toBe(4400);
     const res = await fetch(`${base}/api/rooms/12ab56/ws?role=host`);
@@ -221,14 +239,14 @@ describe('Room DO relay', () => {
   });
 
   test('host reconnect with the same code resumes the room', async () => {
-    const code = await newRoom();
-    const h1 = await connect(code, 'host');
-    const ctl = await connect(code, 'controller');
+    const room = await newRoom();
+    const h1 = await hostOf(room);
+    const ctl = await phoneOf(room);
     await h1.next((m) => m.t === 'peer' && m.connected === true);
     expect(await ctl.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: true });
     h1.ws.close(1000);
     expect(await ctl.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: false });
-    const h2 = await connect(code, 'host');
+    const h2 = await hostOf(room);
     expect(await h2.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'controller', connected: true });
     expect(await ctl.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: true });
     ctl.ws.close(1000);
@@ -236,9 +254,10 @@ describe('Room DO relay', () => {
   });
 
   test('stats endpoint reports input frames and button presses', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
-    const ctl = await connect(code, 'controller');
+    const room = await newRoom();
+    const { code } = room;
+    const host = await hostOf(room);
+    const ctl = await phoneOf(room);
     for (let seq = 1; seq <= 10; seq++) {
       ctl.ws.send(encodeInput({ seq, power: seq > 5, jump: seq === 3, menu: false, tiltX: 0.1, tiltZ: 0.2 }));
     }
@@ -263,9 +282,9 @@ describe('Room DO relay', () => {
   });
 
   test('Phase 12: oversized frames close the socket with 1009', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
-    const ctl = await connect(code, 'controller');
+    const room = await newRoom();
+    const host = await hostOf(room);
+    const ctl = await phoneOf(room);
     ctl.ws.send(new ArrayBuffer(65));
     expect((await ctl.closed).code).toBe(1009);
     host.ws.send(JSON.stringify({ t: 'state', pad: 'x'.repeat(5000) }));
@@ -273,9 +292,10 @@ describe('Room DO relay', () => {
   });
 
   test('Phase 12: a flood beyond the token bucket is dropped, not relayed', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
-    const ctl = await connect(code, 'controller');
+    const room = await newRoom();
+    const { code } = room;
+    const host = await hostOf(room);
+    const ctl = await phoneOf(room);
     for (let seq = 1; seq <= 500; seq++)
       ctl.ws.send(encodeInput({ seq, power: false, jump: false, menu: false, tiltX: 0, tiltZ: 0 }));
     await until(() => host.frames.length >= 290, 5000);
@@ -292,9 +312,10 @@ describe('Room DO relay', () => {
   });
 
   test('keepalive pings measure per-role RTT; pongs to relay pings are not forwarded', async () => {
-    const code = await newRoom();
-    const host = await connect(code, 'host');
-    const ctl = await connect(code, 'controller');
+    const room = await newRoom();
+    const { code } = room;
+    const host = await hostOf(room);
+    const ctl = await phoneOf(room);
     await host.next((m) => m.t === 'ping' && (m.id as number) < 0);
     await ctl.next((m) => m.t === 'ping' && (m.id as number) < 0);
     await new Promise((r) => setTimeout(r, 400));
@@ -312,17 +333,131 @@ describe('Room DO relay', () => {
   test('rooms expire after the idle window with no sockets (code becomes free)', {
     timeout: 20_000,
   }, async () => {
-    const code = await newRoom();
-    const h = await connect(code, 'host');
+    const room = await newRoom();
+    const { code } = room;
+    const h = await hostOf(room);
     h.ws.close(1000);
     await new Promise((r) => setTimeout(r, 500));
     // Still inside the idle window: reconnecting works.
-    const h2 = await connect(code, 'host');
+    const h2 = await hostOf(room);
     expect(await h2.next((m) => m.t === 'peer')).toMatchObject({ connected: false });
     h2.ws.close(1000);
     await new Promise((r) => setTimeout(r, IDLE_MS + 1500));
     expect((await fetch(`${base}/api/rooms/${code}/stats`)).status).toBe(404);
-    const late = await connect(code, 'host');
+    const late = await hostOf(room);
     expect((await late.closed).code).toBe(4404);
+  });
+});
+
+describe('Room DO pairing secret (contracts v0.2.7, CCR-12-2)', () => {
+  const closeCode = async (c: Promise<Client>) => (await (await c).closed).code;
+
+  test('POST /api/rooms is not cacheable (it carries secrets)', async () => {
+    const res = await fetch(`${base}/api/rooms`, { method: 'POST' });
+    expect(res.headers.get('cache-control')).toBe('no-store');
+  });
+
+  test('host needs its token: missing or wrong → 4401; the pair token is not a host token', async () => {
+    const room = await newRoom();
+    expect(await closeCode(connect(room.code, 'host'))).toBe(4401);
+    expect(await closeCode(connect(room.code, 'host', 'A'.repeat(22)))).toBe(4401);
+    expect(await closeCode(connect(room.code, 'host', room.pairToken))).toBe(4401);
+    const h = await hostOf(room);
+    expect(await h.next((m) => m.t === 'peer')).toMatchObject({ connected: false });
+    h.ws.close(1000);
+  });
+
+  test('a malformed token is refused before it reaches the room (HTTP 400)', async () => {
+    const room = await newRoom();
+    // The upgrade fails outright (HTTP 400, see rooms-route.test.ts), so the socket never opens.
+    const opened = await new Promise<boolean>((resolve) => {
+      const ws = new NodeWS(
+        `${base.replace(/^http/, 'ws')}/api/rooms/${room.code}/ws?role=controller&token=not%20a%20token`,
+      );
+      ws.onopen = () => resolve(true);
+      ws.onerror = () => resolve(false);
+      ws.onclose = () => resolve(false);
+    });
+    expect(opened).toBe(false);
+  });
+
+  test('typed code (no token) works while no controller is connected', async () => {
+    const room = await newRoom();
+    const host = await hostOf(room);
+    const ctl = await connect(room.code, 'controller');
+    expect(await ctl.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: true });
+    ctl.ws.send(encodeInput({ seq: 1, power: true, jump: false, menu: false, tiltX: 0, tiltZ: 0 }));
+    await until(() => host.frames.length === 1);
+    ctl.ws.close(1000);
+    host.ws.close(1000);
+  });
+
+  test('ATTACK: a second controller guessing the code cannot replace a connected one', {
+    timeout: 15_000,
+  }, async () => {
+    const room = await newRoom();
+    const host = await hostOf(room);
+    await host.next((m) => m.t === 'peer' && m.connected === false);
+    const phone = await phoneOf(room);
+    await host.next((m) => m.t === 'peer' && m.connected === true);
+    // The legitimate phone streams input (the real controller sends ≥ 4 Hz even before play).
+    let seq = 0;
+    const stream = setInterval(
+      () =>
+        phone.ws.send(
+          encodeInput({ seq: ++seq, power: false, jump: false, menu: false, tiltX: 0, tiltZ: 0 }),
+        ),
+      50,
+    );
+    try {
+      // The attacker knows the 6-digit code: no token, a guessed token, the other role's token… all refused.
+      expect(await closeCode(connect(room.code, 'controller'))).toBe(4401);
+      expect(await closeCode(connect(room.code, 'controller', 'B'.repeat(22)))).toBe(4401);
+      expect(await closeCode(connect(room.code, 'controller', room.hostToken))).toBe(4401);
+      // …and still refused well past the liveness window while the phone streams.
+      await new Promise((r) => setTimeout(r, 3300));
+      expect(await closeCode(connect(room.code, 'controller'))).toBe(4401);
+      // The legitimate phone was never replaced and the host never saw a disconnect or a new controller.
+      expect(phone.ws.readyState).toBe(OPEN);
+      expect(host.texts.some((m) => m.t === 'peer')).toBe(false);
+      const before = host.frames.length;
+      await until(() => host.frames.length > before + 2);
+      const stats = (await (await fetch(`${base}/api/rooms/${room.code}/stats`)).json()) as {
+        counts: { unauthorized: number; replaced: number };
+      };
+      expect(stats.counts).toMatchObject({ unauthorized: 4, replaced: 0 });
+    } finally {
+      clearInterval(stream);
+    }
+    phone.ws.close(1000);
+    host.ws.close(1000);
+  });
+
+  test('a typed-code phone whose socket went silent (locked) can rejoin by code', {
+    timeout: 15_000,
+  }, async () => {
+    const room = await newRoom();
+    const host = await hostOf(room);
+    // Silent: doesn't answer the relay's keepalive pings and sends nothing (a suspended page).
+    const stale = await connect(room.code, 'controller', undefined, false);
+    await host.next((m) => m.t === 'peer' && m.connected === true);
+    expect(await closeCode(connect(room.code, 'controller'))).toBe(4401); // still live (just connected)
+    await new Promise((r) => setTimeout(r, 3300));
+    const again = await connect(room.code, 'controller');
+    await until(() => stale.ws.readyState !== OPEN); // replaced (4409)
+    expect(await again.next((m) => m.t === 'peer')).toEqual({ t: 'peer', role: 'host', connected: true });
+    again.ws.close(1000);
+    host.ws.close(1000);
+  });
+
+  test('the QR phone (pair token) takes over from a typed-code controller', async () => {
+    const room = await newRoom();
+    const host = await hostOf(room);
+    const typed = await connect(room.code, 'controller');
+    const qr = await phoneOf(room);
+    await until(() => typed.ws.readyState !== OPEN);
+    expect(qr.ws.readyState).toBe(OPEN);
+    qr.ws.close(1000);
+    host.ws.close(1000);
   });
 });

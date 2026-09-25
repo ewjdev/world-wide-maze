@@ -2,9 +2,16 @@
  * Room Durable Object (Phase 06): one per 6-digit code, a WebSocket relay between the desktop host and the
  * phone controller (contracts §6).
  *
- * - `claim(code)` (RPC from `POST /api/rooms`) allocates the room; false if it's already live.
- * - `GET …/ws?role=host|controller` upgrades. At most one socket per role: a newcomer replaces the old one,
- *   which is closed with 4409 "replaced". Unknown/expired rooms close with 4404, bad roles with 4400.
+ * - `claim(code, tokens)` (RPC from `POST /api/rooms`) allocates the room; false if it's already live. It stores
+ *   only the SHA-256 digests of the room's `hostToken` and `pairToken` (contracts v0.2.7, CCR-12-2).
+ * - `GET …/ws?role=host|controller&token=…` upgrades. At most one socket per role: a newcomer replaces the old
+ *   one, which is closed with 4409 "replaced". Unknown/expired rooms close with 4404, bad roles with 4400.
+ * - Pairing secret (v0.2.7): the host must present `hostToken`. A controller with the `pairToken` (from the QR
+ *   code / link fragment) is always admitted and may replace a live controller. A controller **without** a token
+ *   (the typed 6-digit code, as in 2013) is admitted only while no *live* controller is connected. A wrong token,
+ *   or a missing one where it's required, closes with 4401. "Live" = an open socket heard from within
+ *   CONTROLLER_LIVE_MS (controllers send ≥ 4 Hz keepalive frames; the host already treats 1.5 s of silence as
+ *   disconnected), so a phone whose old socket went silent (locked, lost network) can rejoin by code.
  * - Binary and text frames are relayed verbatim to the other role. The relay also sends `peer` messages.
  * - Keepalive: every KEEPALIVE_MS (alarm) the relay pings each socket with a negative id and measures RTT
  *   from the pong. N: the 2013 relay had to send ~50 ms filler packets because iOS WebKit didn't set
@@ -22,13 +29,17 @@
 
 import { DurableObject } from 'cloudflare:workers';
 import { RttTracker, StreamStats } from '@wwm/net';
-import { decodeInput, type RoomRole } from '@wwm/schema';
+import { decodeInput, ROOM_CLOSE_CODES, type RoomRole } from '@wwm/schema';
+import { hashRoomToken, roomTokenMatches } from './room-tokens.ts';
 
 export const ROOM_IDLE_EXPIRY_MS = 30 * 60 * 1000;
 export const KEEPALIVE_MS = 5000;
-const CLOSE_BAD_REQUEST = 4400;
-const CLOSE_ROOM_NOT_FOUND = 4404;
-const CLOSE_REPLACED = 4409;
+const CLOSE_BAD_REQUEST = ROOM_CLOSE_CODES.badRequest;
+const CLOSE_UNAUTHORIZED = ROOM_CLOSE_CODES.unauthorized;
+const CLOSE_ROOM_NOT_FOUND = ROOM_CLOSE_CODES.notFound;
+const CLOSE_REPLACED = ROOM_CLOSE_CODES.replaced;
+/** A controller socket counts as live (not replaceable by a typed code) if heard from within this window. */
+export const CONTROLLER_LIVE_MS = 3000;
 const CLOSE_POLICY = 1008;
 const CLOSE_TOO_BIG = 1009;
 
@@ -55,10 +66,20 @@ interface Meta {
   code: string;
   createdAt: number;
   lastActive: number;
+  /** SHA-256 (base64url) of the tokens issued by `POST /api/rooms` (v0.2.7). */
+  hostHash?: string;
+  pairHash?: string;
+}
+
+export interface RoomTokens {
+  hostToken: string;
+  pairToken: string;
 }
 interface Attachment {
   role: RoomRole;
   connectedAt: number;
+  /** How the socket was admitted (diagnostics): with a token, or a typed code (controller only). */
+  auth?: 'token' | 'code';
 }
 
 /** Optional plain-text overrides (tests only; unset in wrangler.jsonc so production uses the defaults). */
@@ -77,7 +98,9 @@ export class Room extends DurableObject<Env> {
   #lastInput: { seq: number; tiltX: number; tiltZ: number; buttons: number; at: number } | null = null;
   #buttons = { power: 0, jump: 0, menu: 0 };
   #prevButtons = 0;
-  #counts = { calibrated: 0, text: 0, state: 0, haptic: 0, connects: 0, replaced: 0 };
+  #counts = { calibrated: 0, text: 0, state: 0, haptic: 0, connects: 0, replaced: 0, unauthorized: 0 };
+  /** Last time each socket was heard from (in memory; empty after hibernation, which implies silence). */
+  #lastSeen = new WeakMap<WebSocket, number>();
   #log: string[] = [];
   #buckets = new WeakMap<WebSocket, Bucket>();
   #keepalives = 0;
@@ -118,12 +141,16 @@ export class Room extends DurableObject<Env> {
     return this.ctx.getWebSockets().length === 0 && now - meta.lastActive >= this.#idleMs;
   }
 
-  /** RPC: allocate this room for `code`. False if it's already allocated and not expired. */
-  async claim(code: string): Promise<boolean> {
+  /** RPC: allocate this room for `code` with its tokens. False if it's already allocated and not expired. */
+  async claim(code: string, tokens: RoomTokens): Promise<boolean> {
     const now = Date.now();
     const meta = await this.#meta();
     if (meta && !this.#expired(meta, now)) return false;
-    await this.ctx.storage.put<Meta>('meta', { code, createdAt: now, lastActive: now });
+    const [hostHash, pairHash] = await Promise.all([
+      hashRoomToken(tokens.hostToken),
+      hashRoomToken(tokens.pairToken),
+    ]);
+    await this.ctx.storage.put<Meta>('meta', { code, createdAt: now, lastActive: now, hostHash, pairHash });
     await this.ctx.storage.setAlarm(now + this.#idleMs);
     this.#code = code;
     this.#note('claimed');
@@ -142,17 +169,28 @@ export class Room extends DurableObject<Env> {
     const meta = await this.#meta();
     const { 0: client, 1: server } = new WebSocketPair();
 
-    if (!isRole(role) || !meta || this.#expired(meta, now)) {
-      // Accept then close with an app code so the browser learns *why* (an HTTP error hides it).
+    // Accept then close with an app code so the browser learns *why* (an HTTP error hides it).
+    const refuse = (code: number, reason: string) => {
       server.accept();
-      if (!isRole(role)) server.close(CLOSE_BAD_REQUEST, 'role must be host or controller');
-      else server.close(CLOSE_ROOM_NOT_FOUND, 'room not found or expired');
+      server.close(code, reason);
       return new Response(null, { status: 101, webSocket: client });
+    };
+    if (!isRole(role)) return refuse(CLOSE_BAD_REQUEST, 'role must be host or controller');
+    // Rooms claimed before v0.2.7 have no token digests: treat them as gone.
+    if (!meta || this.#expired(meta, now) || !meta.hostHash || !meta.pairHash)
+      return refuse(CLOSE_ROOM_NOT_FOUND, 'room not found or expired');
+
+    const auth = await this.#authorize(role, url.searchParams.get('token'), meta, now);
+    if (typeof auth !== 'string') {
+      this.#counts.unauthorized++;
+      this.#note(`${role} refused (${auth.why})`);
+      return refuse(CLOSE_UNAUTHORIZED, auth.reason);
     }
 
     const previous = this.#sockets(role);
     this.ctx.acceptWebSocket(server, [role]);
-    server.serializeAttachment({ role, connectedAt: now } satisfies Attachment);
+    server.serializeAttachment({ role, connectedAt: now, auth } satisfies Attachment);
+    this.#lastSeen.set(server, now);
     this.#counts.connects++;
     for (const old of previous) {
       this.#counts.replaced++;
@@ -166,7 +204,7 @@ export class Room extends DurableObject<Env> {
       this.#input.resetSeq();
       this.#prevButtons = 0;
     }
-    this.#note(`${role} connected${previous.length ? ' (replaced previous)' : ''}`);
+    this.#note(`${role} connected by ${auth}${previous.length ? ' (replaced previous)' : ''}`);
 
     // Tell the newcomer whether its peer is here, and tell the peer about the newcomer.
     const peerHere = this.#sockets(other(role)).length > 0;
@@ -179,6 +217,36 @@ export class Room extends DurableObject<Env> {
     if (alarm === null || alarm > now + this.#keepaliveMs)
       await this.ctx.storage.setAlarm(now + this.#keepaliveMs);
     return new Response(null, { status: 101, webSocket: client });
+  }
+
+  /**
+   * v0.2.7 pairing secret. Host: `hostToken` required. Controller: a valid `pairToken` always passes; no token
+   * passes only while no live controller is connected (typed code); a wrong token never passes.
+   */
+  async #authorize(
+    role: RoomRole,
+    token: string | null,
+    meta: Meta,
+    now: number,
+  ): Promise<'token' | 'code' | { why: string; reason: string }> {
+    const expected = role === 'host' ? meta.hostHash : meta.pairHash;
+    if (token !== null && token !== '') {
+      if (expected && (await roomTokenMatches(token, expected))) return 'token';
+      return { why: 'invalid token', reason: 'invalid room token' };
+    }
+    if (role === 'host') return { why: 'missing host token', reason: 'host token required' };
+    if (this.#liveController(now))
+      return {
+        why: 'code only, a controller is connected',
+        reason: 'a controller is already connected; scan the QR code to switch phones',
+      };
+    return 'code';
+  }
+
+  #liveController(now: number): boolean {
+    return this.#sockets('controller').some(
+      (ws) => now - (this.#lastSeen.get(ws) ?? -Infinity) < CONTROLLER_LIVE_MS,
+    );
   }
 
   #broadcast(role: RoomRole, data: string | ArrayBuffer): void {
@@ -207,6 +275,7 @@ export class Room extends DurableObject<Env> {
     if (!role) return;
     const now = Date.now();
     this.#lastActive = now;
+    this.#lastSeen.set(ws, now);
     if (!this.#admit(ws, role, message, now)) return;
     if (typeof message === 'string') {
       // Only the relay's own keepalive pongs (negative id) are consumed; everything else is relayed verbatim.

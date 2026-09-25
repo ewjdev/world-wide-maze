@@ -83,12 +83,18 @@ async function runRoom(i) {
     return null;
   }
   stats.createOk++;
-  const { code } = await res.json();
+  const { code, hostToken, pairToken } = await res.json();
   let host;
   let ctl;
   try {
-    host = await open(`${wsBase}/api/rooms/${code}/ws?role=host`, spoof ? headers : undefined);
-    ctl = await open(`${wsBase}/api/rooms/${code}/ws?role=controller`, spoof ? headers : undefined);
+    host = await open(
+      `${wsBase}/api/rooms/${code}/ws?role=host&token=${hostToken}`,
+      spoof ? headers : undefined,
+    );
+    ctl = await open(
+      `${wsBase}/api/rooms/${code}/ws?role=controller&token=${pairToken}`,
+      spoof ? headers : undefined,
+    );
     stats.socketsOk += 2;
   } catch {
     stats.socketFail++;

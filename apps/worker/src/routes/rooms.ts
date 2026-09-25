@@ -1,7 +1,10 @@
 /**
  * Room routes (Phase 06, contracts §7):
- * - `POST /api/rooms` → `{code}`: a random unused 6-digit code (retries on collision).
- * - `GET /api/rooms/:code/ws?role=host|controller` → WebSocket upgrade, forwarded to the Room DO.
+ * - `POST /api/rooms` → `{code, hostToken, pairToken}`: a random unused 6-digit code (retries on collision) and
+ *   two fresh 128-bit tokens (contracts v0.2.7, CCR-12-2). The Room DO keeps only their digests.
+ * - `GET /api/rooms/:code/ws?role=host|controller[&token=…]` → WebSocket upgrade, forwarded to the Room DO,
+ *   which checks the token (4401 when it's wrong or required and missing). The route only rejects tokens that
+ *   can't be well-formed (400), so the DO never hashes arbitrary junk.
  * - `GET /api/rooms/:code/stats` → relay diagnostics (dev / device verification; additive, see CCR).
  *   Phase 12 (contracts v0.2.3): only when the `ROOM_STATS` var is "1" (local dev and tests); 404 otherwise,
  *   so staging and production never expose it.
@@ -11,6 +14,7 @@
  * No `cloudflare:*` imports, so this runs under plain Vitest with a fake `ROOM` namespace.
  */
 import type { CreateRoomResponse } from '@wwm/schema';
+import { newRoomToken, TOKEN_RE } from '../room-tokens.ts';
 import { clientIp, crossSiteRefused, isCrossSite } from '../security.ts';
 
 export const ROOM_CODE_ATTEMPTS = 12;
@@ -19,7 +23,10 @@ const CODE_RE = /^\d{6}$/;
 /** What we need from the ROOM binding (`DurableObjectNamespace<Room>` in production). */
 export interface RoomNamespaceLike {
   idFromName(name: string): unknown;
-  get(id: never): { claim(code: string): Promise<boolean>; fetch(req: Request): Promise<Response> };
+  get(id: never): {
+    claim(code: string, tokens: { hostToken: string; pairToken: string }): Promise<boolean>;
+    fetch(req: Request): Promise<Response>;
+  };
 }
 
 /** 6 digits, 100000–999999 (no leading zero, so it reads and types unambiguously). */
@@ -35,6 +42,8 @@ function cryptoRandom(): number {
 
 export interface RoomsRouteOptions {
   random?: () => number;
+  /** Token source (tests); default `newRoomToken` (128 random bits). */
+  token?: () => string;
 }
 
 /** The subset of the Rate Limiting binding we use. */
@@ -76,10 +85,15 @@ export async function handleRooms(
     if (request.method !== 'POST') return Response.json({ error: 'method not allowed' }, { status: 405 });
     if (isCrossSite(request)) return crossSiteRefused();
     if (!(await allowed(env.ROOM_CREATE_LIMITER, `room-create:${ip}`))) return rateLimited();
+    const token = opts.token ?? newRoomToken;
+    const tokens = { hostToken: token(), pairToken: token() };
     for (let i = 0; i < ROOM_CODE_ATTEMPTS; i++) {
       const code = randomRoomCode(opts.random);
-      if (await stub(code).claim(code)) {
-        return Response.json({ code } satisfies CreateRoomResponse);
+      if (await stub(code).claim(code, tokens)) {
+        // The tokens are secrets: never cache this response.
+        return Response.json({ code, ...tokens } satisfies CreateRoomResponse, {
+          headers: { 'cache-control': 'no-store' },
+        });
       }
     }
     return Response.json({ error: 'no free room code, try again' }, { status: 503 });
@@ -96,6 +110,9 @@ export async function handleRooms(
     if (request.headers.get('Upgrade')?.toLowerCase() !== 'websocket')
       return new Response('expected a WebSocket upgrade', { status: 426 });
     if (!(await allowed(env.ROOM_WS_LIMITER, `room-ws:${ip}`))) return rateLimited();
+    const token = url.searchParams.get('token');
+    if (token !== null && token !== '' && !TOKEN_RE.test(token))
+      return Response.json({ error: 'malformed room token' }, { status: 400 });
   }
   return stub(code).fetch(request);
 }

@@ -436,7 +436,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       await waitPhase(host, 'pairing');
       const code = ((await host.getByTestId('pair-code').textContent()) ?? '').replace(/\s/g, '');
       expect(code).toMatch(/^\d{6}$/);
-      expect(await host.getByTestId('pair-qr').getAttribute('data-text')).toBe(`${base}/c/${code}`);
+      // v0.2.7: the QR code carries the pairing secret in the fragment.
+      const qr = (await host.getByTestId('pair-qr').getAttribute('data-text')) ?? '';
+      expect(qr).toMatch(new RegExp(`^${base}/c/${code}#p=[A-Za-z0-9_-]{22}$`));
 
       const ctx = await browser.newContext({ ...devices['iPhone 15 Pro'] });
       await ctx.addInitScript(() => {
@@ -460,9 +462,19 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       });
       phone = await ctx.newPage();
       watch(phone, 'phone');
-      await phone.goto(`${base}/c/${code}`);
+      await phone.goto(qr);
       await host.getByText('Connected!').waitFor({ timeout: 10_000 });
+      // The token is kept in sessionStorage and removed from the address bar.
+      expect(phone.url()).toBe(`${base}/c/${code}`);
       await waitPhase(host, 'calibrate', 10_000);
+
+      // Someone else types the 6-digit code: refused (4401) while this phone is connected.
+      const intruderCtx = await browser.newContext({ ...devices['iPhone 15 Pro'] });
+      const intruder = await intruderCtx.newPage();
+      await intruder.goto(`${base}/c/${code}`);
+      await intruder.getByTestId('unauthorized').waitFor({ timeout: 10_000 });
+      await intruderCtx.close();
+      expect(await host.evaluate(() => window.__wwmGame?.getView().room.controllerConnected)).toBe(true);
       await phone.getByTestId('enable-tilt').tap();
       await waitPhase(host, 'select', 20_000); // the phone's `calibrated` advances the host
       expect((await host.evaluate(() => window.__wwmGame?.getView().inputMode)) ?? '').toBe('phone');
