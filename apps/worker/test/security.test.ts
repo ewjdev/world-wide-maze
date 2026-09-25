@@ -86,6 +86,7 @@ describe('rate-limit keys and cross-site refusal', () => {
     expect(rateLimitKey('2001:db8:1:2:aaaa:bbbb:cccc:dddd')).toBe('2001:db8:1:2::/64');
     expect(rateLimitKey('2001:DB8:0001:0002::1')).toBe('2001:db8:1:2::/64');
     expect(rateLimitKey('2001:db8::1')).toBe('2001:db8:0:0::/64');
+    expect(rateLimitKey('::ffff:203.0.113.7')).toBe('203.0.113.7');
     expect(clientIp(new Request('http://x/'))).toBe('local');
     expect(clientIp(new Request('http://x/', { headers: { 'cf-connecting-ip': '2001:db8:1:2::9' } }))).toBe(
       '2001:db8:1:2::/64',
@@ -116,6 +117,11 @@ describe('IP hashes', () => {
     expect(ipHashSecret({ IP_HASH_SALT: 'x'.repeat(32) })).toBe('x'.repeat(32));
     expect(ipHashSecret({ IP_HASH_SALT: 'short' })).toBe(ipHashSecret({}));
   });
+  test('deployed environments fail closed without the secret', () => {
+    expect(ipHashSecret({ WWM_ENV: 'production' })).toBeNull();
+    expect(ipHashSecret({ WWM_ENV: 'staging', IP_HASH_SALT: 'short' })).toBeNull();
+    expect(ipHashSecret({ WWM_ENV: 'production', IP_HASH_SALT: 'y'.repeat(32) })).toBe('y'.repeat(32));
+  });
 });
 
 describe('telemetry ingest', () => {
@@ -143,6 +149,11 @@ describe('telemetry ingest', () => {
       { event: 'build_failed' },
     ]);
     expect(sanitizeTelemetry(null)).toEqual([]);
+    expect(
+      sanitizeTelemetry({
+        events: [{ name: 'client_error', kind: 'TypeError', message: 'at https://x.test/a' }],
+      }),
+    ).toEqual([{ event: 'client_error', kind: 'TypeError' }]);
     expect(sanitizeTelemetry({ events: Array(80).fill({ name: 'title' }) })).toHaveLength(50);
   });
 });
@@ -168,6 +179,7 @@ describe('deploy config (wrangler.jsonc)', () => {
     expect(env.vars.DEV_ALLOWED_HOSTS).toBe('');
     expect(env.vars.TELEMETRY_INGEST).toBe('0');
     expect(env.vars.CAPTURE_BACKEND).toBe('browser-run');
+    expect(env.vars.WWM_ENV).toBe(name);
     // every top-level var is redeclared (vars are not inherited by environments)
     expect(Object.keys(env.vars).sort()).toEqual(Object.keys(cfg.vars).sort());
     expect(env.ratelimits.map((r) => r.name).sort()).toEqual([

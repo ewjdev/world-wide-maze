@@ -207,7 +207,13 @@ scoresRoutes.post('/', async (c) => {
   if (!rl.ok)
     return errorResponse(new ServiceError('RATE_LIMITED', 'too many score submissions', rl.retryAfterSec));
 
-  const ipHash = await hashIp(c.get('ip'), ipHashSecret(c.env as { IP_HASH_SALT?: string }, log));
+  const secret = ipHashSecret(c.env as { IP_HASH_SALT?: string; WWM_ENV?: string }, log);
+  if (!secret)
+    return Response.json(
+      { error: 'unavailable', message: 'score submission is temporarily unavailable' },
+      { status: 503, headers: { 'cache-control': 'no-store' } },
+    );
+  const ipHash = await hashIp(c.get('ip'), secret);
   const now = new Date().toISOString();
 
   if (req.kind === 'stage') {

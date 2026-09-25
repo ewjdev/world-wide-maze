@@ -310,13 +310,26 @@ export function replayMatches(claimed: number, r: ReplayScore): boolean {
 export const DEV_IP_HASH_SALT = 'wwm-dev-only-ip-hash-salt';
 
 let warnedNoSalt = false;
-/** The HMAC key for IP hashes: the `IP_HASH_SALT` secret, else the dev default (with one warning). */
+/**
+ * The HMAC key for IP hashes: the `IP_HASH_SALT` secret, else the dev default (with one warning). Returns null
+ * in a deployed environment (`WWM_ENV` = staging/production) without the secret: callers must then refuse to
+ * store hashes rather than fall back to the public default.
+ */
 export function ipHashSecret(
-  env: { IP_HASH_SALT?: string },
-  log?: { warn(msg: string, f?: Record<string, unknown>): void },
-): string {
+  env: { IP_HASH_SALT?: string; WWM_ENV?: string },
+  log?: {
+    warn(msg: string, f?: Record<string, unknown>): void;
+    error?(msg: string, f?: Record<string, unknown>): void;
+  },
+): string | null {
   const s = env.IP_HASH_SALT;
   if (s && s.length >= 16) return s;
+  if (env.WWM_ENV === 'staging' || env.WWM_ENV === 'production') {
+    (log?.error ?? log?.warn)?.(
+      'IP_HASH_SALT secret missing in a deployed environment; refusing to hash IPs',
+    );
+    return null;
+  }
   if (!warnedNoSalt) {
     warnedNoSalt = true;
     log?.warn('IP_HASH_SALT is not set (or shorter than 16 chars); using the dev default');

@@ -116,9 +116,11 @@ export function clientIp(req: Request): string {
   return ip ? rateLimitKey(ip) : 'local';
 }
 
-/** IPv4 as is; IPv6 → its /64 prefix (`2001:db8:1:2::/64`). */
+/** IPv4 as is (also when IPv4-mapped); IPv6 → its /64 prefix (`2001:db8:1:2::/64`). */
 export function rateLimitKey(ip: string): string {
   if (!ip.includes(':')) return ip;
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip);
+  if (mapped?.[1]) return mapped[1]; // IPv4-mapped IPv6 → the IPv4 address
   const [head = '', tail = ''] = ip.toLowerCase().split('::');
   const h = head ? head.split(':') : [];
   const t = tail ? tail.split(':') : [];

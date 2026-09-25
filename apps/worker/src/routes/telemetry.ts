@@ -8,6 +8,7 @@
  */
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { createLogger } from '../log.ts';
 import { BodyTooLargeError, MAX_TELEMETRY_BYTES, readJsonCapped, tooLarge } from '../security.ts';
 import { sanitizeTelemetry } from './telemetry-rules.ts';
 
@@ -22,7 +23,8 @@ telemetryRoutes.post('/t', async (c) => {
     if (e instanceof BodyTooLargeError) return tooLarge(e);
     throw e;
   }
-  const { log } = c.get('services');
+  // No request id / cf-ray on these lines: telemetry events must not be joinable with request logs.
+  const log = createLogger({ svc: 'wwm-telemetry' });
   for (const e of sanitizeTelemetry(body)) log.info('telemetry', e);
   return c.body(null, 204);
 });

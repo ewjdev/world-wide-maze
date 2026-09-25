@@ -263,6 +263,7 @@ export class Room extends DurableObject<Env> {
     }
     b.tokens = Math.min(RATE_BURST, b.tokens + ((now - b.at) / 1000) * RATE_PER_SEC);
     b.at = now;
+    if (b.tokens >= RATE_BURST) b.dropped = 0; // a full bucket forgives past overruns (only sustained floods kick)
     if (b.tokens >= 1) {
       b.tokens -= 1;
       return true;

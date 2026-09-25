@@ -33,7 +33,9 @@ Then:
    `namespace_id`s (7101–7203) only need to be unique per account.
 2. Production domain: uncomment `routes` in `env.production` with your domain (`custom_domain: true` creates the
    DNS record and certificate). HTTPS is required: iOS only grants motion-sensor access on secure origins.
-3. `node infra/scripts/check-deploy-config.mjs staging` must print `ok`.
+3. `node infra/scripts/check-deploy-config.mjs staging` must print `ok`, and
+   `pnpm exec wrangler secret list --env staging` must list `IP_HASH_SALT` (deployed envs answer score
+   submissions with 503 while it's missing, rather than hashing IPs with the public dev default).
 4. First deploy by hand, from a clean `main`: `pnpm --filter @wwm/web build && cd apps/worker && pnpm exec wrangler deploy --env staging`,
    then `node infra/scripts/smoke.mjs https://wwm-staging.<subdomain>.workers.dev`.
 5. Seed the curated runs (Phase 10 `content/scripts/curate.mjs`, after the user approves the list).

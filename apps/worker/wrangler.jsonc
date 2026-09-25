@@ -37,6 +37,8 @@
     // Phase 12 kill switch: "0" refuses new captures (cached runs and curated stages still play). The runtime
     // switch without a redeploy is the KV key `kill:capture` (docs/launch/runbook.md).
     "CAPTURE_ENABLED": "1",
+    // Phase 12: "development" | "staging" | "production". Deployed envs fail closed on missing secrets.
+    "WWM_ENV": "development",
     // Phase 12 (contracts v0.2.3): "1" exposes GET /api/rooms/:code/stats. Dev/test ONLY; "0" in staging/prod.
     "ROOM_STATS": "1",
     // Phase 12: "1" accepts client telemetry at POST /api/t (logged, never stored). Off until the user approves.
@@ -107,6 +109,7 @@
         "CAPTURE_SIDECAR_URL": "",
         "DEV_ALLOWED_HOSTS": "",
         "DOH_URL": "https://cloudflare-dns.com/dns-query",
+        "WWM_ENV": "staging",
         "BUILD_LIMIT_PER_HOUR": "10",
         "GLOBAL_BUILD_LIMIT_PER_HOUR": "120",
         "BROWSER_MAX_CONCURRENCY": "2",
@@ -163,6 +166,7 @@
         "CAPTURE_SIDECAR_URL": "",
         "DEV_ALLOWED_HOSTS": "",
         "DOH_URL": "https://cloudflare-dns.com/dns-query",
+        "WWM_ENV": "production",
         "BUILD_LIMIT_PER_HOUR": "10",
         "GLOBAL_BUILD_LIMIT_PER_HOUR": "600",
         "BROWSER_MAX_CONCURRENCY": "2",
