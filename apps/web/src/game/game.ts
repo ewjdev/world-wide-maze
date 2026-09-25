@@ -9,7 +9,7 @@
  *
  * Labels: E = evidenced 2013 behaviour, R = reconstructed, N = new (see docs/reference/fidelity-spec.md).
  */
-import { createEngine, type Engine } from '@wwm/engine';
+import { createEngine, type Engine, type QualitySetting } from '@wwm/engine';
 import {
   GamepadInputSource,
   type HostConnection,
@@ -215,6 +215,11 @@ export interface GameTestHooks {
   skipIntro?: boolean;
   /** Measurement (08b): keep the free-running physics worker even with an injected replay. */
   forceWorker?: boolean;
+  /**
+   * Pin the engine's quality tier instead of the auto ladder. CI runners draw WebGL2 on the CPU (SwiftShader),
+   * so their e2e tests pin 'low' to leave CPU for the sim and the other tests (apps/web/test/browser-env.ts).
+   */
+  quality?: QualitySetting;
 }
 
 export interface GameOptions {
@@ -488,7 +493,7 @@ export class Game {
     try {
       const engine = await createEngine({
         canvas,
-        quality: 'auto',
+        quality: this.#opts.test?.quality ?? 'auto',
         reducedMotion: this.#opts.reducedMotion,
         forceWebGL: this.#opts.forceWebGL,
         pixelLook: this.#view.pixelLook,

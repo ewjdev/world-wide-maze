@@ -24,7 +24,9 @@ import {
   startFrameBypassSite,
 } from './helpers/frame-bypass-site.ts';
 
-describe.skipIf(!HAS_CHROMIUM)('local Chromium capture + SSRF guard', () => {
+// Each capture has a 20 s budget (and the first one launches Chromium), so the tests get more than Vitest's
+// default 5 s: on a busy CI runner the long-page capture alone took over 5 s.
+describe.skipIf(!HAS_CHROMIUM)('local Chromium capture + SSRF guard', { timeout: 30_000 }, () => {
   let internal: TestServer;
   let site: TestServer;
   let capturer: LocalChromiumCapturer;

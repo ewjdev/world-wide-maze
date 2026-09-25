@@ -34,7 +34,14 @@ import { type Browser, type BrowserContext, chromium, devices, type Page } from 
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { finishStage, SMALL_CREDIT_DELAY_SEC } from '../src/game/rules.ts';
-import { browserEnv, CHROMIUM_ARGS, EXPECTED_BACKEND, IN_CI, SOFTWARE_GL_NOISE } from './browser-env.ts';
+import {
+  browserEnv,
+  CHROMIUM_ARGS,
+  CI_HOOKS,
+  EXPECTED_BACKEND,
+  IN_CI,
+  SOFTWARE_GL_NOISE,
+} from './browser-env.ts';
 
 const HAS_CHROMIUM = existsSync(chromium.executablePath()) || !!process.env.CI;
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -97,11 +104,14 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
   async function desk(hooks: Record<string, unknown>, extra?: (ctx: BrowserContext) => Promise<void>) {
     const ctx = await browser.newContext({ viewport: { width: 1440, height: 900 } });
     await browserEnv(ctx);
-    await ctx.addInitScript((h) => {
-      localStorage.setItem('wwm.howtoSeen', '1');
-      localStorage.setItem('wwm.tutorialDone', '1');
-      (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = h;
-    }, hooks);
+    await ctx.addInitScript(
+      (h) => {
+        localStorage.setItem('wwm.howtoSeen', '1');
+        localStorage.setItem('wwm.tutorialDone', '1');
+        (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = h;
+      },
+      { ...CI_HOOKS, ...hooks },
+    );
     await extra?.(ctx);
     const page = await ctx.newPage();
     watch(page, 'host');

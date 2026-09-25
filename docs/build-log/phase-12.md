@@ -288,3 +288,105 @@ None.
 - The iPhone/Android pairing flow with the new QR fragment has not been tried on physical phones 👤.
 - Unchanged from Phase 12: everything that needs the user (deploy, resources, legal, curated approval, device
   matrix, staging load tests).
+
+# CI on GitHub runners
+
+- **Agent:** Claude Opus 5.5 (1M context), a Claude Code sub-agent in an isolated git worktree, branch
+  `fix/ci-runners` (from `launch/config-legal-story`), draft PR #2. It pushed to that branch only, to get real CI
+  runs.
+- **Date:** 2026-09-25 ~19:00Z.
+
+## Instructions received (summary)
+Make `pnpm check` pass on GitHub-hosted runners. It passed on the M5 Mac, but CI had failed on every run,
+main included. The fix had four parts:
+- make the engine fall back to WebGL2 on a WebGPU device loss, quietly;
+- make the e2e tests deterministic in CI, keep the "no console errors" checks strict, and keep one local
+  WebGPU assertion;
+- scale the perf budget on CI, as Phase 05 did;
+- find out whether the EPIPE/ECONNRESET lines were a flake.
+
+The public engine API had to stay the same, and nothing could be pushed to main or `launch/config-legal-story`.
+
+## What failed on the runners (run 36176284471)
+- **12 browser e2e tests** (game ×7, extension ×3, portal ×1) failed with
+  `THREE.WebGPURenderer: WebGPU Device Lost … Reason: unknown`, a warning
+  `A valid external Instance reference no longer exists`, and a pageerror `Instance dropped in popErrorScope`.
+  - The runners have no GPU. With `--enable-unsafe-webgpu`, Chromium offers a software WebGPU adapter that loses its
+    device part-way through a page.
+  - three.js r186 has no recovery from that. It logs an `error`, stops drawing, and leaves the
+    `device.popErrorScope()` promises in `WebGPUPipelineUtils` without a `catch`, so they become unhandled
+    rejections.
+  - The gameplay assertions passed, because physics does not need the renderer. Only the console checks failed.
+  - The error counts (11, 22, 33 …) grow because each suite's `problems` array is shared across its tests, so
+    one test's messages show up in every later test.
+- **stage-builder** `wikipedia-article` whole-page build took 2906 ms against the 1500 ms budget. The runner has
+  2–4 vCPUs and runs every Vitest project in parallel. The same build takes 372 ms on the M5.
+
+## What was built
+**Engine: WebGPU → WebGL2 fallback** (`packages/engine/src/backend.ts` new, `engine.ts`). The public API is
+unchanged.
+- **No `navigator.gpu`:** WebGL2 is chosen up front with no log. This is a normal browser, not a failure.
+- **No adapter or device at startup:** three's own fallback runs and logs its single warning. The failure is
+  remembered for the page, so later engines (e.g. the game remounting on a route change) start on WebGL2 without
+  another warning.
+- **Device lost, at startup or mid-session:**
+  - The engine's handler replaces three's error log with one `[@wwm/engine] WebGPU device lost (…); continuing
+    on WebGL2.` warning.
+  - `frame()` keeps advancing state but skips drawing while the engine recreates the renderer.
+  - The new renderer is `forceWebGL` and draws on a fresh canvas with the same attributes. The fresh canvas takes
+    the old one's place in the DOM, because a canvas that had a `webgpu` context can never get a `webgl2` one.
+  - The engine keeps the scene, the loaded stage, the post nodes and all per-frame state. Only the
+    `RenderPipeline` and node clock are rebuilt. The pipelines are compiled, then drawing resumes, and the run
+    continues where it was.
+  - A loss during `createEngine` is recovered before it returns.
+  - `engine.dispose()` removes the replacement canvas.
+- **`popErrorScope` after a loss:** a rejection now resolves to `null` ("no error", which is what the spec gives
+  for a lost device), so there are no unhandled rejections. Real validation errors still come through.
+- **WebGL2 context loss:** there is nothing left to fall back to, so it gets one warning instead of three's error.
+
+**Tests**
+- `apps/web/test/browser-env.ts` (new) sets up both environments:
+  - **Locally:** the GPU flags as before, and the engine must report `webgpu`.
+  - **CI:** the pages run as a browser without WebGPU (`navigator.gpu` is deleted by an init script before any page
+    script), and the engine must report `webgl2`.
+  - It is used by `game.e2e` and `portal.e2e`. The extension e2e inlines the same few lines, because it lives in
+    another package.
+- **New local-only e2e** (`game.e2e`): during a run, the test destroys the real WebGPU device and delivers the loss
+  the way a GPU reset does. It then checks that:
+  - the backend switches to `webgl2`;
+  - the new renderer keeps drawing;
+  - the sim keeps ticking in the `play` phase;
+  - there is still exactly one game canvas;
+  - exactly one `[@wwm/engine]` warning and no other console message or pageerror appears.
+
+  The test cannot run in CI, which has no WebGPU. Against the old engine it fails: three logs the error, and the
+  backend never changes.
+- **`packages/engine/test/backend.test.ts`** (new): unit tests for the backend choice, the one-warning rule, and
+  the `popErrorScope` guard.
+- **One CI-only console exception:** with no GPU, Chromium composites in software and reads every WebGL frame
+  back.
+  - ANGLE reports this as `GL Driver Message (OpenGL, Performance, …): GPU stall due to ReadPixels`, four times per
+    context.
+  - A bare `gl.clear()` loop in the same Chromium produces it, so it comes from the environment, not the app.
+  - `SOFTWARE_GL_NOISE` ignores exactly that performance message. GL errors, the engine's own warnings and all
+    pageerrors still fail the tests.
+- **Perf:** `stage-builder` keeps the 1.5 s budget locally. CI gets `CI_PERF_FACTOR = 4` (6 s), which follows the
+  Phase 05 physics perf test (3 ms locally, 8 ms in CI). The test is kept.
+- **Flake fixed:** the extension e2e read the bookmarklet's `href` right after navigation. `MazifyPage` sets that
+  `href` from an effect (it is `/mazify` until then), so under load the test read the placeholder. Seen locally
+  when three e2e files ran in parallel. The test now polls for `javascript:`.
+
+## EPIPE / ECONNRESET
+These are harmless. The log lines are Vite's `ws proxy error` / `ws proxy socket error`, which the dev-server
+`/api` WebSocket proxy logs to stderr.
+- **EPIPE** came during the phone pairing test, which passed. The browser closes a socket while the proxy is still
+  writing to it. Causes include React StrictMode's double mount, which closes the first socket (the known
+  `DEV_NOISE`), the rejected "intruder" phone, and closing contexts.
+- **ECONNRESET** came in `afterAll`, when `browser.close()` resets the proxied sockets that were still open.
+
+No assertion depends on these lines, and they do not happen in production (no Vite proxy). Nothing was changed.
+
+## Test evidence
+- Local (M5 Max, WebGPU): `pnpm check` green, 71 files passed and 2 skipped, 953 tests passed and 13 skipped.
+  The device-loss e2e passes.
+- Local in CI mode (`CI=1`, WebGL2 on SwiftShader): the game, portal and extension e2e suites pass.

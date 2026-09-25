@@ -17,7 +17,7 @@ import { computeRunId, type StageData, validateStage } from '@wwm/schema';
 import { type Browser, chromium, type Page, type Route } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { browserEnv, CHROMIUM_ARGS } from './browser-env.ts';
+import { browserEnv, CHROMIUM_ARGS, CI_HOOKS } from './browser-env.ts';
 
 const HAS_CHROMIUM = existsSync(chromium.executablePath()) || !!process.env.CI;
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -132,15 +132,16 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
   async function open(online: boolean) {
     const ctx = await browser.newContext({ viewport: { width: 1280, height: 800 } });
     await browserEnv(ctx);
-    await ctx.addInitScript(() => {
+    await ctx.addInitScript((ci) => {
       localStorage.setItem('wwm.howtoSeen', '1');
       localStorage.setItem('wwm.tutorialDone', '1');
       (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = {
+        ...ci,
         skipIntro: true,
         noAutoPause: true,
         timeScale: 2,
       };
-    });
+    }, CI_HOOKS);
     const page = await ctx.newPage();
     page.on('pageerror', (e) => problems.push(`[pageerror] ${e.message}`));
     const posts = await api(page, online);

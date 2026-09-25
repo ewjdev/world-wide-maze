@@ -24,6 +24,13 @@ export const CHROMIUM_ARGS = IN_CI
 export const SOFTWARE_GL_NOISE =
   /GL Driver Message \(OpenGL, Performance, [^)]*\): GPU stall due to ReadPixels/;
 
+/**
+ * Game test hooks for CI: without a GPU, SwiftShader draws every frame on the CPU the tests also run on (at tier 0
+ * a full CI run took 610 s instead of ~220 s, and timing-based tests starved). The engine's own 'low' tier (glow,
+ * env map and FXAA off, render scale 0.7; what the auto ladder picks on a slow device) keeps that in check.
+ */
+export const CI_HOOKS: { quality?: 'low' } = IN_CI ? { quality: 'low' } : {};
+
 /** The backend `engine.stats().backend` must report. */
 export const EXPECTED_BACKEND: 'webgpu' | 'webgl2' = IN_CI ? 'webgl2' : 'webgpu';
 

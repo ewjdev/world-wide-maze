@@ -164,16 +164,18 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
       await ctx.addInitScript(() => {
         delete (Navigator.prototype as { gpu?: unknown }).gpu;
       });
-    await ctx.addInitScript(() => {
+    await ctx.addInitScript((ci) => {
       if (location.port && location.hostname === 'localhost') {
         localStorage.setItem('wwm.howtoSeen', '1');
         localStorage.setItem('wwm.tutorialDone', '1');
         (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = {
+          // CI: the engine's 'low' tier, so software WebGL2 leaves CPU for the sim (apps/web/test/browser-env.ts)
+          ...(ci ? { quality: 'low' } : {}),
           noAutoPause: true,
           skipIntro: true,
         };
       }
-    });
+    }, IN_CI);
     sw = ctx.serviceWorkers()[0] ?? (await ctx.waitForEvent('serviceworker'));
     extId = new URL(sw.url()).host;
   }, 180_000);
