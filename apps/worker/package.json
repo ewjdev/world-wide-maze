@@ -5,16 +5,25 @@
   "type": "module",
   "description": "Cloudflare Worker: capture/stage/score API, Browser Rendering, and the Room Durable Object relay.",
   "scripts": {
-    "dev": "wrangler dev --port 8787",
-    "types": "wrangler types",
-    "typecheck": "tsc -p tsconfig.json"
+    "dev": "wrangler d1 migrations apply wwm --local && wrangler dev --port 8787",
+    "types": "wrangler types --strict-vars=false",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.node.json",
+    "db:migrate:local": "wrangler d1 migrations apply wwm --local",
+    "capture-sidecar": "tsx node/sidecar-cli.ts",
+    "bench": "tsx node/bench.ts",
+    "smoke": "tsx node/smoke.ts"
   },
   "dependencies": {
+    "@cloudflare/playwright": "1.3.6",
     "@wwm/capture-script": "workspace:*",
     "@wwm/net": "workspace:*",
-    "@wwm/schema": "workspace:*"
+    "@wwm/schema": "workspace:*",
+    "@wwm/stage-builder": "workspace:*",
+    "hono": "^4.13.9"
   },
   "devDependencies": {
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.15",
     "wrangler": "^4.140.0"
   }
 }
