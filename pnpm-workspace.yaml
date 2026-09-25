@@ -1,0 +1,15 @@
+packages:
+  - apps/*
+  - packages/*
+  - tools/*
+
+# pnpm ≥10 blocks dependency lifecycle scripts unless allowed here.
+allowBuilds:
+  esbuild: true
+  workerd: true
+
+# Added by pnpm 11 for versions younger than the default minimumReleaseAge at install time.
+minimumReleaseAgeExclude:
+  - miniflare@5.20260923.0-alpha
+  - vite@8.3.1
+  - wrangler@4.140.0

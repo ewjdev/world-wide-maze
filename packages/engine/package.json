@@ -1,0 +1,16 @@
+{
+  "name": "@wwm/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "three.js world: textured islands, ocean, ball, glow, camera, performance ladder.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@wwm/schema": "workspace:*"
+  }
+}

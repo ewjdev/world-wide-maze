@@ -16,4 +16,15 @@ A tribute rebuild of Google Japan / PARTY's 2013 Chrome Experiment "World Wide M
 - No "AI built this N× faster" claims.
 
 ## Commands
-(Filled in by Phase 02: `pnpm check`, `pnpm dev`, `pnpm fixture:capture <url> <slug>`, `pnpm ref:fetch`.)
+The repo uses pnpm 11 workspaces (`apps/*`, `packages/*`, `tools/*`), Node ≥ 22.12, TypeScript 7 (strict), Biome 2, and Vitest 5.
+- `pnpm i`: install. Once per machine, also run `pnpm --filter @wwm/fixture-capture browsers` to install Playwright Chromium. The browser-driven tests skip locally without it and are required in CI.
+- `pnpm check`: typecheck (`tsc` per package) + lint (`biome check .`) + test (`vitest run`, every package is a project). It must be green before hand-off.
+- `pnpm format`: Biome auto-fix (format + organize imports).
+- `pnpm vitest run --project @wwm/<pkg>`: run one package's tests.
+- `pnpm dev`: web (Vite, http://localhost:5173, `/api` proxied) + worker (`wrangler dev`, http://localhost:8787). Run just one with `pnpm --filter web dev` or `pnpm --filter worker dev`.
+- `pnpm fixture:capture <url> <slug> [--dark]`: capture a page into `fixtures/captures/<slug>/`.
+- `pnpm --filter @wwm/fixture-capture handmade`: regenerate `fixtures/stages/handmade-simple.{json,png}`. `pnpm fixture:texture` regenerates only the PNG.
+- `pnpm ref:fetch`: download the 2013 reference material into `reference/` (Phase 01's `@wwm/ref-fetch`).
+- `pnpm --filter worker types`: regenerate `apps/worker/worker-configuration.d.ts` after editing `wrangler.jsonc`.
+
+Packages export TypeScript source directly (`"exports": {".": "./src/index.ts"}`), so there is no build step. Relative imports use `.ts` extensions.

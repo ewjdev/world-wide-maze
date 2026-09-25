@@ -1,0 +1,29 @@
+{
+  "name": "wwm",
+  "private": true,
+  "type": "module",
+  "description": "World Wide Maze revival: any website becomes a 3D marble maze you steer with your phone.",
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "check": "pnpm typecheck && pnpm lint && pnpm test",
+    "typecheck": "pnpm -r --workspace-concurrency=4 typecheck",
+    "lint": "biome check .",
+    "format": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "dev": "pnpm --parallel --filter @wwm/web --filter @wwm/worker dev",
+    "fixture:capture": "pnpm --filter @wwm/fixture-capture capture",
+    "fixture:texture": "pnpm --filter @wwm/fixture-capture texture",
+    "ref:fetch": "pnpm --filter @wwm/ref-fetch fetch"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "^26.6.2",
+    "fast-check": "^4.10.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.1"
+  }
+}
