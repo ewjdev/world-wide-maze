@@ -44,9 +44,9 @@ account; every command was checked locally against `wrangler dev` unless it says
 4. Leaderboards: scan the top 20 of `/api/scores/run` for implausible names/scores (see §5.4).
 
 ## 4. Deploy, verify, roll back
-- **PR Previews (Phase 17):** every PR → `.github/workflows/preview.yml` → Worker Preview `pr-<N>` of `wwm`
+- **PR Previews (Phase 17):** every PR → `.github/workflows/ci.yml` (`check` → `preview`) → Worker Preview `pr-<N>` of `wwm`
   (preview D1/R2/KV, own Durable Objects), smoke test, URL in a sticky PR comment; deleted when the PR closes.
-- **Production:** merge to `main` → `.github/workflows/deploy.yml` → `pnpm check`, D1 migrations, `wrangler deploy
+- **Production:** merge to `main` → `.github/workflows/ci.yml` (`check` → `deploy-production`) → D1 migrations, `wrangler deploy
   --env production`, smoke test; waits for approval only if the GitHub Environment `production` has required
   reviewers (infra/README.md).
 - **Roll back** (Worker code + assets together; D1 migrations are *not* rolled back, so migrations must stay

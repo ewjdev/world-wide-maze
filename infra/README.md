@@ -16,7 +16,7 @@ Part A is done once by the account owner. After that, everything goes through Gi
 | `WWM_ENV` / `ROOM_STATS` / `TELEMETRY_INGEST` | development / 1 / 0 | preview / 0 / 0 | production / 0 / 0 until approved |
 | Build caps | 600/h global, 2 browsers | 60/h global, 1 browser, cache 1 day | 600/h global, 2 browsers |
 | Cron (retention sweep) | `--test-scheduled` | never (crons only run on production) | daily 03:17 UTC |
-| Deployed by | nobody | `.github/workflows/preview.yml` | `.github/workflows/deploy.yml` (push to `main`) |
+| Deployed by | nobody | `.github/workflows/ci.yml` job `preview` | `.github/workflows/ci.yml` job `deploy-production` (push to `main`) |
 
 All names live in **`infra/cloudflare.config.json`**. To rename something, edit it there, run
 `node infra/scripts/provision.mjs` (dry-run, then `--apply`), and commit the resulting `wrangler*.jsonc` changes.
@@ -107,18 +107,36 @@ Previews need), so run them as `pnpm --filter @wwm/worker exec wrangler …`, or
 10. **Optional: keep Previews private.** Preview URLs are public by default (workers.dev Previews get
     `X-Robots-Tag: noindex` automatically). To require a login, use *Workers & Pages → wwm → **Access** tab →
     Protect this Worker behind Access → **Previews only***. Phones then need to log in once too. The CI smoke test
-    can't pass Access, so either give it an Access service token or drop the smoke step from `preview.yml`.
+    can't pass Access, so either give it an Access service token or drop the smoke step from the `preview` job in `ci.yml`.
 11. **Curated runs:** seed them into production with Phase 10's `content/scripts/curate.mjs`.
 
 ## Part B: day to day
-- **Open or update a PR.** `preview.yml` runs `pnpm check`, builds the web app, migrates `wwm-preview`, runs
+There is one workflow, `.github/workflows/ci.yml`. It runs `pnpm check` **once** per PR head (`pull_request`) and once
+per push to `main`, and every deploy job `needs:` that check, so nothing deploys a commit that hasn't passed it.
+Branch pushes without a PR run nothing: open a (draft) PR to get CI. A new push to a PR cancels that PR's run in
+progress; runs on `main` queue instead, and the production job has its own `deploy-production` concurrency group, so a
+deploy is never interrupted.
+
+| Event | Jobs |
+|---|---|
+| PR opened / pushed / reopened | `check` → `preview` (only if `WWM_PREVIEWS_ENABLED`, not for forks) |
+| PR closed | `preview-cleanup` (only if `WWM_PREVIEWS_ENABLED`, not for forks) |
+| push to `main` | `check` → `deploy-production` (only if `WWM_DEPLOY_ENABLED`) |
+| *Run workflow* by hand (`workflow_dispatch`) | `check`; on `main` also `deploy-production` (a manual re-deploy) |
+
+- **Open or update a PR.** After `check`, the `preview` job builds the web app, migrates `wwm-preview`, runs
   `wrangler preview --env production --name pr-<N>`, smoke-tests it, and posts or updates **one** PR comment with the
   Preview URL. The URL is HTTPS, so you can open it on a computer and scan the pairing QR code with a phone (tilt
   works on iOS). Each push updates the same Preview. Rooms and build jobs (Durable Objects) are per Preview. D1/R2/KV
   data is shared by all Previews, never with production.
-- **Merge.** `deploy.yml` runs `pnpm check`, migrates `wwm`, runs `wrangler deploy --env production`, and
-  smoke-tests `https://<domain>`. It waits for approval first if you added required reviewers. Closing the PR
-  deletes its Preview (`wrangler preview delete`).
+- **Merge.** The push to `main` runs `check` on the merged commit, then `deploy-production` migrates `wwm`, runs
+  `wrangler deploy --env production`, and smoke-tests `https://<domain>`. It waits for approval first if you added
+  required reviewers. Closing the PR deletes its Preview (`wrangler preview delete`).
+- **Permissions.** The workflow defaults to no token permissions; each job asks for `contents: read`, plus
+  `pull-requests: write` for the Preview comment. The Cloudflare secrets reach only the migrate / deploy / preview /
+  delete steps.
+- **Required status check** (optional, *Settings → Branches*): require `check`. Jobs skipped by their `if:` count as
+  passed, so the gates above don't block merges.
 - **Roll back:** docs/launch/runbook.md §4 (`wrangler rollback --env production`).
 - **Local:** unchanged. `pnpm dev`, `pnpm dev:phone`, and all tests use the top level of `wrangler.jsonc`. For a
   production-like local run (static assets + headers): `pnpm --filter @wwm/web build && cd apps/worker && pnpm exec

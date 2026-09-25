@@ -16,7 +16,7 @@ import {
   type RunResponse,
   validateStage,
 } from '@wwm/schema';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { createTestHarness } from 'wrangler';
 import { LocalChromiumCapturer } from '../node/local-chromium.ts';
 import { type SidecarHandle, startCaptureSidecar } from '../node/sidecar.ts';
@@ -31,7 +31,13 @@ import {
   type TestServer,
 } from './helpers/fixture-site.ts';
 
+// CI stability: real workerd/Chromium round trips; Vitest's default 5 s per test is too tight on a loaded CI
+// runner. (File-wide, so the describe line stays short.)
+vi.setConfig({ testTimeout: 30_000 });
+
 const configPath = resolve(fileURLToPath(new URL('..', import.meta.url)), 'wrangler.jsonc');
+/** Cached POST /api/stages latency budget; ×4 on CI runners (same factor as stage-builder's perf budget). */
+const CACHE_HIT_BUDGET_MS = 100 * (process.env.CI ? 4 : 1);
 const DNS = { 'rebind.attacker.dev': ['127.0.0.1'], 'mixed.attacker.dev': ['93.184.215.14', '10.9.9.9'] };
 
 describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + local Chromium)', () => {
@@ -176,15 +182,24 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
       expect(validateStage(s).ok).toBe(true);
     }
 
+    const siteHits = site.hits.length;
     const tHit = performance.now();
     const hit = await post({ url: `${site.origin}/long` }, ip);
     const hitMs = performance.now() - tHit;
+    // A cache hit, structurally: 200 with the finished run (a miss is 202 {jobId}), and the page was not fetched again.
     expect(hit.status).toBe(200);
-    expect((await hit.json()) as CreateStageResponse).toEqual({ runId: done.runId, stageIds: run?.stageIds });
+    expect((await hit.json()) as CreateStageResponse).toEqual({
+      runId: done.runId,
+      stageIds: run?.stageIds,
+    });
+    expect(site.hits.slice(siteHits)).toEqual([]);
     console.log(
       `[timing] /long cold slice0=${slice0Ms} ms (${count} slices); cached POST=${hitMs.toFixed(1)} ms`,
     );
-    expect(hitMs).toBeLessThan(100);
+    // …and fast: < 100 ms on a laptop. Loaded CI runners (every Vitest project in parallel on 2-4 vCPUs) measured
+    // 155 ms, so CI gets the same ×4 factor as the stage-builder budget. Either way it is far below a real build.
+    expect(hitMs).toBeLessThan(CACHE_HIT_BUDGET_MS);
+    expect(hitMs).toBeLessThan(slice0Ms / 4);
   }, 90_000);
 
   test('URL_FORBIDDEN before any job: private literals, loopback ports, DNS answers in private ranges', async () => {
@@ -298,7 +313,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
     const insertRun = (id: string, cap: string, at: string) =>
       env.DB.prepare(
         `INSERT INTO runs (run_id, url, title, capture_id, slice_count, difficulty, seed, builder_version, created_at)
-         VALUES (?1, 'https://example.com/', 't', ?2, 1, 'normal', 1, '0.0.0', ?3)`,
+       VALUES (?1, 'https://example.com/', 't', ?2, 1, 'normal', 1, '0.0.0', ?3)`,
       )
         .bind(id, cap, at)
         .run();
@@ -309,7 +324,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
       .run();
     await env.DB.prepare(
       `INSERT INTO stages (stage_id, run_id, slice_index, url, title, capture_id, builder_version, texture_key, islands, bridges, elevators, items, created_at)
-       VALUES ('old-stage', 'old-run', 0, 'u', 't', 'old-cap', '0.0.0', 'textures/old-cap/0.webp', 1, 0, 0, 0, ?1)`,
+     VALUES ('old-stage', 'old-run', 0, 'u', 't', 'old-cap', '0.0.0', 'textures/old-cap/0.webp', 1, 0, 0, 0, ?1)`,
     )
       .bind(old)
       .run();

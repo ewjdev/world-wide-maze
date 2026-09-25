@@ -1,17 +1,45 @@
+# The one pipeline (CI stability, Phase 17 follow-up): `pnpm check` runs exactly once per PR head and once per push
+# to `main`, and everything that deploys `needs:` that single check job.
+#
+#   pull_request opened / synchronize / reopened → check → preview (Worker Preview `pr-<N>`, smoke test, sticky comment)
+#   pull_request closed                          → preview-cleanup (`wrangler preview delete`)
+#   push to main (every merged PR)               → check → deploy-production (D1 migrations, `wrangler deploy`, smoke)
+#   workflow_dispatch on main                    → check → deploy-production (re-deploy the current main by hand)
+#
+# Branch pushes without a PR run nothing: open a (draft) PR to get CI. There is no second trigger on `push` for PR
+# branches, so a PR push is never checked twice.
+#
+# Deploy jobs are inert until the repository variables WWM_PREVIEWS_ENABLED / WWM_DEPLOY_ENABLED are "true"
+# (infra/README.md, one-time setup); without them only `check` runs. PRs from forks get no secrets and no Preview.
+#
+# Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (repository secrets; production may also use `production`
+# environment secrets), exposed only to the steps that talk to Cloudflare. Worker secrets (IP_HASH_SALT,
+# ANTHROPIC_API_KEY) are set once with wrangler, never from CI. Resource names come from infra/cloudflare.config.json;
+# Preview settings from wrangler.jsonc. Consider pinning the actions by commit SHA.
 name: CI
 
 on:
-  push:
   pull_request:
+    types: [opened, synchronize, reopened, closed]
+  push:
+    branches: [main]
+  workflow_dispatch:
 
+# One run per PR (a new push, or closing the PR, cancels the run in progress: its check result would be stale).
+# On main, runs queue instead: a production deploy is never interrupted half-way.
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions: {}
 
 jobs:
   check:
+    if: github.event.action != 'closed'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
+    permissions:
+      contents: read
     env:
       CI: 'true'
     steps:
@@ -32,3 +60,196 @@ jobs:
       - run: pnpm --filter @wwm/fixture-capture exec playwright install --with-deps chromium
 
       - run: pnpm check
+
+  # ── PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
+  # (wrangler.jsonc env.production.previews).
+  preview:
+    needs: check
+    if: >-
+      github.event_name == 'pull_request' && github.event.action != 'closed' &&
+      vars.WWM_PREVIEWS_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pull-requests: write # the sticky comment
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Names from infra/cloudflare.config.json
+        id: names
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          echo "env=$(jq -er .wranglerEnv infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
+          echo "preview=$(jq -er .previews.namePrefix infra/cloudflare.config.json)${PR}" >> "$GITHUB_OUTPUT"
+
+      - name: Build the web app (static assets; telemetry off in Previews)
+        run: pnpm --filter @wwm/web build
+
+      - name: Refuse placeholder ids / Previews bound to production data
+        run: node infra/scripts/check-deploy-config.mjs previews
+
+      - name: D1 migrations (shared preview database)
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: pnpm exec wrangler d1 migrations apply PREVIEW_DB --remote --config wrangler.preview-migrations.jsonc
+
+      - name: Create or update the Preview
+        id: preview
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WENV: ${{ steps.names.outputs.env }}
+          NAME: ${{ steps.names.outputs.preview }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -o pipefail
+          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
+          printf '%s\n' "$output"
+          # wrangler prints asset-upload progress before the JSON even with --json: parse from the first line that is "{".
+          url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
+          [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
+          echo "url=${url%/}" >> "$GITHUB_OUTPUT"
+
+      - name: Smoke test
+        id: smoke
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+        run: node infra/scripts/smoke.mjs "$URL"
+
+      - name: Sticky PR comment
+        if: always() && steps.preview.outputs.url != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          NAME: ${{ steps.names.outputs.preview }}
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          marker='<!-- wwm-worker-preview -->'
+          body="$(printf '%s\n' "$marker" \
+            "### Worker Preview \`$NAME\`" \
+            "" \
+            "**$URL**" \
+            "" \
+            "- Commit: $SHA · smoke test: **$SMOKE**" \
+            "- HTTPS, so phones can pair: open the URL on a computer and scan the pairing QR code; iOS tilt works (motion sensors need a secure origin)." \
+            "- Separate from production: preview D1/R2/KV, own Durable Objects (rooms, jobs), \`ROOM_STATS=0\`, telemetry off, lower build caps. Deleted when the PR closes.")"
+          id="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | tail -n 1)"
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -f body="$body" > /dev/null
+          else
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$body" > /dev/null
+          fi
+
+  preview-cleanup:
+    if: >-
+      github.event_name == 'pull_request' && github.event.action == 'closed' &&
+      vars.WWM_PREVIEWS_ENABLED == 'true' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      # The PR's merge ref may be gone once it's closed: use the base branch's config (same Worker name).
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.base.ref }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Delete the Preview
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          wenv="$(jq -er .wranglerEnv ../../infra/cloudflare.config.json)"
+          name="$(jq -er .previews.namePrefix ../../infra/cloudflare.config.json)${PR}"
+          pnpm exec wrangler preview delete --env "$wenv" --name "$name" --skip-confirmation
+
+  # ── Production (Phase 12, reworked in Phase 17): every push to `main` (i.e. every merged PR), after the check above
+  # passed on that exact commit. Runs in the GitHub Environment `production`: add "Required reviewers" there if every
+  # production deploy should wait for a manual approval (optional; see infra/README.md).
+  deploy-production:
+    needs: check
+    if: >-
+      github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
+      vars.WWM_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false # never interrupt a deploy half-way; queue the next one
+    environment:
+      name: production
+      url: ${{ steps.names.outputs.url }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Names from infra/cloudflare.config.json
+        id: names
+        run: |
+          {
+            echo "env=$(jq -er .wranglerEnv infra/cloudflare.config.json)"
+            echo "d1=$(jq -er .production.d1 infra/cloudflare.config.json)"
+            echo "url=https://$(jq -er .domain infra/cloudflare.config.json)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build the web app (static assets)
+        run: pnpm --filter @wwm/web build
+        env:
+          VITE_TELEMETRY_URL: ${{ vars.WWM_TELEMETRY_URL }} # empty = telemetry off
+
+      - name: Refuse placeholder ids, dev switches, missing domain
+        run: node infra/scripts/check-deploy-config.mjs production
+
+      - name: D1 migrations (production database; must stay backward compatible)
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WENV: ${{ steps.names.outputs.env }}
+          D1: ${{ steps.names.outputs.d1 }}
+        run: pnpm exec wrangler d1 migrations apply "$D1" --remote --env "$WENV"
+
+      - name: Deploy
+        working-directory: apps/worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          WENV: ${{ steps.names.outputs.env }}
+          SHA: ${{ github.sha }}
+        run: pnpm exec wrangler deploy --env "$WENV" --message "main $SHA"
+
+      - name: Smoke test
+        env:
+          URL: ${{ steps.names.outputs.url }}
+        run: node infra/scripts/smoke.mjs "$URL"

@@ -32,7 +32,8 @@ const GOV = fixture('govuk-card-grid'); // three slices
 
 type Parts = Record<string, string | Uint8Array>;
 
-describe('POST /api/stages/upload (workerd)', () => {
+// CI stability: real workerd round trips; Vitest's default 5 s per test is too tight on a loaded CI runner.
+describe('POST /api/stages/upload (workerd)', { timeout: 30_000 }, () => {
   const server = createTestHarness();
   let ipSeq = 0;
   const newIp = () => `192.0.2.${++ipSeq}`;

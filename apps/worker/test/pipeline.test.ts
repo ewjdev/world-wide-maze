@@ -307,15 +307,16 @@ describe('Phase 12b: browser queue and failed-job dedupe', () => {
   });
 
   test('time spent waiting for a browser slot does not count against the capture budget', async () => {
-    // Before the fix the 400 ms budget started before the 600 ms queue wait → CAPTURE_TIMEOUT.
+    // Before the fix the 1 s budget started before the 1.5 s queue wait → CAPTURE_TIMEOUT. (The budget leaves ~1 s for
+    // the 20 ms fake capture, so a stalled event loop on a loaded CI runner can't fail it for the wrong reason.)
     const { events, result } = await run({
-      gate: slowGate(600),
+      gate: slowGate(1500),
       capturer: deadlineCapturer,
-      captureBudgetMs: 400,
-      slice0BudgetMs: 5000,
+      captureBudgetMs: 1000,
+      slice0BudgetMs: 10_000,
     });
     expect(terminal(events)).toEqual([expect.objectContaining({ type: 'done' })]);
-    expect(result?.timingsMs.queue).toBeGreaterThanOrEqual(590);
+    expect(result?.timingsMs.queue).toBeGreaterThanOrEqual(1490);
     expect(result?.timingsMs.slice0).toBeGreaterThanOrEqual(result?.timingsMs.queue ?? 0);
   });
 

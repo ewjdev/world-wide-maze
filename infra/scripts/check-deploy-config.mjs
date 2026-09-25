@@ -2,7 +2,7 @@
 /**
  * Pre-deploy guard (Phase 12, reworked for Worker Previews in Phase 17). Refuses a deploy whose wrangler config
  * still has placeholder ids, dev-only switches on, names that disagree with infra/cloudflare.config.json,
- * missing (non-inherited) vars/bindings, or Previews bound to production data. Used by .github/workflows/*.yml;
+ * missing (non-inherited) vars/bindings, or Previews bound to production data. Used by .github/workflows/ci.yml;
  * safe to run locally (reads files only).
  *
  *   node infra/scripts/check-deploy-config.mjs production|previews|all

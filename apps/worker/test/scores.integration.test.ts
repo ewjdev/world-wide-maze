@@ -25,7 +25,8 @@ const limits = stageLimits(stage);
 const REPLAY_SCORE = 1479;
 const other = { ...stage, stageId: 'b'.repeat(64) };
 
-describe('scores + share (workerd)', () => {
+// CI stability: real workerd round trips; Vitest's default 5 s per test is too tight on a loaded CI runner.
+describe('scores + share (workerd)', { timeout: 30_000 }, () => {
   const server = createTestHarness();
   let ipSeq = 0;
   const newIp = () => `203.0.113.${++ipSeq}`;
@@ -134,11 +135,17 @@ describe('scores + share (workerd)', () => {
       );
   });
 
-  test('board is capped at 50', async () => {
+  // 55 sequential submissions through workerd + D1: ~1 s on a laptop, several seconds on a loaded CI runner, so this
+  // gets its own timeout (it asserts the cap, not speed). Every submission must be accepted, or the cap proves nothing.
+  test('board is capped at 50', { timeout: 60_000 }, async () => {
     const id = other.stageId;
-    for (let i = 0; i < 55; i++)
-      await submit({ kind: 'stage', stageId: id, name: `cap${i}`, score: 2 + i, timeMs: 9e4 });
-    expect((await board(`/api/scores/stage/${id}`)).length).toBe(50);
+    for (let i = 0; i < 55; i++) {
+      const r = await submit({ kind: 'stage', stageId: id, name: `cap${i}`, score: 2 + i, timeMs: 9e4 });
+      expect(r.status, `cap${i}`).toBe(201);
+    }
+    const entries = await board(`/api/scores/stage/${id}`);
+    expect(entries.length).toBe(50);
+    expect(entries.some((e) => e.name === 'cap54')).toBe(true); // the best of them made the board
   });
 
   test('replay verification: matching replay is verified and becomes the ghost; a lie is rejected', async () => {

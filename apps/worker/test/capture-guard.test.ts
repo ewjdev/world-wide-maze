@@ -5,7 +5,7 @@
  */
 import { CAPTURE_DPR, MAX_STAGE_HEIGHT_PX, sliceCount } from '@wwm/schema';
 import { type Browser, chromium, type Page } from 'playwright';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { LocalChromiumCapturer } from '../node/local-chromium.ts';
 import { captureWithBrowser } from '../src/capture/core.ts';
 import { ServiceError } from '../src/errors.ts';
@@ -23,6 +23,10 @@ import {
   startCountingInternalServer,
   startFrameBypassSite,
 } from './helpers/frame-bypass-site.ts';
+
+// CI stability: real workerd/Chromium round trips; Vitest's default 5 s per test is too tight on a loaded CI
+// runner. (File-wide, so the describe line stays short.)
+vi.setConfig({ testTimeout: 30_000 });
 
 // Each capture has a 20 s budget (and the first one launches Chromium), so the tests get more than Vitest's
 // default 5 s: on a busy CI runner the long-page capture alone took over 5 s.
@@ -153,13 +157,18 @@ describe.skipIf(!HAS_CHROMIUM)('SSRF guard: iframe / popup / child-realm bypasse
     const page: Page = await ctx.newPage();
     const before = { hits: internal.hits.length, conns: internal.connections() };
     await page.goto(`${fixture.site.origin}/case/cross`);
-    await page.waitForTimeout(1000);
+    // Wait for the attacks to land (not a fixed 1 s: a loaded CI runner can take longer to run the frames).
+    const expected = ['ws:/ws-cross', 'ws:/ws-cross-blank', 'ws:/wss-cross', 'ws:/ws-worker-cross'];
+    await expect
+      .poll(() => internal.hits.slice(before.hits), { timeout: 15_000 })
+      .toEqual(expect.arrayContaining(expected));
+    // TURN over TCP is visible too: more raw connections than HTTP/WebSocket hits.
+    await expect
+      .poll(() => internal.connections() - before.conns - internal.hits.slice(before.hits).length, {
+        timeout: 15_000,
+      })
+      .toBeGreaterThan(0);
     await ctx.close();
-    const hits = internal.hits.slice(before.hits);
-    expect(hits).toEqual(
-      expect.arrayContaining(['ws:/ws-cross', 'ws:/ws-cross-blank', 'ws:/wss-cross', 'ws:/ws-worker-cross']),
-    );
-    expect(internal.connections() - before.conns).toBeGreaterThan(hits.length); // TURN over TCP is visible too
   });
 
   test.each(FRAME_BYPASS_CASES)(

@@ -11,6 +11,13 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 type Worker = Awaited<ReturnType<typeof import('wrangler').unstable_startWorker>>;
 
 const IDLE_MS = 2500;
+/**
+ * CI stability: how long to wait for a message or condition. These are deadlines, not delays (a wait returns as soon
+ * as the condition holds), so they are generous: loaded CI runners run every Vitest project in parallel.
+ */
+const WAIT_MS = 10_000;
+/** Per-test timeout (Vitest's default 5 s is too tight for real workerd round trips on a loaded runner). */
+const TEST_MS = 30_000;
 let worker: Worker;
 let base: string;
 
@@ -99,7 +106,7 @@ function connect(code: string, role: string, token?: string, answerPings = true)
       texts,
       frames,
       closed,
-      next(pred, ms = 3000) {
+      next(pred, ms = WAIT_MS) {
         const hit = texts.find(pred);
         if (hit) {
           texts.splice(texts.indexOf(hit), 1);
@@ -119,7 +126,7 @@ function connect(code: string, role: string, token?: string, answerPings = true)
       },
     };
     ws.onopen = () => resolve(client);
-    setTimeout(() => reject(new Error('connect timeout')), 5000);
+    setTimeout(() => reject(new Error('connect timeout')), WAIT_MS);
   });
 }
 
@@ -135,15 +142,31 @@ const hostOf = (r: Room, answerPings = true) => connect(r.code, 'host', r.hostTo
 /** Controller that scanned the QR code (pair token). */
 const phoneOf = (r: Room, answerPings = true) => connect(r.code, 'controller', r.pairToken, answerPings);
 
-const until = async (cond: () => boolean, ms = 3000) => {
+const until = async (cond: () => boolean, ms = WAIT_MS) => {
   const end = Date.now() + ms;
   while (!cond()) {
     if (Date.now() > end) throw new Error('condition timeout');
     await new Promise((r) => setTimeout(r, 10));
   }
 };
+/** `until` for conditions that need a request (e.g. the stats endpoint). */
+const untilAsync = async (cond: () => Promise<boolean>, ms = WAIT_MS) => {
+  const end = Date.now() + ms;
+  while (!(await cond())) {
+    if (Date.now() > end) throw new Error('condition timeout');
+    await new Promise((r) => setTimeout(r, 25));
+  }
+};
 
-describe('Room DO relay', () => {
+interface RoomStats {
+  rtt: Record<string, { count: number; p50: number | null }>;
+  input: { frames: number };
+  dropped: { rate: number; oversize: number };
+}
+const statsOf = async (code: string) =>
+  (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as RoomStats;
+
+describe('Room DO relay', { timeout: TEST_MS }, () => {
   test('POST /api/rooms allocates distinct 6-digit codes', async () => {
     const rooms = await Promise.all(Array.from({ length: 5 }, newRoom));
     expect(new Set(rooms.map((r) => r.code)).size).toBe(5);
@@ -294,21 +317,27 @@ describe('Room DO relay', () => {
   test('Phase 12: a flood beyond the token bucket is dropped, not relayed', async () => {
     const room = await newRoom();
     const { code } = room;
-    const host = await hostOf(room);
-    const ctl = await phoneOf(room);
+    // Neither side answers keepalive pings: the only messages through the controller's bucket are the 500 below.
+    const host = await hostOf(room, false);
+    const ctl = await phoneOf(room, false);
     const t0 = performance.now();
     for (let seq = 1; seq <= 500; seq++)
       ctl.ws.send(encodeInput({ seq, power: false, jump: false, menu: false, tiltX: 0, tiltZ: 0 }));
-    await until(() => host.frames.length >= 290, 5000);
-    await new Promise((r) => setTimeout(r, 300));
+    // Quiescence, not a fixed sleep: first the relay has handled all 500 frames (each one relayed or dropped)…
+    let stats = await statsOf(code);
+    await untilAsync(async () => {
+      stats = await statsOf(code);
+      return stats.input.frames + stats.dropped.rate >= 500;
+    }, 20_000);
+    const elapsedSec = (performance.now() - t0) / 1000;
+    expect(stats.input.frames + stats.dropped.rate).toBe(500);
+    // …then every relayed frame has reached the host (they can still be in flight when the relay is done).
+    await until(() => host.frames.length >= stats.input.frames);
+    expect(host.frames.length).toBe(stats.input.frames);
     // Burst 300, plus whatever the bucket refilled (150/s) while the frames were arriving. Bound the upper limit by
     // the measured elapsed time so a loaded machine doesn't make this flaky; the rest must have been dropped.
-    const elapsedSec = (performance.now() - t0) / 1000;
     expect(host.frames.length).toBeGreaterThanOrEqual(300);
     expect(host.frames.length).toBeLessThanOrEqual(Math.min(499, 300 + Math.ceil(150 * elapsedSec) + 10));
-    const stats = (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as {
-      dropped: { rate: number };
-    };
     expect(stats.dropped.rate).toBe(500 - host.frames.length);
     ctl.ws.close(1000);
     host.ws.close(1000);
@@ -321,12 +350,17 @@ describe('Room DO relay', () => {
     const ctl = await phoneOf(room);
     await host.next((m) => m.t === 'ping' && (m.id as number) < 0);
     await ctl.next((m) => m.t === 'ping' && (m.id as number) < 0);
-    await new Promise((r) => setTimeout(r, 400));
-    const stats = (await (await fetch(`${base}/api/rooms/${code}/stats`)).json()) as {
-      rtt: Record<string, { count: number; p50: number | null }>;
-    };
-    expect(stats.rtt.host?.count).toBeGreaterThan(0);
-    expect(stats.rtt.controller?.count).toBeGreaterThan(0);
+    // Both clients answer every relay ping; wait until the relay has consumed at least one pong per role.
+    await untilAsync(async () => {
+      const { rtt } = await statsOf(code);
+      return (rtt.host?.count ?? 0) > 0 && (rtt.controller?.count ?? 0) > 0;
+    });
+    // Barrier instead of a sleep: the relay handles each socket's messages in order, and each recipient gets them
+    // in order, so once a message sent after those pongs has crossed, a forwarded pong would already be here.
+    host.ws.send(JSON.stringify({ t: 'state', phase: 'barrier' }));
+    await ctl.next((m) => m.t === 'state' && m.phase === 'barrier');
+    ctl.ws.send(JSON.stringify({ t: 'calibrated' }));
+    await host.next((m) => m.t === 'calibrated');
     expect(host.texts.some((m) => m.t === 'pong')).toBe(false);
     expect(ctl.texts.some((m) => m.t === 'pong')).toBe(false);
     ctl.ws.close(1000);
@@ -334,7 +368,7 @@ describe('Room DO relay', () => {
   });
 
   test('rooms expire after the idle window with no sockets (code becomes free)', {
-    timeout: 20_000,
+    timeout: 45_000,
   }, async () => {
     const room = await newRoom();
     const { code } = room;
@@ -345,14 +379,19 @@ describe('Room DO relay', () => {
     const h2 = await hostOf(room);
     expect(await h2.next((m) => m.t === 'peer')).toMatchObject({ connected: false });
     h2.ws.close(1000);
-    await new Promise((r) => setTimeout(r, IDLE_MS + 1500));
-    expect((await fetch(`${base}/api/rooms/${code}/stats`)).status).toBe(404);
+    const closedAt = Date.now();
+    // Poll for the expiry (the alarm can fire late on a loaded machine), but never before the idle window is over.
+    await untilAsync(
+      async () => (await fetch(`${base}/api/rooms/${code}/stats`)).status === 404,
+      IDLE_MS + 20_000,
+    );
+    expect(Date.now() - closedAt).toBeGreaterThanOrEqual(IDLE_MS - 250);
     const late = await hostOf(room);
     expect((await late.closed).code).toBe(4404);
   });
 });
 
-describe('Room DO pairing secret (contracts v0.2.7, CCR-12-2)', () => {
+describe('Room DO pairing secret (contracts v0.2.7, CCR-12-2)', { timeout: TEST_MS }, () => {
   const closeCode = async (c: Promise<Client>) => (await (await c).closed).code;
 
   test('POST /api/rooms is not cacheable (it carries secrets)', async () => {
@@ -396,7 +435,7 @@ describe('Room DO pairing secret (contracts v0.2.7, CCR-12-2)', () => {
   });
 
   test('ATTACK: a second controller guessing the code cannot replace a connected one', {
-    timeout: 15_000,
+    timeout: 45_000,
   }, async () => {
     const room = await newRoom();
     const host = await hostOf(room);
@@ -437,7 +476,7 @@ describe('Room DO pairing secret (contracts v0.2.7, CCR-12-2)', () => {
   });
 
   test('a typed-code phone whose socket went silent (locked) can rejoin by code', {
-    timeout: 15_000,
+    timeout: 45_000,
   }, async () => {
     const room = await newRoom();
     const host = await hostOf(room);

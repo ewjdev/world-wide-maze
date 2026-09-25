@@ -109,7 +109,7 @@ run('controller e2e (simulated phone)', () => {
   test('enable tilt → calibrate by holding steady → play; host receives calibrated', async () => {
     await phone.getByTestId('enable-tilt').tap();
     await phone.locator('[data-screen="play"]').waitFor({ timeout: 5000 });
-    await expect.poll(() => stat('calibrated')).toBe('1');
+    await expect.poll(() => stat('calibrated'), { timeout: 10_000 }).toBe('1');
     await shot(phone, '03-phone-play');
   });
 
@@ -127,7 +127,7 @@ run('controller e2e (simulated phone)', () => {
     await press('power', 300);
     await press('jump', 60);
     await press('menu', 60);
-    await expect.poll(() => stat('presses')).toBe('1 / 1 / 1');
+    await expect.poll(() => stat('presses'), { timeout: 10_000 }).toBe('1 / 1 / 1');
     const log = (await host.getByTestId('event-log').textContent()) as string;
     expect(log).toContain('phone: MENU');
   });
@@ -167,7 +167,7 @@ run('controller e2e (simulated phone)', () => {
       (window as unknown as { __pose: unknown }).__pose = { beta: 45, gamma: 35, jitter: 0 };
     });
     await phone.getByText('Too tilted!').waitFor({ timeout: 3000 });
-    await expect.poll(() => stat('raw')).toMatch(/^20\.0°/);
+    await expect.poll(() => stat('raw'), { timeout: 10_000 }).toMatch(/^20\.0°/);
     await shot(phone, '04-phone-too-tilted');
     await phone.evaluate(() => {
       (window as unknown as { __pose: unknown }).__pose = { beta: 45, gamma: 0, jitter: 0.2 };
@@ -198,7 +198,7 @@ run('controller e2e (simulated phone)', () => {
     await phone.reload();
     await phone.getByTestId('enable-tilt').tap();
     await phone.locator('[data-screen="play"]').waitFor({ timeout: 5000 });
-    await expect.poll(() => stat('calibrated')).toBe('2');
+    await expect.poll(() => stat('calibrated'), { timeout: 10_000 }).toBe('2');
   });
 
   test('host disconnect shows a clear waiting state on the phone', async () => {
