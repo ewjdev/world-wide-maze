@@ -26,7 +26,8 @@ mkdirSync(out, { recursive: true });
 
 type Shot = { name: string; stage: string; run: (p: Page) => Promise<void> };
 
-const adv = (p: Page, sec: number) => p.evaluate((s) => (window as never as { wwm: { advance(s: number): void } }).wwm.advance(s), sec);
+const adv = (p: Page, sec: number) =>
+  p.evaluate((s) => (window as never as { wwm: { advance(s: number): void } }).wwm.advance(s), sec);
 const call = (p: Page, js: string) => p.evaluate(js);
 
 const shots: Shot[] = [
@@ -79,17 +80,17 @@ const shots: Shot[] = [
       await call(p, 'wwm.placeOnRoute(0.97)');
       await adv(p, 1.5);
       await call(p, 'wwm.freeze(true); void wwm.engine().playGoal(7)');
-      await adv(p, 2.6);
+      await adv(p, 3.1);
     },
   },
   {
     name: 'items-pop',
     stage: 'handmade-simple',
     run: async (p) => {
-      await call(p, 'wwm.setMotion("still")');
-      await adv(p, 1);
+      await call(p, 'wwm.placeOnRoute(0.16); wwm.setMotion("still")');
+      await adv(p, 1.5);
       await call(p, 'wwm.collectNext("small"); wwm.collectNext("small"); wwm.collectNext("large")');
-      await adv(p, 0.18);
+      await adv(p, 0.12);
     },
   },
   {
@@ -145,9 +146,13 @@ for (const shot of shots) {
   if (backend) q.set('backend', backend);
   await page.goto(`${base}/dev/engine?${q}`);
   try {
-    await page.waitForFunction(() => (window as never as { wwm?: { engine(): unknown } }).wwm?.engine?.(), null, {
-      timeout: 30000,
-    });
+    await page.waitForFunction(
+      () => (window as never as { wwm?: { engine(): unknown } }).wwm?.engine?.(),
+      null,
+      {
+        timeout: 30000,
+      },
+    );
     await page.waitForFunction(
       () => (window as never as { __stageReady?: boolean }).__stageReady === true,
       null,

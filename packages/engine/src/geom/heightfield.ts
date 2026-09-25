@@ -2,8 +2,7 @@
  * Low-res top-surface heightfield of islands and bridge decks (pure). The chase camera uses it to stay
  * above geometry and to test the ball→camera line of sight without raycasting meshes.
  */
-import { LEVEL_HEIGHT_M, PX_PER_METER, type StageData, type Vec2 } from '@wwm/schema';
-import { ISLAND_THICKNESS_M } from '../palette.ts';
+import { LEVEL_HEIGHT_M, PX_PER_METER, SLAB_THICKNESS_M, type StageData, type Vec2 } from '@wwm/schema';
 
 export interface Heightfield {
   /** Cell size in px. */
@@ -32,7 +31,7 @@ export function buildHeightfield(stage: StageData, cellPx = 4): Heightfield {
   };
   for (const isl of stage.islands) {
     const y = isl.level * LEVEL_HEIGHT_M;
-    fillPolygon([isl.contour, ...isl.holes], cellPx, cols, rows, (c, r) => put(c, r, y, ISLAND_THICKNESS_M));
+    fillPolygon([isl.contour, ...isl.holes], cellPx, cols, rows, (c, r) => put(c, r, y, SLAB_THICKNESS_M));
   }
   for (const br of stage.bridges) {
     const len = Math.hypot(br.b[0] - br.a[0], br.b[1] - br.a[1]);
@@ -50,7 +49,7 @@ export function buildHeightfield(stage: StageData, cellPx = 4): Heightfield {
       const px = (c + 0.5) * cellPx;
       const py = (r + 0.5) * cellPx;
       const t = Math.min(1, Math.max(0, ((px - br.a[0]) * d[0] + (py - br.a[1]) * d[1]) / len));
-      put(c, r, (br.levelA + (br.levelB - br.levelA) * t) * LEVEL_HEIGHT_M, 0.3);
+      put(c, r, (br.levelA + (br.levelB - br.levelA) * t) * LEVEL_HEIGHT_M, SLAB_THICKNESS_M);
     });
   }
   return { cell: cellPx, cols, rows, top, bottom };

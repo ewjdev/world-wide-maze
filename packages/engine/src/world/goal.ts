@@ -107,8 +107,13 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   const wyWU = positionLocal.y.div(WU);
   const wireCol = hex(GOAL_WIRE);
   wm.colorNode = wireCol;
-  setEmissive(wm, wireCol.mul(0.8));
-  wm.opacityNode = float(1).sub(smoothstep(8, 20, wyWU)).mul(0.85).mul(smoothstep(0, 1, visibility.mul(20).sub(wyWU)));
+  const wireAlpha = float(1)
+    .sub(smoothstep(8, 20, wyWU))
+    .mul(0.85)
+    .mul(smoothstep(0, 1, visibility.mul(20).sub(wyWU)));
+  // transparent glow: scale the emissive (bloom) input by the same alpha
+  setEmissive(wm, wireCol.mul(0.8).mul(wireAlpha));
+  wm.opacityNode = wireAlpha;
   const wire = new Mesh(cg, wm);
   wire.name = 'goal-wire';
   wire.renderOrder = 3;
@@ -122,7 +127,7 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   pm.name = 'goal-pad';
   const pulse = u.time.mul(3).sin().mul(0.25).add(0.75);
   pm.colorNode = vec3(1, 1, 1);
-  setEmissive(pm, wireCol.mul(pulse).mul(1.4));
+  setEmissive(pm, wireCol.mul(pulse).mul(1.4).mul(visibility));
   pm.opacityNode = visibility;
   const pad = new Mesh(pg, pm);
   pad.name = 'goal-pad';

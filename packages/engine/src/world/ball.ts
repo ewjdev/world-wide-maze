@@ -5,11 +5,12 @@
  *
  * Also: the spawn cage and materialize dissolve, the map "YOU" marker and the POWER speed streaks.
  */
-import { BALL_RADIUS_M } from '@wwm/schema';
+import { BALL_RADIUS_M, mulberry32 } from '@wwm/schema';
 import {
   abs,
   cameraPosition,
   clamp,
+  cos,
   cubeTexture,
   float,
   fract,
@@ -29,6 +30,7 @@ import {
   texture,
   uniform,
   uv,
+  vec2,
   vec3,
 } from 'three/tsl';
 import {
@@ -45,10 +47,11 @@ import {
   MeshBasicNodeMaterial,
   PlaneGeometry,
   SphereGeometry,
+  Sprite,
+  SpriteNodeMaterial,
   SRGBColorSpace,
   Vector3,
 } from 'three/webgpu';
-import { mulberry32 } from '@wwm/schema';
 import { BALL_CORE, BALL_ONEUP, BALL_SHELL } from '../palette.ts';
 import type { Bin } from './bin.ts';
 import { type N, type SharedUniforms, setEmissive } from './shared.ts';
@@ -59,7 +62,7 @@ const col = (h: number) => vec3(((h >> 16) & 255) / 255, ((h >> 8) & 255) / 255,
 export interface Ball {
   mesh: Mesh;
   cage: Mesh;
-  you: Mesh;
+  you: Sprite;
   streaks: InstancedMesh;
   cubeCamera: CubeCamera;
   envTarget: CubeRenderTarget;
@@ -86,10 +89,14 @@ export function buildBall(u: SharedUniforms, bin: Bin, envSize: number): Ball {
   const m = bin.add(new MeshBasicNodeMaterial());
   m.name = 'ball';
   const env = cubeTexture(envTarget.texture, reflectVector).rgb;
-  const fres = float(1).sub(clamp(normalView.dot(positionViewDirection), 0, 1)).pow(3);
+  const fres = float(1)
+    .sub(clamp(normalView.dot(positionViewDirection), 0, 1))
+    .pow(3);
   const shell = col(BALL_SHELL);
   // chrome: env × a slightly cool tint, + a fresnel lift, + a sharp highlight from "the sky"
-  const spec = smoothstep(0.93, 0.99, reflectVector.normalize().dot(vec3(-0.3, 0.9, 0.3).normalize())).mul(0.6);
+  const spec = smoothstep(0.93, 0.99, reflectVector.normalize().dot(vec3(-0.3, 0.9, 0.3).normalize())).mul(
+    0.6,
+  );
   const chrome = env.mul(shell).mul(1.02).add(fres.mul(0.22)).add(spec);
   // seams: two perpendicular great circles, in ball-local space so they roll with the ball
   const p = positionGeometry.div(BALL_RADIUS_M);
@@ -102,7 +109,13 @@ export function buildBall(u: SharedUniforms, bin: Bin, envSize: number): Ball {
   const nz = mx_noise_float(positionGeometry.mul(7)).mul(0.5).add(0.5);
   const edge = smoothstep(materialize.sub(0.12), materialize, nz).mul(materialize.lessThan(1).select(1, 0));
   m.colorNode = mix(chrome, seamCol, seam).add(vec3(0.7, 0.9, 1).mul(edge));
-  setEmissive(m, seamCol.mul(seam).mul(1.2).add(vec3(0.6, 0.85, 1).mul(edge).mul(2)));
+  setEmissive(
+    m,
+    seamCol
+      .mul(seam)
+      .mul(1.2)
+      .add(vec3(0.6, 0.85, 1).mul(edge).mul(2)),
+  );
   m.opacityNode = select(nz.lessThanEqual(materialize), float(1), float(0));
   m.alphaTest = 0.5;
   const mesh = new Mesh(geo, m);
@@ -120,10 +133,13 @@ export function buildBall(u: SharedUniforms, bin: Bin, envSize: number): Ball {
   cm.positionNode = positionLocal
     .mul(float(1).add(openK.mul(1.4)))
     .add(vec3(0, openK.mul(openK).mul(1.6), 0));
-  const flicker = sin(u.time.mul(24).add(positionLocal.y.mul(9))).mul(0.15).add(0.85);
+  const flicker = sin(u.time.mul(24).add(positionLocal.y.mul(9)))
+    .mul(0.15)
+    .add(0.85);
   cm.colorNode = vec3(1, 1, 1);
-  setEmissive(cm, vec3(0.8, 0.95, 1).mul(flicker).mul(0.9));
-  cm.opacityNode = cageOpacity.mul(float(1).sub(openK));
+  const cageAlpha = cageOpacity.mul(float(1).sub(openK));
+  setEmissive(cm, vec3(0.8, 0.95, 1).mul(flicker).mul(0.9).mul(cageAlpha));
+  cm.opacityNode = cageAlpha;
   const cage = new Mesh(cg, cm);
   cage.name = 'cage';
   cage.visible = false;
@@ -153,7 +169,7 @@ export function buildBall(u: SharedUniforms, bin: Bin, envSize: number): Ball {
   };
 }
 
-function makeYou(bin: Bin, u: SharedUniforms): Mesh {
+function makeYou(bin: Bin, u: SharedUniforms): Sprite {
   const w = 256;
   const h = 192;
   const canvas =
@@ -179,16 +195,20 @@ function makeYou(bin: Bin, u: SharedUniforms): Mesh {
   ctx.fill();
   const tex = bin.add(new CanvasTexture(canvas as never));
   tex.colorSpace = SRGBColorSpace;
-  const g = bin.add(new PlaneGeometry(2.4, 1.8));
-  g.translate(0, 0.9, 0);
-  const m = bin.add(new MeshBasicNodeMaterial({ side: DoubleSide, transparent: true, depthTest: false }));
+  const m = bin.add(new SpriteNodeMaterial({ transparent: true, depthTest: false }));
   m.name = 'you';
   const t = texture(tex, uv());
   m.colorNode = t.rgb;
   m.opacityNode = t.a;
-  setEmissive(m, t.rgb.mul(0.15));
-  void u;
-  const mesh = new Mesh(g, m);
+  // E: the marker spins; a sprite fakes it with a coin-flip width (N)
+  m.scaleNode = vec2(
+    abs(cos(u.time.mul(2.2)))
+      .max(0.18)
+      .mul(2.4),
+    1.8,
+  ).mul(u.mapScale.sub(1).mul(0.55).add(1));
+  m.positionNode = vec3(0, sin(u.time.mul(3)).mul(0.15).add(1.05), 0).mul(u.mapScale.sub(1).mul(0.55).add(1));
+  const mesh = new Sprite(m);
   mesh.name = 'you';
   mesh.renderOrder = 10;
   mesh.visible = false;
@@ -196,14 +216,14 @@ function makeYou(bin: Bin, u: SharedUniforms): Mesh {
   return mesh;
 }
 
-const STREAKS = 56;
+const STREAKS = 28;
 
 function makeStreaks(bin: Bin, u: SharedUniforms, vel: N, amount: N): InstancedMesh {
   const rng = mulberry32(0x57e4);
   const data = new Float32Array(STREAKS * 4);
   for (let i = 0; i < STREAKS; i++) {
     data[i * 4] = rng() * Math.PI * 2; // angle around the travel axis
-    data[i * 4 + 1] = 0.9 + rng() * 2.2; // radius
+    data[i * 4 + 1] = 1.1 + rng() * 2.4; // radius
     data[i * 4 + 2] = rng(); // phase
     data[i * 4 + 3] = 0.6 + rng() * 0.8; // length scale
   }
@@ -223,12 +243,15 @@ function makeStreaks(bin: Bin, u: SharedUniforms, vel: N, amount: N): InstancedM
     .add(s1.mul(a.y.mul(a.x.cos())))
     .add(s2.mul(a.y.mul(a.x.sin())))
     .add(dir.mul(along));
-  const len = min(speed.mul(0.12), float(2.2)).mul(a.w);
+  const len = min(speed.mul(0.1), float(1.6)).mul(a.w);
   // camera-facing ribbon along dir
   const view = cameraPosition.sub(center).normalize();
   const side = dir.cross(view).normalize();
   m.positionNode = center.add(dir.mul(positionLocal.y.mul(len))).add(side.mul(positionLocal.x.mul(0.03)));
-  const fade = float(1).sub(abs(cyc.sub(0.5)).mul(2)).mul(amount).mul(smoothstep(3, 9, speed));
+  const fade = float(1)
+    .sub(abs(cyc.sub(0.5)).mul(2))
+    .mul(amount)
+    .mul(smoothstep(3, 9, speed));
   m.colorNode = vec3(1, 1, 1);
   setEmissive(m, vec3(0.7, 0.85, 1).mul(0.5).mul(fade));
   m.opacityNode = fade.mul(0.75).mul(float(1).sub(abs(uv().y.sub(0.5)).mul(2)));

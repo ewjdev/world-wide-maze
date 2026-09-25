@@ -136,20 +136,21 @@ function hermite(
 ): void {
   const m1 = new Vector3();
   const m2 = new Vector3();
-  if (p0 && t0 !== undefined) m1.subVectors(p2, p0).divideScalar(t2 - t0).multiplyScalar(dt);
-  if (p3 && t3 !== undefined) m2.subVectors(p3, p1).divideScalar(t3 - t1).multiplyScalar(dt);
+  if (p0 && t0 !== undefined)
+    m1.subVectors(p2, p0)
+      .divideScalar(t2 - t0)
+      .multiplyScalar(dt);
+  if (p3 && t3 !== undefined)
+    m2.subVectors(p3, p1)
+      .divideScalar(t3 - t1)
+      .multiplyScalar(dt);
   const u2 = u * u;
   const u3 = u2 * u;
   const h00 = 2 * u3 - 3 * u2 + 1;
   const h10 = u3 - 2 * u2 + u;
   const h01 = -2 * u3 + 3 * u2;
   const h11 = u3 - u2;
-  out
-    .copy(p1)
-    .multiplyScalar(h00)
-    .addScaledVector(m1, h10)
-    .addScaledVector(p2, h01)
-    .addScaledVector(m2, h11);
+  out.copy(p1).multiplyScalar(h00).addScaledVector(m1, h10).addScaledVector(p2, h01).addScaledVector(m2, h11);
 }
 
 export interface IntroGeometry {
@@ -189,7 +190,8 @@ export function introCameraKeys(g: IntroGeometry, tl: IntroTimeline): CamKey[] {
   const W = g.width;
   const D = g.depth;
   const fit = fitDistance(W, D, g.fovDeg, g.aspect) * 1.04;
-  const center = (phi: number) => new Vector3(W / 2, g.pageY + (D / 2) * Math.sin(phi), D - (D / 2) * Math.cos(phi));
+  const center = (phi: number) =>
+    new Vector3(W / 2, g.pageY + (D / 2) * Math.sin(phi), D - (D / 2) * Math.cos(phi));
   // head-on, then follow the fold: camera elevation 0° → 52°, distance grows a little
   const foldSamples = 5;
   keys.push({ t: 0, pos: new Vector3(W / 2, g.pageY + D / 2, D + fit), target: center(Math.PI / 2) });
@@ -199,7 +201,8 @@ export function introCameraKeys(g: IntroGeometry, tl: IntroTimeline): CamKey[] {
     const phi = pageFoldAngle(t, tl);
     const c = center(phi);
     const elev = ((52 * Math.PI) / 180) * ease.sineInOut(s);
-    const dist = fit * (1 + 0.12 * s);
+    // the folding page sweeps towards the camera's view axis; back off mid-fold so it never clips
+    const dist = fit * (1 + 0.12 * s + 0.2 * Math.sin(Math.PI * s));
     // aim at the page centre, looking along −Z (from the south)
     const pos = new Vector3(W / 2, c.y + Math.sin(elev) * dist, c.z + Math.cos(elev) * dist);
     keys.push({ t, pos, target: c });
@@ -224,12 +227,18 @@ export function introCameraKeys(g: IntroGeometry, tl: IntroTimeline): CamKey[] {
   const mid = new Vector3().addVectors(g.start, g.goal).multiplyScalar(0.5);
   keys.push({
     t: tl.fly.start,
-    pos: g.start.clone().addScaledVector(dir, -h * 1.1).add(new Vector3(0, h * 1.25, 0)),
+    pos: g.start
+      .clone()
+      .addScaledVector(dir, -h * 1.1)
+      .add(new Vector3(0, h * 1.25, 0)),
     target: mid,
   });
   keys.push({
     t: tl.fly.end,
-    pos: g.start.clone().addScaledVector(dir, -h * 0.45).add(new Vector3(0, h * 0.42, 0)),
+    pos: g.start
+      .clone()
+      .addScaledVector(dir, -h * 0.45)
+      .add(new Vector3(0, h * 0.42, 0)),
     target: g.start.clone().addScaledVector(dir, h * 0.9),
   });
   // settle behind the start

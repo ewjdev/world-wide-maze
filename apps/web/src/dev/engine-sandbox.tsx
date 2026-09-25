@@ -54,7 +54,7 @@ function globEntries(
   prefix: string,
 ): StageEntry[] {
   return Object.entries(json).map(([path, loader]) => {
-    const name = path.slice(path.lastIndexOf('/') + 1).replace(/\.json$/, '');
+    const name = path.slice(path.lastIndexOf('/') + 1).replace(/(\.stage)?\.json$/, '');
     return {
       id: `${prefix}:${name}`,
       label: `${prefix}/${name}`,
@@ -207,7 +207,9 @@ export default function EngineSandbox() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const engineRef = useRef<Engine | null>(null);
   const [stats, setStats] = useState<EngineStats | null>(null);
-  const [stageId, setStageId] = useState(() => new URLSearchParams(location.search).get('stage') ?? 'handmade-simple');
+  const [stageId, setStageId] = useState(
+    () => new URLSearchParams(location.search).get('stage') ?? 'handmade-simple',
+  );
   const [status, setStatus] = useState('starting…');
   const [motion, setMotion] = useState<Motion>('route');
   const [power, setPower] = useState(true);
@@ -253,8 +255,12 @@ export default function EngineSandbox() {
         tiltZ = 0.3;
       } else if (S.motion === 'drive') {
         const yaw = e.cameraYaw();
-        const f = (S.keys.has('ArrowUp') || S.keys.has('KeyW') ? 1 : 0) - (S.keys.has('ArrowDown') || S.keys.has('KeyS') ? 1 : 0);
-        const r = (S.keys.has('ArrowRight') || S.keys.has('KeyD') ? 1 : 0) - (S.keys.has('ArrowLeft') || S.keys.has('KeyA') ? 1 : 0);
+        const f =
+          (S.keys.has('ArrowUp') || S.keys.has('KeyW') ? 1 : 0) -
+          (S.keys.has('ArrowDown') || S.keys.has('KeyS') ? 1 : 0);
+        const r =
+          (S.keys.has('ArrowRight') || S.keys.has('KeyD') ? 1 : 0) -
+          (S.keys.has('ArrowLeft') || S.keys.has('KeyA') ? 1 : 0);
         tiltZ = f * 0.436;
         tiltX = r * 0.436;
         const fx = -Math.sin(yaw);
@@ -287,7 +293,8 @@ export default function EngineSandbox() {
     e.frame(dt);
   }, []);
 
-  // engine lifetime
+  // engine lifetime: created once per mount; quality changes go through setQuality
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the engine must not be recreated on re-render
   useEffect(() => {
     let disposed = false;
     let raf = 0;
@@ -328,8 +335,6 @@ export default function EngineSandbox() {
       engineRef.current?.dispose();
       engineRef.current = null;
     };
-    // quality changes go through setQuality; the engine is created once
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadStage = useCallback(async (id: string) => {
@@ -351,7 +356,10 @@ export default function EngineSandbox() {
     S.pos = routeAt(S.route, 0);
     S.nextItem = 0;
     S.frozen = false;
-    setStatus(`${entry.label}: ${stage.islands.length} islands · ${stage.bridges.length} bridges · ${stage.elevators.length} elevators · ${stage.items.length} items · loaded in ${Math.round(performance.now() - t0)} ms`);
+    collected.current.clear();
+    setStatus(
+      `${entry.label}: ${stage.islands.length} islands · ${stage.bridges.length} bridges · ${stage.elevators.length} elevators · ${stage.items.length} items · loaded in ${Math.round(performance.now() - t0)} ms`,
+    );
     (window as unknown as { __stageReady?: boolean }).__stageReady = true;
     window.dispatchEvent(new Event('wwm-stage'));
   }, []);
@@ -378,7 +386,8 @@ export default function EngineSandbox() {
       }
       if (ev.code === 'KeyM') engineRef.current?.setView('map');
       if (ev.code === 'KeyC') engineRef.current?.setView('chase');
-      if (ev.code.startsWith('Arrow') || ['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(ev.code)) setMotion('drive');
+      if (ev.code.startsWith('Arrow') || ['KeyW', 'KeyA', 'KeyS', 'KeyD'].includes(ev.code))
+        setMotion('drive');
     };
     const up = (ev: KeyboardEvent) => sim.current.keys.delete(ev.code);
     addEventListener('keydown', down);
@@ -390,11 +399,20 @@ export default function EngineSandbox() {
   }, []);
 
   const fire = (ev: SimEvent) => engineRef.current?.handleEvent(ev);
+  const collected = useRef(new Set<number>());
+  /** Collect the nearest not-yet-collected item of a kind (so the pop happens in view). */
   const collectNext = (kind: 'small' | 'large') => {
     const S = sim.current;
-    const list = S.stage?.items.filter((i) => i.kind === kind) ?? [];
-    const it = list[S.nextItem++ % Math.max(1, list.length)];
-    if (it) fire({ type: 'item', itemId: it.id, kind });
+    const [bx, , bz] = S.pos;
+    let best: { id: number; d: number } | null = null;
+    for (const it of S.stage?.items ?? []) {
+      if (it.kind !== kind || collected.current.has(it.id)) continue;
+      const d = Math.hypot(it.pos[0] / PX_PER_METER - bx, it.pos[1] / PX_PER_METER - bz);
+      if (!best || d < best.d) best = { id: it.id, d };
+    }
+    if (!best) return;
+    collected.current.add(best.id);
+    fire({ type: 'item', itemId: best.id, kind });
   };
 
   // automation hook for Playwright evidence
@@ -450,7 +468,11 @@ export default function EngineSandbox() {
             </label>
             <label style={rowStyle}>
               quality
-              <select value={quality} onChange={(e) => setQuality(e.target.value as QualitySetting)} style={{ flex: 1 }}>
+              <select
+                value={quality}
+                onChange={(e) => setQuality(e.target.value as QualitySetting)}
+                style={{ flex: 1 }}
+              >
                 {['auto', 'high', 'medium', 'low'].map((q) => (
                   <option key={q}>{q}</option>
                 ))}
@@ -458,14 +480,19 @@ export default function EngineSandbox() {
             </label>
             <label style={rowStyle}>
               ball
-              <select value={motion} onChange={(e) => setMotion(e.target.value as Motion)} style={{ flex: 1 }}>
+              <select
+                value={motion}
+                onChange={(e) => setMotion(e.target.value as Motion)}
+                style={{ flex: 1 }}
+              >
                 <option value="route">auto route start → goal</option>
                 <option value="drive">keyboard (arrows/WASD, Space)</option>
                 <option value="still">still</option>
               </select>
             </label>
             <label style={rowStyle}>
-              <input type="checkbox" checked={power} onChange={(e) => setPower(e.target.checked)} /> POWER held
+              <input type="checkbox" checked={power} onChange={(e) => setPower(e.target.checked)} /> POWER
+              held
             </label>
             <div style={groupStyle}>
               {btn('chase', () => engineRef.current?.setView('chase'))}
@@ -512,13 +539,17 @@ export default function EngineSandbox() {
                   e.frame(0.016);
                 }
                 const after = e.stats().memory;
-                setStatus(`memory baseline ${JSON.stringify(base)} → after 5 cycles ${JSON.stringify(after)}`);
+                setStatus(
+                  `memory baseline ${JSON.stringify(base)} → after 5 cycles ${JSON.stringify(after)}`,
+                );
                 await loadStage(stageId);
               })}
             </div>
           </div>
           {stats && (
-            <div style={{ ...panelStyle, top: 12, right: 12, width: 210, fontVariantNumeric: 'tabular-nums' }}>
+            <div
+              style={{ ...panelStyle, top: 12, right: 12, width: 210, fontVariantNumeric: 'tabular-nums' }}
+            >
               <div>
                 {stats.fps.toFixed(0)} fps · tier {stats.tier} · {stats.backend}
               </div>

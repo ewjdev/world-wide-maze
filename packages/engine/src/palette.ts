@@ -71,12 +71,10 @@ export const SHADOW_FALLOFF_M = 13.9;
 /** E: 2013 world unit in metres (bundle-notes unit conversion). */
 export const WU = 0.926;
 
-/** E: island slab 0.5 WU thick. */
-export const ISLAND_THICKNESS_M = 0.46;
-/** R: bridge deck thickness (not in the evidence; thinner than islands so they read as bridges). */
-export const BRIDGE_THICKNESS_M = 0.28;
-/** E: rails are a ribbon 0.5–0.6 WU above the surface. */
-export const RAIL_HEIGHT_M = 0.52;
+/** Rail collider thickness in @wwm/physics (N there); the visual rail hugs the same box. */
+export const RAIL_THICKNESS_M = 0.1;
+/** @wwm/physics `bridgeOverlap`: flat aprons reach this far past the island edge (m). */
+export const BRIDGE_APRON_OVERLAP_M = 0.3;
 /** E: ocean plane 3000 WU wide at y = −200 WU (islands start ≈ 10 WU). */
 export const GROUND_SIZE_M = 2778;
 export const GROUND_BELOW_LOWEST_M = 194;

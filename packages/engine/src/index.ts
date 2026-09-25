@@ -15,7 +15,12 @@ export {
 } from './engine.ts';
 export { buildHeightfield, type Heightfield, lineOfSight, sampleTop } from './geom/heightfield.ts';
 export { type MeshData, mergeMeshData } from './geom/mesh.ts';
-export { buildStageMeshes, elevatorFootprint, type StageMeshes, triangulateIsland } from './geom/structures.ts';
+export {
+  buildStageMeshes,
+  elevatorFootprint,
+  type StageMeshes,
+  triangulateIsland,
+} from './geom/structures.ts';
 export { clipTriangleToBand, planTiles, type TexTile, type TilePlan, tileUv } from './geom/tiling.ts';
 export { MAX_TIER, QualityLadder, type QualitySetting, TIERS, type TierFeatures } from './quality.ts';
 

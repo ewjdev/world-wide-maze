@@ -63,14 +63,20 @@ export const BRIDGE_DROP_M = 40;
 export function hsv2rgb(h: N, s: N, v: N): N {
   // iq's smooth-free branchless HSV → RGB
   const k = vec3(0, 2 / 3, 1 / 3);
-  const p = abs(fract(vec3(h, h, h).add(k)).mul(6).sub(3));
+  const p = abs(
+    fract(vec3(h, h, h).add(k))
+      .mul(6)
+      .sub(3),
+  );
   return mix(vec3(1, 1, 1), clamp(p.sub(1), 0, 1), s).mul(v);
 }
 
 /** Slow per-face value noise in [-1, 1] from a face seed (stands in for the 2013 `snoise(color + t)`). */
 function faceNoise(seed: N, t: N, k: number): N {
   const a = seed.mul(71.3 + k * 13.1);
-  return sin(a.add(t.mul(0.55 + k * 0.17))).mul(0.6).add(sin(a.mul(2.3).add(t.mul(0.9 + k * 0.11))).mul(0.4));
+  return sin(a.add(t.mul(0.55 + k * 0.17)))
+    .mul(0.6)
+    .add(sin(a.mul(2.3).add(t.mul(0.9 + k * 0.11))).mul(0.4));
 }
 
 /**
@@ -93,14 +99,23 @@ export function fragmentedColor(u: SharedUniforms): N {
  */
 export function facetShade(): N {
   const n: N = attribute('normal', 'vec3');
-  return vertexStage(n.dot(vec3(0.35, 0.85, 0.4).normalize()).mul(0.14).add(0.88));
+  return vertexStage(
+    n
+      .dot(vec3(0.35, 0.85, 0.4).normalize())
+      .mul(0.14)
+      .add(0.88),
+  );
 }
 
 /** E: `materiallib` ball shadow, verbatim maths (radius, darkness, falloff over 15 WU). */
 export function ballShadow(u: SharedUniforms): N {
   const pos = positionWorld;
   const above = u.ball.y.greaterThan(pos.y);
-  const falloff = select(above, float(1).sub(smoothstep(0, SHADOW_FALLOFF_M, u.ball.distance(pos))), float(0));
+  const falloff = select(
+    above,
+    float(1).sub(smoothstep(0, SHADOW_FALLOFF_M, u.ball.distance(pos))),
+    float(0),
+  );
   const bias = u.shadowRadius.mul(float(1).sub(falloff).mul(2).add(0.05));
   const dist = pos.xz.distance(u.ball.xz);
   const k = smoothstep(u.shadowRadius.add(bias), u.shadowRadius.sub(bias), dist).mul(falloff);
@@ -146,4 +161,3 @@ export function railPosition(u: SharedUniforms): N {
 export function wireFade(dist: N): N {
   return float(1).sub(smoothstep(40, 160, dist));
 }
-

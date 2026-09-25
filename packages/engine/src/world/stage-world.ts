@@ -2,7 +2,14 @@
  * Static stage objects: island tops (the website), sides, bridges, rails, elevator platforms, and the
  * upright "page frame" used by the intro. Each type is one merged mesh (tops: one draw per texture tile).
  */
-import { LEVEL_HEIGHT_M, PX_PER_METER, type StageData } from '@wwm/schema';
+import {
+  LEVEL_HEIGHT_M,
+  PX_PER_METER,
+  RAIL_HEIGHT_M,
+  SLAB_THICKNESS_M,
+  type StageData,
+  type Vec2,
+} from '@wwm/schema';
 import {
   attribute,
   float,
@@ -22,8 +29,8 @@ import {
   BufferAttribute,
   BufferGeometry,
   DoubleSide,
-  LinearMipmapLinearFilter,
   LinearFilter,
+  LinearMipmapLinearFilter,
   type Material,
   Mesh,
   MeshBasicNodeMaterial,
@@ -32,10 +39,10 @@ import {
   Texture,
 } from 'three/webgpu';
 import type { MeshData } from '../geom/mesh.ts';
-import { MeshBuilder } from '../geom/mesh.ts';
-import { buildStageMeshes, elevatorFootprint, GROUP_BRIDGE } from '../geom/structures.ts';
+import { MeshBuilder, type V3 } from '../geom/mesh.ts';
+import { buildStageMeshes, elevatorFootprint, GROUP_BRIDGE, railAlong } from '../geom/structures.ts';
 import { clipTriangleToBand, fan, type TilePlan, tileUv } from '../geom/tiling.ts';
-import { HSV } from '../palette.ts';
+import { HSV, RAIL_THICKNESS_M } from '../palette.ts';
 import type { Bin } from './bin.ts';
 import {
   ballShadow,
@@ -130,9 +137,11 @@ export function buildStageObjects(
   const rails = new Mesh(toGeometry(meshes.rails, bin), bin.add(railMaterial(u)));
   rails.name = 'rails';
 
-  // ── elevator platforms (one draw; each vertex looks its platform height up in a uniform array) ──
+  // ── elevator platforms: two per elevator sharing one footprint (contracts v0.2.2). Platform A's top is
+  // the sim's y; platform B's top is levelLow + levelHigh − y. One draw: each vertex looks its height up.
   const ids = new Map<number, number>();
   const ys: number[] = [];
+  const sums: number[] = [];
   const eb = new MeshBuilder();
   eb.face.group = GROUP_BRIDGE;
   eb.face.hsv = HSV.red;
@@ -140,47 +149,83 @@ export function buildStageObjects(
   for (const [i, el] of stage.elevators.entries()) {
     ids.set(el.id, i);
     ys.push(el.levelLow * LEVEL_HEIGHT_M);
-    const fp = elevatorFootprint(el.a, el.b, el.width).map(
-      (p) => [p[0] / PX_PER_METER, p[1] / PX_PER_METER] as const,
-    );
-    const before = eb.triangleCount;
-    eb.face.glow = 0;
-    eb.face.seed = (i * 0.37) % 1;
-    eb.prism(fp, [-0.22, -0.22, -0.22, -0.22], [0, 0, 0, 0]);
-    // glowing edge strips on the top perimeter
-    eb.face.glow = 1;
-    for (let k = 0; k < 4; k++) {
-      const a = fp[k] as readonly [number, number];
-      const b = fp[(k + 1) % 4] as readonly [number, number];
-      const dx = b[0] - a[0];
-      const dz = b[1] - a[1];
-      const len = Math.hypot(dx, dz) || 1;
-      const nx = (-dz / len) * 0.07;
-      const nz = (dx / len) * 0.07;
-      // inward offset (footprint is CCW or CW; use the centroid to pick the inward side)
-      const cx = fp.reduce((s, p) => s + p[0], 0) / 4;
-      const cz = fp.reduce((s, p) => s + p[1], 0) / 4;
-      const sgn = (cx - a[0]) * nx + (cz - a[1]) * nz > 0 ? 1 : -1;
+    sums.push((el.levelLow + el.levelHigh) * LEVEL_HEIGHT_M);
+    const fpx = elevatorFootprint(el.a, el.b, el.width);
+    const fp = fpx.map((p) => [p[0] / PX_PER_METER, p[1] / PX_PER_METER] as const);
+    for (const plat of [0, 1]) {
+      const before = eb.triangleCount;
+      eb.face.glow = 0;
+      eb.face.seed = (i * 0.37 + plat * 0.5) % 1;
+      eb.face.base = 0;
       eb.prism(
-        [
-          [a[0], a[1]],
-          [b[0], b[1]],
-          [b[0] + nx * sgn, b[1] + nz * sgn],
-          [a[0] + nx * sgn, a[1] + nz * sgn],
-        ],
+        fp,
+        [-SLAB_THICKNESS_M, -SLAB_THICKNESS_M, -SLAB_THICKNESS_M, -SLAB_THICKNESS_M],
         [0, 0, 0, 0],
-        [0.035, 0.035, 0.035, 0.035],
       );
+      // glowing strips on the top perimeter
+      eb.face.glow = 1;
+      const cx = fp.reduce((acc, p) => acc + p[0], 0) / 4;
+      const cz = fp.reduce((acc, p) => acc + p[1], 0) / 4;
+      for (let k = 0; k < 4; k++) {
+        const a = fp[k] as readonly [number, number];
+        const b = fp[(k + 1) % 4] as readonly [number, number];
+        const dx = b[0] - a[0];
+        const dz = b[1] - a[1];
+        const len = Math.hypot(dx, dz) || 1;
+        let nx = (-dz / len) * 0.07;
+        let nz = (dx / len) * 0.07;
+        if ((cx - a[0]) * nx + (cz - a[1]) * nz < 0) {
+          nx = -nx;
+          nz = -nz;
+        }
+        eb.prism(
+          [
+            [a[0], a[1]],
+            [b[0], b[1]],
+            [b[0] + nx, b[1] + nz],
+            [a[0] + nx, a[1] + nz],
+          ],
+          [0, 0, 0, 0],
+          [0.03, 0.03, 0.03, 0.03],
+        );
+      }
+      // side rails along the length, just outside the width (as the physics platform rails)
+      eb.face.glow = 0;
+      const railOff = (RAIL_THICKNESS_M / 2) * PX_PER_METER;
+      const f0 = fpx[0] as Vec2;
+      const f1 = fpx[1] as Vec2;
+      const f2 = fpx[2] as Vec2;
+      const f3 = fpx[3] as Vec2;
+      // unit vector across the platform (from the +n side to the −n side)
+      const ax = (f3[0] - f0[0]) / (el.width || 1);
+      const ay = (f3[1] - f0[1]) / (el.width || 1);
+      for (const [p0, p1, sgn] of [
+        [f0, f1, -1],
+        [f3, f2, 1],
+      ] as const) {
+        const q0: V3 = [
+          (p0[0] + ax * railOff * sgn) / PX_PER_METER,
+          0,
+          (p0[1] + ay * railOff * sgn) / PX_PER_METER,
+        ];
+        const q1: V3 = [
+          (p1[0] + ax * railOff * sgn) / PX_PER_METER,
+          0,
+          (p1[1] + ay * railOff * sgn) / PX_PER_METER,
+        ];
+        railAlong(eb, [q0, q1], RAIL_HEIGHT_M);
+      }
+      for (let t = before; t < eb.triangleCount; t++) eidx.push(i, plat, i, plat, i, plat);
     }
-    for (let t = before; t < eb.triangleCount; t++) eidx.push(i, i, i);
   }
   let elevators: Mesh | null = null;
   const elevatorY = uniformArray(ys.length ? ys : [0], 'float');
+  const elevatorSum = uniformArray(sums.length ? sums : [0], 'float');
   if (stage.elevators.length) {
     const md = eb.build();
     const g = toGeometry(md, bin);
-    g.setAttribute('eidx', new BufferAttribute(new Float32Array(eidx), 1));
-    elevators = new Mesh(g, bin.add(elevatorMaterial(u, elevatorY)));
+    g.setAttribute('eidx', new BufferAttribute(new Float32Array(eidx), 2));
+    elevators = new Mesh(g, bin.add(elevatorMaterial(u, elevatorY, elevatorSum)));
     elevators.name = 'elevators';
     elevators.frustumCulled = false;
   }
@@ -231,7 +276,18 @@ export function buildStageObjects(
     meshes.sides.triangles +
     meshes.bridges.triangles +
     meshes.rails.triangles;
-  return { tops, sides, bridges, rails, elevators, frame, frameOpacity, elevatorY, elevatorIds: ids, triangles };
+  return {
+    tops,
+    sides,
+    bridges,
+    rails,
+    elevators,
+    frame,
+    frameOpacity,
+    elevatorY,
+    elevatorIds: ids,
+    triangles,
+  };
 }
 
 /** Concatenate per-tile buffers into one geometry with one group per tile. */
@@ -303,7 +359,9 @@ function bridgeMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
   const t = uv();
   const isTop = t.x.lessThan(1.5);
   const edge = max(float(1).sub(smoothstep(0.05, 0.085, t.x)), smoothstep(0.915, 0.95, t.x));
-  const plank = float(1).sub(smoothstep(0.0, 0.05, fract(t.y.mul(1.0)))).mul(0.18);
+  const plank = float(1)
+    .sub(smoothstep(0.0, 0.05, fract(t.y.mul(1.0))))
+    .mul(0.18);
   const base = fragmentedColor(u).mul(facetShade());
   const deck = mix(base.mul(float(1).add(plank)), vec3(1, 1, 1), edge);
   m.colorNode = select(isTop, deck, base).mul(ballShadow(u));
@@ -319,12 +377,13 @@ function railMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
   return m;
 }
 
-function elevatorMaterial(u: SharedUniforms, ys: N): MeshBasicNodeMaterial {
+function elevatorMaterial(u: SharedUniforms, ys: N, sums: N): MeshBasicNodeMaterial {
   const m = new MeshBasicNodeMaterial();
   m.name = 'elevator';
   const glow = attribute('glow', 'float');
-  const idx = attribute('eidx', 'float');
-  const y = ys.element(idx.toInt());
+  const idx: N = attribute('eidx', 'vec2');
+  const yA = ys.element(idx.x.toInt());
+  const y = select(idx.y.lessThan(0.5), yA, sums.element(idx.x.toInt()).sub(yA));
   const base = fragmentedColor(u).mul(facetShade());
   m.colorNode = mix(base, vec3(1, 0.82, 0.8), glow.mul(0.6)).mul(ballShadow(u));
   // edge strips glow (E: elevators are one of the glow objects in the rebuild brief)

@@ -33,10 +33,10 @@ import {
   InstancedBufferAttribute,
   Mesh,
   MeshBasicNodeMaterial,
-  SRGBColorSpace,
   Sprite,
   SpriteNodeMaterial,
-  Vector3,
+  SRGBColorSpace,
+  type Vector3,
   Vector4,
 } from 'three/webgpu';
 import { COLOR_TRIANGLE, COLOR_WIRE, GROUND_SIZE_M, WU } from '../palette.ts';
@@ -139,11 +139,18 @@ export function buildBackground(
   const age = u.time.sub(rippleU.z);
   const dist = p.xz.distance(rippleU.xy);
   const ring = float(1).sub(smoothstep(0, 14, dist.sub(age.mul(30)).abs()));
-  const rippleAmt = ring.mul(float(1).sub(smoothstep(0, 4, age))).mul(rippleU.w).mul(age.greaterThan(0).select(1, 0));
+  const rippleAmt = ring
+    .mul(float(1).sub(smoothstep(0, 4, age)))
+    .mul(rippleU.w)
+    .mul(age.greaterThan(0).select(1, 0));
   gm.positionNode = vec3(p.x, p.y.add(h).add(rippleAmt.mul(9)), p.z);
   const facet: N = attribute('facet', 'vec3');
   const sd: N = attribute('seed', 'float');
-  const shimmer = vertexStage(sin(sd.mul(91.7).add(u.time.mul(0.5))).mul(0.045).add(1));
+  const shimmer = vertexStage(
+    sin(sd.mul(91.7).add(u.time.mul(0.5)))
+      .mul(0.045)
+      .add(1),
+  );
   const b: N = attribute('bary', 'vec3');
   const edgeDist = min(min(b.x, b.y), b.z);
   const w = fwidth(edgeDist).mul(1.3);
@@ -185,7 +192,11 @@ export function buildBackground(
   const mcol: N = instancedBufferAttribute(new InstancedBufferAttribute(mc, 4));
   const mm = bin.add(new SpriteNodeMaterial({ transparent: false }));
   mm.name = 'motes';
-  const drift = vec3(sin(u.time.mul(0.21).add(mpos.w)).mul(3), sin(u.time.mul(0.33).add(mpos.w.mul(1.7))).mul(2), 0);
+  const drift = vec3(
+    sin(u.time.mul(0.21).add(mpos.w)).mul(3),
+    sin(u.time.mul(0.33).add(mpos.w.mul(1.7))).mul(2),
+    0,
+  );
   mm.positionNode = mpos.xyz.add(drift);
   mm.scaleNode = mcol.w.mul(rich);
   const d = uv().sub(0.5).length();

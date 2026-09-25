@@ -13,8 +13,8 @@ import {
   type StageData,
   type Vec2,
 } from '@wwm/schema';
-import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
+import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { emissive, float, mrt, output, pass, renderOutput, vec4 } from 'three/tsl';
 import {
   Color,
@@ -29,11 +29,10 @@ import {
   Vector3,
   WebGPURenderer,
 } from 'three/webgpu';
-import { ChaseCamera, CHASE, tiltQuaternion } from './camera/chase.ts';
+import { CHASE, ChaseCamera, tiltQuaternion } from './camera/chase.ts';
 import {
   type CamKey,
   ease,
-  fitDistance,
   type IntroMode,
   type IntroTimeline,
   introCameraKeys,
@@ -56,14 +55,19 @@ import {
   WU,
 } from './palette.ts';
 import { MAX_TIER, QualityLadder, type QualitySetting, TIERS } from './quality.ts';
-import { buildBackground, type Background } from './world/background.ts';
+import { type Background, buildBackground } from './world/background.ts';
 import { type Ball, buildBall } from './world/ball.ts';
 import { Bin } from './world/bin.ts';
 import { buildGoal, type Goal } from './world/goal.ts';
 import { buildItems, type Items } from './world/items.ts';
 import { Particles } from './world/particles.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
-import { buildStageObjects, makeStageTextures, type StageObjects, type StageTextures } from './world/stage-world.ts';
+import {
+  buildStageObjects,
+  makeStageTextures,
+  type StageObjects,
+  type StageTextures,
+} from './world/stage-world.ts';
 
 export type ViewMode = 'chase' | 'map' | 'intro';
 export type StageImage = ImageBitmap | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas;
@@ -254,17 +258,22 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let blendFrom: { pos: Vector3; target: Vector3; t0: number; dur: number } | null = null;
   let mapAngle = 0;
   let goalWatch = false;
+  const goalCam = new Vector3();
 
   // intro
-  let intro: { tl: IntroTimeline; keys: CamKey[]; t0: number; resolve: () => void; pixelDone: boolean } | null =
-    null;
+  let intro: {
+    tl: IntroTimeline;
+    keys: CamKey[];
+    t0: number;
+    resolve: () => void;
+    pixelDone: boolean;
+  } | null = null;
   let spawn: { resolve: () => void } | null = null;
   let tweens: Tween[] = [];
   let time = 0;
-  let frameNo = 0;
   let envFace = 0;
   let envPrimed = false;
-  let pendingFireworks = 5;
+  const pendingFireworks = 5;
   const last = { scene: 0, env: 0, post: 0, total: 0, triangles: 0 };
   // measured around the scene pass via onBeforeRender/onAfterRender hooks on the scene
   let sceneDraws = 0;
@@ -620,8 +629,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const done = intro;
       intro = null;
       u.extrude.value = u.bridges.value = u.appear.value = 1;
-      if (goal) goal.visibility.value = 1;
-      if (objs) objs.frame.visible = false;
+      if (goal) {
+        goal.visibility.value = 1;
+        goal.group.visible = true;
+      }
+      if (objs) showAllStage(objs);
+      if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
       if (pixelLook) textures?.setPixelLook(true);
       finishSpawnNow();
       view = 'chase';
@@ -648,6 +661,20 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const top = center.clone().add(new Vector3(0, 1500 * WU, 0));
       goalWatch = true;
       chase.holdPosition = true;
+      // pull back to a vantage point behind the goal (so the ribbon, the rising ball and the fireworks
+      // all fit), keeping the current heading
+      const back = camPos.clone().sub(goalWorld).setY(0);
+      if (back.lengthSq() < 1e-4) back.set(0, 0, 1);
+      back.setLength(15);
+      const vantage = goalWorld
+        .clone()
+        .add(back)
+        .add(new Vector3(0, 4.5, 0));
+      const camFrom = camPos.clone();
+      tween(1.4, (k) => {
+        goalCam.lerpVectors(camFrom, vantage, ease.cubicInOut(k));
+      });
+      goalCam.copy(camFrom);
       const pull = 0.8;
       const rise = 2;
       const t0 = time;
@@ -661,7 +688,11 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       let at = pull + 0.2;
       for (let i = 0; i < n; i++) {
         const delay = at;
-        tween(delay, () => {}, () => launchFirework());
+        tween(
+          delay,
+          () => {},
+          () => launchFirework(),
+        );
         at += 0.3 + rng() * 0.5;
       }
       await wait(Math.max(pull + rise, at + 1.6));
@@ -683,7 +714,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     frame(dt) {
       const d = Math.min(Math.max(dt, 0), 0.1);
       time += d;
-      frameNo++;
       u.time.value = time;
       if (ladder.value.sample(dt)) applyTier();
 
@@ -716,14 +746,20 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         ball.velocity.value.copy(ballVel);
         const speed = ballVel.length();
         ball.streakAmount.value = reducedMotion ? 0 : powerGlow * Math.min(1, speed / 8);
-        ball.you.position.copy(ballPos).add(new Vector3(0, 1.1, 0));
-        ball.you.rotation.y = time * 2.4;
+        ball.you.position.copy(ballPos);
       }
 
       // tilt lean: camera.up and background, 20–50 % of the tilt (E), off under reduced motion
       const yaw = chase.yaw();
       if (!reducedMotion && (view === 'chase' || view === 'map')) {
-        tiltQuaternion(control.power ? control.tiltX : 0, control.power ? control.tiltZ : 0, yaw, 0.2, 0.5, leanTarget);
+        tiltQuaternion(
+          control.power ? control.tiltX : 0,
+          control.power ? control.tiltZ : 0,
+          yaw,
+          0.2,
+          0.5,
+          leanTarget,
+        );
       } else leanTarget.identity();
       lean.slerp(leanTarget, 1 - Math.exp(-d / 0.18));
       if (bg) {
@@ -884,10 +920,13 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       b.materialize.value = k;
     });
     const openAt = dur * (2.5 / 3);
-    tween(openAt, () => {}, () =>
-      tween(dur - openAt + 0.25, (k) => {
-        b.cageOpen.value = ease.cubicOut(k);
-      }),
+    tween(
+      openAt,
+      () => {},
+      () =>
+        tween(dur - openAt + 0.25, (k) => {
+          b.cageOpen.value = ease.cubicOut(k);
+        }),
     );
     return new Promise<void>((resolve) => {
       spawn = { resolve };
@@ -917,25 +956,26 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     const ndc = new Vector3(-0.75 + rng() * 1.5, -0.05 + rng() * 0.75, 0.5).unproject(camera);
     const dir = ndc.sub(camera.position).normalize();
     const origin = camera.position.clone().addScaledVector(dir, 26 + rng() * 10);
+    // saturated palettes: the sky is near-white, so the bursts must carry colour, not light
     const palette = [
-      [GOAL_LETTERS[0], 0xffffff, 0xffb46c],
-      [GOAL_LETTERS[1], 0xffffff, 0xffca00],
-      [GOAL_LETTERS[2], 0xffffff, 0x73ec61],
-      [ITEM_LARGE, 0xffffff, COLOR_WIRE[3]],
-      [COLOR_WIRE[5], 0xffffff, COLOR_WIRE[4]],
+      [GOAL_LETTERS[0], 0xff7a3d, 0xffd23f],
+      [GOAL_LETTERS[1], 0xff9f1c, GOAL_LETTERS[0]],
+      [GOAL_LETTERS[2], 0x16c172, ITEM_LARGE],
+      [ITEM_LARGE, 0x1f7aff, 0x7b61ff],
+      [0xff4fa3, 0x7b61ff, COLOR_WIRE[5]],
     ][Math.floor(rng() * 5)] as (number | string)[];
+    const big = { origin, colors: palette, drag: 1.3, gravity: 2.8, glow: 1.2, twinkle: 0.35 };
+    particles.emit({ ...big, count: 170, speed: [8, 12.5], life: [1.4, 2.3], size: [0.42, 0.72] }, time);
+    // inner ring of white-hot sparks
     particles.emit(
       {
-        origin,
-        count: 160,
-        speed: [6, 11],
-        life: [1.3, 2.2],
-        size: [0.28, 0.5],
-        colors: palette,
-        drag: 1.4,
-        gravity: 2.6,
-        glow: 1.6,
-        twinkle: 0.55,
+        ...big,
+        colors: [0xffffff, palette[0] as number],
+        count: 60,
+        speed: [2, 5],
+        life: [0.6, 1.1],
+        size: [0.3, 0.5],
+        twinkle: 0.8,
       },
       time,
     );
@@ -961,40 +1001,61 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         objs.frame.visible = fade < 1;
         // islands only exist once the page lies flat
         const ext = progress(t, tl.extrude);
-        objs.tops.visible = objs.sides.visible = t >= tl.extrude.start - 0.01;
+        objs.tops.visible = objs.sides.visible = objs.rails.visible = t >= tl.extrude.start - 0.01;
+        objs.bridges.visible = t >= tl.bridges.start - 0.01;
+        if (objs.elevators) objs.elevators.visible = objs.bridges.visible;
         u.extrude.value = ext;
       }
       u.bridges.value = progress(t, tl.bridges);
       u.appear.value = ease.backOut(progress(t, tl.appear));
-      if (goal) goal.visibility.value = progress(t, tl.appear);
+      if (items) items.small.visible = items.large.visible = items.largeShell.visible = t >= tl.appear.start;
+      if (goal) {
+        goal.visibility.value = progress(t, tl.appear);
+        goal.group.visible = t >= tl.appear.start;
+      }
       if (pixelLook && !intro.pixelDone && t >= tl.pixelAt) {
         textures?.setPixelLook(true);
         intro.pixelDone = true;
       }
       if (!spawn && !ballOverride && t >= tl.ballDrop.start && ball) {
-        void startSpawn(startWorld.clone().add(new Vector3(0, 0.5, 0)), tl.ballDrop.end - tl.ballDrop.start, false);
+        void startSpawn(
+          startWorld.clone().add(new Vector3(0, 0.5, 0)),
+          tl.ballDrop.end - tl.ballDrop.start,
+          false,
+        );
       }
       if (t >= tl.total) {
         const done = intro;
         intro = null;
-        if (objs) {
-          objs.frame.visible = false;
-          objs.tops.visible = objs.sides.visible = true;
-        }
+        if (objs) showAllStage(objs);
+        if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
         view = 'chase';
         chase.holdPosition = false;
         chase.reset(startWorld.clone().add(new Vector3(0, 0.5, 0)), goalWorld);
         done.resolve();
       }
     } else if (goalWatch) {
-      // hold position, look at the ball as it flies away
-      camTarget.lerp(ballPos, 1 - Math.exp(-d / 0.15));
+      // hold position, look at the ball as it flies away, but never tilt more than ~38° up so the goal
+      // ribbon stays in frame under the fireworks
+      camPos.copy(goalCam);
+      const want = ballPos.clone();
+      const off = want.clone().sub(camPos);
+      const horiz = Math.hypot(off.x, off.z) || 1e-3;
+      const maxUp = Math.tan((38 * Math.PI) / 180) * horiz;
+      if (off.y > maxUp) want.y = camPos.y + maxUp;
+      camTarget.lerp(want, 1 - Math.exp(-d / 0.25));
       camUp.copy(UP);
     } else if (view === 'map') {
       mapAngle += 0.2 * d; // E: 0.2 rad/s
-      const fit = fitDistance(stageSize.w, stageSize.w, camera.fov, camera.aspect);
-      const R = Math.max(fit * 1.7, Math.max(stageSize.w, stageSize.d) * 0.75);
-      const H = meanY + Math.max(46.3 - 16, R * 0.62);
+      // R: 2013 orbited at 50 WU height, radius 1.7 × fit-width. We fit the stage's bounding sphere at a
+      // 52° elevation instead, so the whole page stays in frame at every orbit angle and aspect.
+      const radius = 0.5 * Math.hypot(stageSize.w, stageSize.d);
+      const vf = (camera.fov * Math.PI) / 360;
+      const hf = Math.atan(Math.tan(vf) * camera.aspect);
+      const dist = (radius / Math.sin(Math.min(vf, hf))) * 0.8;
+      const el = (52 * Math.PI) / 180;
+      const R = dist * Math.cos(el);
+      const H = meanY + dist * Math.sin(el);
       camPos.set(stageCenter.x + Math.sin(mapAngle) * R, H, stageCenter.z + Math.cos(mapAngle) * R);
       camTarget.copy(stageCenter);
       camUp.copy(UP);
@@ -1008,7 +1069,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     const mapK = view === 'map' ? 1 : 0;
     u.mapScale.value += (1 + mapK * 2.2 - u.mapScale.value) * (1 - Math.exp(-d / 0.25));
     if (ball) ball.you.visible = view === 'map' && ballVisible;
-    if (ball) ball.you.scale.setScalar(view === 'map' ? 4 : 1);
     if (blendFrom) {
       const k = ease.cubicInOut(Math.min(1, (time - blendFrom.t0) / blendFrom.dur));
       camera.position.lerpVectors(blendFrom.pos, camPos, k);
@@ -1029,6 +1089,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   void MAX_TIER;
   void GOAL_RADIUS_M;
   return engine;
+}
+
+function showAllStage(o: StageObjects): void {
+  o.frame.visible = false;
+  o.tops.visible = o.sides.visible = o.rails.visible = o.bridges.visible = true;
+  if (o.elevators) o.elevators.visible = true;
 }
 
 function lerp(a: number, b: number, t: number): number {

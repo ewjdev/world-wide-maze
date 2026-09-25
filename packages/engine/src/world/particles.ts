@@ -70,15 +70,25 @@ export class Particles {
     const alive = age.greaterThanEqual(0).and(age.lessThan(life));
     const k = max(D.y, 0.001);
     // x(t) = x0 + v (1 − e^{−kt}) / k − ½ g t²
-    const travel = float(1).sub(exp(k.negate().mul(age))).div(k);
+    const travel = float(1)
+      .sub(exp(k.negate().mul(age)))
+      .div(k);
     const pos = A.xyz.add(B.xyz.mul(travel)).sub(vec3(0, D.x.mul(0.5).mul(age).mul(age), 0));
     m.positionNode = pos;
     const t = age.div(max(life, 0.001));
-    const twinkle = mix(float(1), sin(age.mul(38).add(A.w.mul(91))).mul(0.5).add(0.5), D.w);
+    const twinkle = mix(
+      float(1),
+      sin(age.mul(38).add(A.w.mul(91)))
+        .mul(0.5)
+        .add(0.5),
+      D.w,
+    );
     m.scaleNode = select(alive, C.w.mul(float(1).sub(t.mul(0.6))), float(0));
     const r = uv().sub(0.5).length().mul(2);
-    const disc = float(1).sub(smoothstep(0.35, 1, r));
-    const fade = float(1).sub(smoothstep(0.55, 1, t)).mul(twinkle);
+    const disc = float(1).sub(smoothstep(0.6, 1, r));
+    const fade = float(1)
+      .sub(smoothstep(0.55, 1, t))
+      .mul(twinkle);
     m.colorNode = C.xyz.mul(disc).mul(fade);
     setEmissive(m, C.xyz.mul(disc).mul(fade).mul(D.z));
     m.opacityNode = disc.mul(fade);

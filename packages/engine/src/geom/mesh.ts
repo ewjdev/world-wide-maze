@@ -120,8 +120,24 @@ export class MeshBuilder {
         const a = ring[0] as V2;
         const b = ring[i] as V2;
         const c = ring[i + 1] as V2;
-        this.tri([a[0], y1[0] as number, a[1]], [b[0], y1[i] as number, b[1]], [c[0], y1[i + 1] as number, c[1]], undefined, undefined, undefined, [0, 1, 0]);
-        this.tri([a[0], y0[0] as number, a[1]], [b[0], y0[i] as number, b[1]], [c[0], y0[i + 1] as number, c[1]], undefined, undefined, undefined, [0, -1, 0]);
+        this.tri(
+          [a[0], y1[0] as number, a[1]],
+          [b[0], y1[i] as number, b[1]],
+          [c[0], y1[i + 1] as number, c[1]],
+          undefined,
+          undefined,
+          undefined,
+          [0, 1, 0],
+        );
+        this.tri(
+          [a[0], y0[0] as number, a[1]],
+          [b[0], y0[i] as number, b[1]],
+          [c[0], y0[i + 1] as number, c[1]],
+          undefined,
+          undefined,
+          undefined,
+          [0, -1, 0],
+        );
       }
     }
   }

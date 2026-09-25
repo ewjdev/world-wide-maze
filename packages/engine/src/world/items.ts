@@ -75,14 +75,14 @@ export function buildItems(stage: StageData, u: SharedUniforms, bin: Bin): Items
   const S = make(small, 'small');
   const L = make(large, 'large');
 
-  const smallGeo = bin.add(new IcosahedronGeometry(SMALL_R, 0).toNonIndexed());
+  const smallGeo = bin.add(new IcosahedronGeometry(SMALL_R, 0));
   const smallMat = bin.add(itemMaterial(u, S.data, S.state, 'small'));
   const smallMesh = new InstancedMesh(smallGeo, smallMat, S.n);
   smallMesh.count = small.length;
   smallMesh.frustumCulled = false;
   smallMesh.name = 'items-small';
 
-  const largeGeo = bin.add(new IcosahedronGeometry(LARGE_R, 0).toNonIndexed());
+  const largeGeo = bin.add(new IcosahedronGeometry(LARGE_R, 0));
   const largeMat = bin.add(itemMaterial(u, L.data, L.state, 'large'));
   const largeMesh = new InstancedMesh(largeGeo, largeMat, L.n);
   largeMesh.count = large.length;
@@ -159,9 +159,16 @@ function itemMaterial(
     return vec3(x1, v.y.mul(ct).sub(z1.mul(st)), v.y.mul(st).add(z1.mul(ct)));
   };
   const bob = sin(u.time.mul(2.1).add(phase.mul(6.283))).mul(kind === 'small' ? 0.07 : 0.12);
-  m.positionNode = rot(positionLocal.mul(scale)).add(d.xyz).add(vec3(0, bob, 0));
+  m.positionNode = rot(positionLocal.mul(scale))
+    .add(d.xyz)
+    .add(vec3(0, bob, 0));
   const n = rot(normalLocal);
-  const shade: N = vertexStage(n.dot(vec3(0.3, 0.9, 0.3).normalize()).mul(0.3).add(0.75));
+  const shade: N = vertexStage(
+    n
+      .dot(vec3(0.3, 0.9, 0.3).normalize())
+      .mul(0.3)
+      .add(0.75),
+  );
   if (kind === 'small') {
     const c = new Color(ITEM_SMALL);
     const hsl = { h: 0, s: 0, l: 0 };

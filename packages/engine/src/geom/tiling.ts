@@ -85,7 +85,7 @@ function clipHalfPlane(poly: Vec2[], f: (p: Vec2) => number): Vec2[] {
     const fa = f(a);
     const fb = f(b);
     if (fa >= 0) out.push(a);
-    if ((fa >= 0) !== (fb >= 0)) {
+    if (fa >= 0 !== fb >= 0) {
       const t = fa / (fa - fb);
       out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
     }
