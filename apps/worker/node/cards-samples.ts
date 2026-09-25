@@ -108,10 +108,41 @@ samples.push({
   },
 });
 samples.push({ file: 'site-default', slug: 'handmade', data: { kind: 'site' } });
+// A curated stage with an R2 hero shot (the Phase 10 engine render) inside the card.
+samples.push({
+  file: 'stage-invite-hero',
+  slug: 'hero',
+  data: {
+    kind: 'stage',
+    stage: info(gov, 'GOV.UK', 'gov.uk', { stars: 2, art: { kind: 'hero', etag: 'sample' } }),
+  },
+});
+// A title the card fonts can't draw (Japanese): the host becomes the headline.
+samples.push({
+  file: 'stage-invite-ja',
+  slug: 'eval-ja-wikipedia-meiro',
+  data: { kind: 'stage', stage: info(golden('eval-ja-wikipedia-meiro'), '', 'ja.wikipedia.org') },
+});
+samples.push({
+  file: 'run-one-site',
+  data: {
+    kind: 'run',
+    scoreId: 'sample4',
+    name: 'ann',
+    total: 1_484,
+    rank: 12,
+    sites: 1,
+    stages: 1,
+    hosts: ['news.ycombinator.com'],
+  },
+});
 
 for (const s of samples) {
   let art = {};
-  if (s.slug === 'handmade') {
+  if (s.slug === 'hero') {
+    const hero = readFileSync(`${root}docs/build-log/assets/phase-10/cards/govuk-card-grid.png`);
+    art = { hero: `data:image/png;base64,${hero.toString('base64')}` };
+  } else if (s.slug === 'handmade') {
     const stage = JSON.parse(
       readFileSync(`${root}fixtures/stages/handmade-simple.json`, 'utf8'),
     ) as StageData;

@@ -8,6 +8,7 @@
  * levels with blue sides, the page screenshot on their tops, green bridges, yellow rails, teal items, the ball
  * and the goal beam. Sized for the smallest unfurl (≈ 550 px wide on LinkedIn/X): nothing important under 26 px.
  */
+import { LARGE_SCORE, SMALL_SCORE, TIME_SCORE } from '@wwm/schema';
 import { CARD_H, CARD_W, type CardData, DIFFICULTY_LABEL, type StageArt, type StageInfo } from './data.ts';
 import type { FontMetrics } from './font.ts';
 import { hostColor, monogram } from './journey.ts';
@@ -439,7 +440,7 @@ function mazeArt(stage: StageArt, texture: CardArt['texture'], box: Box, idp: st
 function chainArt(hosts: string[], box: Box, fonts: CardFonts, more: number): string {
   const n = hosts.length;
   if (n === 0) return '';
-  const tileW = 132;
+  const tileW = n <= 2 ? 176 : 132;
   const hw = tileW / 2;
   const hd = tileW / 4;
   const thick = 20;
@@ -491,9 +492,11 @@ function chainArt(hosts: string[], box: Box, fonts: CardFonts, more: number): st
       out += text(x, y + 7, letter, { font: fonts.display, size: 19, fill: '#ffffff', anchor: 'middle' });
     }
     // host beside the island
-    const size = 27;
     const lx = x + hw + 16;
-    const label = ellipsize(fonts.uiBold, host, size, box.x + box.w - lx - 24);
+    const room = box.x + box.w - lx - 24;
+    const fitted = fit(fonts.uiBold, host, { sizes: [27, 25, 23, 21], maxW: room, maxLines: 1 });
+    const size = fitted.size;
+    const label = ellipsize(fonts.uiBold, host, size, room);
     const lw = measure(fonts.uiBold, label, size) + 28;
     out += `<path d="${chamfer(lx, y - 22, lw, 46, 9)}" fill="#ffffff"/>`;
     out += text(lx + 14, y + 10, label, { font: fonts.uiBold, size, fill: ROLE.ink });
@@ -573,7 +576,9 @@ function stageCard(stage: StageInfo, fonts: CardFonts, art: CardArt, site: strin
   });
   const lh = head.size * 1.14;
   // headline, host and chips as one group, centred between the wordmark and the footer
-  const hostH = stage.host ? 44 + 18 : 0;
+  // the host chip only when the headline is the title (else it would repeat the headline)
+  const showHost = Boolean(stage.host && stage.title);
+  const hostH = showHost ? 44 + 18 : 0;
   const groupH = lh * head.lines.length - (lh - head.size) + 30 + hostH + 41;
   const regionTop = PLATE.y + 104;
   const regionBottom = PLATE.y + PLATE.h - PAD - 44;
@@ -587,7 +592,7 @@ function stageCard(stage: StageInfo, fonts: CardFonts, art: CardArt, site: strin
     });
   });
   const hostY = top + lh * head.lines.length - (lh - head.size) + 30;
-  if (stage.host)
+  if (showHost)
     inner += chip(x - 2, hostY, ellipsize(fonts.uiBold, stage.host, 26, INNER_W - 60), fonts, {
       icon: 'globe',
       size: 26,
@@ -667,9 +672,15 @@ function scoreCard(
     });
     if (bx + v.width <= PLATE.x + PLATE.w - PAD + 6) inner += v.svg;
   }
-  const detail = d.detail
-    ? `${d.detail.large} large · ${d.detail.small} small · ${fmtInt(d.detail.timeBonus / 5)} s left`
-    : `Finished in ${fmtClock(d.timeMs)}`;
+  // Verified: the items are the re-simulation's own (they must match exactly); the accepted score may differ from
+  // the simulated time bonus by the server's ±3 s tolerance, so the seconds shown are the ones that make up the
+  // score on the card.
+  let detail = `Finished in ${fmtClock(d.timeMs)}`;
+  if (d.detail) {
+    const items = d.detail.small * SMALL_SCORE + d.detail.large * LARGE_SCORE;
+    const secs = Math.max(0, Math.round((d.score - items) / TIME_SCORE));
+    detail = `${d.detail.large} large · ${d.detail.small} small · ${secs} s left`;
+  }
   inner += text(x, by + 84, `${detail} · ${site}`, { font: fonts.uiBold, size: 24, fill: ROLE.ink2 });
   return frame(`${d.stage.stageId}${d.scoreId}`, inner);
 }

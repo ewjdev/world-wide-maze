@@ -19,7 +19,7 @@
 
   // Phase 18 share cards: fonts and the practice-stage texture are bundled as binary (Data) modules.
   // (Inherited by env.production and its Previews.)
-  "rules": [{ "type": "Data", "globs": ["**/*.ttf", "**/*.png"] }],
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf", "**/*.png"], "fallthrough": true }],
 
   // Build jobs run in the BuildJob Durable Object; the builder is CPU-heavy on tall pages (Phase 03), so
   // raise the per-invocation CPU limit (Workers Paid, "standard" usage model; max 300 000 ms).

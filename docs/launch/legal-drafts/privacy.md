@@ -83,6 +83,11 @@ headers) to deliver the site and protect it from attacks. It does this under its
   It changes every day and can't be turned back into your IP address without our secret key. We use it only to
   spot and clean up abuse (for example, many fake scores from one source on one day). It is erased from the entry
   after 30 days.
+- **Share links and preview pictures:** each entry gets a random link id. When that link (or a stage, run or
+  web-journey link) is shared, we draw a preview picture from the public entry (name, score, rank and the
+  stage's picture) so chat apps and social networks can show it. The picture is stored as a cache and deleted
+  within **30 days**; it is never served for an entry that has been removed. Journey links carry only what the
+  player put in them; their pictures show site names, not page titles.
 - **Retention:** leaderboard entries and their recordings are deleted **12 months** after they were submitted.
   You can ask us to remove an entry sooner at ewjdev@gmail.com; send its name, score and date or a link to the
   stage.

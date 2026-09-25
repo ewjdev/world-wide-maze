@@ -121,11 +121,11 @@ shareRoutes.get('/s/:stageId/r/:scoreId', readLimit, async (c) => {
   };
   const m: PageMeta = {
     title: `${s.name} scored ${fmtInt(s.score)} on ${s.title}. Can you beat it?`,
-    description: `#${fmtInt(s.rank)} on this maze${s.verified ? ' (replay verified)' : ''}. ${s.host} turned into a 3D island maze: tilt your phone to roll the ball to the goal.`,
+    description: `#${fmtInt(s.rank)} on this maze${s.verified ? ' (replay verified)' : ''}. ${s.host || s.title} turned into a 3D island maze: tilt your phone to roll the ball to the goal.`,
     canonical: `${origin}/s/${stageId}/r/${scoreId}`,
     image: {
       url: await imageUrl(origin, 'score', scoreId, src),
-      alt: `${s.name} scored ${fmtInt(s.score)} points on ${s.host}, rank ${s.rank}. ${CARD_ALT_SUFFIX}`,
+      alt: `${s.name} scored ${fmtInt(s.score)} points on ${s.host || s.title}, rank ${s.rank}. ${CARD_ALT_SUFFIX}`,
       width: CARD_W,
       height: CARD_H,
     },

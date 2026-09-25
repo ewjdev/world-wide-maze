@@ -178,7 +178,16 @@ export function fit(
   opts: { sizes: number[]; maxW: number; maxLines: number; tracking?: number },
 ): { size: number; lines: string[]; overflow: boolean } {
   let last: { size: number; lines: string[]; overflow: boolean } | null = null;
-  for (const size of opts.sizes) {
+  // First choice: the largest size with no word broken apart; else the largest that fits at all.
+  const whole = (lines: string[]) => lines.join(' ') === text.split(' ').filter(Boolean).join(' ');
+  const sizes = [
+    ...opts.sizes.filter((size) => {
+      const r = wrap(font, text, size, opts.maxW, opts.maxLines, opts.tracking);
+      return !r.overflow && whole(r.lines);
+    }),
+    ...opts.sizes,
+  ];
+  for (const size of sizes) {
     const r = wrap(font, text, size, opts.maxW, opts.maxLines, opts.tracking);
     last = { size, ...r };
     if (r.overflow) continue;

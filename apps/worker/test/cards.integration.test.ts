@@ -167,6 +167,7 @@ describe('share cards (workerd)', () => {
   }, 60_000);
 
   const timings: Record<string, number> = {};
+  const requestMs: Record<string, number> = {};
   const journeyTrail = b64url(
     JSON.stringify({
       v: 1,
@@ -194,14 +195,10 @@ describe('share cards (workerd)', () => {
   test.each(cases)(
     '%s card renders to a 1200×630 PNG and is then served from R2',
     async (name, path) => {
+      const t0 = performance.now();
       const r = await get(path());
-      expect(
-        r.status,
-        await r
-          .clone()
-          .text()
-          .catch(() => ''),
-      ).toBe(200);
+      requestMs[name] = Math.round(performance.now() - t0);
+      expect(r.status).toBe(200);
       expect(r.headers.get('content-type')).toBe('image/png');
       expect(r.headers.get('x-card')).toBe('render');
       expect(r.headers.get('cross-origin-resource-policy')).toBe('cross-origin');
@@ -224,6 +221,9 @@ describe('share cards (workerd)', () => {
 
   test('render timings (logged for the build log)', () => {
     process.stdout.write(`\n[phase-18] card render ms in workerd: ${JSON.stringify(timings)}\n`);
+    process.stdout.write(
+      `[phase-18] first request (load + art + render + R2 read) ms: ${JSON.stringify(requestMs)}\n`,
+    );
     expect(Object.keys(timings).length).toBe(cases.length);
   });
 
