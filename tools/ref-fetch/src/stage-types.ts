@@ -42,27 +42,48 @@ export interface Island {
 export type BridgeType = 'flat' | 'ramp';
 export interface Bridge {
   id: number;
-  from: number; to: number;
-  a: Vec2; b: Vec2;
+  from: number;
+  to: number;
+  a: Vec2;
+  b: Vec2;
   width: number;
   type: BridgeType;
-  levelA: number; levelB: number;
+  levelA: number;
+  levelB: number;
 }
 
 export interface Elevator {
   id: number;
-  islandFrom: number; islandTo: number;
-  pos: Vec2; size: number;
-  levelLow: number; levelHigh: number;
+  islandFrom: number;
+  islandTo: number;
+  pos: Vec2;
+  size: number;
+  levelLow: number;
+  levelHigh: number;
   periodSec: number;
 }
 
-export interface Item { id: number; kind: 'small' | 'large'; pos: Vec2; islandId: number }
-export interface Spawn { pos: Vec2; islandId: number }
-export interface Goal { pos: Vec2; islandId: number; radius: number }
+export interface Item {
+  id: number;
+  kind: 'small' | 'large';
+  pos: Vec2;
+  islandId: number;
+}
+export interface Spawn {
+  pos: Vec2;
+  islandId: number;
+}
+export interface Goal {
+  pos: Vec2;
+  islandId: number;
+  radius: number;
+}
 
 export interface Provenance {
   keptElementIds: number[];
-  dropped: { elementId: number; reason: 'too-small' | 'fixed' | 'offscreen' | 'background' | 'merged' | 'other' }[];
+  dropped: {
+    elementId: number;
+    reason: 'too-small' | 'fixed' | 'offscreen' | 'background' | 'merged' | 'other';
+  }[];
   notes: string[];
 }

@@ -18,7 +18,10 @@ async function download(url: string, attempts = 4): Promise<Uint8Array> {
   let lastErr: unknown;
   for (let i = 0; i < attempts; i++) {
     try {
-      const res = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'wwm-ref-fetch/0.1 (+tribute research)' } });
+      const res = await fetch(url, {
+        redirect: 'follow',
+        headers: { 'user-agent': 'wwm-ref-fetch/0.1 (+tribute research)' },
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       return new Uint8Array(await res.arrayBuffer());
     } catch (err) {
@@ -44,7 +47,9 @@ export async function fetchArtifact(a: Artifact, force = false): Promise<FetchSt
   const buf = await download(a.url);
   const got = sha256(buf);
   if (got !== a.sha256) {
-    console.error(`FAIL   ${a.id}: sha256 mismatch\n  expected ${a.sha256}\n  got      ${got} (${buf.byteLength} bytes)`);
+    console.error(
+      `FAIL   ${a.id}: sha256 mismatch\n  expected ${a.sha256}\n  got      ${got} (${buf.byteLength} bytes)`,
+    );
     return 'failed';
   }
   mkdirSync(dirname(dest), { recursive: true });
@@ -83,7 +88,9 @@ async function main(argv: string[]): Promise<number> {
     const png = join(REFERENCE_DIR, 'wwmmm/http-aid-dcc.png');
     if (existsSync(json) && existsSync(png)) {
       const report = convertFiles({ jsonPath: json, pngPath: png, outDir: REFERENCE_DIR, slug: 'aid-dcc' });
-      console.log(`convert aid-dcc -> reference/aid-dcc.stage.json (${report.issues.length} structural issue(s); see reference/aid-dcc.check.txt)`);
+      console.log(
+        `convert aid-dcc -> reference/aid-dcc.stage.json (${report.issues.length} structural issue(s); see reference/aid-dcc.check.txt)`,
+      );
     }
   }
   return 0;

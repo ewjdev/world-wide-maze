@@ -17,7 +17,7 @@
     "dev": "pnpm --parallel --filter @wwm/web --filter @wwm/worker dev",
     "fixture:capture": "pnpm --filter @wwm/fixture-capture capture",
     "fixture:texture": "pnpm --filter @wwm/fixture-capture texture",
-    "ref:fetch": "pnpm --filter @wwm/ref-fetch fetch"
+    "ref:fetch": "pnpm --filter @wwm/ref-fetch run fetch"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

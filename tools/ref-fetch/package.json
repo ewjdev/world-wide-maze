@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "description": "Downloads and hash-verifies the 2013 World Wide Maze reference artifacts into reference/ (gitignored) and converts the WWMMM stage to StageData.",
-  "engines": { "node": ">=22.18" },
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
     "fetch": "node src/fetch.ts",
     "convert": "node src/wwmmm-to-stage.ts",
-    "test": "node --test src/*.test.ts",
+    "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   }
 }
