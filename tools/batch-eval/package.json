@@ -1,0 +1,16 @@
+{
+  "name": "@wwm/batch-eval",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Batch evaluation: build + solve every fixture/curated stage and report pass rates.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@wwm/schema": "workspace:*"
+  }
+}

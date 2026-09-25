@@ -1,0 +1,16 @@
+{
+  "name": "@wwm/net",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Controller transport: room client, tilt pipeline and filtering on top of the @wwm/schema codec.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@wwm/schema": "workspace:*"
+  }
+}

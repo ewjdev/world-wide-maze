@@ -1,0 +1,23 @@
+{
+  "name": "@wwm/fixture-capture",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Playwright CLI that captures a URL into fixtures/captures/<slug>/, plus the handmade-simple stage generator.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "capture": "tsx src/cli.ts",
+    "handmade": "tsx src/make-handmade.ts",
+    "texture": "tsx src/make-handmade.ts --texture-only",
+    "browsers": "playwright install chromium"
+  },
+  "dependencies": {
+    "@wwm/capture-script": "workspace:*",
+    "@wwm/schema": "workspace:*",
+    "playwright": "^1.63.0",
+    "tsx": "^4.23.15"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@wwm/worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Cloudflare Worker: capture/stage/score API, Browser Rendering, and the Room Durable Object relay.",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "types": "wrangler types",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@wwm/capture-script": "workspace:*",
+    "@wwm/schema": "workspace:*"
+  },
+  "devDependencies": {
+    "wrangler": "^4.140.0"
+  }
+}

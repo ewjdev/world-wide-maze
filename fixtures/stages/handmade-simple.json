@@ -1,0 +1,197 @@
+{
+  "schema": "wwm.stage/1",
+  "stageId": "0ce74ba56dc553ea24d97e39ba3d23d55eeb4b4ea1b0bd4b6024204c800cb533",
+  "builderVersion": "0.0.0-handmade",
+  "seed": 1,
+  "difficulty": "easy",
+  "source": {
+    "url": "wwm:fixture/handmade-simple",
+    "title": "Handmade simple (4 islands, ramp, elevator)",
+    "captureId": "handmade-simple",
+    "pageWidth": 1280,
+    "pageHeight": 1600
+  },
+  "texture": {
+    "path": "handmade-simple.png",
+    "width": 1280,
+    "height": 1600
+  },
+  "timeLimitSec": 120,
+  "islands": [
+    {
+      "id": 0,
+      "contour": [
+        [80,80],
+        [560,80],
+        [560,600],
+        [80,600]
+      ],
+      "holes": [],
+      "level": 0,
+      "guardrails": [
+        [
+          [560,220],
+          [560,280]
+        ],
+        [
+          [560,400],
+          [560,460]
+        ],
+        [
+          [560,560],
+          [560,600],
+          [80,600],
+          [80,80],
+          [560,80],
+          [560,120]
+        ]
+      ],
+      "restartPoints": [
+        [160,160],
+        [160,520]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 1,
+      "contour": [
+        [720,80],
+        [1200,80],
+        [1200,600],
+        [720,600]
+      ],
+      "holes": [],
+      "level": 0,
+      "guardrails": [
+        [
+          [900,600],
+          [720,600],
+          [720,560]
+        ],
+        [
+          [720,460],
+          [720,400]
+        ],
+        [
+          [720,280],
+          [720,220]
+        ],
+        [
+          [720,120],
+          [720,80],
+          [1200,80],
+          [1200,600],
+          [1020,600]
+        ]
+      ],
+      "restartPoints": [
+        [800,340],
+        [1120,520]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 2,
+      "contour": [
+        [720,760],
+        [1200,760],
+        [1200,1200],
+        [720,1200]
+      ],
+      "holes": [],
+      "level": 1,
+      "guardrails": [
+        [
+          [1020,760],
+          [1200,760],
+          [1200,1200],
+          [720,1200],
+          [720,1060]
+        ],
+        [
+          [720,900],
+          [720,760],
+          [900,760]
+        ]
+      ],
+      "restartPoints": [
+        [800,840],
+        [1120,1120]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 3,
+      "contour": [
+        [80,760],
+        [560,760],
+        [560,1520],
+        [80,1520]
+      ],
+      "holes": [],
+      "level": 3,
+      "guardrails": [
+        [
+          [560,1060],
+          [560,1520],
+          [80,1520],
+          [80,760],
+          [560,760],
+          [560,900]
+        ]
+      ],
+      "restartPoints": [
+        [160,840],
+        [460,1440]
+      ],
+      "sourceElementIds": []
+    }
+  ],
+  "bridges": [
+    {"id":0,"from":0,"to":1,"a":[560,170],"b":[720,170],"width":100,"type":"flat","levelA":0,"levelB":0},
+    {"id":1,"from":0,"to":1,"a":[560,340],"b":[720,340],"width":120,"type":"flat","levelA":0,"levelB":0},
+    {"id":2,"from":0,"to":1,"a":[560,510],"b":[720,510],"width":100,"type":"flat","levelA":0,"levelB":0},
+    {"id":3,"from":1,"to":2,"a":[960,600],"b":[960,760],"width":120,"type":"ramp","levelA":0,"levelB":1}
+  ],
+  "elevators": [
+    {"id":0,"islandFrom":2,"islandTo":3,"pos":[640,980],"size":160,"periodSec":6,"levelLow":1,"levelHigh":3}
+  ],
+  "items": [
+    {"id":0,"kind":"small","pos":[320,180],"islandId":0},
+    {"id":1,"kind":"small","pos":[420,180],"islandId":0},
+    {"id":2,"kind":"small","pos":[320,500],"islandId":0},
+    {"id":3,"kind":"small","pos":[420,500],"islandId":0},
+    {"id":4,"kind":"small","pos":[820,170],"islandId":1},
+    {"id":5,"kind":"small","pos":[960,170],"islandId":1},
+    {"id":6,"kind":"small","pos":[1100,170],"islandId":1},
+    {"id":7,"kind":"small","pos":[820,510],"islandId":1},
+    {"id":8,"kind":"small","pos":[960,510],"islandId":1},
+    {"id":9,"kind":"small","pos":[1100,510],"islandId":1},
+    {"id":10,"kind":"small","pos":[800,980],"islandId":2},
+    {"id":11,"kind":"small","pos":[900,980],"islandId":2},
+    {"id":12,"kind":"small","pos":[1000,980],"islandId":2},
+    {"id":13,"kind":"small","pos":[1100,980],"islandId":2},
+    {"id":14,"kind":"small","pos":[200,860],"islandId":3},
+    {"id":15,"kind":"small","pos":[320,860],"islandId":3},
+    {"id":16,"kind":"small","pos":[440,860],"islandId":3},
+    {"id":17,"kind":"small","pos":[200,1100],"islandId":3},
+    {"id":18,"kind":"small","pos":[320,1100],"islandId":3},
+    {"id":19,"kind":"small","pos":[440,1100],"islandId":3},
+    {"id":20,"kind":"large","pos":[1120,340],"islandId":1},
+    {"id":21,"kind":"large","pos":[160,1300],"islandId":3}
+  ],
+  "start": {
+    "pos": [180,340],
+    "islandId": 0
+  },
+  "goal": {
+    "pos": [320,1420],
+    "islandId": 3,
+    "radius": 48
+  },
+  "provenance": {
+    "keptElementIds": [],
+    "dropped": [],
+    "notes": ["Hand-authored fixture (Phase 02), generated by tools/fixture-capture/src/handmade.ts; not built from a capture.","Paths are relative to this JSON file. Texture: handmade-simple.png (1280x1600).","Elevator e0 is a 160x160 platform filling the gap between C (L1) and D (L3); rails are open on both facing edges."]
+  }
+}
