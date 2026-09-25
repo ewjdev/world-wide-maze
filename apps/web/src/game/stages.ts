@@ -17,6 +17,7 @@ import {
   type StageData,
   sliceCount,
 } from '@wwm/schema';
+import { applyLinkTargets, type LinkTargets } from '@wwm/stage-builder/links';
 import handmadeJson from '../../../../fixtures/stages/handmade-simple.json';
 import handmadePng from '../../../../fixtures/stages/handmade-simple.png?url';
 import type { BuildReply, BuildRequest } from './builder.worker.ts';
@@ -99,6 +100,10 @@ const screenshotUrl = import.meta.glob<string>(
   },
 );
 
+// Phase 13: link targets recovered for the legacy fixtures (captured before `DomElement.href`), so their links
+// become portals too (fixtures/builder/links/<slug>.json, see @wwm/stage-builder `applyLinkTargets`).
+const linkTargets = import.meta.glob<{ default: LinkTargets }>('../../../../fixtures/builder/links/*.json');
+
 /** One lazily created builder worker per `StageBuilderPool` (owned by the Game). */
 export class StageBuilderPool {
   #worker: Worker | null = null;
@@ -160,7 +165,9 @@ export class FixtureRun implements RunSource {
       const j = captureJson[`${base}capture.json`];
       const s = screenshotUrl[`${base}screenshot.png`];
       if (!j || !s) throw new StageLoadError('NOT_FOUND', `fixture ${this.#entry.slug} missing`);
-      return { capture: (await j()).default, shot: await s() };
+      const links = linkTargets[`../../../../fixtures/builder/links/${this.#entry.slug}.json`];
+      const capture = applyLinkTargets((await j()).default, links ? (await links()).default : null);
+      return { capture, shot: await s() };
     })();
     return this.#capture;
   }

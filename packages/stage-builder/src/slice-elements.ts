@@ -17,6 +17,9 @@ export interface SliceElement {
   depth: number;
   z: number;
   fontSize: number | undefined;
+  /** contracts §10.1: link text and target (links only), for portals. */
+  text?: string;
+  href?: string;
 }
 
 export interface SliceElementsResult {
@@ -72,6 +75,8 @@ export function sliceElements(capture: CaptureBundle, slice: StageSlice, width: 
       depth: e.depth,
       z: e.z,
       fontSize: e.fontSize,
+      ...(e.text !== undefined ? { text: e.text } : {}),
+      ...(e.href !== undefined ? { href: e.href } : {}),
     });
   }
   return { elements, dropped };

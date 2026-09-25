@@ -64,6 +64,45 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
   const clean = (s: string) => s.replace(/\s+/g, ' ').trim();
   const cut = (s: string) => (s.length > MAX_TEXT ? `${s.slice(0, MAX_TEXT - 1)}…` : s);
 
+  // ---- link targets (contracts §10.1) ------------------------------------------------------------
+  // Absolute http(s) only, no credentials, ≤ 2048 chars, normalized exactly like `normalizeUrl` in
+  // capture.ts (inlined: this function runs in the page). Same-page anchors (`#…`, or the page itself) are
+  // dropped, as are `javascript:`, `mailto:` and other schemes.
+  const pageNoHash = (() => {
+    try {
+      const u = new URL(location.href);
+      u.hash = '';
+      return u.toString();
+    } catch {
+      return location.href;
+    }
+  })();
+  const hrefOf = (el: Element): string | undefined => {
+    const a = el.closest('a[href]');
+    if (!a) return undefined;
+    const raw = (a as HTMLAnchorElement).href;
+    if (typeof raw !== 'string' || !raw) return undefined;
+    let u: URL;
+    try {
+      u = new URL(raw, location.href);
+    } catch {
+      return undefined;
+    }
+    if ((u.protocol !== 'http:' && u.protocol !== 'https:') || u.username || u.password) return undefined;
+    u.hash = '';
+    if (u.toString() === pageNoHash) return undefined;
+    u.hostname = u.hostname.toLowerCase();
+    if ((u.protocol === 'http:' && u.port === '80') || (u.protocol === 'https:' && u.port === '443'))
+      u.port = '';
+    const drop = [...u.searchParams.keys()].filter((k) =>
+      /^(utm_.*|fbclid|gclid|mc_cid|mc_eid|ref_src)$/i.test(k),
+    );
+    for (const k of drop) u.searchParams.delete(k);
+    u.searchParams.sort();
+    const out = u.toString();
+    return out.length <= 2048 ? out : undefined;
+  };
+
   // ---- colors ----------------------------------------------------------------------------------
   let colorCtx: CanvasRenderingContext2D | null = null;
   const toHex = (css: string): string | undefined => {
@@ -257,6 +296,7 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
     fixed: boolean;
     text?: string;
     fontSize?: number;
+    href?: string;
     parent: Rec | null; // nearest emitted ancestor
     dropped: boolean;
   }
@@ -312,6 +352,10 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
       if (kind) {
         rec = { kind, box, lines: [], depth: ctx.depth, z, fixed, parent: ctx.parentRec, dropped: false };
         if (bg) rec.bg = bg;
+        if (kind === 'link' || kind === 'button') {
+          const href = hrefOf(el);
+          if (href) rec.href = href;
+        }
         const label =
           kind === 'image'
             ? (el.getAttribute('alt') ?? el.getAttribute('aria-label') ?? '')
@@ -424,6 +468,7 @@ export function extractPage(options: ExtractOptions = {}): ExtractedPage {
     if (r.bg) e.bg = r.bg;
     if (r.text) e.text = r.text;
     if (r.fontSize) e.fontSize = r.fontSize;
+    if (r.href) e.href = r.href;
     elements.push(e);
   }
 

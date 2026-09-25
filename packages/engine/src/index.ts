@@ -23,5 +23,12 @@ export {
 } from './geom/structures.ts';
 export { clipTriangleToBand, planTiles, type TexTile, type TilePlan, tileUv } from './geom/tiling.ts';
 export { MAX_TIER, QualityLadder, type QualitySetting, TIERS, type TierFeatures } from './quality.ts';
+export {
+  GATE_Y,
+  hostOf as portalHost,
+  PORTAL_COLORS,
+  type PortalState,
+  portalColor,
+} from './world/portals.ts';
 
 export const ENGINE_NAME = '@wwm/engine';

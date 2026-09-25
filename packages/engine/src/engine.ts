@@ -64,6 +64,7 @@ import { planFirework } from './world/fireworks.ts';
 import { buildGoal, type Goal } from './world/goal.ts';
 import { buildItems, type Items } from './world/items.ts';
 import { Particles } from './world/particles.ts';
+import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
 import {
   buildStageObjects,
@@ -131,10 +132,23 @@ export interface Engine {
   /** The "website becomes maze" opening. `fast` is the ≤ 8 s repeat version. */
   playIntro(opts?: { mode?: IntroMode }): Promise<void>;
   skipIntro(): void;
-  /** Drop the ball in its cage at a stage point (default: the start). Resolves when control can begin. */
-  spawnBall(pos?: Vec2, opts?: { durationSec?: number }): Promise<void>;
+  /**
+   * Drop the ball in its cage at a stage point (default: the start). Resolves when control can begin. The camera
+   * faces the goal, or `faceTo` (a stage point; Phase 13, additive).
+   */
+  spawnBall(pos?: Vec2, opts?: { durationSec?: number; faceTo?: Vec2 }): Promise<void>;
   /** Goal fly-away + fireworks (E: count = remaining whole seconds mod 10). */
   playGoal(fireworks: number): Promise<void>;
+  /**
+   * Phase 13 (N): portal look. `offline` greys a portal out (the capture service is unreachable); `used` and
+   * `open` are the normal look.
+   */
+  setPortalState(portalId: number, state: PortalState): void;
+  /**
+   * Phase 13 (N): travel through a portal. The ball spirals into the gate and shrinks away while the gate surges
+   * and the camera glides up to it. Resolves when the ball is gone (≈ 1.6 s); the next `loadStage` resets it.
+   */
+  playPortal(portalId: number): Promise<void>;
   /** Camera heading for `InputSample.frameYaw` (see README "Yaw convention"). */
   cameraYaw(): number;
   resize(w: number, h: number): void;
@@ -221,6 +235,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let textures: StageTextures | null = null;
   let items: Items | null = null;
   let goal: Goal | null = null;
+  let portals: Portals | null = null;
   let bg: Background | null = null;
   let ball: Ball | null = null;
   let hf: Heightfield | null = null;
@@ -250,6 +265,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   /** when set, the engine animates the ball itself (spawn drop, goal fly-away) */
   let ballOverride: ((t: number, out: Vector3) => void) | null = null;
   let ballVisible = true;
+  /** Phase 13: the ball shrinks into a portal on travel. */
+  let ballScale = 1;
+  /** Phase 13: the camera glide towards a portal on travel. */
+  let portalWatch: {
+    from: Vector3;
+    to: Vector3;
+    fromLook: Vector3;
+    look: Vector3;
+    t0: number;
+    dur: number;
+  } | null = null;
 
   const control: ControlState = { tiltX: 0, tiltZ: 0, power: false };
   let powerGlow = 0;
@@ -376,7 +402,9 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     bgPivot.clear();
     stageBin.disposeAll();
     stageBin = new Bin();
-    stage = objs = textures = items = goal = bg = ball = hf = plan = null;
+    stage = objs = textures = items = goal = portals = bg = ball = hf = plan = null;
+    ballScale = 1;
+    portalWatch = null;
     particles.clear();
     ballOverride = null;
     goalWatch = false;
@@ -447,6 +475,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       goal = buildGoal(s.source.title, u, stageBin);
       goal.group.position.copy(goalWorld);
       stageRoot.add(goal.group);
+      portals = buildPortals(s, u, stageBin);
+      if (portals) stageRoot.add(portals.mesh);
 
       bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);
       bgPivot.add(bg.group);
@@ -521,6 +551,27 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         case 'lost':
           bg?.ripple(ballPos.x, ballPos.z, time);
           break;
+        case 'portal': {
+          const c = portals?.centers.get(e.portalId);
+          if (!portals || !c) break;
+          portals.pulse(e.portalId, time);
+          const col = portals.colors.get(e.portalId) ?? 0xffffff;
+          particles.emit(
+            {
+              origin: c,
+              count: 46,
+              speed: [1.5, 4.5],
+              life: [0.4, 0.9],
+              size: [0.06, 0.16],
+              colors: [col, 0xffffff],
+              drag: 2.6,
+              glow: 1.5,
+              twinkle: 0.3,
+            },
+            time,
+          );
+          break;
+        }
         case 'landed':
           if (e.impact > 6)
             particles.emit(
@@ -643,6 +694,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       }
       if (objs) showAllStage(objs);
       if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
+      if (portals) portals.mesh.visible = true;
       if (pixelLook) textures?.setPixelLook(true);
       finishSpawnNow();
       view = 'chase';
@@ -659,7 +711,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const land = pos
         ? toWorld(pos, 0).setY(surfaceAt(pos[0] / PX_PER_METER, pos[1] / PX_PER_METER, startWorld.y) + 0.5)
         : startWorld.clone().add(new Vector3(0, 0.5, 0));
-      return startSpawn(land, o?.durationSec ?? 3, true);
+      const face = o?.faceTo ? toWorld(o.faceTo, 0).setY(land.y) : undefined;
+      return startSpawn(land, o?.durationSec ?? 3, true, face);
     },
 
     async playGoal(fireworks) {
@@ -708,6 +761,70 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       await wait(Math.max(pull + rise, n > 0 ? at + 3.4 : 0));
     },
 
+    setPortalState(id, st) {
+      portals?.setState(id, st);
+    },
+
+    async playPortal(id) {
+      const center = portals?.centers.get(id);
+      if (!stage || !ball || !portals || !center) return;
+      const P = portals;
+      P.surge(id, time);
+      P.pulse(id, time);
+      const from = ballPos.clone();
+      // camera: glide to a spot in front of the gate on the ball's side, looking into it
+      const side = camPos.clone().sub(center).setY(0);
+      if (side.lengthSq() < 1e-4) side.set(0, 0, 1);
+      side.setLength(3.6);
+      portalWatch = {
+        from: camPos.clone(),
+        to: center
+          .clone()
+          .add(side)
+          .add(new Vector3(0, 0.7, 0)),
+        fromLook: camTarget.clone(),
+        look: center.clone(),
+        t0: time,
+        dur: 1.35,
+      };
+      chase.holdPosition = true;
+      const t0 = time;
+      const dur = 1.25;
+      ballOverride = (t, out) => {
+        const k = Math.min(1, (t - t0) / dur);
+        const e = ease.cubicInOut(k);
+        out.lerpVectors(from, center, e);
+        // spiral in around the gate's axis
+        const a = k * Math.PI * 3.5;
+        const r = (1 - e) * 0.45;
+        out.x += Math.cos(a) * r;
+        out.y += Math.sin(a) * r * 0.5;
+        ballScale = 1 - 0.92 * ease.quintIn(k);
+      };
+      const col = P.colors.get(id) ?? 0xffffff;
+      tween(
+        dur - 0.1,
+        () => {},
+        () =>
+          particles.emit(
+            {
+              origin: center.clone(),
+              count: 120,
+              speed: [2, 7],
+              life: [0.5, 1.2],
+              size: [0.07, 0.2],
+              colors: [col, 0xffffff, col],
+              drag: 2.2,
+              glow: 1.8,
+              twinkle: 0.4,
+            },
+            time,
+          ),
+      );
+      await wait(dur + 0.35);
+      ballVisible = false;
+    },
+
     cameraYaw() {
       if (view === 'chase' && !intro) return chase.yaw();
       const dx = camTarget.x - camPos.x;
@@ -750,6 +867,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         }
         ball.mesh.position.copy(ballPos);
         ball.mesh.quaternion.copy(ballQuat);
+        ball.mesh.scale.setScalar(ballScale);
         ball.mesh.visible = ballVisible;
         ball.cage.position.copy(ballPos);
         u.ball.value.copy(ballVisible ? ballPos : new Vector3(0, -1e4, 0));
@@ -906,16 +1024,18 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   }
 
   /** The cage drop (E: 10 WU above the spawn, 3 s cubicOut, cage opens at 2.5 s). */
-  function startSpawn(land: Vector3, dur: number, resetCamera: boolean): Promise<void> {
+  function startSpawn(land: Vector3, dur: number, resetCamera: boolean, faceTo?: Vector3): Promise<void> {
     if (!ball) return Promise.resolve();
     const b = ball;
     const from = land.clone().add(new Vector3(0, 10 * WU, 0));
     const t0 = time;
     ballVisible = true;
     goalWatch = false;
+    portalWatch = null;
+    ballScale = 1;
     chase.holdPosition = false;
     if (resetCamera) {
-      chase.reset(land, goalWorld);
+      chase.reset(land, faceTo ?? goalWorld);
       if (view !== 'intro') {
         camPos.copy(chase.position);
         camTarget.copy(land);
@@ -1036,6 +1156,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       u.bridges.value = progress(t, tl.bridges);
       u.appear.value = ease.backOut(progress(t, tl.appear));
       if (items) items.small.visible = items.large.visible = items.largeShell.visible = t >= tl.appear.start;
+      if (portals) portals.mesh.visible = t >= tl.appear.start;
       if (goal) {
         goal.visibility.value = progress(t, tl.appear);
         goal.group.visible = t >= tl.appear.start;
@@ -1056,11 +1177,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         intro = null;
         if (objs) showAllStage(objs);
         if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
+        if (portals) portals.mesh.visible = true;
         view = 'chase';
         chase.holdPosition = false;
         chase.reset(startWorld.clone().add(new Vector3(0, 0.5, 0)), goalWorld);
         done.resolve();
       }
+    } else if (portalWatch) {
+      const k = ease.cubicInOut(Math.min(1, (time - portalWatch.t0) / portalWatch.dur));
+      camPos.lerpVectors(portalWatch.from, portalWatch.to, k);
+      camTarget.lerpVectors(portalWatch.fromLook, portalWatch.look, k);
+      camUp.copy(UP);
     } else if (goalWatch) {
       // hold position, look at the ball as it flies away, but never tilt more than ~26° up so the goal
       // ribbon stays in frame under the fireworks (the ball leaves the top of the frame)

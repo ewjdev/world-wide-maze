@@ -11,6 +11,8 @@ import { type CatalogEntry, FIXTURES, PRACTICE } from '../game/catalog.ts';
 import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
 import { useGame, useView } from './GameApp.tsx';
+import { JourneyTrail } from './Journey.tsx';
+import { useJourneyT } from './journey-strings.ts';
 import { PlayLayer } from './Play.tsx';
 import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
 import { RankingScreen, ResultScreen } from './Result.tsx';
@@ -503,6 +505,8 @@ function Building() {
   const step = b?.step && BUILD_STEPS.includes(b.step) ? b.step : 'building';
   const siteTitle = useSiteTitle();
   const label = siteTitle(v.run?.title) || b?.label || '';
+  const { t: tj } = useJourneyT();
+  const travel = v.travel;
   return (
     <section
       className="wwm-panel wwm-building"
@@ -511,9 +515,16 @@ function Building() {
       data-testid="building"
     >
       <h2 id="build-h" className="wwm-h1 wwm-building__title">
-        {t('building.title')}
+        {travel ? tj('journey.travel.building', { host: travel.host }) : t('building.title')}
       </h2>
-      {label && <p className="wwm-building__site">{label}</p>}
+      {travel ? (
+        <>
+          <p className="wwm-building__site">{travel.label}</p>
+          <JourneyTrail stops={v.journey} className="wwm-building__trail" />
+        </>
+      ) : (
+        label && <p className="wwm-building__site">{label}</p>
+      )}
       {v.run && v.run.count > 1 && (
         <p className="wwm-muted">{t('result.stageOf', { index: v.run.index + 1, count: v.run.count })}</p>
       )}
@@ -531,7 +542,7 @@ function Building() {
       <p className="wwm-building__step" aria-live="polite">
         {t(`building.step.${step}`)}
       </p>
-      <p className="wwm-building__body">{t('building.body')}</p>
+      <p className="wwm-building__body">{travel ? tj('journey.travel.body') : t('building.body')}</p>
       <button type="button" className="wwm-btn wwm-btn--ghost wwm-btn--small" onClick={() => g.cancelBuild()}>
         {t('building.cancel')}
       </button>

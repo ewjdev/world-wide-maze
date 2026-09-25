@@ -1,0 +1,542 @@
+/* biome-ignore-all lint/style/noDescendingSpecificity: modifier and context rules follow their base rules on purpose */
+/*
+ * Phase 13 — link portals and web journeys. Extends game.css (same plates, cuts, roles and faces).
+ * `--pc` is the portal colour of a site (hostColor, identical to the engine's gate colour).
+ */
+
+/* ── monogram "favicon" ───────────────────────────────────────────────── */
+
+.wwm-mono {
+  --pc: var(--blue);
+  --pf: #fff;
+  flex: none;
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  background: var(--pc);
+  color: var(--pf);
+  font: 800 15px / 1 var(--display);
+  letter-spacing: -0.02em;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.wwm-mono--sm {
+  width: 22px;
+  height: 22px;
+  font-size: 11px;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+}
+.wwm-mono--lg {
+  width: 72px;
+  height: 72px;
+  font-size: 36px;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+}
+.wwm-mono--xl {
+  width: 96px;
+  height: 96px;
+  font-size: 48px;
+  clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+}
+
+/* ── the portal prompt: a ticket plate at the bottom, the gate stays in view ── */
+
+.wwm-portal {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(20px, 5vh, 48px);
+  width: min(680px, calc(100vw - 32px));
+  transform: translateX(-50%);
+  pointer-events: auto;
+  filter: var(--shadow);
+  animation: wwm-portal-in 520ms var(--ease) both;
+}
+.wwm-portal__card {
+  display: grid;
+  grid-template-columns: 132px 1fr;
+  background: var(--paper);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+.wwm-portal__gate {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: var(--pc);
+}
+/* the gate's vortex, drawn: a slow conic swirl behind the monogram */
+.wwm-portal__swirl {
+  position: absolute;
+  inset: -40%;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.95) 0 9%, rgba(255, 255, 255, 0) 34%),
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.34) 0 14deg, rgba(255, 255, 255, 0) 14deg 45deg);
+  animation: wwm-spin 6s linear infinite;
+}
+.wwm-portal__gate .wwm-mono {
+  position: relative;
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: none;
+}
+.wwm-portal__body {
+  display: grid;
+  gap: 8px;
+  padding: 22px 26px 20px 24px;
+  min-width: 0;
+}
+.wwm-portal__title {
+  margin: 0;
+  font: 800 clamp(20px, 2.3vw, 28px) / 1.12 var(--display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+.wwm-portal__host {
+  font: 600 15px / 1.2 var(--ui);
+  color: var(--ink-2);
+  overflow-wrap: anywhere;
+}
+.wwm-portal__text {
+  font-size: 15px;
+  color: var(--ink-2);
+  max-width: 52ch;
+}
+.wwm-portal__forfeit {
+  color: var(--ink-3);
+}
+.wwm-portal__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  margin-top: 6px;
+}
+.wwm-portal__go {
+  --bg: var(--ink);
+  --fg: #fff;
+  padding-right: 8px;
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.wwm-portal__go:hover {
+  --bg: #0f1317;
+}
+.wwm-portal__arrow {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: var(--pc);
+  color: #fff;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+  transition: transform 200ms var(--ease);
+}
+.wwm-portal__go:hover .wwm-portal__arrow {
+  transform: translateX(3px);
+}
+.wwm-portal__keys {
+  margin-left: auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.wwm-portal--offline .wwm-portal__gate {
+  background: repeating-linear-gradient(-45deg, #cfd5da 0 10px, #dfe4e8 10px 20px);
+}
+.wwm-portal--offline .wwm-portal__gate .wwm-mono {
+  filter: grayscale(1);
+}
+
+@keyframes wwm-portal-in {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 28px) scale(0.97);
+  }
+}
+@keyframes wwm-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── travel: an iris in the portal colour closes over the world ───────── */
+
+.wwm-iris {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  overflow: hidden;
+}
+.wwm-iris__disc {
+  position: absolute;
+  width: 170vmax;
+  height: 170vmax;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #fff 0 3%, rgba(255, 255, 255, 0) 22%),
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.22) 0 10deg, rgba(255, 255, 255, 0) 10deg 30deg),
+    var(--pc);
+  clip-path: circle(0% at 50% 50%);
+  animation:
+    wwm-iris 900ms 650ms cubic-bezier(0.7, 0, 0.84, 0) forwards,
+    wwm-spin 5s linear infinite;
+}
+.wwm-iris__text {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px 12px 12px;
+  background: var(--paper);
+  font: 800 clamp(18px, 2vw, 24px) / 1 var(--display);
+  letter-spacing: -0.01em;
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  opacity: 0;
+  animation: wwm-rise 500ms 1150ms var(--ease) forwards;
+}
+@keyframes wwm-iris {
+  to {
+    clip-path: circle(71% at 50% 50%);
+  }
+}
+
+/* ── the trail ────────────────────────────────────────────────────────── */
+
+.wwm-trail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  row-gap: 10px;
+}
+.wwm-trail__stop {
+  --pc: var(--blue);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.wwm-trail__host {
+  font: 600 14px / 1.2 var(--ui);
+  color: var(--ink-2);
+  max-width: 22ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.wwm-trail__stop.is-here .wwm-trail__host {
+  color: var(--ink);
+  font-weight: 700;
+}
+/* the hop into a stop: a dotted path in the colour of the site it led to, ending in a chevron */
+.wwm-trail__hop {
+  position: relative;
+  width: 34px;
+  height: 12px;
+  margin: 0 6px 0 4px;
+  background: radial-gradient(circle, var(--pc) 0 2px, transparent 2.5px) 0 50% / 8px 8px repeat-x;
+}
+.wwm-trail__hop::after {
+  content: "";
+  position: absolute;
+  right: -3px;
+  top: 50%;
+  width: 7px;
+  height: 7px;
+  border-top: 2.5px solid var(--pc);
+  border-right: 2.5px solid var(--pc);
+  transform: translateY(-50%) rotate(45deg);
+}
+.wwm-trail__stop.is-select .wwm-trail__hop {
+  background: radial-gradient(circle, var(--ink-3) 0 1.5px, transparent 2px) 0 50% / 8px 8px repeat-x;
+}
+.wwm-trail__stop.is-select .wwm-trail__hop::after {
+  border-color: var(--ink-3);
+}
+.wwm-trail__more {
+  font: 600 13px / 1 var(--ui);
+  color: var(--ink-3);
+  margin-right: 4px;
+}
+
+.wwm-trail--compact .wwm-trail__hop {
+  width: 18px;
+  margin: 0 4px 0 2px;
+  background-size: 6px 6px;
+}
+.wwm-trail--compact .wwm-trail__hop::after {
+  width: 5px;
+  height: 5px;
+  border-width: 2px;
+}
+.wwm-trail--compact .wwm-trail__host {
+  font-size: 13px;
+  max-width: 18ch;
+}
+
+.wwm-journeyhud {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100vw - 460px);
+  background: rgba(255, 255, 255, 0.88);
+  padding: 7px 12px 7px 8px;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  animation: wwm-fade 500ms var(--ease) both;
+}
+.wwm-journeyhud .wwm-trail {
+  flex-wrap: nowrap;
+}
+
+/* building screen during a travel */
+.wwm-building__trail {
+  justify-content: center;
+  margin: 2px 0 6px;
+}
+
+/* ── result / ranking section ─────────────────────────────────────────── */
+
+.wwm-journey {
+  display: grid;
+  gap: 12px;
+  padding: 16px 0 2px;
+  border-top: 1.5px solid var(--line);
+}
+.wwm-journey__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
+}
+.wwm-journey__share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.wwm-journey__link {
+  font: 500 13px / 1.2 var(--ui);
+  color: var(--blue-deep);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  .wwm-portal__card {
+    grid-template-columns: 84px 1fr;
+  }
+  .wwm-portal__gate .wwm-mono--lg {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+  }
+  .wwm-portal__keys {
+    display: none;
+  }
+  .wwm-journeyhud {
+    top: auto;
+    bottom: 136px;
+    max-width: calc(100vw - 32px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wwm-portal__swirl,
+  .wwm-iris__disc {
+    animation: none !important;
+  }
+  .wwm-iris__disc {
+    clip-path: circle(71% at 50% 50%);
+    animation: wwm-fade 400ms 900ms both !important;
+  }
+}
+
+/* ── /j/:trail — the shared journey card ──────────────────────────────── */
+
+.wwm-body--scroll {
+  overflow: auto;
+}
+.wwm-jpage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: clamp(20px, 5vw, 64px) 16px;
+  font-family: var(--ui);
+  color: var(--ink);
+  background:
+    linear-gradient(135deg, rgba(172, 196, 208, 0.35) 0 25%, transparent 25%) 0 0 / 120px 120px,
+    linear-gradient(45deg, rgba(247, 226, 156, 0.3) 0 20%, transparent 20%) 60px 60px / 120px 120px,
+    var(--sky);
+}
+.wwm-jpage *,
+.wwm-jpage *::before,
+.wwm-jpage *::after {
+  box-sizing: border-box;
+}
+.wwm-jcard {
+  position: relative;
+  width: min(760px, 100%);
+  background: var(--paper);
+  padding: 0 clamp(22px, 4vw, 48px) clamp(24px, 4vw, 40px);
+  display: grid;
+  gap: 24px;
+  filter: var(--shadow);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  animation: wwm-rise 600ms var(--ease) both;
+}
+.wwm-jcard__band {
+  height: 14px;
+  margin: 0 calc(-1 * clamp(22px, 4vw, 48px));
+  width: auto;
+}
+.wwm-jcard__head {
+  display: grid;
+  gap: 12px;
+}
+.wwm-jcard__logo {
+  color: inherit;
+  text-decoration: none;
+  justify-self: start;
+}
+.wwm-jcard__logo .wwm-logo--sm {
+  font-size: 22px;
+}
+.wwm-jcard__title {
+  margin: 8px 0 0;
+  font: 800 clamp(30px, 5vw, 52px) / 1.02 var(--display);
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+.wwm-jcard__stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+}
+.wwm-jcard__stats span {
+  font: 700 14px / 1 var(--display);
+  padding: 8px 10px;
+  background: var(--ink);
+  color: #fff;
+}
+.wwm-jcard__stats span + span {
+  background: var(--yellow);
+  color: var(--ink);
+}
+.wwm-jcard__lede {
+  margin: 0;
+  font-size: 17px;
+  color: var(--ink-2);
+  max-width: 58ch;
+}
+
+/* the path: stops stacked, joined by a dotted line in the colour of the site each link led to */
+.wwm-jpath {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+.wwm-jpath__stop {
+  --pc: var(--blue);
+  position: relative;
+  display: grid;
+  grid-template-columns: 72px 1fr auto;
+  align-items: center;
+  gap: 18px;
+  padding: 12px 0;
+}
+.wwm-jpath__stop .wwm-mono {
+  justify-self: center;
+}
+.wwm-jpath__stop .wwm-mono--md {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+}
+.wwm-jpath__stop + .wwm-jpath__stop::before {
+  content: "";
+  position: absolute;
+  left: 34px;
+  top: -14px;
+  width: 4px;
+  height: 28px;
+  background: radial-gradient(circle, var(--pc) 0 2px, transparent 2.5px) 50% 0 / 4px 7px repeat-y;
+}
+.wwm-jpath__text {
+  min-width: 0;
+}
+.wwm-jpath__title {
+  margin: 0;
+  font: 700 clamp(17px, 2vw, 21px) / 1.2 var(--display);
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.wwm-jpath__host {
+  margin: 4px 0 0;
+  font: 600 14px / 1.2 var(--ui);
+  color: var(--ink-2);
+}
+.wwm-jpath__live {
+  font-size: 13px;
+  color: var(--ink-3);
+  max-width: 14ch;
+  text-align: right;
+}
+.wwm-jcard__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding-top: 20px;
+  border-top: 1.5px solid var(--line);
+}
+.wwm-jcard__about {
+  margin-left: auto;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+@media (max-width: 560px) {
+  .wwm-jpath__stop {
+    grid-template-columns: 56px 1fr;
+  }
+  .wwm-jpath__stop > .wwm-btn,
+  .wwm-jpath__live {
+    grid-column: 2;
+    justify-self: start;
+    text-align: left;
+  }
+  .wwm-jpath__stop + .wwm-jpath__stop::before {
+    left: 26px;
+  }
+  .wwm-jpath__stop .wwm-mono--lg {
+    width: 52px;
+    height: 52px;
+    font-size: 26px;
+  }
+}

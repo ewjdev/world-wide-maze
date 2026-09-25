@@ -14,6 +14,8 @@ export {
   type DebugLayersEx,
   MAX_REROLLS,
 } from './build.ts';
+export { applyLinkTargets, type LinkTargets } from './links.ts';
 export { type BuildParams, D, DEFAULT_PARAMS, DIFFICULTY_PARAMS, resolveParams } from './params.ts';
+export { PORTAL_RADIUS_PX, portalHrefOk, portalLabel } from './portals.ts';
 export { sha256HexSync } from './sha256.ts';
 export { type Dist, dist, type StageStats, stageStats, statsRows } from './stats.ts';

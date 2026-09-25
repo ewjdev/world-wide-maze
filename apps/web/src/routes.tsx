@@ -103,6 +103,11 @@ const pageRoutes: RouteObject[] = [
     path: '/making/:stageId?',
     lazy: async () => ({ Component: (await import('./pages/making/MakingPage.tsx')).default }),
   },
+  // Phase 13: a shared web journey (light page; the game loads only when a stop is played).
+  {
+    path: '/j/:trail',
+    lazy: async () => ({ Component: (await import('./ui/JourneyPage.tsx')).JourneyPage }),
+  },
   { path: '/log', lazy: async () => ({ Component: (await import('./pages/log/LogPage.tsx')).default }) },
   ...devRoutes,
   { path: '*', element: <NotFound /> },

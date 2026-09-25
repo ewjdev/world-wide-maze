@@ -19,6 +19,7 @@ import {
   type Island,
   type Item,
   LEVEL_HEIGHT_M,
+  type Portal,
   PX_PER_METER,
   pointInRing,
   type Rng,
@@ -55,6 +56,7 @@ import {
   ringPoints,
   type SafeSpot,
 } from './placement.ts';
+import { PORTAL_RADIUS_PX, placePortals, rankPortalCandidates } from './portals.ts';
 import { attributeElements } from './provenance.ts';
 import { buildRails, cutRailGaps } from './rails.ts';
 import { semanticFill } from './semantic.ts';
@@ -63,7 +65,7 @@ import { sliceElements } from './slice-elements.ts';
 import { analyzeWalkable, cellAt, flood, onMain, splitAtNecks } from './walkable.ts';
 
 /** Semver of this package; part of every stageId. */
-export const BUILDER_VERSION = '0.4.0';
+export const BUILDER_VERSION = '0.5.0';
 /** Validation rerolls: seed+1 … seed+MAX_REROLLS. */
 export const MAX_REROLLS = 4;
 
@@ -908,6 +910,36 @@ function buildOnce(input: BuildInput, params: BuildParams, attempt: number): Bui
           })
         : rails;
   }
+  // 10c. portals (Phase 13, contracts §10.1): links become portals to the linked site's maze
+  let portals: Portal[] = [];
+  {
+    const candidates = rankPortalCandidates(elements, capture.url, rng.fork('portals'));
+    if (candidates.length > 0 && !fallback) {
+      const placedPortals = placePortals(candidates, {
+        labels,
+        cols,
+        rows,
+        cell,
+        newId,
+        shapes,
+        reachable: (i, p) => maze.reached[i] === true && placeOk(i, p, 0),
+        start: startSpot.pos,
+        goal: goalPos,
+        avoid: items.filter((it) => it.kind === 'large').map((it) => it.pos),
+        mouths: mouths.flat(),
+      });
+      portals = placedPortals.portals;
+      notes.push(...placedPortals.notes);
+      // small items inside a portal ring would sit inside the gate
+      const clearR = PORTAL_RADIUS_PX + 0.5 * D;
+      for (let k = items.length - 1; k >= 0; k--) {
+        const it = items[k] as Item;
+        if (it.kind !== 'small') continue;
+        if (portals.some((p) => Math.hypot(p.pos[0] - it.pos[0], p.pos[1] - it.pos[1]) < clearR))
+          items.splice(k, 1);
+      }
+    }
+  }
   items.sort((p, q) => p.islandId - q.islandId || (p.kind === q.kind ? 0 : p.kind === 'large' ? -1 : 1));
   items.forEach((it, k) => {
     it.id = k;
@@ -962,6 +994,7 @@ function buildOnce(input: BuildInput, params: BuildParams, attempt: number): Bui
     bridges,
     elevators,
     items,
+    portals,
     start: { pos: startSpot.pos, islandId: newId[root] as number },
     goal: {
       pos: goalPos,
