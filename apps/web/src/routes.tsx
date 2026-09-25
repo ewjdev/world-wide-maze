@@ -1,17 +1,18 @@
 /**
- * Route shell (Phase 02 scaffold). Phase 08 owns the shell/HUD, Phase 06 owns /c/:code
- * (apps/web/src/controller), Phase 10 adds history/museum pages.
+ * Routes. Phase 08 owns the game shell (`/`, `/play/:stageId`, `/p/:code`), Phase 06 owns `/c/:code`
+ * (apps/web/src/controller), Phase 10 will replace `/about` with the history / museum pages.
  */
 import { CONTRACT_VERSION } from '@wwm/schema';
 import { Link, Outlet, type RouteObject, useParams } from 'react-router';
 import { ControllerPage } from './controller/ControllerPage.tsx';
 import { InputSandbox } from './dev/input-sandbox.tsx';
+import { GameApp } from './ui/GameApp.tsx';
 
 function Layout() {
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', padding: 24 }}>
       <nav style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
-        <Link to="/">Home</Link>
+        <Link to="/">Play</Link>
         <Link to="/about">About</Link>
       </nav>
       <Outlet />
@@ -20,28 +21,17 @@ function Layout() {
 }
 
 export function Home() {
-  return (
-    <section>
-      <h1>World Wide Maze</h1>
-      <p>
-        Any website becomes a 3D island maze you steer with your phone. (Scaffold — contracts v
-        {CONTRACT_VERSION}.)
-      </p>
-      <p>
-        <Link to="/play/handmade-simple">Play the handmade test stage</Link>
-      </p>
-    </section>
-  );
+  return <GameApp />;
 }
 
 export function Play() {
   const { stageId } = useParams();
-  return (
-    <section>
-      <h1>Play</h1>
-      <p data-testid="stage-id">Stage: {stageId}</p>
-    </section>
-  );
+  return <GameApp deepLink={stageId} key={stageId} />;
+}
+
+export function JoinRoom() {
+  const { code } = useParams();
+  return <GameApp roomCode={code} key={code} />;
 }
 
 export function About() {
@@ -50,7 +40,7 @@ export function About() {
       <h1>About</h1>
       <p>
         A tribute to Google Japan / PARTY&apos;s 2013 Chrome Experiment &ldquo;World Wide Maze&rdquo;. Not
-        affiliated with Google.
+        affiliated with Google. (Contracts v{CONTRACT_VERSION}; the full history page arrives in Phase 10.)
       </p>
     </section>
   );
@@ -61,12 +51,14 @@ function NotFound() {
 }
 
 export const routes: RouteObject[] = [
+  // The game renders full-screen without the document layout.
+  { path: '/', element: <Home /> },
+  { path: '/play/:stageId', element: <Play /> },
+  { path: '/p/:code', element: <JoinRoom /> },
   {
     path: '/',
     element: <Layout />,
     children: [
-      { index: true, element: <Home /> },
-      { path: 'play/:stageId', element: <Play /> },
       { path: 'about', element: <About /> },
       {
         path: 'dev/physics',
