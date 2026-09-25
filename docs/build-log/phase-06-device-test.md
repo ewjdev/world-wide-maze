@@ -41,3 +41,31 @@ The agent couldn't tilt or tap a phone. Everything below has been checked with a
 
 ## Android (Chrome): PENDING
 No Android device is available. When one is: repeat part B. Android doesn't show the permission prompt in step 2, and Chrome also enters fullscreen and locks portrait on the **Enable tilt** tap. Haptics use `navigator.vibrate`, so step 7 should buzz. Step 11 doesn't apply.
+
+## Results: physical iPhone 17 Pro, Safari, 2026-09-25 (orchestrator + user)
+Setup: `wrangler dev` on :8806, Vite on :5199, `cloudflared` quick tunnel, and the host sandbox `/dev/input` in the Mac browser. Room 980344. The page was opened on the phone with `devicectl`.
+
+**User verdict: "looks good to me".** The individual steps were not reported one by one.
+
+Measured from the relay stats after about 2.5 min of use:
+
+| Metric | Value |
+|---|---|
+| Input frames / rate | 7,977 frames, 60/s steady (54–63/s per 5 s window) |
+| Send interval p50 / p95 | 16 ms / 21 ms: **no Nagle clumping** (the 2013 problem was 500 ms clumps) |
+| Lost frames | 0 |
+| "Bursts" (gap > 3× median ≈ 48 ms) | 257 (about 1.7/s). These are short hiccups, not clumps. Watch whether they're perceptible in real play (Phase 08) |
+| Relay RTT, controller | p50 23 ms, p95 102 ms |
+| Relay RTT, host | p50 25 ms, p95 109 ms |
+| Calibrations | 2 (initial, plus the recalibrate step) |
+| Button presses | POWER 16, JUMP 8, MENU 2 |
+| Haptic / state messages delivered | 5 / 1 |
+
+**Not verified by the data:**
+- Step 8, lock/unlock reconnect: no controller close was logged after calibration. The user either skipped the step, or iOS kept the socket open while the page was suspended, which the host detects through its 1.5 s silence rule and the relay doesn't log. Re-check in Phase 08 with the game's pause overlay.
+- Denied permission (step 11): not run.
+- Haptic feel on iOS: not reported.
+
+**Observed quirk:** every page load opens a controller socket that closes immediately with 1001 and then reconnects. This is probably a double mount from React StrictMode in dev. It's harmless, but Phase 08 should confirm it doesn't happen in production builds.
+
+Android: still pending.
