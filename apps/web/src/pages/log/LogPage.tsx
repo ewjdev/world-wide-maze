@@ -1,25 +1,26 @@
 /**
- * /log: the build record (Phase 10). Renders every docs/build-log/*.md unedited, with a summary table whose
- * numbers come only from what the logs themselves state (see parse-log.ts). No productivity multipliers.
+ * /log: the build story (Phase 16) and the build record (Phase 10).
+ * - Phase 16, on top: the build clock, the swimlane, the bug gallery and 2013 vs 2026, all from
+ *   content/build-story/timeline.json and bugs.json (see story.ts). No productivity multipliers.
+ * - Phase 10, below: every docs/build-log/*.md unedited, with a summary table whose numbers come only from what
+ *   the logs themselves state (see parse-log.ts).
  */
 import { marked } from 'marked';
 import { useEffect, useMemo } from 'react';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { ShowcaseFrame } from '../about/ShowcaseFrame.tsx';
+import { ASSETS } from './assets.ts';
+import { BugGallery } from './BugGallery.tsx';
+import { BuildClock } from './BuildClock.tsx';
 import { fmtClock, type LogFile, type LogSummary, modelOf, summarize, totals } from './parse-log.ts';
+import { CARD_VARIANTS, type CardVariant, SocialCard } from './SocialCard.tsx';
+import { Swimlane } from './Swimlane.tsx';
+import { ThenNow } from './ThenNow.tsx';
 import './log.css';
+import './story.css';
 
 const RAW = import.meta.glob<string>('../../../../../docs/build-log/*.md', {
   query: '?raw',
-  import: 'default',
-  eager: true,
-});
-/**
- * Evidence screenshots, except the internal-only BBC fixture's (licensing, see fixtures/captures/README.md): the
- * `[!b]` pattern keeps `bbc-*` files out of the build entirely. Name evidence files so they don't start with `b`.
- */
-const ASSETS = import.meta.glob<string>('../../../../../docs/build-log/assets/**/[!b]*.{png,jpg,webp}', {
-  query: '?url',
   import: 'default',
   eager: true,
 });
@@ -47,7 +48,15 @@ function minutes(l: LogSummary): number | null {
   return l.window ? l.window.endMin - l.window.startMin : null;
 }
 
+/** `/log`, or a bare share card at `/log?card=clock|maze|bugs|og` (rendered for the social images). */
 export function LogPage() {
+  const [params] = useSearchParams();
+  const card = params.get('card') as CardVariant | null;
+  if (card && CARD_VARIANTS.includes(card)) return <SocialCard variant={card} />;
+  return <BuildRecord />;
+}
+
+function BuildRecord() {
   const summaries = useMemo(() => LOG_FILES.map(summarize), []);
   const html = useMemo(() => new Map(LOG_FILES.map((f) => [f.slug, renderLog(f.md)])), []);
   const t = totals(summaries);
@@ -69,8 +78,18 @@ export function LogPage() {
 
   return (
     <ShowcaseFrame>
-      <header className="lg-head">
-        <h1 className="lg-title">Build record</h1>
+      {/* Phase 16: the build story (build clock, swimlane, bug gallery, then vs now); data in story.ts. */}
+      <BuildClock />
+      <Swimlane />
+      <BugGallery />
+      <ThenNow />
+
+      {/* ── PHASE 15 DOCENT SLOT ── mount the AI docent here, e.g. `<DocentPanel page="log" />`. */}
+
+      <section className="sc-section lg-head" aria-labelledby="record">
+        <h2 className="sc-h2" id="record">
+          The build record
+        </h2>
         <div className="sc-prose">
           <p className="sc-lede">
             Each phase of this rebuild was carried out by an AI coding agent working from a written brief, in
@@ -93,7 +112,7 @@ export function LogPage() {
             )}
           </p>
         </div>
-      </header>
+      </section>
 
       <section className="sc-section" aria-labelledby="ledger">
         <h2 className="sc-h2" id="ledger">

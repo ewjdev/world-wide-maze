@@ -1,0 +1,19 @@
+{
+  "name": "@wwm/build-story",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "The build clock: derives content/build-story/timeline.json from git, the build logs and the session record.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "collect": "node src/cli/collect.ts",
+    "build": "node src/cli/build.ts",
+    "social": "node src/cli/social.ts"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
