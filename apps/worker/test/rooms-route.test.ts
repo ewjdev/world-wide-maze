@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { hashRoomToken, newRoomToken, roomTokenMatches, timingSafeEqual } from '../src/room-tokens.ts';
-import { handleRooms, ROOM_CODE_ATTEMPTS, randomRoomCode } from '../src/routes/rooms.ts';
+import { handleRooms, ROOM_CODE_ATTEMPTS, randomRoomCode, withDoRetry } from '../src/routes/rooms.ts';
 
 /** Fake ROOM namespace: `taken` codes refuse `claim`, and every call is recorded. */
 function fakeEnv(taken: Set<string>) {
@@ -160,5 +160,80 @@ describe('room tokens (contracts v0.2.7, CCR-12-2)', () => {
     expect(timingSafeEqual('abc', 'abd')).toBe(false);
     expect(timingSafeEqual('abc', 'abcd')).toBe(false);
     expect(timingSafeEqual('', '')).toBe(true);
+  });
+});
+
+describe('Durable Object transient errors (e.g. the reset right after a deploy)', () => {
+  const doError = (props: { retryable?: boolean; overloaded?: boolean }) =>
+    Object.assign(new Error('Durable Object reset because its code was updated.'), props);
+
+  test('withDoRetry retries retryable errors, then succeeds', async () => {
+    let calls = 0;
+    const v = await withDoRetry(
+      async () => {
+        calls++;
+        if (calls < 3) throw doError({ retryable: true });
+        return 'ok';
+      },
+      3,
+      1,
+    );
+    expect(v).toBe('ok');
+    expect(calls).toBe(3);
+  });
+
+  test('withDoRetry does not retry overloaded or non-retryable errors, and gives up after the attempts', async () => {
+    for (const props of [{ retryable: true, overloaded: true }, { retryable: false }, {}]) {
+      let calls = 0;
+      await expect(
+        withDoRetry(
+          async () => {
+            calls++;
+            throw doError(props);
+          },
+          3,
+          1,
+        ),
+      ).rejects.toThrow();
+      expect(calls).toBe(1);
+    }
+    let calls = 0;
+    await expect(
+      withDoRetry(
+        async () => {
+          calls++;
+          throw doError({ retryable: true });
+        },
+        3,
+        1,
+      ),
+    ).rejects.toThrow();
+    expect(calls).toBe(3);
+  });
+
+  test('POST /api/rooms survives one retryable DO error (no 500 for the player)', async () => {
+    const { env } = fakeEnv(new Set());
+    const base = env.ROOM.get;
+    let failed = false;
+    env.ROOM.get = (id: string) => {
+      const s = base(id);
+      return {
+        ...s,
+        async claim(code: string, t: { hostToken: string; pairToken: string }) {
+          if (!failed) {
+            failed = true;
+            throw doError({ retryable: true });
+          }
+          return s.claim(code, t);
+        },
+      };
+    };
+    const res = await handleRooms(new Request('http://x/api/rooms', { method: 'POST' }), env, {
+      random: codes(444444),
+    });
+    expect(failed).toBe(true);
+    if (!res) throw new Error('expected a response');
+    expect(res.status).toBe(200);
+    expect(((await res.json()) as { code: string }).code).toBe('444444');
   });
 });
