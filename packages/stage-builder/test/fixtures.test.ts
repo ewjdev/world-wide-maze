@@ -13,7 +13,8 @@ import { buildStage } from '../src/index.ts';
 import { BUILDER_FIXTURES_DIR, listCaptureSlugs, loadCapture } from '../src/node/index.ts';
 import { stageStats } from '../src/stats.ts';
 
-const slugs = listCaptureSlugs();
+// Phase 09's eval set (fixtures/captures/eval-*) is covered by tools/batch-eval, not by these goldens.
+const slugs = listCaptureSlugs().filter((s) => !s.startsWith('eval-'));
 const cache = new Map<string, { capture: CaptureBundle; image: RGBAImage }>();
 const load = (slug: string) => {
   let v = cache.get(slug);

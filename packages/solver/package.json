@@ -1,6 +1,6 @@
 {
   "name": "@wwm/solver",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "description": "Solver bot and stage validation (headless playthroughs, seed reroll).",
@@ -8,9 +8,12 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "solve": "node scripts/solve.ts"
   },
   "dependencies": {
-    "@wwm/schema": "workspace:*"
+    "@wwm/physics": "workspace:*",
+    "@wwm/schema": "workspace:*",
+    "@wwm/stage-builder": "workspace:*"
   }
 }

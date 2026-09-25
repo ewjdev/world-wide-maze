@@ -34,6 +34,26 @@ export const allowAllContent: ModerateFn = async () => 'ok';
 /** Phase 09's solver hook, injected later: reject stages the bot can't finish. */
 export type ValidatePlayableFn = (stage: StageData) => Promise<{ ok: true } | { ok: false; reason: string }>;
 
+/**
+ * Phase 09: play the stage with the real physics (`@wwm/solver`); reject if the bot can't finish or par > 150 s.
+ * Fails OPEN when the physics can't load: workerd forbids compiling WASM from bytes, which the Rapier `-compat`
+ * build does (see docs/build-log/phase-09.md, follow-up for Phase 05/07). Loaded lazily so cold starts and
+ * non-build routes don't pay for Rapier.
+ */
+let solverUnavailable = false;
+export const solverHook: ValidatePlayableFn = async (stage) => {
+  if (solverUnavailable) return { ok: true };
+  try {
+    const { validatePlayable } = await import('@wwm/solver');
+    const v = await validatePlayable(stage);
+    return v.ok ? { ok: true } : { ok: false, reason: v.report.reason ?? 'unplayable' };
+  } catch (e) {
+    solverUnavailable = true;
+    console.warn(`solver unavailable, skipping playability validation: ${(e as Error).message}`);
+    return { ok: true };
+  }
+};
+
 const TEMPLATE: StageData = parseStage(handmade);
 export const STUB_BUILDER_VERSION = '0.0.0-stub';
 
@@ -120,6 +140,7 @@ export const STUB_BUILDER: StageBuilder = { version: STUB_BUILDER_VERSION, build
  */
 export const DEFAULT_HOOKS: { moderate: ModerateFn; validatePlayable?: ValidatePlayableFn } = {
   moderate: allowAllContent,
+  validatePlayable: solverHook,
 };
 
 /** The real Phase 03 builder. The stub stays exported for fast tests. */
