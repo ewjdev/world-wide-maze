@@ -1,12 +1,22 @@
 /**
- * Worker entry (Phase 02 scaffold). Phase 07 owns the API; Phase 06 owns src/room.ts.
+ * Worker entry. Phase 07 owns the API, capture and storage; Phase 06 owns src/room.ts.
  */
-import { handleBasic } from './router.ts';
+import { createServices } from './config.ts';
+import { createApp } from './router.ts';
 
+export { BuildJob } from './build-job.ts';
+export { Limiter } from './limiter.ts';
 export { Room } from './room.ts';
 
+const app = createApp();
+
 export default {
-  async fetch(request, _env, _ctx): Promise<Response> {
-    return handleBasic(request) ?? Response.json({ error: 'not found' }, { status: 404 });
+  fetch: (request, env, ctx) => app.fetch(request, env, ctx),
+
+  // Retention (task 9): delete non-curated runs older than RETENTION_DAYS.
+  async scheduled(_controller, env, _ctx) {
+    const { store, settings, log } = createServices(env, { requestId: 'cron' });
+    const r = await store.sweep(settings.retentionDays);
+    log.info('retention sweep', { ...r, days: settings.retentionDays });
   },
 } satisfies ExportedHandler<Env>;

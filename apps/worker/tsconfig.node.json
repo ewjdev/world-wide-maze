@@ -2,7 +2,7 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": ["./worker-configuration.d.ts"]
+    "types": ["node"]
   },
-  "include": ["src", "test", "worker-configuration.d.ts"]
+  "include": ["node", "test"]
 }
