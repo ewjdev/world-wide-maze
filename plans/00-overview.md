@@ -166,7 +166,7 @@ Notes for dependent phases:
 | 09 | merged (+03b/05b fixes) | main | G2 ✅ (solver) | 819/819 stages solved at all difficulties; 315/315 runs; solver runs in workerd with seed reroll; builder 0.4.0, physics 0.2.0 |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
-| 12 | in progress (local-only) | worktree | — | no deploy/resources; drafts for approval |
+| 12 | merged (local portion) | main | G4 blocked on user | perf 60 fps; entry bundle 1.46 MB→5.6 KiB; CSP+limits; load tests local; legal drafts + infra ready, not run |
 
 ### Gate log
 - **G0 ✅ (2026-09-25):** contracts v0.2.x reconciled with the 2013 evidence. The converted 2013 stage validates, apart from the intentional width minimums.

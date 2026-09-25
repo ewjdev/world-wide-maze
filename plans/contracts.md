@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.6`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.7`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -365,3 +365,14 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **`VersionedReplay.timerStartTick?`:** the tick at which the stage timer started. In 2013 that was GO, except on the first game, where it was the first POWER press. The server clamps it to be no later than the first POWER press, so it can lower the bonus but never inflate it.
 - **Ghost endpoint:** `GET /api/scores/stage/:id/ghost` returns **204** when there's no ghost yet (previously 404), so the browser console stays clean.
 - **Physics driver:** the game now runs lockstep physics on the main thread by default, so recorded replays verify exactly (3 of 3 identical). The worker driver is still available with `?physics=worker`.
+
+**v0.2.7, from the Phase 12 CCRs (orchestrator, 2026-09-25):**
+- **CCR-12-2, pairing secret (security: room takeover by guessing the code):**
+  - `POST /api/rooms` → `{code, hostToken, pairToken}`. Both tokens are random: 128 bits, base64url.
+  - The pairing URL is `/c/<code>#p=<pairToken>`. The token lives in the **fragment**, so it never reaches server logs or the Referer header. The QR code encodes the full URL.
+  - Typing the 6-digit code alone is still allowed (2013 had typed codes), but only while **no controller is connected**. It can never replace a live controller.
+  - WebSocket: `GET /api/rooms/:code/ws?role=host&token=<hostToken>` or `?role=controller&token=<pairToken>`. The controller token is optional only as described above.
+  - A socket may replace an existing one of the same role (4409) only with a valid token. An invalid or missing token where one is required closes with **`4401`**.
+  - After a controller authenticates with the pairTok, the relay rotates nothing. The phone remembers the token in `sessionStorage` for reconnects.
+- **CCR-12-3:** `CaptureBundleSchema` size limits: `elements` ≤ 20,000, `title` ≤ 512, `url` ≤ 2,048, `text` ≤ 120 (already), `lines` ≤ 200 per element.
+- **CCR-12-1:** `@wwm/schema` calls `z.config({ jitless: true })`, so the CSP never sees an `eval` probe.
