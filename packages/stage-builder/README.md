@@ -38,15 +38,25 @@ the same geometry (tested).
 | 2 | `background.ts` | dominant color (media rects excluded) + `capture.backgroundColor` = background. **Large** elements' own `bg` become local background. ΔE76 in Lab | E (2013 removed the most common color) + N |
 | 3 | `semantic.ts` | fills media/button/input rects solid and pads text lines, joining lines of one element into a paragraph block. Only visible rects count | E (2013 filled `img` rects) + N |
 | 4 | `morphology.ts` | open pixel mask → OR semantic → horizontal close → fill small holes → open (cuts necks) | ≈ 2013 `dilate → blur → threshold` |
-| 5 | `islands.ts` | union-find labeling, split oversized components along natural gaps, thicken one-line strips, drop islands that can't hold a 2 D disc | N |
-| 6 | `contours.ts` | exact lattice outline → Douglas–Peucker → small corner bevel; simple rings, contract orientation | N |
-| 8 | `bridges.ts` | **cardinal-only** candidates: per-row/column rays to the next island, and the best band per pair that fits a 2.5–3.6 D deck clear of third islands | E |
-| 9 | `maze.ts` | randomized DFS spanning tree from the top-left island (non-overlapping decks). Easy adds 15 % loops | E (+N loops) |
-| 7 | `levels.ts` | float heights 9.3–23.2 D: top→bottom trend + chrome bump + noise, walked along the tree within the ramp slope. Short gaps can become elevators (3.7/5.6/7.4 D rises) | R/N (2013 method unknown) |
+| 5 | `islands.ts` | union-find labeling, split oversized components along natural gaps, thicken one-line strips, fill ≤ 2-cell inlets inside one island, drop islands that can't hold a 2 D disc | N |
+| 5b | `walkable.ts` | (03b) cut islands at necks narrower than the ball when both sides are island-sized; label each island's **ball-walkable** parts (final polygons rasterized at 1.5 px, eroded by r + 1 px) and keep the largest as its main part | N |
+| 6 | `contours.ts` | exact lattice outline → Douglas–Peucker → small corner bevel; simple rings, contract orientation. Diagonal-only contacts are filled within one island and **cut between two** (03b) | N |
+| 8 | `bridges.ts` | **cardinal-only** candidates: per-row/column rays to the next island, and the best band per pair that fits a 2.5–3.6 D deck clear of third islands. (03b) Rejects bands whose side rails would run > r over their island, or whose mouth doesn't lead (rolling straight in) to the island's main walkable part | E + N |
+| 9 | `maze.ts` | randomized DFS spanning tree from the top-left island (non-overlapping decks, and (03b) no deck whose rail stubs would pinch an island shut). Easy adds 15 % loops | E (+N loops) |
+| 7 | `levels.ts` | float heights 9.3–23.2 D: top→bottom trend + chrome bump + noise, walked along the tree within the ramp slope. Short gaps can become elevators (3.7/5.6/7.4 D rises). (03b) A lift needs a rise ≥ 3.7 D and main-walkable ground 1 D beyond both platform ends, and its lower platform must not cut its island; ramps need ≥ 1 D and straight mouths | R/N (2013 method unknown) |
 | 10 | `placement.ts` | distance-transform safe spots. Start at the top-left, goal at the bottom-right, ≤ 6 large items, small items on 0.9/2.3 D rings 1.5 D apart, restart points on 0.6/1.3 D rings | E |
 | 11 | `rails.ts` | outline minus bridge/elevator mouth boxes → open polylines on the outline | E |
 | 12 | (build) | `timeLimitSec` = 300 | E |
-| 13 | `build.ts` | orchestration, provenance, ids, `validateStage` + rerolls | — |
+| 13 | `build.ts` | orchestration, provenance, ids, `validateStage` + rerolls; (03b) a reachability audit (rail stubs + lift footprints as walls) also triggers a reroll | — |
+
+**Difficulty (03b, all N; `DIFFICULTY_PARAMS` in `params.ts`):** easy = 15 % loops, gentler heights (noise 3 D,
+50 % flat, lifts 60 %). normal = the calibrated defaults. hard = the narrowest legal decks (2.67 D), noise 5 D, 20 % flat,
+every eligible gap a lift, restart points only on the 1.3 D ring 4 D apart, and 2 D rail gaps every 16 D of rail.
+Caller `params` override the difficulty levers.
+
+**Playability (03b):** every mouth, lift end, start, goal, item and restart point is on (or within pickup reach of)
+its island's main walkable part, so a ball can roll to everything. `tools/batch-eval` with `@wwm/solver` is the
+end-to-end check (builder 0.4.0: 819/819 stages solved, none needing a jump).
 
 Islands the maze can't reach (no cardinal bridge fits) are dropped, and a provenance note records it. A slice with
 no content gets one plain fallback island, so a run never breaks.
@@ -56,7 +66,8 @@ no content gets one plain fallback island, so a run never breaks.
 - a unit test per module on synthetic inputs (two rectangles → 2 islands + 1 bridge, and others)
 - end-to-end synthetic builds (determinism, stageId, DPR 2 equivalence, slices, fallback, loops, `BuildError`)
 - the fixture matrix: every `fixtures/captures/*` × slice × difficulty × seeds 1–5 passes `validateStage`
-- golden snapshots `fixtures/builder/<slug>.normal.seed1.json`, count ranges, and < 1.5 s per page
+- golden snapshots `fixtures/builder/<slug>.normal.seed1.json` for every capture (the eval-* set too), count ranges, and < 1.5 s per page
+- the 03b playability invariants per build (lift rises, rail depth over islands, no reachability issue) and `test/playability.test.ts`
 
 Regenerate the goldens after an intentional change with `node tools/stage-debugger/src/cli/goldens.ts`, and check
 the debugger screenshots before committing.

@@ -1,5 +1,13 @@
 import { readFileSync } from 'node:fs';
-import { CAPTURE_DPR, type JobEvent, parseCapture, sliceCount, sliceRange, validateStage } from '@wwm/schema';
+import {
+  CAPTURE_DPR,
+  computeStageId,
+  type JobEvent,
+  parseCapture,
+  sliceCount,
+  sliceRange,
+  validateStage,
+} from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
 import { MemoryStore } from '../node/memory-store.ts';
 import { STUB_BUILDER, type StageBuilder } from '../src/builder.ts';
@@ -230,5 +238,52 @@ describe('build pipeline', () => {
     });
     await run({ gate });
     expect(held).toBe(0);
+  });
+
+  test('03b: an unplayable slice is rebuilt with the next seeds; its stageId follows the seed used', async () => {
+    const seen: { slice: number; seed: number }[] = [];
+    // seed 7 (the job seed) is "unplayable" on slice 1 only; seed 8 passes
+    const { events, store, result } = await run({
+      validatePlayable: async (st) => {
+        seen.push({ slice: st.source.slice.index, seed: st.seed });
+        return st.source.slice.index === 1 && st.seed === 7
+          ? { ok: false, reason: 'goal unreachable' }
+          : { ok: true, parTimeSec: 42, solveMs: 5 };
+      },
+    });
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'done' })]);
+    expect(seen).toEqual([
+      { slice: 0, seed: 7 },
+      { slice: 1, seed: 7 },
+      { slice: 1, seed: 8 },
+      { slice: 2, seed: 7 },
+      { slice: 3, seed: 7 },
+    ]);
+    const stages = store.stagesOf(result?.runId ?? '');
+    expect(stages.map((s) => s.seed)).toEqual([7, 8, 7, 7]);
+    const s1 = stages[1];
+    expect(s1?.stageId).toBe(await computeStageId(bundle.captureId, 1, 8, STUB_BUILDER.version, 'normal'));
+    expect(store.runs.get(result?.runId ?? '')).toMatchObject({ status: 'complete', seed: 7 });
+    expect(result?.timingsMs).toMatchObject({ 'seeds.0': 1, 'seeds.1': 2, 'par.1': 42 });
+  });
+
+  test('03b: UNPLAYABLE only after every seed failed, with each reason', async () => {
+    let calls = 0;
+    const { events } = await run({
+      playableSeeds: 3,
+      validatePlayable: async (st) => {
+        calls++;
+        return { ok: false, reason: `nope ${st.seed}` };
+      },
+    });
+    expect(calls).toBe(3);
+    const t = terminal(events);
+    expect(t).toEqual([
+      expect.objectContaining({
+        type: 'error',
+        code: 'UNPLAYABLE',
+        message: expect.stringMatching(/seed 7: nope 7; seed 8: nope 8; seed 9: nope 9/),
+      }),
+    ]);
   });
 });

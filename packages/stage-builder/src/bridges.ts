@@ -4,6 +4,9 @@
  * right (bottom) edge to the next land cell; each (A, B, axis) pair keeps its best band: the shortest gap whose
  * full deck width (+ side clearance) is free of third islands and touches both islands at the mouths.
  * Every accepted candidate is re-checked against the smoothed contours with the contract's own geometry.
+ * 03b: a band is also rejected when a deck side rail would run more than `bridgeCornerMaxDepthPx` over its own
+ * island (a slanted mouth: the rail becomes a wall on the island, BI-4), or when the caller's `accept` check
+ * fails (the mouth doesn't reach the island's main walkable part, BI-1). The search then tries the next band.
  */
 import { bridgeRect, pointInRing, ringsOverlap, type Vec2 } from '@wwm/schema';
 import type { BuildParams } from './params.ts';
@@ -75,11 +78,51 @@ export function deckCrossesThirdIsland(
   return false;
 }
 
+/** Side-rail offset from the deck centreline, px (physics railThickness 0.1 m, just outside the deck). */
+const RAIL_OFFSET_EXTRA_PX = 0.7;
+
+/**
+ * How far (px) each deck side rail runs over its own island at the two ends: walk from the rail's end at
+ * a (resp. b) towards the other end until the point leaves island `from` (resp. `to`). Max over both rails.
+ */
+export function railDepthOnIslands(
+  a: Vec2,
+  b: Vec2,
+  width: number,
+  from: IslandShape,
+  to: IslandShape,
+  capPx = 30,
+): { a: number; b: number } {
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  if (len === 0) return { a: 0, b: 0 };
+  const ux = (b[0] - a[0]) / len;
+  const uy = (b[1] - a[1]) / len;
+  const off = width / 2 + RAIL_OFFSET_EXTRA_PX;
+  const depth = (p: Vec2, dir: 1 | -1, ring: readonly Vec2[]) => {
+    let d = 0;
+    for (let s = 0; s <= Math.min(capPx, len); s += 0.5) {
+      if (!pointInRing([p[0] + dir * ux * s, p[1] + dir * uy * s], ring)) break;
+      d = s;
+    }
+    return d;
+  };
+  let da = 0;
+  let db = 0;
+  for (const side of [-1, 1]) {
+    const nx = -uy * side * off;
+    const ny = ux * side * off;
+    da = Math.max(da, depth([a[0] + nx, a[1] + ny], 1, from.contour));
+    db = Math.max(db, depth([b[0] + nx, b[1] + ny], -1, to.contour));
+  }
+  return { a: da, b: db };
+}
+
 export function findCandidates(
   labels: Int32Array,
   shapes: readonly IslandShape[],
   opts: CandidateOptions,
   params: BuildParams,
+  accept?: (c: Candidate) => boolean,
 ): Candidate[] {
   const { cols, rows, cell } = opts;
   const maxGapCells = Math.floor(params.maxBridgeSpanPx / cell);
@@ -163,7 +206,11 @@ export function findCandidates(
           const sa = shapes[from] as IslandShape;
           const sb = shapes[to] as IslandShape;
           if (!pointInRing(a, sa.contour) || !pointInRing(b, sb.contour)) continue;
-          found = { from, to, a, b, width, axis, gap: (r.m - r.k - 1) * cell };
+          const rd = railDepthOnIslands(a, b, width, sa, sb);
+          if (Math.max(rd.a, rd.b) > params.bridgeCornerMaxDepthPx) continue;
+          const cand: Candidate = { from, to, a, b, width, axis, gap: (r.m - r.k - 1) * cell };
+          if (accept && !accept(cand)) continue;
+          found = cand;
         }
         if (found) break;
       }

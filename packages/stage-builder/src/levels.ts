@@ -10,6 +10,9 @@
  *     limit over its bridge (so every static bridge is a legal ramp). Some edges are kept flat (E ratio).
  *  3. Very short gaps may instead become elevators with a 2013 rise, when the target asks for a big change.
  *  Loop edges (easy) keep the already assigned levels: ramp if legal, elevator if short, otherwise dropped.
+ * 03b: an elevator also needs a rise of at least `elevatorMinRiseD` (both platforms share one footprint, so a
+ * small rise pins the ball between them, BI-3) and room for the ball beyond both platform ends
+ * (`elevatorFits`, BI-2). Otherwise the edge stays a bridge (tree) or the loop is dropped.
  */
 import type { Rng, Vec2 } from '@wwm/schema';
 import type { Candidate } from './bridges.ts';
@@ -29,6 +32,10 @@ export interface LevelInput {
   /** Role bump per island (D). */
   roleBump: readonly number[];
   stageHeight: number;
+  /** Can candidate `e` be an elevator whose lower end is on island `low`? (default: yes) */
+  elevatorFits?: (e: number, low: number) => boolean;
+  /** Can candidate `e` be a ramp (straight mouths)? (default: yes) */
+  rampFits?: (e: number) => boolean;
 }
 
 export interface LevelResult {
@@ -54,6 +61,8 @@ export function maxRampRise(span: number, slope: number): number {
 
 export function assignLevels(input: LevelInput, rng: Rng, params: BuildParams): LevelResult {
   const { n, root, candidates, tree, loops, parentEdge, anchor, roleBump, stageHeight } = input;
+  const fits = input.elevatorFits ?? (() => true);
+  const rampOk = (e: number, span: number) => span >= params.rampMinSpanPx && (input.rampFits?.(e) ?? true);
   const lo = params.levelMin;
   const hi = params.levelMax;
   const clamp = (v: number) => Math.min(hi, Math.max(lo, v));
@@ -102,7 +111,8 @@ export function assignLevels(input: LevelInput, rng: Rng, params: BuildParams): 
         const rise = rises[Math.min(rises.length - 1, Math.floor(rRise * rises.length))] as number;
         for (const dir of [Math.sign(want), -Math.sign(want)]) {
           const cand = round2(lp + dir * rise);
-          if (cand >= lo && cand <= hi) {
+          // dir > 0: the child is higher, so the parent holds the lower platform end
+          if (cand >= lo && cand <= hi && rise >= params.elevatorMinRiseD && fits(e, dir > 0 ? p : v)) {
             lv = cand;
             break;
           }
@@ -111,7 +121,7 @@ export function assignLevels(input: LevelInput, rng: Rng, params: BuildParams): 
       }
       if (Number.isNaN(lv)) {
         kinds.set(e, 'bridge');
-        if (rFlat < params.flatChance) lv = lp;
+        if (rFlat < params.flatChance || !rampOk(e, span)) lv = lp;
         else {
           const m = maxRampRise(span, params.rampSlope);
           const d = Math.sign(want) * Math.min(m, floor2(Math.abs(want)));
@@ -131,9 +141,16 @@ export function assignLevels(input: LevelInput, rng: Rng, params: BuildParams): 
     const c = candidates[e] as Candidate;
     const d = Math.abs((levels[c.from] as number) - (levels[c.to] as number));
     const span = spanPx(c);
-    if (d === 0 || (d / (span / D) <= params.rampSlope && d <= maxRampRise(span, params.rampSlope) + 1e-9))
+    const low = (levels[c.from] as number) < (levels[c.to] as number) ? c.from : c.to;
+    if (
+      d === 0 ||
+      (rampOk(e, span) &&
+        d / (span / D) <= params.rampSlope &&
+        d <= maxRampRise(span, params.rampSlope) + 1e-9)
+    )
       kinds.set(e, 'bridge');
-    else if (span <= params.elevatorMaxSpanPx) kinds.set(e, 'elevator');
+    else if (span <= params.elevatorMaxSpanPx && d >= params.elevatorMinRiseD - 1e-9 && fits(e, low))
+      kinds.set(e, 'elevator');
     else droppedLoops.push(e);
   }
   return { levels, kinds, droppedLoops, targets };

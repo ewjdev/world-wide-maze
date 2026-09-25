@@ -32,7 +32,7 @@ const r = await replay(stage, inputs);            // { final, events: {tick, eve
   - `bump` fires on a new non-ground contact with impact ≥ 1 m/s. The impact is the approach speed along the contact normal.
   - `item` and `goal` each fire once per `load()`.
   - `fell` fires once. `lost` follows 3 s later.
-- **Elevators:** entering a platform footprint at either level (an edge trigger, outside the cooldown) starts a ride. The ball becomes kinematic and rides with the platform, and its velocity is zeroed at both ends. The partner platform's colliders are disabled during the ride.
+- **Elevators:** entering a platform footprint at either level (an edge trigger, outside the cooldown) starts a ride. The ball becomes kinematic and rides with the platform, and its velocity is zeroed at both ends. The partner platform's colliders are disabled during the ride. After a ride down they come back only once the ball is out of their volume, and on a ride down with a rise under 1.463 D the ball is eased along the platform, clear of the upper island's slab (0.2.0, BI-3: before, such lifts wedged the ball). The builder no longer makes lifts under 3.7 D.
 
 ## Model (E = evidenced by the 2013 build, R = reconstructed, N = new)
 All tunables live in `src/params.ts`, each labelled. Tilt **rotates gravity** (E). The smoothed tilt is applied in the `frameYaw` frame only while POWER is held (τ 0.18 s, E). Angular damping is 1.20/s with POWER and 4.61/s without (E). Jump gives +16.7 m/s and needs a contact within 100 ms (E). Falls trigger 9 m below the lowest island; after that, input is off and gravity doubles over 1 s. `lost` comes 3 s later (E). Friction and restitution use the 2013 values with Multiply combine (E). Rails are solid boxes 0.556 m tall, placed **just outside** the edge line (R/N: 2013 used zero-thickness ribbons at the edge, and this keeps 1 D-wide text strips walkable).
@@ -46,6 +46,11 @@ All tunables live in `src/params.ts`, each labelled. Tilt **rotates gravity** (E
 | compat (standard) | 16.5 | 17.8 |
 
 The cost is about 5 µs/step against an 8.3 ms budget. In return, replays are bit-identical across Node and a Chromium worker, which the Playwright test verifies. JS-side trig uses `dsin`/`dcos` (arithmetic only), because `Math.sin` is implementation-defined across JS engines.
+
+**Runtimes without WASM codegen (Cloudflare workerd), 0.2.0:** `loadRapier({ wasmModule })` initialises Rapier from a
+precompiled `WebAssembly.Module` of the package's `dist/rapier_wasm3d_bg.wasm` (byte-identical to the inlined copy,
+asserted in `test/rapier.test.ts`). Call it once before `createSimulation()`; later `loadRapier()` calls reuse the
+instance. A failed load isn't cached. The Worker does this in `apps/worker/src/physics-wasm.ts`.
 
 ## Commands
 - Tests: `pnpm vitest run --project @wwm/physics`. This covers feel, events, determinism, 1,000 tunneling trials and perf. The Chromium worker test needs Playwright Chromium. The aid-dcc tests need `pnpm ref:fetch`.

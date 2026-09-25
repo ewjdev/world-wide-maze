@@ -2,6 +2,19 @@
 
 **Filed by:** the Phase 09 solver (`@wwm/solver`), 2026-09-25, against builder **0.3.0**.
 
+**Status (Phase 03b/05b, 2026-09-25): all five resolved** in builder **0.4.0** and physics **0.2.0**. The batch eval
+(same 819 stages) now solves 819/819 with no failure class, no stage that needs a jump, no split island in the solver's
+audit, and 315/315 runs fully playable. Details: `docs/build-log/phase-03.md` ("Phase 03b") and `phase-05.md`
+("Phase 05b").
+
+| # | Resolution | Where |
+|---|---|---|
+| BI-1 | **Resolved.** Walkable-area analysis per island (final polygons at 1.5 px, eroded by r + 1 px); mouths, lift ends, start, goal, items and restart points only on the main part; diagonal contacts between two islands are cut instead of fused; island-sized parts joined by a sub-ball neck are split; ≤ 2-cell inlets inside one island are filled; decks whose rail stubs would pinch an island are not carved; a reachability audit rerolls. narrow-neck 13 → 0, jump-solved 57 → 0, audit split stages 241 → 0. | builder |
+| BI-2 | **Resolved.** A lift needs main-walkable ground 1 D beyond both platform ends, and its lower platform (a trigger zone, a wall for routing) must not disconnect any of its islands' anchors. elevator-blocked 37 → 0. | builder |
+| BI-3 | **Resolved twice.** Builder: lifts rise ≥ 3.7 D (the smallest 2013 rise), low loops are dropped. Physics 0.2.0: the partner platform is re-enabled only after the ball has left its volume, and on a low ride down the ball is eased clear of the upper island's slab (the second wedge the fix exposed). | builder + physics |
+| BI-4 | **Resolved in the builder.** Bands whose side rails would run more than a ball radius over their island are rejected (the renderer and the solver draw rails over the full a→b, so physics clipping would have split the three). Rail stubs also count as walls in the reachability checks. | builder |
+| BI-5 | **Resolved.** `DIFFICULTY_PARAMS` (all N): easy = loops + gentler heights; hard = 2.67 D decks, bumpier heights, more lifts, restart points on one ring 4 D apart, 2 D rail gaps every 16 D. | builder |
+
 **How the evidence was gathered:**
 - The batch eval: 35 captures × all slices × easy/normal/hard × seeds 1–3 = 819 stages
   (`node tools/batch-eval/src/cli/batch.ts`). The report is `fixtures/eval/report.json`.

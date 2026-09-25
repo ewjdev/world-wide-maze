@@ -50,6 +50,8 @@ export function carveMaze(
   root: number,
   rng: Rng,
   loopShare: number,
+  /** Extra carving test (03b: the new deck's rail stubs must not pinch an island shut). */
+  accept?: (e: number, carved: readonly number[]) => boolean,
 ): MazeResult {
   const adj: number[][] = Array.from({ length: n }, () => []);
   candidates.forEach((c, i) => {
@@ -61,10 +63,11 @@ export function carveMaze(
   const compatible = (i: number) => {
     const bi = boxes[i];
     if (!bi) return false;
-    return carved.every((j) => {
+    const clear = carved.every((j) => {
       const bj = boxes[j];
       return !bj || !boxesOverlap(bi, bj);
     });
+    return clear && (!accept || accept(i, carved));
   };
 
   const reached = new Array<boolean>(n).fill(false);

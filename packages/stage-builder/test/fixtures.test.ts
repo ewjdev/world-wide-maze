@@ -1,20 +1,31 @@
 /**
  * Acceptance tests on the real capture fixtures (plans/phase-03 "Acceptance criteria"):
- * - every fixture × slice × difficulty × seeds 1–5 builds and passes validateStage
- * - golden snapshots (slice 0, normal, seed 1) in fixtures/builder/
+ * - every fixture × slice × difficulty × seeds 1–5 builds and passes validateStage, plus the 03b playability
+ *   invariants (lift rises ≥ 3.7 D, deck rails ≤ a ball radius over their islands, no reachability issue)
+ * - golden snapshots (slice 0, normal, seed 1) in fixtures/builder/, for every capture including the eval-* set
  * - count summary within expected ranges
  * - every full page builds in < 1.5 s in Node (timings logged)
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { type CaptureBundle, type Difficulty, type RGBAImage, sliceCount, validateStage } from '@wwm/schema';
+import {
+  BALL_RADIUS_PX,
+  type CaptureBundle,
+  type Difficulty,
+  type RGBAImage,
+  sliceCount,
+  validateStage,
+} from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
-import { buildStage } from '../src/index.ts';
+import { railDepthOnIslands } from '../src/bridges.ts';
+import { buildStage, DEFAULT_PARAMS } from '../src/index.ts';
 import { BUILDER_FIXTURES_DIR, listCaptureSlugs, loadCapture } from '../src/node/index.ts';
 import { stageStats } from '../src/stats.ts';
 
-// Phase 09's eval set (fixtures/captures/eval-*) is covered by tools/batch-eval, not by these goldens.
-const slugs = listCaptureSlugs().filter((s) => !s.startsWith('eval-'));
+// Phase 09's eval set (fixtures/captures/eval-*, 28 pages) gets golden snapshots only; its full seed/difficulty
+// matrix (and the solver) runs in tools/batch-eval, which would add ~100 s here.
+const allSlugs = listCaptureSlugs();
+const slugs = allSlugs.filter((s) => !s.startsWith('eval-'));
 const cache = new Map<string, { capture: CaptureBundle; image: RGBAImage }>();
 const load = (slug: string) => {
   let v = cache.get(slug);
@@ -37,23 +48,28 @@ describe.each(slugs)('%s', (slug) => {
     for (const difficulty of DIFFICULTIES)
       for (let seed = 1; seed <= 5; seed++)
         for (let sliceIndex = 0; sliceIndex < n; sliceIndex++) {
-          const { stage } = buildStage({ capture, image, sliceIndex, seed, difficulty });
+          const { stage, debug } = buildStage({ capture, image, sliceIndex, seed, difficulty });
+          const where = `${slug} slice ${sliceIndex} ${difficulty} seed ${seed}`;
           const v = validateStage(stage);
-          expect(v.errors, `${slug} slice ${sliceIndex} ${difficulty} seed ${seed}`).toEqual([]);
+          expect(v.errors, where).toEqual([]);
+          expect(debug.reachIssues, where).toEqual([]);
+          for (const e of stage.elevators)
+            expect(e.levelHigh - e.levelLow, `${where} elevator ${e.id}`).toBeGreaterThanOrEqual(
+              DEFAULT_PARAMS.elevatorMinRiseD - 1e-9,
+            );
+          const byId = new Map(stage.islands.map((i) => [i.id, i]));
+          for (const b of stage.bridges) {
+            const box = (id: number) => ({
+              contour: byId.get(id)?.contour ?? [],
+              holes: [],
+              bbox: { x0: 0, y0: 0, x1: 0, y1: 0 },
+            });
+            const d = railDepthOnIslands(b.a, b.b, b.width, box(b.from), box(b.to));
+            expect(Math.max(d.a, d.b), `${where} bridge ${b.id} rail over island`).toBeLessThanOrEqual(
+              BALL_RADIUS_PX,
+            );
+          }
         }
-  });
-
-  test('golden snapshot (slice 0, normal, seed 1) and byte-identical rebuild', { timeout: 60_000 }, () => {
-    const { capture, image } = load(slug);
-    const input = { capture, image, sliceIndex: 0, seed: 1, difficulty: 'normal' as const };
-    const a = JSON.stringify(buildStage(input).stage);
-    const b = JSON.stringify(buildStage(input).stage);
-    expect(a).toBe(b);
-    const file = join(BUILDER_FIXTURES_DIR, `${slug}.normal.seed1.json`);
-    expect(existsSync(file), `missing golden ${file}; run node tools/stage-debugger/src/cli/goldens.ts`).toBe(
-      true,
-    );
-    expect(`${a}\n`).toBe(readFileSync(file, 'utf8'));
   });
 
   test('count summary within expected ranges (normal, seed 1)', { timeout: 60_000 }, () => {
@@ -93,5 +109,20 @@ describe.each(slugs)('%s', (slug) => {
       `[perf] ${slug}: ${n} slice(s) ${capture.page.width}×${capture.page.height} in ${ms.toFixed(0)} ms`,
     );
     expect(ms).toBeLessThan(1500);
+  });
+});
+
+describe.each(allSlugs)('%s golden', (slug) => {
+  test('golden snapshot (slice 0, normal, seed 1) and byte-identical rebuild', { timeout: 60_000 }, () => {
+    const { capture, image } = load(slug);
+    const input = { capture, image, sliceIndex: 0, seed: 1, difficulty: 'normal' as const };
+    const a = JSON.stringify(buildStage(input).stage);
+    const b = JSON.stringify(buildStage(input).stage);
+    expect(a).toBe(b);
+    const file = join(BUILDER_FIXTURES_DIR, `${slug}.normal.seed1.json`);
+    expect(existsSync(file), `missing golden ${file}; run node tools/stage-debugger/src/cli/goldens.ts`).toBe(
+      true,
+    );
+    expect(`${a}\n`).toBe(readFileSync(file, 'utf8'));
   });
 });

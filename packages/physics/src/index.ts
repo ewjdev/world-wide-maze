@@ -6,7 +6,7 @@
  * Bump whenever collider geometry, params or step order change: replays (InputSample[]) are only
  * reproducible on the same physics version + Rapier build. Regenerate fixtures with `pnpm --filter @wwm/physics replay:make`.
  */
-export const PHYSICS_VERSION = '0.1.0';
+export const PHYSICS_VERSION = '0.2.0';
 export { dcos, dsin } from './dmath.ts';
 export {
   type BoxSpec,
@@ -17,7 +17,7 @@ export {
   staticSpecs,
 } from './geometry.ts';
 export { DEFAULT_PARAMS, FEEL_CHECKS, PARAM_LABELS, type PhysicsParams, resolveParams } from './params.ts';
-export { loadRapier, type RapierBuild } from './rapier.ts';
+export { type LoadRapierOptions, loadRapier, type RapierBuild } from './rapier.ts';
 export {
   type ReplayOptions,
   type ReplayResult,

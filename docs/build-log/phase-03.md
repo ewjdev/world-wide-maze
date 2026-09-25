@@ -108,3 +108,163 @@ None.
 - **Busy contours.** Contours on ragged text keep more vertices than 2013 (DP ε = 1.5 px is conservative, to keep islands 1 cell apart). The renderer and physics should be fine, but a smoothing pass that checks for overlaps could cut this further.
 - **Oversized splitting** (> 2500 D²) is a tile split along natural gaps. No fixture slice currently triggers it (the largest island is bbc's hero photo, at 1632 D²), so only the unit test covers it.
 - **The 2013 reference render** (`--reference`, `aid-dcc-reference.png`) is for local comparison only and is not committed.
+
+---
+
+# Phase 03b: builder fixes from the solver, difficulty, playability validation in the Worker
+
+- **Agent:** Claude Opus 5.5 (1M context), Claude Code sub-agent in an isolated git worktree
+  (branch `worktree-agent-a9059e0a3ac981b9a`).
+- **Date:** 2026-09-25 (one session). **Environment:** macOS, Apple M5 Max, Node 26.0.0, pnpm 11.5.0, wrangler 4.140
+  (local workerd), Playwright Chromium.
+
+## Instructions received (summary)
+Fix the five builder issues the Phase 09 solver filed (`phase-09-builder-issues.md`) at the root, in the builder and,
+for BI-3, also in physics. Make `hard` really differ from `normal` in a faithful way. Let `loadRapier()` take a
+precompiled WASM module so workerd can run the solver, wire `DEFAULT_HOOKS.validatePlayable` for real, reroll
+unplayable slices in the pipeline, and measure the per-slice cost in the Worker. Re-run the batch eval and report
+before/after. Regenerate goldens and the fixture replay.
+
+## What changed (builder 0.3.0 → **0.4.0**)
+- **BI-1, narrow necks** (new `walkable.ts`, plus `islands.ts`, `contours.ts`, `bridges.ts`, `maze.ts`, `build.ts`):
+  - **Walkable parts.** The final island polygons are rasterized at 1.5 px and eroded by the ball radius + 1 px
+    (`walkClearancePx`). Their components are the parts a ball can roll between; the largest is the island's *main*
+    part. Mouths (reached by rolling straight in along the deck, on land at least a ball wide), lift ends, start,
+    goal, large items (safe spots), small items (within pickup reach) and restart points only use it.
+  - **Root cause found on HN:** `removeDiagonalPinches` *filled* a cell wherever two islands touched only at a
+    corner, fusing two text rows through a one-cell neck. It now **cuts** such contacts between two different
+    islands (and still fills within one). HN slice 0 went from 25 islands (several split) to 34 clean ones.
+  - Island-sized parts joined by a sub-ball neck are cut apart (`splitAtNecks`), and water gaps ≤ 2 cells wide inside
+    one island are filled (`fillInlets`, ≈ 2013's dilate/blur/threshold fusing a title and its meta line).
+  - Deck side rails run the full a→b length in physics, renderer and solver, so each deck leaves short rail stubs on
+    its islands. On thin strips, stubs from opposite sides pinched the island shut (github-docs-ja). The maze carver
+    now skips a deck whose stubs would disconnect an island (a cheap distance test first, a flood fill only when
+    stubs are close).
+  - A final **reachability audit** (rail stubs and lower lift platforms as walls) rerolls the seed if an island's
+    links can't all be reached. `buildStage` returns the first clean attempt, else the first valid one.
+- **BI-2, lifts without room:** a lift needs main-walkable ground 1 D beyond both platform ends
+  (`elevatorLandingD`), and its lower platform, grown by r + 1 px, must not disconnect any anchor of either island
+  (its safe spot, the ground behind each link; other decks' rail stubs count as walls). Otherwise the edge stays a
+  bridge.
+- **BI-3, low lifts:** `elevatorMinRiseD` = 3.7 D (E: the smallest 2013 rise; physics pinned the ball below
+  1.463 D). Loops with a smaller rise are dropped. (Physics fix: Phase 05b.)
+- **BI-4, rails on the island:** bands whose side rails would run more than a ball radius over their island are
+  rejected (`railDepthOnIslands`). The renderer and the solver draw the rails over the full a→b, so clipping them only
+  in physics would have split the three; the builder fix keeps them consistent.
+- **Two snags the new eval exposed** (the last stages that still needed a recovery jump): a ramp whose mouth had a
+  6 px notch (a step of slope × depth) and a 12 px ramp whose two deck-end seams sit together. Ramps now need
+  straight mouths (≤ 4.5 px, `rampMouthMaxDepthPx`) and a span ≥ 1 D (`rampMinSpanPx`); a shorter ramp would rise
+  ≤ 0.17 D anyway.
+- `elevatorChance` 0.6 → 0.85 (C): the new checks turn many eligible gaps back into bridges.
+
+### Difficulty (BI-5; `DIFFICULTY_PARAMS`, all **N**: 2013 had no known difficulty setting)
+| lever | easy | normal | hard |
+|---|---|---|---|
+| loops (alternative routes) | 15 % | 0 | 0 |
+| deck width max | 3.6 D | 3.6 D | 2.7 D (2.67 D on the 3 px grid; 2013 decks 1.6–3.6 D, contract min 2.5 D) |
+| level noise / flat chance / lift chance | 3 D / 50 % / 60 % | 4 D / 35 % / 85 % | 5 D / 20 % / 100 % |
+| restart points | 0.6 + 1.3 D rings, 1.6 D apart (E) | same (E) | 1.3 D ring only, 4 D apart |
+| rail gaps | none | none | 2 D every 16 D of rail (E-anchored: 2013 rails ≈ 90 % of the outline) |
+
+Measured over every capture × slice, seed 1 (91 slices each):
+
+| | easy | normal | hard |
+|---|---|---|---|
+| deck width median | 3.56 D | 3.56 D | 2.67 D |
+| rail coverage of the outline | 0.890 | 0.897 | 0.845 |
+| restart points per island | 35.9 | 35.8 | 8.9 |
+| lifts (share of links) | 75 (3.5 %) | 156 (7.8 %) | 180 (9.0 %) |
+| ramps (share of bridges) | 27.6 % | 35.2 % | 50.7 % |
+| loops | 136 | 0 | 0 |
+| smallest lift rise | 3.70 D | 3.70 D | 3.70 D |
+
+The goal stays at the bottom-right safe spot on every difficulty (E). The bot doesn't feel narrow decks, rail gaps or
+restart spacing, so hard's par is only about 2.5 s longer than normal's. Those levers are aimed at human players.
+
+## Worker (03b)
+- `apps/worker/src/physics-wasm.ts`: one loader for workerd, `loadRapier({ wasmModule })` with wrangler's compiled
+  `.wasm`. Phase 10's `routes/scores-wasm.ts` shim is gone (the file now re-exports this loader), so replay
+  verification and playability validation share one mechanism.
+- `builder.ts` `solverHook`: in workerd it initialises Rapier from the module first, then runs `@wwm/solver`
+  `validatePlayable`, and returns `parTimeSec` and `solveMs`. It fails open only if the physics can't load or the
+  solver throws, so an infrastructure fault can't block every build.
+- `pipeline.ts`: an unplayable slice is rebuilt with seed+1 … (`playableSeeds`, default 4) before the job fails with
+  `UNPLAYABLE` (listing every seed's reason). The stage ID follows the seed used; the run keeps the requested seed.
+  Timings per slice: `build.i`, `solve.i` (all seeds), `seeds.i`, `par.i`, `solveMs.i`, `validate.i`.
+- **Verified in workerd** (`test/solver.workerd.test.ts`: the production wrangler config with a test-only entry,
+  `src/testing/solver-probe-worker.ts`; also run by hand under `wrangler dev`): user agent `Cloudflare-Workers`; the
+  solver solves handmade-simple (par 20 s, 86 ms) and rejects the same stage without its lift.
+- **Cost per slice in local workerd** (build + solve every slice of 10 pages, normal, seed 1; 30 slices):
+  build 47–239 ms (p50 ≈ 125 ms), solve 9–147 ms (p50 ≈ 85 ms), PNG decode 9–160 ms (once per page in the
+  pipeline). The whole request took 67–589 ms per slice, the first one including the cold Rapier init. That's about
+  half of what the Phase 09 proposal assumed: a 4-slice page is ≈ 1–2 s of CPU without rerolls, far inside
+  `cpu_ms` = 300,000 and the 30 s slice-0 budget. (Local workerd's clock advanced during CPU work here. Production
+  freezes timers during execution, so use request wall time rather than in-Worker timings there.)
+
+## Results: batch eval before/after (`fixtures/eval/report.json`, 35 captures, 819 stages)
+| | before (builder 0.3.0, physics 0.1.0) | after (builder 0.4.0, physics 0.2.0) |
+|---|---|---|
+| solved easy / normal / hard | 255 (93.4 %) / 257 (94.1 %) / 257 (94.1 %) | **273 / 273 / 273 (100 %)** |
+| failure classes | elevator-blocked 37, narrow-neck 13 | none |
+| stages that needed JUMP (planned or recovery) | 17 / 20 / 20 | **0 / 0 / 0** |
+| solver audit: stages with a split island | 85 / 78 / 78 (617 issues) | **0** |
+| runs fully playable | 283 / 315 (89.8 %) | **315 / 315** |
+| par p50 / p90 / max, normal | 49.8 / 78.1 / 133.4 s | 48.9 / 73.0 / 118.2 s |
+| par p50, easy / hard | 44.6 s / same as normal | 43.7 / 51.4 s |
+| stars 1–5, normal | 29/141/68/13/6 | 30/168/67/8/0 |
+| solve CPU p50 / p90 / max | 119 / 245 / 548 ms | 91 / 137 / 350 ms |
+| build p50 / max | 147 / 670 ms | 172 / 735 ms (the walkable raster) |
+| islands (all stages) | 18,675 | 18,738 |
+
+Screenshots: `docs/build-log/assets/phase-09/dashboard-after.png`, `dashboard-failures-after.png` ("No failures"),
+`dashboard-cards-after.png`. The files without `-after` show the before state.
+
+## Attempts that failed, and why
+1. **Walkability on the 3 px work grid** matched the solver on most stages but left 3 stages needing jumps: a 15 px
+   strip is walkable on that grid, while the bevels on the final outline made it 13–14 px. Moving the analysis to the
+   final polygons at 1.5 px (and r + 1 px) fixed them.
+2. **A 2 D mouth search** dropped HN's header and top rows (25 → 20 islands, 204 → 110 items). The real cause wasn't
+   depth but the diagonal-pinch fill fusing rows. Fixing that (and following lanes straight in) restored them.
+3. **The lift fit checked only the landing points.** Two lifts on one thin strip cut it between their footprints
+   (python.org). Hence the anchor-connectivity check with footprints as walls, then with rail stubs too, then with a
+   1 px margin (a pinch exactly at the ball radius, github-docs-ja hard).
+4. **The physics partner-platform fix alone didn't free the ball on a 1.04 D lift** in the new test: carried down at
+   the platform's upper end, it sat partly under the *upper island's* slab. Hence the along-axis easing (Phase 05b).
+5. **`solver.workerd.test.ts` hung** under `unstable_startWorker`: the test entry didn't export the Durable Object
+   classes the production config binds. Re-exporting them fixed it.
+6. **Ramp minimum span:** without one, a 12 px ramp still snagged the bot (1 in 3,175 ramps). At 1.5 D, ramps fell to
+   36 % of bridges. 1 D keeps 42 % at normal with no snag.
+
+## Contract and fidelity notes
+- No contract change. The lift footprint, the deck rails and every constant are unchanged.
+- **Fewer lifts than 0.3.0** (normal: 586 → 409 over 273 stages). Most of the removed ones were the broken ones. Still
+  below 2013's 6 per stage, because real pages rarely have a ≤ 1.2 D gap with room on both sides.
+- **Fewer ramps** (normal: 58 % → 42 % of bridges; 2013: 65 %). The sub-1 D ramps are gone; they rose ≤ 0.17 D.
+- Goldens regenerated for all 35 captures. **The eval-* set now has goldens too** (1.9 MB in total; slice 0, normal,
+  seed 1, byte-identical rebuild). Its full seed × difficulty matrix stays in the batch eval (about 100 s in Vitest
+  otherwise).
+
+## Test evidence
+- `pnpm check`: green (typecheck, Biome, Vitest: 47 files passed and 2 skipped; 644 tests passed and 12 skipped).
+- `@wwm/stage-builder` (104 tests): the 7-fixture matrix now also asserts, on every build, lift rises ≥ 3.7 D, deck
+  rails ≤ r over their islands and no reachability issue. `test/playability.test.ts` covers necks, walkable parts,
+  pinch cutting, inlet filling, rail gaps and the difficulty levers (hard ≠ normal, narrower decks, lower rail
+  coverage, under half the restart points, easy has loops).
+- `@wwm/worker`: the pipeline reroll (the stage ID follows the seed; UNPLAYABLE lists every seed) and
+  `solver.workerd.test.ts` (3 tests in workerd). `worker.integration.test.ts` (13) still passes with the hook live.
+
+## Cross-ownership edits (flag for the orchestrator)
+- `packages/solver/test/solver.test.ts`: the reroll test asserted that python.org slice 1 seeds 1–2 are unplayable,
+  which was the very bug fixed here. It now forces seed 1 unplayable, so it still exercises the reroll with the real
+  builder.
+- `apps/worker/src/routes/scores-wasm.ts` (Phase 10): the shim is replaced by a re-export of the shared loader, as the
+  brief asked. New files: `apps/worker/src/physics-wasm.ts`, `src/testing/solver-probe-worker.ts`,
+  `test/solver.workerd.test.ts`.
+
+## Remaining defects and follow-ups
+- **Solver (Phase 09):** `nav.ts` still marks lifts under 1.463 D as `trapped`. With physics 0.2.0 they're rideable,
+  and the builder no longer makes them, so this is harmless.
+- **Items off the main part** are no longer placed, so pages with many unreachable fragments carry fewer items there.
+- **Par** is logged per slice (`par.i`) but not stored. Phase 10's `par × 0.5` plausibility check still needs a home.
+- Hard's levers (narrow decks, rail gaps, sparse restarts) aren't felt by the bot. Human playtests (G2) should tune
+  them.

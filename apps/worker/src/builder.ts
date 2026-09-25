@@ -31,25 +31,42 @@ export type ModerateFn = (shot: {
 }) => Promise<'ok' | 'block'>;
 export const allowAllContent: ModerateFn = async () => 'ok';
 
-/** Phase 09's solver hook, injected later: reject stages the bot can't finish. */
-export type ValidatePlayableFn = (stage: StageData) => Promise<{ ok: true } | { ok: false; reason: string }>;
+/** Phase 09's solver hook: reject stages the bot can't finish (the pipeline then tries the next seed). */
+export type ValidatePlayableFn = (
+  stage: StageData,
+) => Promise<{ ok: true; parTimeSec?: number; solveMs?: number } | { ok: false; reason: string }>;
+
+/** Running inside Cloudflare workerd (no WASM code generation: Rapier needs the precompiled module). */
+const IN_WORKERD = typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers';
 
 /**
  * Phase 09: play the stage with the real physics (`@wwm/solver`); reject if the bot can't finish or par > 150 s.
- * Fails OPEN when the physics can't load: workerd forbids compiling WASM from bytes, which the Rapier `-compat`
- * build does (see docs/build-log/phase-09.md, follow-up for Phase 05/07). Loaded lazily so cold starts and
- * non-build routes don't pay for Rapier.
+ * In workerd, Rapier is initialised from the precompiled `.wasm` module first (`physics-wasm.ts`, 03b); the
+ * solver's own `createSimulation()` then reuses it. Loaded lazily so cold starts and non-build routes don't pay
+ * for Rapier. Fails OPEN (accepts, logs) only if the physics can't load at all or the solver throws, so an
+ * infrastructure fault never blocks every build.
  */
 let solverUnavailable = false;
 export const solverHook: ValidatePlayableFn = async (stage) => {
   if (solverUnavailable) return { ok: true };
+  let solver: typeof import('@wwm/solver');
   try {
-    const { validatePlayable } = await import('@wwm/solver');
-    const v = await validatePlayable(stage);
-    return v.ok ? { ok: true } : { ok: false, reason: v.report.reason ?? 'unplayable' };
+    if (IN_WORKERD) await (await import('./physics-wasm.ts')).loadPhysicsInWorkerd();
+    solver = await import('@wwm/solver');
   } catch (e) {
     solverUnavailable = true;
     console.warn(`solver unavailable, skipping playability validation: ${(e as Error).message}`);
+    return { ok: true };
+  }
+  try {
+    const t0 = performance.now();
+    const v = await solver.validatePlayable(stage);
+    const solveMs = Math.round(performance.now() - t0);
+    return v.ok
+      ? { ok: true, parTimeSec: Math.round(v.parTimeSec * 10) / 10, solveMs }
+      : { ok: false, reason: v.report.reason ?? 'unplayable' };
+  } catch (e) {
+    console.warn(`solver failed on ${stage.stageId}, accepting the stage: ${(e as Error).message}`);
     return { ok: true };
   }
 };

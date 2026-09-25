@@ -1,6 +1,7 @@
 /**
  * The build job (task 4 + G0 updates): capture → moderate → decode → build slice 0 → validate → store →
- * `done` → build the remaining slices in the background. Runtime-agnostic: every dependency is injected,
+ * `done` → build the remaining slices in the background. With a playability hook (Phase 09's solver), a slice
+ * the bot can't finish is rebuilt with the next seeds (03b) before the job gives up with UNPLAYABLE. Runtime-agnostic: every dependency is injected,
  * so the Durable Object runner and the unit tests drive the same code.
  */
 import {
@@ -64,6 +65,8 @@ export interface PipelineDeps {
   builder: StageBuilder;
   moderate: ModerateFn;
   validatePlayable?: ValidatePlayableFn;
+  /** Seeds tried per slice when `validatePlayable` rejects: seed, seed+1, … (default 4, Phase 09's proposal). */
+  playableSeeds?: number;
   store: StageStore;
   gate?: BrowserGate;
   log: Logger;
@@ -171,7 +174,8 @@ export async function runBuildJob(
     const image = await decodePng(out.screenshotPng);
     timings.decode = since(tDec);
 
-    const buildSlice = async (i: number): Promise<StageData> => {
+    /** Build + validate one slice with one seed. Builder errors and invalid stages are fatal (BUILD_FAILED). */
+    const buildWithSeed = async (i: number, seed: number): Promise<StageData> => {
       const tB = Date.now();
       let stage: StageData;
       try {
@@ -179,22 +183,17 @@ export async function runBuildJob(
           capture: bundle,
           image,
           sliceIndex: i,
-          seed: params.seed,
+          seed,
           difficulty: params.difficulty,
         }).stage;
       } catch (e) {
         throw new ServiceError('BUILD_FAILED', `builder failed on slice ${i}: ${(e as Error).message}`);
       }
-      timings[`build.${i}`] = since(tB);
+      timings[`build.${i}`] = (timings[`build.${i}`] ?? 0) + since(tB);
       const tex = out.textures[i];
       if (!tex) throw new ServiceError('BUILD_FAILED', `missing texture for slice ${i}`);
-      const stageId = await computeStageId(
-        bundle.captureId,
-        i,
-        params.seed,
-        builderVersion,
-        params.difficulty,
-      );
+      // the stage ID follows the seed actually used, so a rerolled slice is its own stage
+      const stageId = await computeStageId(bundle.captureId, i, seed, builderVersion, params.difficulty);
       if (stage.stageId && stage.stageId !== stageId)
         log.warn('builder stageId differs; using computeStageId', { slice: i });
       stage = {
@@ -203,17 +202,38 @@ export async function runBuildJob(
         builderVersion,
         texture: { path: `${stageId}/texture`, width: tex.width, height: tex.heightPx, scale: tex.scale },
       };
-      if (i === 0) await progress('validating');
-      const tV = Date.now();
       const v = validateStage(stage);
       if (!v.ok)
         throw new ServiceError('BUILD_FAILED', `slice ${i} failed validation: ${firstErrors(v.errors)}`);
-      if (deps.validatePlayable) {
-        const p = await deps.validatePlayable(stage);
-        if (!p.ok) throw new ServiceError('UNPLAYABLE', `slice ${i}: ${p.reason}`);
-      }
-      timings[`validate.${i}`] = since(tV);
       return stage;
+    };
+
+    const buildSlice = async (i: number): Promise<StageData> => {
+      const seeds = deps.validatePlayable ? Math.max(1, deps.playableSeeds ?? 4) : 1;
+      const tried: string[] = [];
+      const tV = Date.now();
+      for (let k = 0; k < seeds; k++) {
+        const seed = (params.seed + k) >>> 0;
+        const stage = await buildWithSeed(i, seed);
+        if (i === 0 && k === 0) await progress('validating');
+        if (!deps.validatePlayable) {
+          timings[`validate.${i}`] = since(tV);
+          return stage;
+        }
+        const tP = Date.now();
+        const p = await deps.validatePlayable(stage);
+        timings[`solve.${i}`] = (timings[`solve.${i}`] ?? 0) + since(tP);
+        if (p.ok) {
+          timings[`validate.${i}`] = since(tV);
+          timings[`seeds.${i}`] = k + 1;
+          if (p.parTimeSec !== undefined) timings[`par.${i}`] = p.parTimeSec;
+          if (p.solveMs !== undefined) timings[`solveMs.${i}`] = p.solveMs; // the accepted seed's solve (solver clock)
+          if (k > 0) log.info('slice rerolled to a playable seed', { slice: i, seed, tried });
+          return stage;
+        }
+        tried.push(`seed ${seed}: ${p.reason}`);
+      }
+      throw new ServiceError('UNPLAYABLE', `slice ${i}: ${tried.join('; ')}`);
     };
 
     if (Date.now() > slice0Deadline) throw new ServiceError('CAPTURE_TIMEOUT', 'no time left to build');

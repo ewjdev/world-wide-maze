@@ -280,3 +280,73 @@ describe('handmade-simple events', () => {
     expect(after.filter((x) => x.type === 'elevator')).toHaveLength(0);
   });
 });
+
+describe('05b: low-rise elevators do not wedge the ball (BI-3)', () => {
+  /** Low island (level 12) and high island (12 + rise) 9 px apart, a lift between them (footprint 18.75 px
+   *  ending at the high island's edge, so the lower platform lies on the low island). */
+  const liftStage = (rise: number): StageData =>
+    makeStage({
+      islands: [
+        island(0, rect(40, 100, 100, 80), 12, {
+          guardrails: [
+            [
+              [140, 160],
+              [140, 180],
+              [40, 180],
+              [40, 100],
+              [140, 100],
+              [140, 120],
+            ],
+          ],
+        }),
+        island(1, rect(149, 100, 100, 80), 12 + rise, {
+          guardrails: [
+            [
+              [149, 120],
+              [149, 100],
+              [249, 100],
+              [249, 180],
+              [149, 180],
+              [149, 160],
+            ],
+          ],
+        }),
+      ],
+      elevators: [
+        {
+          id: 0,
+          islandFrom: 0,
+          islandTo: 1,
+          a: [140, 140],
+          b: [149, 140],
+          width: 40,
+          levelLow: 12,
+          levelHigh: 12 + rise,
+          travelSec: 1 + 0.162 * rise,
+          cooldownSec: 2,
+        },
+      ],
+      start: [200, 140],
+      startIsland: 1,
+    });
+
+  for (const rise of [0.5, 1.04, 6]) {
+    test(`rise ${rise} D: ride down, then roll off the lower end`, async () => {
+      const s = await createSimulation();
+      await s.load(liftStage(rise));
+      s.reset([200, 140]);
+      const west = { ...IDLE, power: true, tiltX: 0.3, frameYaw: Math.PI }; // yaw π: right = −X (west)
+      const phases: string[] = [];
+      for (let t = 0; t < 8 * SIM_HZ && !phases.includes('end'); t++)
+        for (const e of s.step(west).events) if (e.type === 'elevator') phases.push(e.phase);
+      expect(phases).toEqual(['start', 'end']);
+      const x0 = s.getBallState().pos[0];
+      for (let i = 0; i < 3 * SIM_HZ; i++) s.step(west);
+      const b = s.getBallState();
+      // pre-05b, a rise < 1.463 D left the ball pinned under the returning partner platform with |v| = 0
+      expect(x0 - b.pos[0]).toBeGreaterThan(pxToMeters(30));
+      expect(b.pos[1]).toBeCloseTo(12 + R, 1);
+      s.dispose();
+    });
+  }
+});

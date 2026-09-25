@@ -65,10 +65,24 @@ interface ElevatorRt {
   colliders: [Collider[], Collider[]];
   /** Current top height of platform 0 / 1. Platform 0 starts low, platform 1 high. */
   y: [number, number];
-  ride: { carrier: 0 | 1; from: number; to: number; start: number; ticks: number } | null;
+  ride: {
+    carrier: 0 | 1;
+    from: number;
+    to: number;
+    start: number;
+    ticks: number;
+    /** Ball start (world x, z) and its along-axis shift over the ride (m, eased like the platform). */
+    bx: number;
+    bz: number;
+    shift: number;
+  } | null;
+  /** Distance (m) from `b` back along the axis to the upper island's edge (b is inset into it). */
+  edgeBack: number;
   cooldownUntil: number;
   wasInLow: boolean;
   wasInHigh: boolean;
+  /** Platform whose colliders are waiting to be re-enabled until the ball is out of its way (−1: none). */
+  pending: -1 | 0 | 1;
 }
 
 export interface SimStats {
@@ -237,6 +251,8 @@ export class RapierSimulation implements Simulation {
         cooldownUntil: 0,
         wasInLow: false,
         wasInHigh: false,
+        pending: -1,
+        edgeBack: this.edgeBack(e),
       } satisfies ElevatorRt;
     });
 
@@ -509,6 +525,11 @@ export class RapierSimulation implements Simulation {
     const p = this.params;
     const bp = ball.translation();
     for (const e of this.elevators) {
+      const pend = e.pending;
+      if (pend !== -1 && !this.ballInPlatform(e, pend, bp)) {
+        for (const c of e.colliders[pend]) c.setEnabled(true);
+        e.pending = -1;
+      }
       if (e.ride) {
         const r = e.ride;
         const k = tick - r.start;
@@ -519,8 +540,14 @@ export class RapierSimulation implements Simulation {
         e.y[other] = e.low + e.high - y;
         e.bodies[r.carrier].setNextKinematicTranslation({ x: e.fp.cx, y, z: e.fp.cz });
         e.bodies[other].setNextKinematicTranslation({ x: e.fp.cx, y: e.y[other], z: e.fp.cz });
-        if (this.riding === e)
-          ball.setNextKinematicTranslation({ x: bp.x, y: y + p.ballRadius + 0.005, z: bp.z });
+        if (this.riding === e) {
+          const k = r.shift * cubicInOut(u);
+          ball.setNextKinematicTranslation({
+            x: r.bx + e.fp.ux * k,
+            y: y + p.ballRadius + 0.005,
+            z: r.bz + e.fp.uz * k,
+          });
+        }
         if (u >= 1) finished.push(e);
         continue;
       }
@@ -535,8 +562,18 @@ export class RapierSimulation implements Simulation {
       const to = inLow ? e.high : e.low;
       const carrier: 0 | 1 = Math.abs(e.y[0] - from) <= Math.abs(e.y[1] - from) ? 0 : 1;
       const ticks = Math.max(1, Math.round(e.def.travelSec * p.simHz));
-      e.ride = { carrier, from, to, start: tick, ticks };
+      // 05b (BI-3): on a ride down with a rise under ball diameter + slab, a ball that boarded at the upper
+      // end would finish partly under the upper island's slab (b is inset into it) and be wedged there. Ease
+      // it along the platform, just clear of that edge. (The builder no longer makes such lifts: E ≥ 3.7 D.)
+      let shift = 0;
+      if (to < from && from - to < 2 * p.ballRadius + p.slabThickness + 0.05) {
+        const along = (bp.x - e.fp.cx) * e.fp.ux + (bp.z - e.fp.cz) * e.fp.uz;
+        const maxAlong = e.fp.halfLen - e.edgeBack - p.ballRadius - 0.03;
+        if (along > maxAlong) shift = maxAlong - along;
+      }
+      e.ride = { carrier, from, to, start: tick, ticks, bx: bp.x, bz: bp.z, shift };
       for (const c of e.colliders[(1 - carrier) as 0 | 1]) c.setEnabled(false);
+      e.pending = -1;
       // E: the ball's velocity is zeroed and it is carried with the platform.
       ball.setLinvel({ x: 0, y: 0, z: 0 }, true);
       ball.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -555,12 +592,16 @@ export class RapierSimulation implements Simulation {
     e.y[other] = r.from;
     e.bodies[r.carrier].setTranslation({ x: e.fp.cx, y: r.to, z: e.fp.cz }, true);
     e.bodies[other].setTranslation({ x: e.fp.cx, y: r.from, z: e.fp.cz }, true);
-    for (const c of e.colliders[other]) c.setEnabled(true);
+    // 05b (BI-3): both platforms share one footprint, so after a ride down the partner comes back right above
+    // the ball. With a rise < ball diameter + slab, re-enabling it there wedges the ball between the two slabs
+    // (a softlock). Keep it disabled until the ball has left its volume.
+    const ball = this.ball as RigidBody;
+    if (this.ballInPlatform(e, other, ball.translation(), r.from)) e.pending = other;
+    else for (const c of e.colliders[other]) c.setEnabled(true);
     e.ride = null;
     e.cooldownUntil =
       this.tick + Math.round((e.def.cooldownSec ?? this.params.elevatorCooldownSec) * this.params.simHz);
     if (this.riding === e) {
-      const ball = this.ball as RigidBody;
       ball.setBodyType(this.R.RigidBodyType.Dynamic, true);
       ball.setLinvel({ x: 0, y: 0, z: 0 }, true);
       ball.setAngvel({ x: 0, y: 0, z: 0 }, true);
@@ -570,6 +611,39 @@ export class RapierSimulation implements Simulation {
       e.wasInHigh = r.to === e.high;
       events.push({ type: 'elevator', elevatorId: e.def.id, phase: 'end' });
     }
+  }
+
+  /**
+   * Does the ball (centre `bp`) overlap platform `k`'s volume (slab + side rails), with the platform top at
+   * `top` (default: its current height)? A small margin keeps the ball from touching it as it comes back.
+   */
+  /** Distance (m) from the elevator's `b` back along −(b−a) to the upper island's edge (0 if b is outside it). */
+  private edgeBack(e: Elevator): number {
+    const high = this.islandsById.get(e.islandTo);
+    if (!high) return 0;
+    const dx = e.b[0] - e.a[0];
+    const dy = e.b[1] - e.a[1];
+    const len = Math.sqrt(dx * dx + dy * dy);
+    if (len === 0) return 0;
+    let d = 0;
+    for (let t = 0; t <= 24; t += 0.5) {
+      if (!pointInPolygon([e.b[0] - (dx / len) * t, e.b[1] - (dy / len) * t], high.contour, high.holes))
+        break;
+      d = t;
+    }
+    return pxToMeters(d);
+  }
+
+  private ballInPlatform(
+    e: ElevatorRt,
+    k: 0 | 1,
+    bp: { x: number; y: number; z: number },
+    top = e.y[k],
+  ): boolean {
+    const p = this.params;
+    const m = 0.02;
+    if (!inFootprint(e.fp, bp.x, bp.z, -(p.ballRadius + p.railThickness + m))) return false;
+    return bp.y + p.ballRadius + m > top - p.slabThickness && bp.y - p.ballRadius - m < top + p.railHeight;
   }
 
   // ───────────────────────────────────────── helpers ─────────────────────────────────────────
