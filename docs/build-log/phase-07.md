@@ -73,7 +73,7 @@ None.
 
   | fixture | slices | slice 0 ready (ms) | capture | prep+extract+shot | textures | decode |
   |---|---|---|---|---|---|---|
-  | bbc-news-grid | 4 | 3178 | 2992 | 2485 | 396 | 125 |
+  | news site (removed before publication) | 4 | 3178 | 2992 | 2485 | 396 | 125 |
   | example-sparse | 1 | 912 | 885 | 802 | 52 | 15 |
   | govuk-card-grid | 3 | 3223 | 2903 | 2611 | 252 | 81 |
   | hn-front | 1 | 1064 | 1021 | 903 | 88 | 28 |
@@ -88,7 +88,7 @@ None.
   - MDN: 4.9 s
   - GOV.UK: 5.3 s
   - Wikipedia: 7.7 s
-  - BBC: 8.4 s
+  - News-site fixture (removed before publication): 8.4 s
   - Commons POTD: 11.9 s
 
   **p50 is 5.3 s.** This path is slower because every paused request and every texture (about 1 MB of base64) crosses the CDP WebSocket through the local Browser Run proxy. Textures take about 1 s per slice there, versus about 0.1 s direct. Cached re-POSTs took 1.9–3.1 ms.

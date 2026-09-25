@@ -70,6 +70,8 @@
   run takes 28 s wall on 12 workers. The unit test logs handmade-simple at 70× real time, including Rapier init.
 - **Jumps:** 57 solved stages (20 at normal) pressed JUMP. Planned jumps cross necks of up to 22 px; recovery jumps
   get over snags at ramp seams. These are reported to Phase 03 as BI-1.
+> **Publication note (2026-09-25):** before the repo went public, seven captures whose content we had no clear right to redistribute were removed: an internal news-site fixture from Phase 02, and six eval pages (a text-only news site, a classifieds site, a CSS-framework marketing page, a Linux kernel portal, a digital library home page and a Google experiments gallery). The figures in this log were measured with them and are left as recorded. The re-run on the remaining 28 captures is in `fixtures/eval/report.json`; see `NOTICE.md`. In the dashboard screenshots, the removed pages' card thumbnails are blanked out.
+
 - **Screenshots:** `docs/build-log/assets/phase-09/dashboard.png` (overview),
   `dashboard-failures.png` ("with an unplayable seed" filter) and `dashboard-cards.png` (cards with the rating UI).
 
@@ -90,8 +92,8 @@
 2. **Failures stuck at one spot on debian** (the ball pinned while pushing west). The probe showed a *bridge side
    rail standing on the island*. The physics runs deck rails over the full a→b length, and the endpoint was 15 px
    inside a slanted island edge.
-   - Rasterizing the rails into 3 px cells over-blocked tight squeezes that the physics allows. For example, BBC
-     slice 3 has a passage that clears by 0.08 px, and it had been solved before.
+   - Rasterizing the rails into 3 px cells over-blocked tight squeezes that the physics allows. For example, the
+     news-site fixture's slice 3 has a passage that clears by 0.08 px, and it had been solved before.
    - Fixed with **exact point-to-segment distances** for rails, and the clearance threshold lowered from ball + 0.5
      px to exactly the ball radius.
    - A synthetic neck test keeps the planner honest: 13 px blocks and 14 px passes, in both the physics and the

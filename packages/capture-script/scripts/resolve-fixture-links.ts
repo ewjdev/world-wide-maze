@@ -28,7 +28,6 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const FIXTURES = [
   'hn-front',
   'wikipedia-article',
-  'bbc-news-grid',
   'govuk-card-grid',
   'mdn-dark-docs',
   'example-sparse',

@@ -7,6 +7,8 @@
 audit, and 315/315 runs fully playable. Details: `docs/build-log/phase-03.md` ("Phase 03b") and `phase-05.md`
 ("Phase 05b").
 
+> **Publication note (2026-09-25):** before the repo went public, seven captures whose content we had no clear right to redistribute were removed: an internal news-site fixture from Phase 02, and six eval pages (a text-only news site, a classifieds site, a CSS-framework marketing page, a Linux kernel portal, a digital library home page and a Google experiments gallery). The figures in this log were measured with them and are left as recorded. The re-run on the remaining 28 captures is in `fixtures/eval/report.json`; see `NOTICE.md`.
+
 | # | Resolution | Where |
 |---|---|---|
 | BI-1 | **Resolved.** Walkable-area analysis per island (final polygons at 1.5 px, eroded by r + 1 px); mouths, lift ends, start, goal, items and restart points only on the main part; diagonal contacts between two islands are cut instead of fused; island-sized parts joined by a sub-ball neck are split; ≤ 2-cell inlets inside one island are filled; decks whose rail stubs would pinch an island are not carved; a reachability audit rerolls. narrow-neck 13 → 0, jump-solved 57 → 0, audit split stages 241 → 0. | builder |
@@ -58,8 +60,8 @@ rescues most of them. A human has to discover that jump, though, and nothing on 
 
 **Repros:**
 - **Unplayable** (easy and normal unless noted):
-  - `eval-chrome-experiments 2 * 2`: island 32, bridge 17 mouth at (915, 1095).
-  - `eval-chrome-experiments 3 * 2`: island 22, bridge 5 at (174, 627).
+  - Google experiments gallery (removed before publication) `2 * 2`: island 32, bridge 17 mouth at (915, 1095).
+  - Google experiments gallery (removed before publication) `3 * 2`: island 22, bridge 5 at (174, 627).
   - `eval-go-dev 0 easy 2`: island 9, bridge 31 at (893, 414).
   - `eval-ja-wikipedia-meiro 3 * 2`: island 29, elevator 2 at (519, 1304).
   - `eval-python-home 1 * 1`: island 32, elevator 1 at (465, 719).
@@ -94,12 +96,12 @@ rolled off the end, and got stuck between the island edge and the rail ends. The
 there, and 25 other stages stay unplayable.
 
 **Repros** (easy and normal):
-- `eval-lite-cnn 0 * 1`: island 31, elevator 0 (boarding end) at (300, 1178).
-- `eval-lite-cnn 0 * 2`: island 3, elevator 0 (arrival end) at (267, 163).
-- `eval-lite-cnn 0 * 3`: island 20, elevator 1 at (372, 751).
-- `eval-lite-cnn 1 * 1`: island 12, elevator 1 at (432, 392).
-- `eval-lite-cnn 1 * 2`: island 6, elevator 0 at (309, 187).
-- `eval-lite-cnn 1 * 3`: island 4, elevator 0 at (294, 133).
+- text-only news site (removed before publication) `0 * 1`: island 31, elevator 0 (boarding end) at (300, 1178).
+- text-only news site (removed before publication) `0 * 2`: island 3, elevator 0 (arrival end) at (267, 163).
+- text-only news site (removed before publication) `0 * 3`: island 20, elevator 1 at (372, 751).
+- text-only news site (removed before publication) `1 * 1`: island 12, elevator 1 at (432, 392).
+- text-only news site (removed before publication) `1 * 2`: island 6, elevator 0 at (309, 187).
+- text-only news site (removed before publication) `1 * 3`: island 4, elevator 0 at (294, 133).
 - `eval-ja-wikipedia-meiro 1 * 3`: island 19, elevator 3 at (657, 1357).
 - `eval-ja-wikipedia-meiro 2 * 2`: island 14, elevator 3 at (513, 1258).
 - `eval-ja-wikipedia-meiro 3 * 3`: island 19, elevator 0 at (660, 994).
@@ -107,7 +109,7 @@ there, and 25 other stages stay unplayable.
 - `eval-react-dev-dark 3 * 3`: island 4, elevator 0 at (201, 112).
 - `eval-wikipedia-main 0 * 2`: island 22, elevator 0 at (285, 1141).
 
-Lite CNN, a text-only list of thin headline strips, fails on every seed at both of its slices.
+The text-only news site (removed before publication), a list of thin headline strips, fails on every seed at both of its slices.
 
 **Root-cause hypothesis:** `levels.ts` turns short gaps into elevators without checking the **depth of each island
 along the elevator axis** beyond the platform end. The lower platform overlaps the lower island by
@@ -188,4 +190,4 @@ The 2013 difficulty rules aren't evidenced, so label them N.
   different heights (bridge 13). Our builder never makes overlapping decks. The Phase 05 test pilot still traverses
   it.
 - **Legacy fixtures:** all 180 stages from the 7 Phase 02 fixtures are solved; every failure is on eval-* pages.
-  Thin-strip text layouts (Lite CNN, Japanese Wikipedia, python.org) are over-represented.
+  Thin-strip text layouts (the text-only news site, Japanese Wikipedia, python.org) are over-represented.

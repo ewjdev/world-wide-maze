@@ -57,7 +57,8 @@ Caller `params` override the difficulty levers.
 
 **Playability (03b):** every mouth, lift end, start, goal, item and restart point is on (or within pickup reach of)
 its island's main walkable part, so a ball can roll to everything. `tools/batch-eval` with `@wwm/solver` is the
-end-to-end check (builder 0.4.0: 819/819 stages solved, none needing a jump).
+end-to-end check (builder 0.4.0: 819/819 stages solved, none needing a jump; builder 0.5.0 on the 28 captures kept
+for publication: 666/666).
 
 **Link portals (Phase 13, builder 0.5.0):** every stage carries `portals` (possibly `[]`). Legacy fixtures get
 their link targets from `fixtures/builder/links/<slug>.json` (`loadCapture` merges them; the web app does the same

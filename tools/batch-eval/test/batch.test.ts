@@ -48,9 +48,9 @@ function rec(p: Partial<EvalRecord>): EvalRecord {
 }
 
 describe('eval set', () => {
-  test('≥ 30 captures; every eval-* source is captured and valid', () => {
+  test('≥ 25 captures; every eval-* source is captured and valid', () => {
     const slugs = listCaptureSlugs();
-    expect(slugs.length).toBeGreaterThanOrEqual(30);
+    expect(slugs.length).toBeGreaterThanOrEqual(25);
     const sources = loadEvalCaptures();
     expect(sources.some((s) => s.lang === 'ja')).toBe(true);
     expect(sources.some((s) => s.dark)).toBe(true);

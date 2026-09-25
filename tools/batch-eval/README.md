@@ -36,7 +36,7 @@ node tools/batch-eval/src/cli/capture-set.ts           # capture any missing pag
   - start green dot, goal gold ring, failure red ring, falls red ×.
   - `thumb --no-solve` adds the nav-grid overlay: green = walkable for the ball centre, red = too close to a wall.
 
-## Eval set (28 captures added by Phase 09; plus the 7 Phase 02 fixtures = 35)
+## Eval set (22 captures from Phase 09; plus the 6 Phase 02 fixtures = 28)
 All pages were captured on 2026-09-25 (UTC) with `pnpm fixture:capture <url> <slug> --dpr 1 [--dark]`. The sources
 are listed in `eval-captures.json`.
 
@@ -45,9 +45,9 @@ are listed in `eval-captures.json`.
 - Contracts §9 CCR-07-2 makes the bundle screenshot a 1× analysis image anyway.
 - At 2× the set would be about 4× larger.
 
-The added captures total about 31 MB. `eval-nasa-home` (5.6 MB) is the outlier.
+The eval captures total about 26 MB. `eval-nasa-home` (5.6 MB) is the outlier.
 
-**Licensing:** entries marked "test fixture only" must never become curated stages.
+**Licensing:** see `NOTICE.md` at the repo root. Phase 09 originally captured 28 pages; six whose content we had no clear right to redistribute (a news site, a classifieds site, a CSS-framework marketing page, two project home pages and a Google experiments gallery) were removed before publication, together with the Phase 02 news-site fixture. Numbers in older build logs include them.
 
 | Slug | URL | Lang | Layout | Page | License / note |
 |---|---|---|---|---|---|
@@ -65,18 +65,12 @@ The added captures total about 31 MB. `eval-nasa-home` (5.6 MB) is the outlier.
 | `eval-rust-lang` | https://www.rust-lang.org/ | en | hero + feature sections | 1280×3490 | MIT/Apache-2.0 |
 | `eval-go-dev` | https://go.dev/ | en | hero + cards | 1280×3951 | CC BY 4.0 |
 | `eval-react-dev-dark` | https://react.dev/ | en · dark | dark marketing, code panels | 1280×6000 | CC BY 4.0 |
-| `eval-tailwind-dark` | https://tailwindcss.com/ | en · dark | dark marketing, dense visuals | 1280×6000 | test fixture only |
 | `eval-nasa-home` | https://www.nasa.gov/ | en | image-heavy news grid | 1280×6000 | NASA media, generally public domain (US Gov) |
 | `eval-usa-gov` | https://www.usa.gov/ | en | government services cards | 1280×3297 | US Government work, public domain |
 | `eval-creativecommons` | https://creativecommons.org/ | en | nonprofit landing | 1280×5940 | CC BY 4.0 |
 | `eval-debian` | https://www.debian.org/ | en | classic portal | 1280×2078 | DFSG-free site content |
-| `eval-kernel-org` | https://www.kernel.org/ | en | table + sparse | 1280×1138 | test fixture only |
-| `eval-lite-cnn` | https://lite.cnn.com/ | en | text-only headline list | 1280×3084 | © CNN: test fixture only, never curated |
-| `eval-craigslist` | https://sfbay.craigslist.org/ | en | dense link columns | 1280×1151 | test fixture only, never curated |
 | `eval-openstreetmap` | https://www.openstreetmap.org/#map=13/35.6812/139.7671 | en | full-viewport map canvas | 1280×800 | ODbL data, CC BY-SA tiles |
-| `eval-archive-org` | https://archive.org/ | en | dark hero + tiles | 1280×892 | test fixture only |
 | `eval-w3c-home` | https://www.w3.org/ | en | standards org landing | 1280×3510 | W3C Document License |
-| `eval-chrome-experiments` | https://experiments.withgoogle.com/collection/chrome | en | thumbnail grid (the 2013 home of WWM) | 1280×6000 | test fixture only |
 | `eval-wikipedia-main` | https://en.wikipedia.org/wiki/Main_Page | en | portal boxes | 1280×4235 | CC BY-SA 4.0 |
 | `eval-rust-book-dark` | https://doc.rust-lang.org/book/ch01-00-getting-started.html | en · dark | dark book chapter | 1280×800 | MIT/Apache-2.0 |
 
@@ -84,7 +78,7 @@ Pages change. Re-capturing gives different bundles, so the eval numbers belong t
 
 ## Tests
 `pnpm vitest run --project @wwm/batch-eval` checks:
-- the eval set: at least 30 captures, and every source is captured and valid;
+- the eval set: at least 25 captures, and every source is captured and valid;
 - the aggregation (`dist`, `group`, `runStats`);
 - that the dashboard embeds the data and the rating UI;
 - a real `runJob` end to end (example.com);
