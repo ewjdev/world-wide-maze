@@ -7,6 +7,19 @@ Labels follow the fidelity spec: **E** = evidenced from the 2013 build, **R** = 
 ## Renderer decision
 `WebGPURenderer` (three r186) with its automatic **WebGL2 fallback**, and all materials written in TSL. The spike and the build both render identically on the WebGPU and WebGL2 backends (the sandbox's `?backend=webgl` forces the fallback).
 
+**Fallback (N, `src/backend.ts`).** A browser without `navigator.gpu` gets WebGL2 up front, silently. If
+the WebGPU adapter or device can't be created, three falls back to WebGL2 and logs one warning. If the WebGPU
+device is **lost**, at startup or mid-session (GPU reset, flaky driver, software adapter), the engine:
+- logs one `warn` and never an `error`;
+- recreates the renderer on WebGL2 on a fresh canvas that takes the old canvas's place in the DOM (a canvas that
+  had a `webgpu` context can't get a `webgl2` one), keeping the scene, the stage and all state;
+- resumes drawing once the pipelines are compiled. Until then, `frame()` advances state without drawing.
+
+After either failure, later engines on the page start on WebGL2. `popErrorScope` rejections after a loss resolve
+to "no error", so they never reach the page as unhandled rejections. `stats().backend` reports the backend in use.
+The e2e suite covers the device loss with a real WebGPU device, locally only (`apps/web/test/game.e2e.test.ts`).
+In CI the pages run without WebGPU (`apps/web/test/browser-env.ts`).
+
 TSL was chosen over plain `WebGLRenderer` for three reasons:
 - **Selective glow in one pass.** The scene pass writes two MRT targets: colour and each material's emissive colour. Only the emissive target is bloomed, then screen-blended over the colour, so the website texture can never bloom. This is the 2013 "separate glow target", without rendering the scene twice.
 - **Shader-driven animation** (item bob/spin/pop, intro extrusion, elevator heights, particles, ocean swell) without `onBeforeCompile` hacks.

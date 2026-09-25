@@ -1308,7 +1308,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const old = renderer;
       const oldPipeline = pipeline;
       canvas = replaceCanvas(canvas);
-      ownCanvas?.remove();
       ownCanvas = canvas;
       let r: WebGPURenderer;
       try {

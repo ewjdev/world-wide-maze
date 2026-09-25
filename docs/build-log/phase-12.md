@@ -389,4 +389,26 @@ No assertion depends on these lines, and they do not happen in production (no Vi
 ## Test evidence
 - Local (M5 Max, WebGPU): `pnpm check` green, 71 files passed and 2 skipped, 953 tests passed and 13 skipped.
   The device-loss e2e passes.
-- Local in CI mode (`CI=1`, WebGL2 on SwiftShader): the game, portal and extension e2e suites pass.
+- Local in CI mode (`CI=1`, WebGL2 on SwiftShader): the game, portal, extension and capture-guard suites pass
+  (33 tests, 165 s).
+- GitHub runners, draft PR #2 against `launch/config-legal-story`:
+  - **First push:** no console errors anywhere, but the run took 610–665 s instead of ~220 s.
+    - SwiftShader drew every WebGL frame at tier 0 on the same four vCPUs, which starved timing-based tests. The
+      extension `rolls` check moved 0.26 m against a 0.5 m minimum.
+    - `capture-guard` has 20 s capture budgets and had Vitest's default 5 s timeout, so it timed out.
+  - **Fix:**
+    - A new test-only `GameTestHooks.quality` hook. In CI, the e2e pages pin the engine's own `'low'` tier (the rung
+      the auto ladder picks on slow devices).
+    - `capture-guard` gets a 30 s timeout.
+  - **Second push:** 385 s, with every browser test green. The one remaining failure was the docent corpus hash
+    (`apps/worker/src/docent/corpus.json`), because this log and the engine README are corpus files. Regenerated
+    with `pnpm docent:index`.
+  - **Final:** the CI run on the last commit of `fix/ci-runners` is green. Its URL is in the hand-off report.
+- Perf on the runner: the whole-page builds took 0.24–2.9 s, inside the 6 s CI budget and well above the 1.5 s
+  local budget, which is why the budget is scaled on CI.
+
+## Follow-ups
+- The Preview workflow's `check` job runs `pnpm check` too, but checks out without `fetch-depth: 0` (ci.yml has
+  it). It was not changed here (repo settings and workflows for previews are the user's call). It otherwise
+  behaves like CI.
+- WebGL2 context *restore* is not handled. After a WebGL2 context loss the engine logs once and stops drawing.
