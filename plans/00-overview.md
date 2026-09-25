@@ -163,7 +163,7 @@ Notes for dependent phases:
 | 06 | merged | main | G1 ✅ iPhone | iPhone 17 Pro: 60 Hz, p95 interval 21 ms, 0 lost; lock/reconnect unverified; Android pending |
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
 | 08 | merged (+08b ranking wiring running) | main | G2 pending human playtest | E2E 4/4; replay run scores exactly 1484; disconnect→pause→resume verified |
-| 09 | in progress | worktree | — | Wave 2 started 2026-09-25 |
+| 09 | merged | main | G2 ✅ (solver) | 94.1% solved @normal (≥90% target); par p50 49.8 s, max 133 s; 5 builder issues filed → 03b |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
 | 12 | not started | | | |
