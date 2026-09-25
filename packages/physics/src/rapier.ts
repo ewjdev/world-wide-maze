@@ -4,7 +4,9 @@
  * Build choice (see README "Rapier build"): `@dimforge/rapier3d-deterministic-compat` — Rapier compiled
  * with `enhanced-determinism` (software-consistent float paths, no SIMD), so the same StageData + the same
  * InputSample[] give bit-identical results in Node, Chromium, Safari and Cloudflare workerd. The `-compat`
- * flavour inlines the WASM as base64, so it loads without bundler/wasm plugins in Node, Vite and workers.
+ * flavour inlines the WASM as base64, so it loads without bundler/wasm plugins in Node, Vite and workers. The web
+ * build (12b, apps/web/vite.config.ts `rapierWasmAsset`) swaps that base64 for the URL of the same binary as a
+ * `.wasm` asset, which `init()` then fetches and compiles while streaming.
  * `standard` (`@dimforge/rapier3d-compat`) is kept only as a devDependency for the benchmark.
  *
  * **Precompiled module (05b).** Runtimes that forbid compiling WASM from bytes (Cloudflare workerd: "Wasm code

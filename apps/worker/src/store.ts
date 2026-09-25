@@ -131,6 +131,12 @@ export class CloudflareStore implements StageStore {
     await this.env.CACHE.put(`job:${cacheKey}`, jobId, { expirationTtl: 120 });
   }
 
+  async clearInflightJob(cacheKey: string, jobId: string): Promise<void> {
+    // Only our own entry: a newer job for the same key keeps its dedupe.
+    if ((await this.env.CACHE.get(`job:${cacheKey}`)) === jobId)
+      await this.env.CACHE.delete(`job:${cacheKey}`);
+  }
+
   async isOptedOut(host: string): Promise<boolean> {
     const hits = await Promise.all(domainChain(host).map((d) => this.env.CACHE.get(`optout:${d}`)));
     return hits.some((v) => v !== null);

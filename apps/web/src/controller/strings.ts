@@ -15,6 +15,8 @@ const en = {
   go: 'Connect',
   replaced: 'This controller was opened somewhere else. Close this tab, or tap to take control again.', // N
   takeOver: 'Use this phone',
+  unauthorized:
+    'Another phone is already connected to this game. To switch phones, scan the QR code on your computer.', // N (v0.2.7 pairing secret)
   waitingHost: 'Waiting for your computer… Keep this page open.', // N
   hostLeft: 'PC and mobile phone disconnected. Waiting for the computer to reconnect…', // E: `disconnected` (adapted: no reload needed)
   lockPortrait: 'Lock smartphone to portrait orientation', // E: connect.devicelock
@@ -66,6 +68,8 @@ const ja: Strings = {
   replaced:
     'このコントローラーは別の場所で開かれました。このタブを閉じるか、タップして操作を戻してください。',
   takeOver: 'このスマホを使う',
+  unauthorized:
+    '別のスマートフォンがすでに接続されています。切り替えるには、パソコンに表示されたQRコードを読み取ってください。',
   waitingHost: 'PCを待っています…このページを開いたままにしてください。',
   hostLeft: 'PCとスマートフォンの接続が切れました。PCの再接続を待っています…',
   lockPortrait: 'スマートフォンの画面を縦向きにロックしてください',

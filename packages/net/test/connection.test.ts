@@ -3,15 +3,37 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import {
   CLOSE_REPLACED,
   CLOSE_ROOM_NOT_FOUND,
+  CLOSE_UNAUTHORIZED,
   ControllerConnection,
   HostConnection,
   MAX_BUFFERED_BYTES,
 } from '../src/connection.ts';
-import { createRoom, isRoomCode, pairingUrl, roomWsUrl } from '../src/rooms-api.ts';
+import {
+  createRoom,
+  forgetPairToken,
+  isRoomCode,
+  pairingUrl,
+  pairTokenFromFragment,
+  recallHostRoom,
+  rememberHostRoom,
+  resolvePairToken,
+  roomWsUrl,
+} from '../src/rooms-api.ts';
 import { socketFactory } from './fake-ws.ts';
 
 let clock = 0;
 const now = () => clock;
+const TOK = 'AbCdEfGhIjKlMnOpQrSt_-';
+const TOK2 = 'zYxWvUtSrQpOnMlKjIhG12';
+
+function memoryStorage() {
+  const m = new Map<string, string>();
+  return {
+    getItem: (k: string) => m.get(k) ?? null,
+    setItem: (k: string, v: string) => void m.set(k, v),
+    removeItem: (k: string) => void m.delete(k),
+  };
+}
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -34,11 +56,75 @@ describe('rooms api helpers', () => {
     expect(isRoomCode('12345')).toBe(false);
   });
 
+  test('v0.2.7: tokens in the ws URL (query) and in the pairing URL (fragment only)', () => {
+    expect(roomWsUrl('https://wwm.example', '123456', 'host', TOK)).toBe(
+      `wss://wwm.example/api/rooms/123456/ws?role=host&token=${TOK}`,
+    );
+    expect(roomWsUrl('https://wwm.example', '123456', 'controller', null)).toBe(
+      'wss://wwm.example/api/rooms/123456/ws?role=controller',
+    );
+    const link = pairingUrl('https://wwm.example', '654321', TOK2);
+    expect(link).toBe(`https://wwm.example/c/654321#p=${TOK2}`);
+    const u = new URL(link);
+    expect(u.pathname + u.search).toBe('/c/654321'); // what a server (or Referer) would ever see
+    expect(pairTokenFromFragment(u.hash)).toBe(TOK2);
+    expect(pairTokenFromFragment('#p=short')).toBeNull();
+    expect(pairTokenFromFragment('')).toBeNull();
+  });
+
+  test('v0.2.7: the phone remembers its pair token per code in sessionStorage', () => {
+    const store = memoryStorage();
+    // First visit via the QR link: the fragment wins and is remembered.
+    expect(resolvePairToken('111111', `#p=${TOK}`, store)).toBe(TOK);
+    // Reload / reconnect without the fragment: recalled.
+    expect(resolvePairToken('111111', '', store)).toBe(TOK);
+    // Another code: nothing (typed-code path).
+    expect(resolvePairToken('222222', '', store)).toBeNull();
+    // A newer link for the same code replaces it.
+    expect(resolvePairToken('111111', `#p=${TOK2}`, store)).toBe(TOK2);
+    forgetPairToken('111111', store);
+    expect(resolvePairToken('111111', '', store)).toBeNull();
+    // No storage (private mode): still works from the fragment.
+    expect(resolvePairToken('111111', `#p=${TOK}`, null)).toBe(TOK);
+    const broken = {
+      getItem: () => {
+        throw new Error('denied');
+      },
+      setItem: () => {
+        throw new Error('denied');
+      },
+      removeItem: () => {},
+    };
+    expect(resolvePairToken('111111', `#p=${TOK}`, broken)).toBe(TOK);
+    expect(resolvePairToken('111111', '', broken)).toBeNull();
+  });
+
+  test('v0.2.7: the host remembers its room tokens (reload of /p/<code>), or takes them from #h=', () => {
+    const store = memoryStorage();
+    expect(recallHostRoom('333333', '', store)).toBeNull();
+    rememberHostRoom('333333', { hostToken: TOK, pairToken: TOK2 }, store);
+    expect(recallHostRoom('333333', '', store)).toEqual({ hostToken: TOK, pairToken: TOK2 });
+    expect(recallHostRoom('444444', '', store)).toBeNull();
+    expect(recallHostRoom('444444', `#h=${TOK2}&p=${TOK}`, store)).toEqual({
+      hostToken: TOK2,
+      pairToken: TOK,
+    });
+    expect(recallHostRoom('444444', `#h=${TOK2}`, null)).toEqual({ hostToken: TOK2, pairToken: null });
+    store.setItem('wwm.room.555555', '{not json');
+    expect(recallHostRoom('555555', '', store)).toBeNull();
+  });
+
   test('createRoom posts and validates', async () => {
-    const f = vi.fn(async () => Response.json({ code: '424242' }));
-    expect(await createRoom('http://x', f as unknown as typeof fetch)).toBe('424242');
-    const bad = vi.fn(async () => Response.json({ code: 'nope' }));
+    const f = vi.fn(async () => Response.json({ code: '424242', hostToken: TOK, pairToken: TOK2 }));
+    expect(await createRoom('http://x', f as unknown as typeof fetch)).toEqual({
+      code: '424242',
+      hostToken: TOK,
+      pairToken: TOK2,
+    });
+    const bad = vi.fn(async () => Response.json({ code: 'nope', hostToken: TOK, pairToken: TOK2 }));
     await expect(createRoom('http://x', bad as unknown as typeof fetch)).rejects.toThrow(/malformed/);
+    const legacy = vi.fn(async () => Response.json({ code: '424242' })); // pre-0.2.7 server
+    await expect(createRoom('http://x', legacy as unknown as typeof fetch)).rejects.toThrow(/malformed/);
     const err = vi.fn(async () => new Response('', { status: 503 }));
     await expect(createRoom('http://x', err as unknown as typeof fetch)).rejects.toThrow(/503/);
   });
@@ -170,10 +256,11 @@ describe('RoomConnection', () => {
     expect(c.state).toBe('open');
   });
 
-  test('4404 room-not-found and 4409 replaced are fatal (no reconnect)', () => {
+  test('4404 room-not-found, 4409 replaced and 4401 unauthorized are fatal (no reconnect)', () => {
     for (const [code, err] of [
       [CLOSE_ROOM_NOT_FOUND, 'room-not-found'],
       [CLOSE_REPLACED, 'replaced'],
+      [CLOSE_UNAUTHORIZED, 'unauthorized'],
     ] as const) {
       const f = socketFactory();
       const c = new ControllerConnection({ url: 'ws://x', createSocket: f.create, now });

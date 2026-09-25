@@ -20,11 +20,12 @@ The error codes are the contract's: `URL_FORBIDDEN`, `CAPTURE_BLOCKED` (HTTP ≥
 ## How a job runs
 1. **POST** runs the static URL policy, then the KV run cache, then the in-flight dedupe, then the full policy (opt-out list and DoH resolution), then the per-IP build limit. It then creates a `BuildJob` Durable Object and sends `202`.
 2. **`BuildJob.alarm()`** runs `runBuildJob` (`src/pipeline.ts`):
-   - It takes a slot from the global browser semaphore (`Limiter` DO, `BROWSER_MAX_CONCURRENCY`).
-   - It captures. The budget is `CAPTURE_BUDGET_MS`, 20 s.
+   - It takes a slot from the global browser semaphore (`Limiter` DO, `BROWSER_MAX_CONCURRENCY`). While it waits the job stays `queued`; after 45 s without a slot it ends with `RATE_LIMITED` ("all capture browsers are busy", with `Retry-After`). The wait is logged as `timings.queue`.
+   - It captures (progress `capturing`). The budget is `CAPTURE_BUDGET_MS`, 20 s, **counted from when the slot is held** (Phase 12b: before, the queue wait counted too, so a burst turned into `CAPTURE_TIMEOUT`s).
    - It runs `moderate` (a no-op hook).
    - It decodes the 1× PNG and builds slice 0, runs `validateStage`, and runs the optional `validatePlayable` hook.
-   - It stores the result, then sends `done`. The slice-0 budget is `SLICE0_BUDGET_MS`, 30 s from capture start (E: the 2013 timeout).
+   - It stores the result, then sends `done`. The slice-0 budget is `SLICE0_BUDGET_MS`, 30 s from capture start, i.e. from holding the slot (E: the 2013 timeout).
+   - If the job fails before `done`, it deletes its own `job:<key>` dedupe entry before sending `error` (Phase 12b), so a retry starts a fresh job instead of replaying the failure for up to 120 s. An interrupted job (`BuildJob` evicted mid-run) does the same.
    - Slices 1…n−1 are built afterwards in the same alarm. If one fails, the run is truncated and marked `partial`.
 3. **Storage:**
    - R2 holds `stages/<stageId>.json`, `textures/<captureId>/<slice>.webp`, `captures/<captureId>/{capture.json,screenshot.png}`.
@@ -51,12 +52,26 @@ The builder runs inside the `BuildJob` alarm, with `limits.cpu_ms = 300000` in `
 - **Opt-out.** KV `optout:<domain>` covers the domain and all of its subdomains.
 - **Every browser request.** CDP `Fetch.enable` on the **browser target** pauses every request from every page, frame and worker, and every **redirect hop**. `RequestGuard` then applies the same rules (memoized per host) and continues or fails each request. The final page URL is re-checked too.
   - Playwright's `page.route()` is **not** enough. We verified that it never sees redirect hops: a redirect to a "private" host was fetched 4 times.
-  - An init script removes `WebSocket`, `WebTransport`, `RTCPeerConnection`, `Worker` and `SharedWorker` from every frame, because CDP `Fetch` can't see their traffic. We verified that WebSockets from pages and from workers bypass `Fetch`.
+  - An init script (`DISABLE_UNGUARDED_APIS` in `src/capture/core.ts`) removes `WebSocket`, `WebSocketStream`, `WebTransport`, `RTCPeerConnection`, `Worker` and `SharedWorker` from every frame, because CDP `Fetch` can't see their traffic. It also removes the Direct Sockets classes as a precaution. We verified that WebSockets from pages and from workers bypass `Fetch`.
+  - The same script replaces `window.open` with a function that returns `null`. Popups are never useful to a capture.
+  - **Child realms (Phase 12b).** A page could try to take these APIs from a realm the top-level script doesn't cover. `capture-guard.test.ts` tests each case against real Chromium with a "child realm" fixture (`test/helpers/frame-bypass-site.ts`). The browser in these tests runs without our local Chromium flags, like Browser Run. The internal server counts HTTP requests, WebSocket upgrades and raw TCP connections, so a TURN-over-TCP attempt from `RTCPeerConnection` shows up too. The cases are:
+    - an about:blank iframe used synchronously right after `appendChild`, reached through `contentWindow`, `contentDocument.defaultView`, `Function('return this')` or `document.write`
+    - parsed `about:blank` frames
+    - srcdoc, `data:`, `blob:` and `javascript:` frames
+    - a cross-site (out-of-process) iframe
+    - nested frames
+    - `<object>` and `<embed>`
+    - popups from `window.open`, from an iframe's `open`, and from `<a target=_blank>.click()`
+  - Playwright's `addInitScript` runs in every one of those realms, including an about:blank frame before the parent can touch it, and in auto-attached out-of-process frames and popups. So `WebSocket`, the workers and `RTCPeerConnection` were already removed everywhere.
+  - The one leak was **`WebSocketStream`**, which wasn't on the list. Before the fix it reached the internal server from every realm, the top-level page included: 11 of 11 capture cases failed, and each attempt was one upgrade plus one TCP connection. It is now removed, and all cases see 0 hits and 0 connections.
+  - A control test shows the same attacks do reach the internal server without the capture guard.
   - Service workers and downloads are disabled on the context. Local Chromium also gets WebRTC and background-networking flags.
 - **Dev/test only.** `DEV_ALLOWED_HOSTS` holds exact **loopback** `host:port` pairs that skip the IP and port rules, so tests can capture a local fixture site. Entries that aren't loopback are ignored. It must stay empty in production.
 - **Residual risks** (documented, not fixed):
   - DNS rebinding between our DoH check and Chromium's own lookup (a TOCTOU gap). On Browser Run, egress comes from Cloudflare's network, not ours.
   - `<link rel=preconnect>` and DNS prefetch can open a TCP connection or send a DNS query without any HTTP request.
+  - The removal list is a denylist. A new socket-like web API that Chromium ships later would bypass `Fetch` until someone adds it to `UNGUARDED_APIS`. The child-realm tests would catch it only if they also exercised that API.
+  - The child-realm tests run local Playwright (1.63). Browser Run uses `@cloudflare/playwright` 1.3.6, which is based on Playwright 1.58 and uses the same `addInitScript` mechanism, but nobody has run these tests against the real service.
 
 ## Capturers (`src/capture/`)
 | Capturer | Where | Use |
@@ -70,7 +85,7 @@ All three run `captureWithBrowser` (`src/capture/core.ts`): the SSRF guard, then
 ## Abuse controls
 - **Builds.** 10 per hour per IP (`BUILD_LIMIT_PER_HOUR`), counted only on a cache miss. The `Limiter` DO keeps a sliding log. The Rate Limiting binding supports only 10 s and 60 s periods, so it can't do this.
 - **Reads.** 100 per minute per IP, through the `READ_LIMITER` Rate Limiting binding. The IP comes from `cf-connecting-ip`.
-- **Browsers.** A global semaphore (`Limiter` DO `browser`, leased). If it's still full after 45 s, the job returns `RATE_LIMITED`.
+- **Browsers.** A global semaphore (`Limiter` DO `browser`, leased). If it's still full after 45 s, the job returns `RATE_LIMITED`. The capture budget starts only once a slot is held.
 
 ## Retention (task 9)
 A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS` (30): their stage JSON, textures, capture bundle, and D1 rows. It handles at most 200 runs per tick. Curated runs are the `run_id`s in Phase 10's `curated` table. KV cache entries expire on their own after 7 days.

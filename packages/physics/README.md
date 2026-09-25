@@ -52,6 +52,18 @@ precompiled `WebAssembly.Module` of the package's `dist/rapier_wasm3d_bg.wasm` (
 asserted in `test/rapier.test.ts`). Call it once before `createSimulation()`; later `loadRapier()` calls reuse the
 instance. A failed load isn't cached. The Worker does this in `apps/worker/src/physics-wasm.ts`.
 
+**Web build (Phase 12b): the WASM as a separate `.wasm` asset.** The base64 copy costs 2.8 MB of JS (1,069 KiB gz)
+and has to be decoded before compiling. `apps/web/vite.config.ts` (`rapierWasmAsset`, applied to the page and the
+physics worker bundle, not to Node/Vitest SSR) rewrites the package's single `init()` argument
+(`module_or_path: base64.toByteArray("…").buffer`) to the URL of `dist/rapier_wasm3d_bg.wasm`, emitted as a hashed
+asset, so wasm-bindgen fetches it and compiles it while streaming (`WebAssembly.instantiateStreaming`). Same binary,
+so replays stay bit-identical (the Chromium worker test runs through this path via the web app's dev server).
+`test/rapier.test.ts` asserts the rewritten expression exists exactly once. Sizes: `.wasm` 2,000 KiB raw / 750 KiB gz
+/ 549 KiB br + a 154 KiB (28 KiB gz) JS glue chunk, versus 2,822 / 1,069 / 786 KiB before. In that build Rapier is
+initialised from the URL, so `loadRapier({ wasmModule })` is for Node/workerd only. The game also creates its
+simulation only when a stage starts building, so the title/attract page doesn't download Rapier at all
+(docs/launch/performance.md §4).
+
 ## Commands
 - Tests: `pnpm vitest run --project @wwm/physics`. This covers feel, events, determinism, 1,000 tunneling trials and perf. The Chromium worker test needs Playwright Chromium. The aid-dcc tests need `pnpm ref:fetch`.
 - Regenerate the fixture replay after any physics change: `pnpm --filter @wwm/physics replay:make` (also bump `PHYSICS_VERSION`).

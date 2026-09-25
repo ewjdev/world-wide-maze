@@ -76,6 +76,8 @@ export type TutorialStep = 2 | 3 | 4 | 5 | 6;
 export interface RoomView {
   status: 'idle' | 'creating' | 'ready' | 'error';
   code: string | null;
+  /** Contracts v0.2.7: the phone's pairing secret, put in the QR code / link fragment (`/c/<code>#p=…`). */
+  pairToken: string | null;
   controllerConnected: boolean;
   rttMs: number | null;
 }
@@ -249,7 +251,10 @@ export class Game {
 
   #canvas: HTMLCanvasElement | null = null;
   #engine: Engine | null = null;
+  /** Created on the first stage load (`#ensureDriver`), not at start: the title/attract needs no physics. */
   #driver: SimDriver | null = null;
+  #driverKind: 'worker' | 'lockstep' = 'lockstep';
+  #driverLoad: Promise<SimDriver> | null = null;
   #raf = 0;
   #lastFrame = 0;
   /** Game clock (seconds, advances only while not held). */
@@ -311,7 +316,13 @@ export class Game {
       unsupported: false,
       engineReady: false,
       inputMode: null,
-      room: { status: 'idle', code: opts.roomCode ?? null, controllerConnected: false, rttMs: null },
+      room: {
+        status: 'idle',
+        code: opts.roomCode ?? null,
+        pairToken: null,
+        controllerConnected: false,
+        rttMs: null,
+      },
       justConnected: false,
       calibrateTimedOut: false,
       calibrateLeft: CALIBRATE_TIMEOUT_SEC,
@@ -450,16 +461,11 @@ export class Game {
         return;
       }
       this.#engine = engine;
-      const kind = this.#opts.test?.forceWorker
+      this.#driverKind = this.#opts.test?.forceWorker
         ? 'worker'
         : this.#opts.test?.lockstep || this.#replay
           ? 'lockstep'
           : (this.#opts.physics ?? 'lockstep');
-      this.#driver = await createDriver(kind);
-      if (this.#disposed) {
-        this.#driver.dispose();
-        return;
-      }
     } catch (e) {
       console.error('[wwm] engine failed to start', e);
       this.#set({ unsupported: true });
@@ -473,6 +479,28 @@ export class Game {
     if (this.#opts.roomCode) void this.#ensureRoom();
     if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
     else void this.#loadAttract();
+  }
+
+  /**
+   * Phase 12b: Rapier (a 2 MB WASM) loads when the first stage starts building, in parallel with the build, so
+   * the title/attract never downloads it. A failed load isn't cached (the stage load reports it; retry works).
+   */
+  #ensureDriver(): Promise<SimDriver> {
+    if (!this.#driverLoad) {
+      const p = createDriver(this.#driverKind).then((d) => {
+        if (this.#disposed) {
+          d.dispose();
+          throw new Error('game disposed');
+        }
+        this.#driver = d;
+        return d;
+      });
+      p.catch(() => {
+        if (this.#driverLoad === p) this.#driverLoad = null;
+      });
+      this.#driverLoad = p;
+    }
+    return this.#driverLoad;
   }
 
   dispose(): void {
@@ -672,7 +700,10 @@ export class Game {
     if (this.#conn || this.#view.room.status === 'creating') return;
     this.#set({ room: { ...this.#view.room, status: 'creating' } });
     try {
-      const { code, conn } = await openHostRoom(this.#opts.origin || location.origin, this.#opts.roomCode);
+      const { code, conn, pairToken } = await openHostRoom(
+        this.#opts.origin || location.origin,
+        this.#opts.roomCode,
+      );
       if (this.#disposed) {
         conn.close();
         return;
@@ -680,7 +711,9 @@ export class Game {
       this.#conn = conn;
       const phone = new PhoneInputSource(conn, { frameYaw: () => this.#yaw() });
       this.#phone = phone;
-      this.#set({ room: { status: 'ready', code, controllerConnected: conn.peerConnected, rttMs: null } });
+      this.#set({
+        room: { status: 'ready', code, pairToken, controllerConnected: conn.peerConnected, rttMs: null },
+      });
       this.#cleanups.push(
         conn.on('peer', (role, connected) => {
           if (role === 'controller') this.#onControllerPresence(connected);
@@ -702,7 +735,9 @@ export class Game {
       );
     } catch (err) {
       console.warn('[wwm] room unavailable', err);
-      this.#set({ room: { status: 'error', code: null, controllerConnected: false, rttMs: null } });
+      this.#set({
+        room: { status: 'error', code: null, pairToken: null, controllerConnected: false, rttMs: null },
+      });
     }
   }
 
@@ -727,7 +762,9 @@ export class Game {
     this.#conn = null;
     this.#phone?.dispose();
     this.#phone = null;
-    this.#set({ room: { status: 'idle', code: null, controllerConnected: false, rttMs: null } });
+    this.#set({
+      room: { status: 'idle', code: null, pairToken: null, controllerConnected: false, rttMs: null },
+    });
     void this.#ensureRoom();
   }
 
@@ -1062,6 +1099,8 @@ export class Game {
         count: run.sliceCount(),
       },
     });
+    // start loading physics now, alongside the stage build (errors surface in #playLoaded)
+    this.#ensureDriver().catch(() => {});
     let got: LoadedStage;
     try {
       got = await run.loadSlice(this.#slice, (p) => this.#progress(p.step, p.pct), ac.signal);
@@ -1079,14 +1118,19 @@ export class Game {
 
   async #playLoaded(got: LoadedStage, ac: AbortController, t0: number): Promise<void> {
     const e = this.#engine;
-    const d = this.#driver;
     const run = this.#run;
-    if (!e || !d || !run) return;
+    if (!e || !run) return;
     this.#progress('world', 94);
     this.#endGhost();
+    let d: SimDriver;
     try {
       this.#attract = false;
-      await Promise.all([e.loadStage(got.stage, got.image), d.load(got.stage)]);
+      const loadSim = async () => {
+        const sim = await this.#ensureDriver();
+        await sim.load(got.stage);
+        return sim;
+      };
+      [, d] = await Promise.all([e.loadStage(got.stage, got.image), loadSim()]);
       this.#setEngineImage(got.image);
     } catch (err) {
       this.#buildFailed(new StageLoadError('BUILD_FAILED', String(err)), run.url, ac);
@@ -1548,7 +1592,7 @@ export class Game {
     this.#raf = requestAnimationFrame(this.#frame);
     const e = this.#engine;
     const d = this.#driver;
-    if (!e || !d) return;
+    if (!e) return;
     const scale = this.#opts.test?.timeScale ?? 1;
     const dt = Math.min(0.1, Math.max(0, (now - this.#lastFrame) / 1000)) * scale;
     this.#lastFrame = now;
@@ -1590,7 +1634,7 @@ export class Game {
       if (left !== v.calibrateLeft) this.#set({ calibrateLeft: left });
     }
 
-    const stepping = !hold && (v.phase === 'play' || v.phase === 'falling');
+    const stepping = !!d && !hold && (v.phase === 'play' || v.phase === 'falling');
     if (stepping) {
       const r = d.advance(gdt, this.#inputForStep, this.#onSimEvent);
       if (r.ball) {
@@ -1601,7 +1645,7 @@ export class Game {
         this.audio.setRoll(Math.hypot(vx, vy, vz), r.ball.grounded && this.#view.phase === 'play');
       }
     }
-    if (this.#ghostBall) this.#ghostBall.update(d.tick / SIM_HZ);
+    if (this.#ghostBall) this.#ghostBall.update((d?.tick ?? 0) / SIM_HZ);
     const control = this.#view.phase === 'play' ? sample : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
     e.frame(gdt);

@@ -287,3 +287,139 @@ describe('build pipeline', () => {
     ]);
   });
 });
+
+describe('Phase 12b: browser queue and failed-job dedupe', () => {
+  /** A capturer that honours its deadline like the real ones (CAPTURE_TIMEOUT once past it). */
+  const deadlineCapturer: Capturer = {
+    name: 'deadline',
+    capture: async (req) => {
+      await new Promise((r) => setTimeout(r, 20));
+      if (Date.now() > req.deadline)
+        throw new ServiceError('CAPTURE_TIMEOUT', 'capture exceeded its time budget');
+      return fakeCapture();
+    },
+  };
+  const slowGate = (waitMs: number) => ({
+    acquire: async () => {
+      await new Promise((r) => setTimeout(r, waitMs));
+      return async () => {};
+    },
+  });
+
+  test('time spent waiting for a browser slot does not count against the capture budget', async () => {
+    // Before the fix the 400 ms budget started before the 600 ms queue wait → CAPTURE_TIMEOUT.
+    const { events, result } = await run({
+      gate: slowGate(600),
+      capturer: deadlineCapturer,
+      captureBudgetMs: 400,
+      slice0BudgetMs: 5000,
+    });
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'done' })]);
+    expect(result?.timingsMs.queue).toBeGreaterThanOrEqual(590);
+    expect(result?.timingsMs.slice0).toBeGreaterThanOrEqual(result?.timingsMs.queue ?? 0);
+  });
+
+  test('the slice-0 budget also starts once the slot is held', { timeout: 15_000 }, async () => {
+    // Queue wait (2.5 s) > budget (2 s) ≫ slice-0 work (~0.1–0.3 s, more under a loaded test run).
+    const { events } = await run({ gate: slowGate(2500), slice0BudgetMs: 2000 });
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'done' })]);
+  });
+
+  test('"capturing" is only reported once a browser slot is held; a full queue is RATE_LIMITED', async () => {
+    const events: JobEvent[] = [];
+    let acquired = false;
+    await runBuildJob(
+      params,
+      {
+        capturer: okCapturer,
+        builder: STUB_BUILDER,
+        moderate: async () => 'ok',
+        store: new MemoryStore(),
+        log: silentLogger,
+        gate: {
+          acquire: async () => {
+            expect(events.some((e) => e.type === 'progress' && e.step === 'capturing')).toBe(false);
+            acquired = true;
+            return async () => {};
+          },
+        },
+      },
+      (e) => {
+        if (e.type === 'progress' && e.step === 'capturing') expect(acquired).toBe(true);
+        events.push(e);
+      },
+    );
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'done' })]);
+  });
+
+  test.each([
+    ['capture fails', { capturer: { name: 'x', capture: async () => Promise.reject(new Error('boom')) } }],
+    [
+      'no browser slot',
+      {
+        gate: {
+          acquire: async () =>
+            Promise.reject(new ServiceError('RATE_LIMITED', 'all capture browsers are busy', 5)),
+        },
+      },
+    ],
+  ] as [string, Partial<PipelineDeps>][])(
+    'a failed job (%s) clears its own in-flight entry so a retry starts fresh',
+    async (_n, over) => {
+      const store = new MemoryStore();
+      store.inflight.set(params.cacheKey, params.jobId);
+      store.inflight.set('run:other', 'j-other');
+      const events: JobEvent[] = [];
+      await runBuildJob(
+        params,
+        {
+          capturer: okCapturer,
+          builder: STUB_BUILDER,
+          moderate: async () => 'ok',
+          store,
+          log: silentLogger,
+          ...over,
+        },
+        (e) => {
+          // cleared before the error reaches the client, so an immediate retry can't race it
+          if (e.type === 'error') expect(store.inflight.has(params.cacheKey)).toBe(false);
+          events.push(e);
+        },
+      );
+      expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error' })]);
+      expect(store.inflight.has(params.cacheKey)).toBe(false);
+      expect(store.inflight.get('run:other')).toBe('j-other');
+    },
+  );
+
+  test("a failed job leaves a newer job's in-flight entry alone; success keeps its entry", async () => {
+    const store = new MemoryStore();
+    store.inflight.set(params.cacheKey, 'j-newer');
+    await runBuildJob(
+      params,
+      {
+        capturer: { name: 'x', capture: async () => Promise.reject(new Error('boom')) },
+        builder: STUB_BUILDER,
+        moderate: async () => 'ok',
+        store,
+        log: silentLogger,
+      },
+      () => {},
+    );
+    expect(store.inflight.get(params.cacheKey)).toBe('j-newer');
+    const ok = new MemoryStore();
+    ok.inflight.set(params.cacheKey, params.jobId);
+    await runBuildJob(
+      params,
+      {
+        capturer: okCapturer,
+        builder: STUB_BUILDER,
+        moderate: async () => 'ok',
+        store: ok,
+        log: silentLogger,
+      },
+      () => {},
+    );
+    expect(ok.inflight.get(params.cacheKey)).toBe(params.jobId); // the run cache answers first anyway
+  });
+});

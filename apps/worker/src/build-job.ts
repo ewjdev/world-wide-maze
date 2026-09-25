@@ -52,7 +52,11 @@ export class BuildJob extends DurableObject<Env> {
       return;
     }
     if (state === 'running') {
-      // A previous attempt died mid-job (eviction/deploy). Don't loop: report and stop.
+      // A previous attempt died mid-job (eviction/deploy). Don't loop: report and stop (and let a retry start
+      // a fresh job: Phase 12b).
+      await createServices(this.env, { jobId: params.jobId })
+        .store.clearInflightJob(params.cacheKey, params.jobId)
+        .catch(() => {});
       await this.emit({
         type: 'error',
         code: 'BUILD_FAILED',

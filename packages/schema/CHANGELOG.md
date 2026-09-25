@@ -55,3 +55,12 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.2.6
 - VersionedReplay.timerStartTick (server clamps to first POWER).
+
+## 0.2.7 (2026-09-25, Phase 12b)
+- **CCR-12-1:** `zod.ts` calls `z.config({ jitless: true })` before any schema is used, so zod never runs its
+  `new Function('')` probe and a strict CSP (`script-src` without `'unsafe-eval'`) sees no violation.
+- **CCR-12-2 (pairing secret):** `CreateRoomResponse` is `{code, hostToken, pairToken}` (128-bit base64url tokens,
+  `RoomTokenSchema`); `RoomCloseCode` = `4400 | 4401 | 4404 | 4409` and the `ROOM_CLOSE_CODES` constant (4401 =
+  missing/invalid token); `ROOM_TOKEN_BYTES` = 16.
+- **CCR-12-3:** `CAPTURE_LIMITS` and `CaptureBundleSchema` limits: `elements` ≤ 20,000, `title` ≤ 512, `url` ≤ 2,048,
+  `text` ≤ 120 (unchanged), `lines` ≤ 200 per element. `@wwm/capture-script` clamps `title` and `lines` to match.

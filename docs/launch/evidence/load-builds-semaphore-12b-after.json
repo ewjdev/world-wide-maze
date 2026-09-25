@@ -1,0 +1,50 @@
+{
+  "mode": "burst",
+  "base": "http://localhost:8898",
+  "when": "2026-09-25T12:01:33.392Z",
+  "n": 50,
+  "wallMs": 56590,
+  "postStatuses": {
+    "202": 50
+  },
+  "postMs": {
+    "p50": 207,
+    "p95": 212
+  },
+  "jobOutcomes": {
+    "done": 27,
+    "error:RATE_LIMITED": 23
+  },
+  "doneMs": {
+    "p50": 25084,
+    "p95": 45794,
+    "max": 46822
+  },
+  "errorSamples": [
+    {
+      "outcome": "error:RATE_LIMITED",
+      "steps": ["queued"],
+      "message": "all capture browsers are busy; try again shortly",
+      "ms": 44729.731833
+    },
+    {
+      "outcome": "error:RATE_LIMITED",
+      "steps": ["queued"],
+      "message": "all capture browsers are busy; try again shortly",
+      "ms": 44729.657125
+    },
+    {
+      "outcome": "error:RATE_LIMITED",
+      "steps": ["queued"],
+      "message": "all capture browsers are busy; try again shortly",
+      "ms": 44729.687042
+    }
+  ],
+  "retryFailed": {
+    "retried": 5,
+    "sameFailedJobReturned": 0,
+    "outcomes": {
+      "done": 5
+    }
+  }
+}

@@ -9,6 +9,29 @@
 @import "@fontsource/ibm-plex-mono/400.css";
 @import "@fontsource/ibm-plex-mono/500.css";
 
+/*
+ * Phase 12b (CLS): metric-matched fallbacks shown until the web fonts arrive (fontsource uses font-display: swap).
+ * Georgia/Arial scaled so lines wrap and sit where Newsreader/Instrument Sans put them, so the swap no longer
+ * reflows the page (/log CLS 0.16–0.20 → ~0). Tuned in Chromium by comparing element boxes with the web fonts
+ * blocked vs loaded at 1350 px and 412 px widths (docs/launch/performance.md §5).
+ */
+@font-face {
+  font-family: "Newsreader Fallback";
+  src: local("Georgia");
+  size-adjust: 92%;
+  ascent-override: 80.4%;
+  descent-override: 28.3%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Instrument Sans Fallback";
+  src: local("Arial");
+  size-adjust: 101.7%;
+  ascent-override: 95%;
+  descent-override: 24.5%;
+  line-gap-override: 0%;
+}
+
 .sc {
   --paper: #f7f6f2;
   --paper-2: #efece4;
@@ -23,8 +46,8 @@
   --green: #2c8a4b;
   --red: #b8412f;
   --yellow: #e2a900;
-  --serif: "Newsreader Variable", "Newsreader", Georgia, serif;
-  --sans: "Instrument Sans Variable", "Instrument Sans", system-ui, sans-serif;
+  --serif: "Newsreader Variable", "Newsreader", "Newsreader Fallback", Georgia, serif;
+  --sans: "Instrument Sans Variable", "Instrument Sans", "Instrument Sans Fallback", system-ui, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   --measure: 40rem;
   --wide: 76rem;

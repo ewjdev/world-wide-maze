@@ -9,6 +9,8 @@ export class MemoryStore implements StageStore {
   readonly runs = new Map<string, RunRecord & { status?: string; timingsMs?: Record<string, number> }>();
   readonly stages = new Map<string, { stage: StageData; runId: string; textureKey: string }>();
   readonly cache = new Map<string, string>();
+  /** `job:<cacheKey>` → jobId (in-flight dedupe). */
+  readonly inflight = new Map<string, string>();
 
   async putCapture(bundle: CaptureBundle, png: Uint8Array) {
     this.captures.set(bundle.captureId, { bundle, png });
@@ -33,6 +35,9 @@ export class MemoryStore implements StageStore {
   }
   async cacheRun(cacheKey: string, runId: string) {
     this.cache.set(cacheKey, runId);
+  }
+  async clearInflightJob(cacheKey: string, jobId: string) {
+    if (this.inflight.get(cacheKey) === jobId) this.inflight.delete(cacheKey);
   }
   stagesOf(runId: string): StageData[] {
     return [...this.stages.values()]

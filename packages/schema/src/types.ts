@@ -407,10 +407,21 @@ export interface CuratedResponse {
   runs: CuratedRun[];
 }
 
-/** `POST /api/rooms`. */
+/**
+ * `POST /api/rooms` (v0.2.7, CCR-12-2). Both tokens are 128 random bits, base64url.
+ * - `hostToken`: the desktop connects with `?role=host&token=<hostToken>` (always required).
+ * - `pairToken`: goes in the pairing URL's fragment, `/c/<code>#p=<pairToken>` (never sent to the server in
+ *   the page request). The phone connects with `?role=controller&token=<pairToken>`. Without a token a
+ *   controller is admitted only while no controller is connected (typed 6-digit code, as in 2013).
+ */
 export interface CreateRoomResponse {
   code: string; // 6 digits
+  hostToken: string;
+  pairToken: string;
 }
+
+/** WebSocket close codes used by the room relay (contracts §9 v0.2.3 + v0.2.7). */
+export type RoomCloseCode = 4400 | 4401 | 4404 | 4409;
 
 /** `POST /api/scores`, per-stage board. */
 export interface SubmitStageScoreRequest {

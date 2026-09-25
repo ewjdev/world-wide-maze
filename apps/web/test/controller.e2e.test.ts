@@ -6,7 +6,9 @@
  *
  * A desktop context opens `/dev/input` (host). An emulated iPhone context opens `/c/<code>` with iOS's
  * `DeviceOrientationEvent.requestPermission` stubbed and synthetic `deviceorientation` events at 60 Hz,
- * then walks: enable → calibrate → POWER/JUMP/MENU → tilt → lock/unlock → host disconnect.
+ * then walks: enable → calibrate → POWER/JUMP/MENU → tilt → lock/unlock → host disconnect. Contracts v0.2.7:
+ * the phone opens the QR link (`/c/<code>#p=<pairToken>`), and a second phone that only types the code is
+ * refused (4401) without disturbing the paired one.
  * Skipped unless WWM_E2E_BASE is set (and Playwright's Chromium is installed). Set WWM_E2E_SHOTS=<dir>
  * to save screenshots.
  */
@@ -35,6 +37,7 @@ run('controller e2e (simulated phone)', () => {
   // biome-ignore lint/suspicious/noExplicitAny: see above
   let phone: any;
   let code = '';
+  let pairLink = '';
   const errors: string[] = [];
 
   const shot = async (page: { screenshot(o: { path: string }): Promise<unknown> }, name: string) => {
@@ -86,17 +89,20 @@ run('controller e2e (simulated phone)', () => {
     await browser?.close();
   });
 
-  test('pairing panel shows a QR for /c/<code>', async () => {
+  test('pairing panel shows a QR for /c/<code>#p=<pairToken>', async () => {
     expect(code).toMatch(/^\d{6}$/);
-    const qrText = await host.getByTestId('pair-qr').getAttribute('data-text');
-    expect(qrText).toBe(`${BASE}/c/${code}`);
+    pairLink = ((await host.getByTestId('pair-qr').getAttribute('data-text')) as string) ?? '';
+    expect(pairLink).toMatch(new RegExp(`^${BASE}/c/${code}#p=[A-Za-z0-9_-]{22}$`));
     await shot(host, '01-host-pairing');
   });
 
-  test('phone connects; host sees it', async () => {
-    await phone.goto(`${BASE}/c/${code}`);
+  test('phone connects with the QR link; host sees it; the token leaves the address bar', async () => {
+    await phone.goto(pairLink);
     await phone.getByTestId('enable-tilt').waitFor();
     await host.getByText('Connected!').waitFor();
+    expect(phone.url()).toBe(`${BASE}/c/${code}`);
+    const stored = await phone.evaluate((c: string) => sessionStorage.getItem(`wwm.pair.${c}`), code);
+    expect(pairLink.endsWith(`#p=${stored}`)).toBe(true);
     await shot(phone, '02-phone-enable');
   });
 
@@ -124,6 +130,29 @@ run('controller e2e (simulated phone)', () => {
     await expect.poll(() => stat('presses')).toBe('1 / 1 / 1');
     const log = (await host.getByTestId('event-log').textContent()) as string;
     expect(log).toContain('phone: MENU');
+  });
+
+  test('ATTACK: a second phone typing the code is refused; the paired phone keeps control', async () => {
+    const drops = async () =>
+      ((await host.getByTestId('event-log').textContent()) as string).split('phone: disconnected').length;
+    const dropsBefore = await drops(); // dev StrictMode may have logged one at pairing (known, polish backlog)
+    const ctx = await browser.newContext({ ...pw?.devices['iPhone 15 Pro'] });
+    const intruder = await ctx.newPage();
+    intruder.on('pageerror', (e: Error) => errors.push(`intruder: ${e.message}`));
+    // Typed code: no token.
+    await intruder.goto(`${BASE}/c/${code}`);
+    await intruder.getByTestId('unauthorized').waitFor({ timeout: 5000 });
+    await shot(intruder, '02b-intruder-refused');
+    // A made-up token.
+    await intruder.goto(`${BASE}/c/${code}#p=${'A'.repeat(22)}`);
+    await intruder.getByTestId('unauthorized').waitFor({ timeout: 5000 });
+    await ctx.close();
+    // The paired phone was never replaced and its stream never stopped.
+    expect(await phone.locator('[data-screen="play"]').count()).toBe(1);
+    await expect
+      .poll(async () => Number.parseInt(await stat('rate'), 10), { timeout: 3000 })
+      .toBeGreaterThan(40);
+    expect(await drops()).toBe(dropsBefore);
   });
 
   test('tilt maps to calibrated, clamped radians; "Too tilted!" beyond the limit', async () => {
@@ -174,11 +203,15 @@ run('controller e2e (simulated phone)', () => {
 
   test('host disconnect shows a clear waiting state on the phone', async () => {
     const hostCtx = host.context();
+    // v0.2.7: the host needs its token to rejoin. A new tab has no sessionStorage, so pass it in the fragment.
+    const saved = JSON.parse(
+      (await host.evaluate((c: string) => sessionStorage.getItem(`wwm.room.${c}`), code)) as string,
+    ) as { hostToken: string; pairToken: string };
     await host.close();
     await phone.getByTestId('host-waiting').waitFor({ timeout: 5000 });
     await shot(phone, '05-phone-host-left');
     host = await hostCtx.newPage();
-    await host.goto(`${BASE}/dev/input?code=${code}`);
+    await host.goto(`${BASE}/dev/input?code=${code}#h=${saved.hostToken}&p=${saved.pairToken}`);
     await expect.poll(async () => phone.getByTestId('host-waiting').count(), { timeout: 5000 }).toBe(0);
   });
 
@@ -189,7 +222,7 @@ run('controller e2e (simulated phone)', () => {
       if (DOE) DOE.requestPermission = () => Promise.resolve('denied');
     });
     const p = await ctx.newPage();
-    await p.goto(`${BASE}/c/${code}`);
+    await p.goto(pairLink); // with the pair token (replaces the first phone, which is done by now)
     await p.getByTestId('enable-tilt').tap();
     await p.getByTestId('fallback').waitFor();
     expect(await p.getByTestId('fallback').textContent()).toContain('keyboard');

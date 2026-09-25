@@ -255,7 +255,7 @@ function Pairing() {
   const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const code = v.room.code;
-  const link = code ? pairingUrl(location.origin, code) : null;
+  const link = code ? pairingUrl(location.origin, code, v.room.pairToken) : null;
   return (
     <section
       className="wwm-panel wwm-connect"

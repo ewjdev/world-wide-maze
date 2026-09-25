@@ -4,7 +4,8 @@
  * - Auto-reconnect with exponential backoff + jitter. `reconnectNow()` skips the wait (phone unlocked).
  * - Answers every `ping` with a `pong` (the relay's keepalive pings use negative ids; peer pings positive).
  * - Pings the peer once a second while it's connected and tracks end-to-end RTT (p50/p95).
- * - Close code 4404 = room not found, 4409 = replaced by a newer connection of the same role: no reconnect.
+ * - Close code 4404 = room not found, 4409 = replaced by a newer connection of the same role, 4401 = missing or
+ *   invalid room token (contracts v0.2.7), 4400 = bad request: no reconnect.
  */
 import {
   type ControllerInputFrame,
@@ -12,15 +13,18 @@ import {
   decodeInput,
   encodeInput,
   INPUT_FRAME_BYTES,
+  ROOM_CLOSE_CODES,
   type RoomRole,
 } from '@wwm/schema';
 import { ControlMessageSchema } from '@wwm/schema/zod';
 import { Emitter, type Unsubscribe } from './emitter.ts';
 import { RttTracker } from './rtt.ts';
 
-export const CLOSE_ROOM_NOT_FOUND = 4404;
-export const CLOSE_REPLACED = 4409;
-export const CLOSE_BAD_REQUEST = 4400;
+export const CLOSE_ROOM_NOT_FOUND = ROOM_CLOSE_CODES.notFound;
+export const CLOSE_REPLACED = ROOM_CLOSE_CODES.replaced;
+export const CLOSE_BAD_REQUEST = ROOM_CLOSE_CODES.badRequest;
+/** v0.2.7: the relay refused the room token (wrong, or missing where one is required). */
+export const CLOSE_UNAUTHORIZED = ROOM_CLOSE_CODES.unauthorized;
 
 /** The subset of the browser WebSocket API we use (so tests can pass a fake). */
 export interface WebSocketLike {
@@ -39,7 +43,7 @@ export type WebSocketFactory = (url: string) => WebSocketLike;
 const OPEN = 1;
 
 export type ConnectionState = 'idle' | 'connecting' | 'open' | 'reconnecting' | 'closed';
-export type ConnectionError = 'room-not-found' | 'replaced' | 'bad-request';
+export type ConnectionError = 'room-not-found' | 'replaced' | 'bad-request' | 'unauthorized';
 
 export interface ConnectionOptions {
   /** Full ws(s) URL, e.g. from `roomWsUrl()`. */
@@ -255,7 +259,9 @@ export abstract class RoomConnection {
             ? 'replaced'
             : ev.code === CLOSE_BAD_REQUEST
               ? 'bad-request'
-              : null;
+              : ev.code === CLOSE_UNAUTHORIZED
+                ? 'unauthorized'
+                : null;
       const willReconnect = !fatal && !this.#stopped && this.#attempt + 1 < this.#opts.maxAttempts;
       this.events.emit('close', { code: ev.code, reason: ev.reason, willReconnect });
       if (fatal) {

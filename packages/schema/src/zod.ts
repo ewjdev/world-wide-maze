@@ -4,6 +4,12 @@
  * test/types.test.ts asserts every schema infers exactly the hand-written contract type.
  */
 import { z } from 'zod';
+import { CAPTURE_LIMITS } from './constants.ts';
+
+// Contract v0.2.7 (CCR-12-1): never probe `new Function` (a strict CSP reports the caught `eval` attempt as a
+// violation even though zod falls back to its interpreted path). Must run before the first parse; every
+// consumer reaches zod through this module.
+z.config({ jitless: true });
 
 const finite = z.number();
 const nonNegInt = z.int().min(0);
@@ -37,12 +43,12 @@ export const DomElementSchema = z.object({
   id: nonNegInt,
   kind: ElementKindSchema,
   rect: RectSchema,
-  lines: z.array(RectSchema).optional(),
+  lines: z.array(RectSchema).max(CAPTURE_LIMITS.linesPerElement).optional(),
   bg: HexColorSchema.optional(),
   depth: nonNegInt,
   z: finite,
   fixed: z.boolean(),
-  text: z.string().max(120).optional(),
+  text: z.string().max(CAPTURE_LIMITS.text).optional(),
   fontSize: posFinite.optional(),
 });
 
@@ -51,8 +57,8 @@ const SizeSchema = z.object({ width: posFinite, height: posFinite });
 export const CaptureBundleSchema = z.object({
   schema: z.literal('wwm.capture/1'),
   captureId: z.string().min(1),
-  url: z.string().min(1),
-  title: z.string(),
+  url: z.string().min(1).max(CAPTURE_LIMITS.url),
+  title: z.string().max(CAPTURE_LIMITS.title),
   capturedAt: z.iso.datetime({ offset: true }),
   viewport: SizeSchema,
   page: SizeSchema,
@@ -64,7 +70,7 @@ export const CaptureBundleSchema = z.object({
     scale: posFinite,
   }),
   backgroundColor: HexColorSchema,
-  elements: z.array(DomElementSchema),
+  elements: z.array(DomElementSchema).max(CAPTURE_LIMITS.elements),
 });
 
 // §3 ---------------------------------------------------------------------------------------------
@@ -261,7 +267,13 @@ export const CuratedResponseSchema = z.object({
     }),
   ),
 });
-export const CreateRoomResponseSchema = z.object({ code: RoomCodeSchema });
+/** 128 random bits, base64url (22 chars unpadded; a little slack for other encoders). */
+export const RoomTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{22,64}$/, 'expected a base64url room token');
+export const CreateRoomResponseSchema = z.object({
+  code: RoomCodeSchema,
+  hostToken: RoomTokenSchema,
+  pairToken: RoomTokenSchema,
+});
 const ScoreNameSchema = z.string().min(1).max(32);
 export const SubmitScoreRequestSchema = z.discriminatedUnion('kind', [
   z.object({

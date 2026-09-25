@@ -1,0 +1,50 @@
+{
+  "mode": "burst",
+  "base": "http://localhost:8898",
+  "when": "2026-09-25T12:00:15.029Z",
+  "n": 50,
+  "wallMs": 41467,
+  "postStatuses": {
+    "202": 50
+  },
+  "postMs": {
+    "p50": 190,
+    "p95": 284
+  },
+  "jobOutcomes": {
+    "done": 10,
+    "error:CAPTURE_TIMEOUT": 40
+  },
+  "doneMs": {
+    "p50": 12313,
+    "p95": 20454,
+    "max": 20454
+  },
+  "errorSamples": [
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing"],
+      "message": "capture exceeded its time budget",
+      "ms": 21275.853750000002
+    },
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing"],
+      "message": "capture exceeded its time budget",
+      "ms": 21281.239625000002
+    },
+    {
+      "outcome": "error:CAPTURE_TIMEOUT",
+      "steps": ["queued", "capturing"],
+      "message": "capture exceeded its time budget",
+      "ms": 22412.252541
+    }
+  ],
+  "retryFailed": {
+    "retried": 5,
+    "sameFailedJobReturned": 5,
+    "outcomes": {
+      "replayed:error:CAPTURE_TIMEOUT": 5
+    }
+  }
+}

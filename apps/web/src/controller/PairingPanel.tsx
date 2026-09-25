@@ -23,7 +23,7 @@ export function PairingPanel({ room, pairBase, onPlayKeyboard }: PairingPanelPro
   const t = strings();
   const [copied, setCopied] = useState(false);
   const base = pairBase ?? (typeof location === 'undefined' ? 'http://localhost' : location.origin);
-  const link = room.code ? pairingUrl(base, room.code) : null;
+  const link = room.code ? pairingUrl(base, room.code, room.pairToken) : null;
 
   return (
     <section

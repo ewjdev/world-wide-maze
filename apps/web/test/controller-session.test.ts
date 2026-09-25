@@ -38,12 +38,19 @@ class Sock implements WebSocketLike {
   }
 }
 
-function rig(opts: { permission?: 'granted' | 'denied' | 'none' | 'unsupported'; stored?: string } = {}) {
+function rig(
+  opts: {
+    permission?: 'granted' | 'denied' | 'none' | 'unsupported';
+    stored?: string;
+    pairToken?: string;
+  } = {},
+) {
   let clock = 1000;
   let visible = true;
   const sockets: Sock[] = [];
   const store = new Map<string, string>();
   if (opts.stored) store.set('wwm.controller.zero', opts.stored);
+  if (opts.pairToken) store.set('wwm.pair.123456', opts.pairToken);
   const sensor = new EventTarget();
   const vis = new EventTarget();
   const logs: string[] = [];
@@ -82,6 +89,7 @@ function rig(opts: { permission?: 'granted' | 'denied' | 'none' | 'unsupported';
       return s;
     },
     log: (m) => logs.push(String(m)),
+    ...(opts.pairToken ? { pairToken: opts.pairToken } : {}),
   };
   const s = new ControllerSession('123456', env);
   s.start();
@@ -280,6 +288,35 @@ describe('ControllerSession', () => {
     q.sock().open();
     q.sock().drop(4409);
     expect(q.s.getView().screen).toBe('replaced');
+  });
+
+  test('v0.2.7: the pair token is presented on every (re)connect', () => {
+    const tok = 'AbCdEfGhIjKlMnOpQrSt_-';
+    const r = rig({ pairToken: tok });
+    expect(r.sock().url).toBe(`wss://wwm.test/api/rooms/123456/ws?role=controller&token=${tok}`);
+    r.sock().open();
+    r.sock().drop(1006);
+    vi.advanceTimersByTime(10_000);
+    expect(r.sockets.length).toBeGreaterThan(1);
+    expect(r.sock().url).toContain(`&token=${tok}`);
+    expect(r.s.diag().paired).toBe('token');
+  });
+
+  test('v0.2.7: 4401 shows the unauthorized screen (no reconnect) and forgets a refused token', () => {
+    const typed = rig();
+    typed.sock().open();
+    typed.sock().drop(4401);
+    expect(typed.s.getView().screen).toBe('unauthorized');
+    vi.advanceTimersByTime(10_000);
+    expect(typed.sockets).toHaveLength(1);
+
+    const tok = 'AbCdEfGhIjKlMnOpQrSt_-';
+    const stale = rig({ pairToken: tok }); // e.g. a token remembered for an older room with the same code
+    expect(stale.store.get('wwm.pair.123456')).toBe(tok);
+    stale.sock().drop(4401);
+    expect(stale.s.getView().screen).toBe('unauthorized');
+    expect(stale.store.has('wwm.pair.123456')).toBe(false);
+    expect(stale.logs.some((l) => l.includes('pair token refused'))).toBe(true);
   });
 
   test('diag() summarizes the session for remote verification', async () => {
