@@ -24,7 +24,8 @@ function parseSse(body: string): DocentEvent[] {
 }
 const textOf = (ev: DocentEvent[]) => ev.map((e) => (e.type === 'delta' ? e.text : '')).join('');
 
-describe('POST /api/docent (workerd, mock provider)', () => {
+// CI stability: real workerd round trips; Vitest's default 5 s per test is too tight on a loaded CI runner.
+describe('POST /api/docent (workerd, mock provider)', { timeout: 30_000 }, () => {
   const server = createTestHarness();
   const ask = async (question: string, ip: string, extra: object = {}) => {
     const res = await server.fetch('http://localhost/api/docent', {

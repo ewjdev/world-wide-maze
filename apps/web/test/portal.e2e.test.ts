@@ -187,7 +187,7 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
     expect(s1.phase).toBe('play');
     expect(s1.portal).toMatchObject({ label: 'The second site', host: 'second.example', offline: false });
     await expect
-      .poll(async () => (await page.textContent('#portal-h')) ?? '')
+      .poll(async () => (await page.textContent('#portal-h')) ?? '', { timeout: 15_000 })
       .toContain('Travel to The second site?');
     // paused: the sim doesn't step while the prompt shows
     const t0 = (await state(page)).tick;

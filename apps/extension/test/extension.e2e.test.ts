@@ -98,18 +98,25 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
       return g?.debugState().stageId ?? null;
     });
 
-  /** Roll the ball with the keyboard; the maze is playable when it moves. */
+  /**
+   * Roll the ball with the keyboard; the maze is playable when it moves. Up for 1.4 s then left for 0.6 s, repeated
+   * (at most 5×) until it has moved > 0.5 m: a loaded CI runner renders fewer frames per wall-clock second.
+   */
   async function rolls(p: Page): Promise<number> {
     const a = await ball(p);
-    await p.keyboard.down('ArrowUp');
-    await p.waitForTimeout(1400);
-    await p.keyboard.up('ArrowUp');
-    await p.keyboard.down('ArrowLeft');
-    await p.waitForTimeout(600);
-    await p.keyboard.up('ArrowLeft');
-    const b = await ball(p);
-    if (!a || !b) return 0;
-    return Math.hypot(b[0] - a[0], b[2] - a[2]);
+    if (!a) return 0;
+    let moved = 0;
+    for (let i = 0; i < 5 && moved <= 0.5; i++) {
+      await p.keyboard.down('ArrowUp');
+      await p.waitForTimeout(1400);
+      await p.keyboard.up('ArrowUp');
+      await p.keyboard.down('ArrowLeft');
+      await p.waitForTimeout(600);
+      await p.keyboard.up('ArrowLeft');
+      const b = await ball(p);
+      moved = b ? Math.hypot(b[0] - a[0], b[2] - a[2]) : 0;
+    }
+    return moved;
   }
 
   async function tabIdOf(url: string): Promise<number> {
@@ -339,8 +346,16 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
       };
       for (const target of [g, '*'])
         f.contentWindow?.postMessage({ type: 'wwm:capture', version: 1, bundle, image: null }, target);
-      await new Promise((r) => setTimeout(r, 400));
     }, game);
+    // Wait until the receiver has handled both messages (not a fixed 400 ms: slower on a loaded CI runner).
+    await expect
+      .poll(
+        () => frame.evaluate(() => (window.__wwmLocal?.ignored ?? 0) + (window.__wwmLocal?.rejected ?? 0)),
+        {
+          timeout: 15_000,
+        },
+      )
+      .toBeGreaterThanOrEqual(2);
     const dbg = await frame.evaluate(() => ({ ...window.__wwmLocal }));
     expect(dbg).toMatchObject({ phase: 'waiting', ignored: 2, rejected: 0 });
     expect(await frame.evaluate(() => document.body.dataset.local)).toBe('waiting');

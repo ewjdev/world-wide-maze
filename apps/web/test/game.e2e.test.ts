@@ -289,7 +289,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     // The stage board sits next to the tally; the service stage has no scores yet.
     await page.getByTestId('res-board').waitFor();
     await expect
-      .poll(() => page.getByTestId('result').textContent())
+      .poll(() => page.getByTestId('result').textContent(), { timeout: 15_000 })
       .toContain('No scores on this stage yet');
 
     // 08b: the replay the game recorded is exactly the stream the lockstep sim consumed.
@@ -374,19 +374,28 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
         return m ? { visible: m.visible, p: m.position.toArray() } : null;
       });
     const a = await ghostPos();
-    await page.waitForTimeout(2500);
-    const b = await ghostPos();
     expect(a?.visible).toBe(true);
-    const moved = Math.hypot((b?.p[0] ?? 0) - (a?.p[0] ?? 0), (b?.p[2] ?? 0) - (a?.p[2] ?? 0));
-    console.log(`[e2e] ghost moved ${moved.toFixed(2)} m in 2.5 s`);
-    expect(moved).toBeGreaterThan(0.5);
+    // Wait for the ghost to roll > 0.5 m (2.5 s is plenty on a laptop; a loaded CI runner renders fewer frames).
+    const t0 = Date.now();
+    let moved = 0;
+    await expect
+      .poll(
+        async () => {
+          const b = await ghostPos();
+          moved = Math.hypot((b?.p[0] ?? 0) - (a?.p[0] ?? 0), (b?.p[2] ?? 0) - (a?.p[2] ?? 0));
+          return moved;
+        },
+        { timeout: 20_000, interval: 250 },
+      )
+      .toBeGreaterThan(0.5);
+    console.log(`[e2e] ghost moved ${moved.toFixed(2)} m in ${((Date.now() - t0) / 1000).toFixed(1)} s`);
     // Toggling off removes it.
     await page.keyboard.press('KeyM');
     await waitPhase(page, 'paused');
     await page.waitForTimeout(1200);
     await shot(page, 'b-03b-map-ghost');
     await page.getByTestId('ghost-toggle').click();
-    await expect.poll(ghostPos).toBeNull();
+    await expect.poll(ghostPos, { timeout: 15_000 }).toBeNull();
     expect(problems).toEqual([]);
     await page.context().close();
   }, 180_000);
@@ -589,7 +598,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       expect(after?.timer.running).toBe(true);
       // host → controller `state`: the phone shows the host HUD values
       await expect
-        .poll(async () => (await phone.textContent('body')) ?? '', { timeout: 5000 })
+        .poll(async () => (await phone.textContent('body')) ?? '', { timeout: 15_000 })
         .toMatch(/TIME/);
     }, 180_000);
 
@@ -599,7 +608,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
         Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
         document.dispatchEvent(new Event('visibilitychange'));
       });
-      await host.getByTestId('disconnect-overlay').waitFor({ timeout: 6000 });
+      await host.getByTestId('disconnect-overlay').waitFor({ timeout: 15_000 });
       const frozen = await state(host);
       expect(frozen?.hold).toBe('disconnected');
       expect(await host.getByTestId('hold-code').textContent()).toMatch(/^\d{3} \d{3}$/);
@@ -614,13 +623,13 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
         Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
         document.dispatchEvent(new Event('visibilitychange'));
       });
-      await host.getByTestId('disconnect-overlay').waitFor({ state: 'detached', timeout: 8000 });
+      await host.getByTestId('disconnect-overlay').waitFor({ state: 'detached', timeout: 15_000 });
       const resumed = await state(host);
       expect(resumed?.hold).toBeNull();
       expect(resumed?.phase).toBe('play');
       expect(Math.abs((resumed?.timer.remains ?? 0) - (frozen?.timer.remains ?? 0))).toBeLessThan(1.5);
       await expect
-        .poll(async () => (await state(host))?.timer.remains ?? 0, { timeout: 5000 })
+        .poll(async () => (await state(host))?.timer.remains ?? 0, { timeout: 15_000 })
         .toBeLessThan((frozen?.timer.remains ?? 0) - 0.3); // and it runs again
       expect(problems).toEqual([]);
       await phone.context().close();
@@ -662,7 +671,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await page.getByTestId('url-go').click();
     await waitPhase(page, 'error', 20_000);
     expect(await page.getByTestId('error').getAttribute('data-code')).toBe('CAPTURE_BLOCKED');
-    await expect.poll(() => page.locator('[data-testid^=alt-]').count()).toBeGreaterThan(1);
+    await expect
+      .poll(() => page.locator('[data-testid^=alt-]').count(), { timeout: 15_000 })
+      .toBeGreaterThan(1);
 
     // the alternative: a fixture capture built client-side (no service needed)
     await page.getByTestId('alt-fixture-hn-front').click();

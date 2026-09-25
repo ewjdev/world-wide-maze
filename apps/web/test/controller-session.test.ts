@@ -141,7 +141,7 @@ describe('ControllerSession', () => {
     expect(r.s.getView()).toMatchObject({ screen: 'enable', hostConnected: true });
     r.s.enableTilt();
     expect(r.s.getView().screen).toBe('requesting');
-    await vi.waitFor(() => expect(r.s.getView().permission).toBe('granted'));
+    await vi.waitFor(() => expect(r.s.getView().permission).toBe('granted'), { timeout: 10_000 });
     r.orient(45, 0);
     expect(r.s.getView().screen).toBe('calibrate');
     // During calibration frames stream with POWER forced off, tilt relative to the default neutral.
@@ -196,7 +196,7 @@ describe('ControllerSession', () => {
     const r = rig({ permission: 'denied' });
     r.sock().open();
     r.s.enableTilt();
-    await vi.waitFor(() => expect(r.s.getView().screen).toBe('denied'));
+    await vi.waitFor(() => expect(r.s.getView().screen).toBe('denied'), { timeout: 10_000 });
     expect(r.s.getView().permission).toBe('denied');
   });
 
