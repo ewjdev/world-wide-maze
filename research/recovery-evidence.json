@@ -1,0 +1,119 @@
+{
+  "research_date_local": "2026-09-24",
+  "timezone": "America/Los_Angeles",
+  "scope": "historical research and proposed recreation; original service not executed",
+  "recovered_assets": [
+    {
+      "artifact": "desktop-main.js",
+      "source_url": "https://web.archive.org/web/20130322175436id_/http://www.chrome.com/maze/pc/scripts/main.js",
+      "original_url": "http://www.chrome.com/maze/pc/scripts/main.js",
+      "capture_utc": "2013-03-22T17:54:36Z",
+      "retrieved_bytes": 1062393,
+      "sha256": "85cf4f726c4b7f8ffe6462b0a60910411bbd5a13efa8ef753142ab5aee8bab51",
+      "verification": "retrieved and inspected as text; not executed",
+      "raw_copy_in_project": false
+    },
+    {
+      "artifact": "translation-en.json",
+      "source_url": "https://web.archive.org/web/20130322175440id_/http://www.chrome.com/maze/locales/en/translation.json",
+      "original_url": "http://www.chrome.com/maze/locales/en/translation.json",
+      "capture_utc": "2013-03-22T17:54:40Z",
+      "retrieved_bytes": 9178,
+      "sha256": "c3c36a21fa26b3c82391baa916f0232d19826f18a4c73c9a44a9a52c19c58ed1",
+      "verification": "retrieved and inspected as text; not executed",
+      "raw_copy_in_project": false
+    }
+  ],
+  "desktop_observations": {
+    "named_define_modules": 109,
+    "selected_modules": [
+      "common/config",
+      "app/keycontrol",
+      "game/renderer",
+      "sound/soundeffect",
+      "game/object/ball",
+      "game/followcamera",
+      "game/object/elevator",
+      "game/object/stage",
+      "game/world"
+    ],
+    "config_constants": {
+      "NUM_BALLS": 3,
+      "SMALL_SCORE": 1,
+      "LARGE_SCORE": 100,
+      "TIME_SCORE": 5,
+      "ONEUP_SCORE": 3000
+    },
+    "caveat": "Single archived build; no runtime validation or complete rule reconstruction."
+  },
+  "installation_fixture": {
+    "repository": "Katamari-Inc/WWMMM",
+    "commit": "be2bea8f87cdb2a6394e6e8140436a2e12e28d35",
+    "source_url": "https://raw.githubusercontent.com/Katamari-Inc/WWMMM/be2bea8f87cdb2a6394e6e8140436a2e12e28d35/_StageRenderer/bin/data/http-aid-dcc.json",
+    "bytes": 33748,
+    "sha256": "ba8a6fdf2837a6ffe9431c01dae3fcc8a7699d6fd7f9e25a6f6320a62fb51377",
+    "title": "AID-DCC Inc.",
+    "counts": {
+      "islands": 38,
+      "bridges": 37,
+      "large_items": 12,
+      "small_items": 1503
+    },
+    "top_level_keys": [
+      "bridges",
+      "goal",
+      "islands",
+      "large_items",
+      "small_items",
+      "start",
+      "title",
+      "url",
+      "image",
+      "mobile_image"
+    ],
+    "island_keys": [
+      "contours",
+      "guardrails",
+      "id",
+      "level",
+      "restartPoints"
+    ],
+    "start": [
+      44,
+      74,
+      245.02
+    ],
+    "goal": [
+      596,
+      1305,
+      138.69
+    ],
+    "metadata_url": "http://localhost:8089/?99234_48/",
+    "caveat": "Related physical installation; not proof of original launch-era web behavior or a complete game source release."
+  },
+  "repository_metadata": [
+    {
+      "repository": "Katamari-Inc/WWMMM",
+      "tree_sha": "be2bea8f87cdb2a6394e6e8140436a2e12e28d35",
+      "reported_license": null
+    },
+    {
+      "repository": "Katamari-Inc/WWMMM-assets",
+      "tree_sha": "8f36eb91f30a7948bc2a6b65f63b258b1eeae0c2",
+      "reported_license": null
+    },
+    {
+      "repository": "Saqoosha/Physijs",
+      "reported_license": "MIT"
+    }
+  ],
+  "not_completed": [
+    "Original live game execution",
+    "Complete dependency and media recovery",
+    "Original backend source recovery",
+    "Original mobile bundle recovery",
+    "Full video playback or frame-by-frame review",
+    "Rights clearance for republication",
+    "New game implementation or deployment"
+  ]
+}
