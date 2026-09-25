@@ -5,7 +5,7 @@
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.2.7';
+export const CONTRACT_VERSION = '0.3.0';
 
 // --- contract §1: scale --------------------------------------------------------------------------
 /** 1 ball diameter = 1 m = 13.5 px (2013: 10.8 px of a 1024 stage). */
@@ -100,3 +100,11 @@ export const ROOM_CLOSE_CODES = {
   notFound: 4404,
   replaced: 4409,
 } as const;
+/** contracts §10.1: link portals. */
+export const MAX_PORTALS = 6;
+export const PORTAL_RADIUS_M = 0.926;
+export const PORTAL_LABEL_MAX = 60;
+export const HREF_MAX = 2048;
+/** contracts §10.3: docent request limits. */
+export const DOCENT_QUESTION_MAX = 500;
+export const DOCENT_HISTORY_MAX = 6;

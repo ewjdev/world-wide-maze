@@ -45,6 +45,7 @@ import {
   ITEM_EDGE_CLEARANCE_PX,
   LEVEL_HEIGHT_M,
   MAX_LARGE_ITEMS,
+  MAX_PORTALS,
   MAX_RAMP_SLOPE,
   MIN_BRIDGE_WIDTH_PX,
   PX_PER_METER,
@@ -369,6 +370,31 @@ export function validateStage(input: unknown): StageValidationResult {
         `items[${i}].pos`,
       );
   });
+  // --- portals (contracts §10.1) ---------------------------------------------------------------------
+  const portals = stage.portals ?? [];
+  if (portals.length > MAX_PORTALS)
+    err('too-many-portals', `${portals.length} portals > MAX_PORTALS (${MAX_PORTALS})`, 'portals');
+  const hrefs = new Set<string>();
+  portals.forEach((p, i) => {
+    const isl = ref(p.islandId, `portals[${i}].islandId`);
+    if (isl && !clear(p.pos, isl))
+      err(
+        'portal-outside-island',
+        `portal ${p.id} lacks ${BALL_RADIUS_PX}px clearance on island ${isl.id}`,
+        `portals[${i}].pos`,
+      );
+    let ok = false;
+    try {
+      const u = new URL(p.href);
+      ok = (u.protocol === 'http:' || u.protocol === 'https:') && !u.username && !u.password;
+    } catch {}
+    if (!ok)
+      err('portal-bad-href', `portal ${p.id} href must be http(s) without credentials`, `portals[${i}].href`);
+    if (hrefs.has(p.href))
+      err('portal-duplicate-href', `portal ${p.id} repeats ${p.href}`, `portals[${i}].href`);
+    hrefs.add(p.href);
+  });
+
   stage.islands.forEach((isl, i) => {
     isl.restartPoints.forEach((pt, j) => {
       if (!clear(pt, isl))

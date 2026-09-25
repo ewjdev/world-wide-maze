@@ -54,6 +54,7 @@ export interface DomElement {
   fixed: boolean; // position fixed/sticky
   text?: string; // trimmed ≤ 120 chars (for labels / optional AI)
   fontSize?: number;
+  href?: string; // contracts §10.1: absolute http(s) link target (links only), ≤ 2048 chars
 }
 
 // ================================================================================================
@@ -95,6 +96,7 @@ export interface StageData {
   bridges: Bridge[];
   elevators: Elevator[];
   items: Item[];
+  portals?: Portal[]; // contracts §10.1 (optional; missing = [])
   start: Spawn;
   goal: Goal;
   provenance: Provenance; // why regions were kept/dropped (debuggability requirement)
@@ -228,7 +230,8 @@ export type SimEvent =
   | { type: 'island'; islandId: number } // first contact with a different island
   | { type: 'elevator'; elevatorId: number; phase: 'start' | 'end' }
   | { type: 'landed'; impact: number }
-  | { type: 'bump'; impact: number };
+  | { type: 'bump'; impact: number }
+  | { type: 'portal'; portalId: number }; // contracts §10.1
 
 export interface BallState {
   pos: [number, number, number];
@@ -457,3 +460,40 @@ export interface ScoreEntry {
 export interface ScoresResponse {
   entries: ScoreEntry[];
 }
+
+// ── contracts §10 (v0.3.0) ────────────────────────────────────────────────────────────────────────
+
+/** §10.1 A link on the page that leads to another site's maze. */
+export interface Portal {
+  id: number;
+  islandId: number;
+  pos: Vec2;
+  href: string;
+  label: string; // ≤ 60 chars
+  sourceElementId: number;
+}
+
+/** §10.2 postMessage payload handing a capture made in the user's browser to `/play/local`. */
+export interface LocalCaptureMessage {
+  type: 'wwm:capture';
+  version: 1;
+  bundle: CaptureBundle;
+  image: { mime: 'image/png' | 'image/webp'; bytes: ArrayBuffer };
+}
+
+/** §10.3 AI docent. */
+export interface DocentRequest {
+  question: string; // ≤ 500 chars
+  history?: { role: 'user' | 'assistant'; text: string }[]; // ≤ 6
+}
+export interface DocentCitation {
+  title: string;
+  path: string;
+  anchor?: string;
+  url?: string;
+}
+export type DocentEvent =
+  | { type: 'delta'; text: string }
+  | { type: 'citations'; items: DocentCitation[] }
+  | { type: 'done' }
+  | { type: 'error'; code: 'DOCENT_UNAVAILABLE' | 'RATE_LIMITED' | 'QUESTION_REJECTED'; message: string };

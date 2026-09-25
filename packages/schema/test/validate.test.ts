@@ -275,6 +275,34 @@ describe('invariants (one negative test each)', () => {
     ).toContain('elevator-crosses-island');
   });
 
+  test('portals (§10.1): valid, too many, outside, bad href, duplicate', () => {
+    const portal = (s: StageData, id: number, href: string, pos = s.start.pos) => ({
+      id,
+      islandId: s.start.islandId,
+      pos: [pos[0], pos[1]] as [number, number],
+      href,
+      label: 'Example',
+      sourceElementId: 0,
+    });
+    expect(mutate((s) => (s.portals = [portal(s, 0, 'https://example.com/')]))).toEqual([]);
+    expect(
+      mutate(
+        (s) => (s.portals = Array.from({ length: 7 }, (_, k) => portal(s, k, `https://e${k}.example/`))),
+      ),
+    ).toEqual(['too-many-portals']);
+    expect(mutate((s) => (s.portals = [portal(s, 0, 'https://example.com/', [320, 330])]))).toContain(
+      'portal-outside-island',
+    );
+    // non-http(s) hrefs are rejected by the shape check (zod) before the invariants run
+    expect(mutate((s) => (s.portals = [portal(s, 0, 'javascript:alert(1)')]))).toEqual(['schema']);
+    expect(mutate((s) => (s.portals = [portal(s, 0, 'https://user:pw@example.com/')]))).toContain(
+      'portal-bad-href',
+    );
+    expect(
+      mutate((s) => (s.portals = [portal(s, 0, 'https://a.example/'), portal(s, 1, 'https://a.example/')])),
+    ).toContain('portal-duplicate-href');
+  });
+
   test('too-many-large-items: at most MAX_LARGE_ITEMS', () => {
     expect(
       mutate((s) => {

@@ -50,6 +50,11 @@ export const DomElementSchema = z.object({
   fixed: z.boolean(),
   text: z.string().max(CAPTURE_LIMITS.text).optional(),
   fontSize: posFinite.optional(),
+  href: z
+    .string()
+    .max(2048)
+    .regex(/^https?:\/\//i, 'expected http(s) URL')
+    .optional(),
 });
 
 const SizeSchema = z.object({ width: posFinite, height: posFinite });
@@ -112,6 +117,18 @@ export const ElevatorSchema = z.object({
 });
 
 export const ItemKindSchema = z.enum(['small', 'large']);
+export const PortalSchema = z.object({
+  id: nonNegInt,
+  islandId: nonNegInt,
+  pos: Vec2Schema,
+  href: z
+    .string()
+    .max(2048)
+    .regex(/^https?:\/\//i, 'expected http(s) URL'),
+  label: z.string().max(60),
+  sourceElementId: nonNegInt,
+});
+
 export const ItemSchema = z.object({
   id: nonNegInt,
   kind: ItemKindSchema,
@@ -165,6 +182,7 @@ export const StageDataSchema = z.object({
   bridges: z.array(BridgeSchema),
   elevators: z.array(ElevatorSchema),
   items: z.array(ItemSchema),
+  portals: z.array(PortalSchema).optional(),
   start: SpawnSchema,
   goal: GoalSchema,
   provenance: ProvenanceSchema,
@@ -301,4 +319,14 @@ export const SubmitScoreResponseSchema = z.object({
 });
 export const ScoresResponseSchema = z.object({
   entries: z.array(z.object({ name: z.string(), score: finite, timeMs: finite.optional(), at: z.string() })),
+});
+
+// §10 ---------------------------------------------------------------------------------------------
+
+export const DocentRequestSchema = z.object({
+  question: z.string().trim().min(1).max(500),
+  history: z
+    .array(z.object({ role: z.enum(['user', 'assistant']), text: z.string().max(4000) }))
+    .max(6)
+    .optional(),
 });

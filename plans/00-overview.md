@@ -78,6 +78,10 @@ reference/                gitignored, downloaded third-party material (never com
 | 09 | [phase-09-validation-solver.md](phase-09-validation-solver.md) | Solver bot, stage validation and seed reroll, batch eval dashboard | 03, 05 | 2 |
 | 10 | [phase-10-showcase.md](phase-10-showcase.md) | Credits and history, build record, debug "how it's made" view, leaderboards, sharing | 08 | 3 |
 | 11 | [phase-11-ai-remix.md](phase-11-ai-remix.md) | *Optional:* AI semantic theming and route proposals, behind the validator | 09 | 3 |
+| 13 | [phase-13-link-portals.md](phase-13-link-portals.md) | Links become portals to other sites' mazes (web journeys) | 03, 05, 08 | 5 |
+| 14 | [phase-14-mazify-extension.md](phase-14-mazify-extension.md) | Browser extension + bookmarklet: maze the page you're on, built in-browser | 02, 03, 08 | 5 |
+| 15 | [phase-15-ai-docent.md](phase-15-ai-docent.md) | Grounded, cited AI docent through Cloudflare AI Gateway | 10 | 5 |
+| 16 | [phase-16-build-story.md](phase-16-build-story.md) | Build clock + AI-found-bugs gallery for the LinkedIn series | 10 | 5 |
 | 12 | [phase-12-launch.md](phase-12-launch.md) | Perf and device matrix, load and abuse testing, deploy, observability | 08, 09, 10 | 4 |
 
 ### Execution waves
@@ -198,3 +202,10 @@ Notes for dependent phases:
   - Rapier deferred: `/` is now 612 KiB gzipped, down from 1,681.
   - `/log` CLS 0.20 → 0.003.
   - Tests: 723 passed.
+
+### Wave 5 (2026-09-25): "next-level tribute" for the LinkedIn showcase
+Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare AI Gateway. Phases 13–16 run in parallel, and contracts v0.3.0 are in `@wwm/schema`.
+| 13 | in progress | worktree | — | link portals |
+| 14 | in progress | worktree | — | extension + bookmarklet |
+| 15 | in progress | worktree | — | AI docent |
+| 16 | in progress | worktree | — | build story |
