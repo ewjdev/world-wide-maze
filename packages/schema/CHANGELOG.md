@@ -43,3 +43,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.2.1
 - MAX_RAMP_SLOPE 0.1765; ITEM_EDGE_CLEARANCE_PX (0.25 D) for items; balanced slices (no tiny tail).
+
+## 0.2.2
+- SLAB_THICKNESS_M, RAIL_HEIGHT_M, ELEVATOR_MIN_PLATFORM_PX; documented frameYaw/quat/elevator conventions (contracts §9).

@@ -77,3 +77,7 @@ export const ELEVATOR_TRAVEL_SEC_PER_M = 0.162;
 export const INPUT_STALE_MS = 250;
 /** contracts §6: 6-digit room code. */
 export const ROOM_CODE_LENGTH = 6;
+/** contracts §5 (v0.2.2): shared world dimensions so renderer and physics agree. */
+export const SLAB_THICKNESS_M = 0.463; // E: 0.5 WU island slab
+export const RAIL_HEIGHT_M = 0.556; // R: rail collider/visual height; rails sit just OUTSIDE the edge line (and outside bridge deck width)
+export const ELEVATOR_MIN_PLATFORM_PX = 18.75; // E: platform length = max(|b−a|, this) along a→b, ending at b

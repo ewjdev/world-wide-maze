@@ -159,7 +159,7 @@ Notes for dependent phases:
 | 02 | merged (+02b v0.2.1) | main | G0 ✅ | 106 tests green; CRs logged in contracts §9 |
 | 03 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 04 | in progress | worktree | — | Wave 1 started 2026-09-25 |
-| 05 | in progress | worktree | — | Wave 1 started 2026-09-25 |
+| 05 | merged | main | G1 ✅ (own criteria) | deterministic Rapier; 1000/1000 tunneling; aid-dcc traversable |
 | 06 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 07 | in progress | worktree | — | Wave 1 started 2026-09-25 |
 | 08 | not started | | | |
