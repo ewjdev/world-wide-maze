@@ -59,6 +59,9 @@ All of it goes behind one `InputSource` abstraction.
 8. **Latency instrumentation:** a dev overlay showing RTT p50/p95, send rate, receive jitter, and filter lag. Log a session summary for the Phase 12 measurements.
 9. **Input sandbox** `/dev/input`: pair a phone, visualize raw vs filtered tilt as graphs, the buttons, and RTT.
 
+## Test device
+The user has a **physical iPhone 17 Pro connected to this Mac by USB** (`xcrun devicectl list devices` → "Eric's iPhone"). Use it for real-device tests. You can open URLs and read logs from the Mac, but **tilting and tapping need the user**: write a short step list for the orchestrator to relay to them, and have the page log its results to the relay/console so you can verify them remotely. There's no Android device yet, so flag Android as pending.
+
 ## Acceptance criteria
 - Unit tests: codec round-trip, the stale-input rule, the One Euro filter response, room code allocation and collision, and relay routing (DO tested with Miniflare/Vitest pool workers).
 - On **physical iPhone (Safari) and Android (Chrome)**, both through `wrangler dev` exposed over HTTPS (e.g. `cloudflared` tunnel):
