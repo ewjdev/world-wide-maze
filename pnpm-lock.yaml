@@ -26,6 +26,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@wwm/physics':
+        specifier: workspace:*
+        version: link:../../packages/physics
       '@wwm/schema':
         specifier: workspace:*
         version: link:../../packages/schema
@@ -95,9 +98,25 @@ importers:
 
   packages/physics:
     dependencies:
+      '@dimforge/rapier3d-deterministic-compat':
+        specifier: 0.20.0
+        version: 0.20.0
       '@wwm/schema':
         specifier: workspace:*
         version: link:../schema
+      earcut:
+        specifier: 3.2.3
+        version: 3.2.3
+    devDependencies:
+      '@dimforge/rapier3d-compat':
+        specifier: 0.20.0
+        version: 0.20.0
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+      vite:
+        specifier: 8.3.1
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15)
 
   packages/schema:
     dependencies:
@@ -255,6 +274,12 @@ packages:
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
     engines: {node: '>=12'}
+
+  '@dimforge/rapier3d-compat@0.20.0':
+    resolution: {integrity: sha512-X4W9pJBdGRX5CO3c/gUNjBFEFG2fn4nYxp9k8STdBDaLa0/w5XTW2ArpayS+9jGFojTi3uFSOWAElCd4rkpekA==}
+
+  '@dimforge/rapier3d-deterministic-compat@0.20.0':
+    resolution: {integrity: sha512-kODprI9mdSm6idjbCuyRmwyVbSqFL3wvY7wOvu//eJqbqRjYc9pUMI0bSLBZt/IV+Vwzkh/Xi9nGVBJLnJgWOg==}
 
   '@emnapi/runtime@1.11.3':
     resolution: {integrity: sha512-Xz4Tpyki7XyrpbUK1jR1AhdAdaXyhhY4lZ3neLodmhpuWfy2PAQN5B46sAiU4liOXGLkHypn/qU+jvfWSCYYLA==}
@@ -1062,6 +1087,9 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
+  earcut@3.2.3:
+    resolution: {integrity: sha512-vnS4AVwp1KHAF13i1vp1/2D5evWy3k5u/iW/B81QVsUZtV8cv2tU0b2VNFlqvh4kYwrFMDdjPCfAmfyJW9y14Q==}
+
   error-stack-parser-es@1.0.5:
     resolution: {integrity: sha512-5qucVt2XcuGMcEGgWI7i+yZpmpByQ8J1lHhcL7PwqCwu9FPP3VUXzT4ltHe5i2z9dePwEHcDVOAfSnHsOlCXRA==}
 
@@ -1508,6 +1536,10 @@ snapshots:
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
       '@jridgewell/trace-mapping': 0.3.9
+
+  '@dimforge/rapier3d-compat@0.20.0': {}
+
+  '@dimforge/rapier3d-deterministic-compat@0.20.0': {}
 
   '@emnapi/runtime@1.11.3':
     dependencies:
@@ -1967,6 +1999,8 @@ snapshots:
   csstype@3.2.3: {}
 
   detect-libc@2.1.2: {}
+
+  earcut@3.2.3: {}
 
   error-stack-parser-es@1.0.5: {}
 
