@@ -4,6 +4,8 @@
  */
 import { CONTRACT_VERSION } from '@wwm/schema';
 import { Link, Outlet, type RouteObject, useParams } from 'react-router';
+import { ControllerPage } from './controller/ControllerPage.tsx';
+import { InputSandbox } from './dev/input-sandbox.tsx';
 
 function Layout() {
   return (
@@ -42,16 +44,6 @@ export function Play() {
   );
 }
 
-export function Controller() {
-  const { code } = useParams();
-  return (
-    <section>
-      <h1>Controller</h1>
-      <p data-testid="room-code">Room: {code}</p>
-    </section>
-  );
-}
-
 export function About() {
   return (
     <section>
@@ -80,9 +72,10 @@ export const routes: RouteObject[] = [
         path: 'dev/physics',
         lazy: () => import('./dev/physics-sandbox.tsx').then((m) => ({ Component: m.default })),
       },
+      { path: 'dev/input', element: <InputSandbox /> }, // Phase 06
       { path: '*', element: <NotFound /> },
     ],
   },
   // The phone controller renders without the desktop layout.
-  { path: '/c/:code', element: <Controller /> },
+  { path: '/c/:code', element: <ControllerPage /> }, // Phase 06
 ];

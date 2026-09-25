@@ -1,0 +1,279 @@
+/* Phone controller (/c/:code). Everything is scoped under .wwmc. */
+.wwmc {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+  background: radial-gradient(120% 80% at 50% 0%, #1b2a4a 0%, #0b1020 60%, #05070f 100%);
+  color: #e9f0ff;
+  font-family: system-ui, -apple-system, "Hiragino Sans", sans-serif;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  touch-action: none;
+  overscroll-behavior: none;
+  overflow: hidden;
+}
+
+.wwmc button {
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+}
+
+.wwmc-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+.wwmc-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  opacity: 0.85;
+  font-variant-numeric: tabular-nums;
+}
+
+.wwmc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff5a5a;
+}
+.wwmc-dot.half {
+  background: #ffd25c;
+}
+.wwmc-dot.ok {
+  background: #5cf2c4;
+  box-shadow: 0 0 8px #5cf2c4;
+}
+
+.wwmc-hud {
+  display: flex;
+  justify-content: space-around;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+.wwmc-hud b {
+  font-size: 18px;
+  margin-left: 4px;
+}
+
+.wwmc-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  padding: 0 18px;
+}
+
+.wwmc-card,
+.wwmc-play {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+  max-width: 420px;
+}
+.wwmc-card h1 {
+  font-size: 22px;
+  margin: 0;
+}
+.wwmc-card p {
+  margin: 0;
+  line-height: 1.45;
+}
+.wwmc-hint {
+  font-size: 14px;
+  opacity: 0.7;
+}
+.wwmc-msg {
+  opacity: 0.8;
+}
+.wwmc-count {
+  font-size: 28px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.wwmc-cta {
+  min-width: 220px;
+  padding: 16px 28px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #5cf2c4, #2bb894);
+  color: #04221a;
+  font-weight: 700;
+  font-size: 18px;
+}
+.wwmc-cta:disabled {
+  opacity: 0.5;
+}
+.wwmc-secondary,
+.wwmc-link {
+  color: inherit;
+  background: none;
+  border: 1px solid rgba(233, 240, 255, 0.35);
+  border-radius: 999px;
+  padding: 10px 20px;
+}
+.wwmc-link {
+  border: 0;
+  opacity: 0.6;
+  text-decoration: underline;
+}
+
+.wwmc-indicator {
+  color: #e9f0ff;
+  max-width: 60vw;
+  height: auto;
+}
+
+.wwmc-warn {
+  min-height: 1.4em;
+  font-weight: 800;
+  font-size: 22px;
+  color: #ff5a5a;
+  margin: 0;
+  visibility: hidden;
+}
+.wwmc-warn.on {
+  visibility: visible;
+}
+
+.wwmc-overlay {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 30%;
+  padding: 14px;
+  border-radius: 14px;
+  background: rgba(5, 7, 15, 0.85);
+  z-index: 2;
+}
+
+.wwmc-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 12px 18px 22px;
+}
+
+.wwmc-btn {
+  border: 0;
+  border-radius: 50%;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  transition:
+    transform 60ms ease-out,
+    box-shadow 60ms ease-out;
+}
+.wwmc-btn:disabled {
+  opacity: 0.35;
+}
+.wwmc-btn.pressed {
+  transform: scale(0.94);
+}
+
+.wwmc-power {
+  width: min(44vw, 190px);
+  height: min(44vw, 190px);
+  font-size: 22px;
+  background: radial-gradient(circle at 50% 40%, #ffe59a, #ffb627 60%, #d9870b);
+  color: #3a2400;
+  box-shadow:
+    0 6px 0 #8a5300,
+    0 0 0 rgba(255, 190, 60, 0);
+}
+.wwmc-power.pressed {
+  box-shadow:
+    0 2px 0 #8a5300,
+    0 0 36px rgba(255, 190, 60, 0.9);
+}
+
+.wwmc-jump {
+  width: min(30vw, 128px);
+  height: min(30vw, 128px);
+  font-size: 18px;
+  background: radial-gradient(circle at 50% 40%, #b7e6ff, #3fa7ff 65%, #1a6fc4);
+  color: #02203d;
+  box-shadow: 0 5px 0 #0f4a85;
+}
+.wwmc-jump.pressed {
+  box-shadow:
+    0 1px 0 #0f4a85,
+    0 0 28px rgba(80, 170, 255, 0.9);
+}
+
+.wwmc-menu {
+  color: inherit;
+  width: auto;
+  height: auto;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  background: rgba(233, 240, 255, 0.12);
+}
+
+.wwmc-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: calc(env(safe-area-inset-top) + 8px) 16px 8px;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  background: #ffd25c;
+  color: #2a1d00;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.wwmc-code-input {
+  font-size: 32px;
+  letter-spacing: 0.3em;
+  text-align: center;
+  width: 8.5ch;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(233, 240, 255, 0.35);
+  background: rgba(0, 0, 0, 0.3);
+  color: inherit;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.wwmc-entry {
+  align-items: center;
+  justify-content: center;
+}
+
+.wwmc-debug {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  max-height: 40%;
+  overflow: auto;
+  margin: 0;
+  padding: 6px;
+  font-size: 9px;
+  background: rgba(0, 0, 0, 0.7);
+  pointer-events: none;
+  z-index: 10;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wwmc-btn {
+    transition: none;
+  }
+}
