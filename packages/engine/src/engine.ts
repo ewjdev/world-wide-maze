@@ -17,9 +17,12 @@ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
 import { emissive, float, mrt, output, pass, renderOutput, vec4 } from 'three/tsl';
 import {
+  Box3,
   Color,
   Fog,
+  Frustum,
   Group,
+  Matrix4,
   NoToneMapping,
   PerspectiveCamera,
   Quaternion,
@@ -44,20 +47,20 @@ import {
 import { buildHeightfield, type Heightfield, lowestTop, sampleTop } from './geom/heightfield.ts';
 import { planTiles, type TilePlan } from './geom/tiling.ts';
 import {
-  COLOR_WIRE,
   FOG_COLOR,
   FOG_FAR_M,
   FOG_NEAR_M,
-  GOAL_LETTERS,
   GROUND_BELOW_LOWEST_M,
   ITEM_LARGE,
   ITEM_SMALL,
   WU,
 } from './palette.ts';
 import { MAX_TIER, QualityLadder, type QualitySetting, TIERS } from './quality.ts';
+import { NodeFrameClock } from './three-private.ts';
 import { type Background, buildBackground } from './world/background.ts';
 import { type Ball, buildBall } from './world/ball.ts';
 import { Bin } from './world/bin.ts';
+import { planFirework } from './world/fireworks.ts';
 import { buildGoal, type Goal } from './world/goal.ts';
 import { buildItems, type Items } from './world/items.ts';
 import { Particles } from './world/particles.ts';
@@ -163,6 +166,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     ? 'webgpu'
     : 'webgl2';
   renderer.info.autoReset = false;
+  const nodeClock = new NodeFrameClock(renderer);
   renderer.toneMapping = NoToneMapping;
   renderer.outputColorSpace = SRGBColorSpace;
   const maxDpr = opts.maxDpr ?? 2;
@@ -182,7 +186,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   const globalBin = new Bin();
   const rng = mulberry32(0x1d2e);
   const particles = new Particles(4096, u, globalBin, rng);
-  scene.add(particles.sprite);
+  scene.add(particles.object);
 
   // ── post: MRT (colour + emissive), selective bloom on emissive only, screen-blended, FXAA ──
   const scenePass = pass(scene, camera);
@@ -261,6 +265,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let mapAngle = 0;
   let goalWatch = false;
   const goalCam = new Vector3();
+  /** where the goal camera settles (fireworks are placed relative to it) */
+  const goalVantage = new Vector3();
 
   // intro
   let intro: {
@@ -673,6 +679,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         .add(back)
         .add(new Vector3(0, 4.5, 0));
       const camFrom = camPos.clone();
+      goalVantage.copy(vantage);
       tween(1.4, (k) => {
         goalCam.lerpVectors(camFrom, vantage, ease.cubicInOut(k));
       });
@@ -693,11 +700,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         tween(
           delay,
           () => {},
-          () => launchFirework(),
+          () => launchFirework(i),
         );
         at += 0.3 + rng() * 0.5;
       }
-      await wait(Math.max(pull + rise, at + 1.6));
+      // last launch + rocket flight (≤ 1.2 s) + the longest burst (willow ≈ 3 s) mostly faded
+      await wait(Math.max(pull + rise, n > 0 ? at + 3.4 : 0));
     },
 
     cameraYaw() {
@@ -781,10 +789,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       }
 
       updateCamera(d);
+      particles.update(time);
+      if (bg) bg.motes.visible = ladder.value.features.richBackground && motesInView();
 
       // The renderer only re-runs pass nodes once per *its own* rAF frame id. We are driven externally
-      // (possibly several frames per rAF, e.g. a manual clock), so advance the node frame ourselves.
-      (renderer as unknown as { _nodes: { nodeFrame: { update(): void } } })._nodes.nodeFrame.update();
+      // (possibly several frames per rAF, e.g. a manual clock); see three-private.ts.
+      nodeClock.tick();
       // env map: 2 cube faces per frame = full refresh every 3rd frame (E: `D%3===0`)
       renderer.info.reset();
       if (ball && ladder.value.features.envMapUpdates && ballVisible) {
@@ -953,34 +963,49 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     });
   }
 
-  function launchFirework() {
-    // a random point in the upper part of the view, ~30 m out
-    const ndc = new Vector3(-0.75 + rng() * 1.5, -0.05 + rng() * 0.75, 0.5).unproject(camera);
-    const dir = ndc.sub(camera.position).normalize();
-    const origin = camera.position.clone().addScaledVector(dir, 26 + rng() * 10);
-    // saturated palettes: the sky is near-white, so the bursts must carry colour, not light
-    const palette = [
-      [GOAL_LETTERS[0], 0xff7a3d, 0xffd23f],
-      [GOAL_LETTERS[1], 0xff9f1c, GOAL_LETTERS[0]],
-      [GOAL_LETTERS[2], 0x16c172, ITEM_LARGE],
-      [ITEM_LARGE, 0x1f7aff, 0x7b61ff],
-      [0xff4fa3, 0x7b61ff, COLOR_WIRE[5]],
-    ][Math.floor(rng() * 5)] as (number | string)[];
-    const big = { origin, colors: palette, drag: 1.3, gravity: 2.8, glow: 1.2, twinkle: 0.35 };
-    particles.emit({ ...big, count: 170, speed: [8, 12.5], life: [1.4, 2.3], size: [0.42, 0.72] }, time);
-    // inner ring of white-hot sparks
-    particles.emit(
-      {
-        ...big,
-        colors: [0xffffff, palette[0] as number],
-        count: 60,
-        speed: [2, 5],
-        life: [0.6, 1.1],
-        size: [0.3, 0.5],
-        twinkle: 0.8,
-      },
-      time,
-    );
+  /** One rocket + burst. Returns the rocket's flight time (s). */
+  function launchFirework(index: number): number {
+    // burst somewhere in the sky beyond the goal, as seen from the goal vantage camera: 20–30 m out
+    // horizontally, 14–44° up, spread across the view width (E: "random screen positions")
+    const fwd = goalWorld.clone().sub(goalVantage).setY(0);
+    if (fwd.lengthSq() < 1e-6) fwd.set(0, 0, -1);
+    fwd.normalize();
+    const right = new Vector3().crossVectors(fwd, UP).normalize();
+    const dist = 20 + rng() * 10;
+    const halfW = Math.tan(((camera.fov * Math.PI) / 360) * Math.min(1.6, camera.aspect)) * dist;
+    const el = ((14 + rng() * 30) * Math.PI) / 180;
+    const burst = goalVantage
+      .clone()
+      .addScaledVector(fwd, dist)
+      .addScaledVector(right, (rng() * 2 - 1) * 0.72 * halfW)
+      .add(new Vector3(0, Math.tan(el) * dist, 0));
+    const viewDir = burst.clone().sub(goalVantage).normalize();
+    // the rocket climbs 11–15 m from below the burst, leaning slightly
+    const launch = burst.clone().add(new Vector3((rng() - 0.5) * 4, -(11 + rng() * 4), (rng() - 0.5) * 4));
+    const plan = planFirework({
+      burst,
+      launch,
+      now: time,
+      viewDir,
+      rng,
+      // the first one is always a big round peony; then vary
+      kind: index === 0 ? 'peony' : undefined,
+    });
+    for (const p of plan.particles) particles.spawn(p);
+    return plan.flight;
+  }
+
+  const frustum = new Frustum();
+  const projView = new Matrix4();
+  const motesBox = new Box3();
+  /** The floating dots fill a thin slab under the islands; skip them when the camera can't see it. */
+  function motesInView(): boolean {
+    if (!bg) return false;
+    bgPivot.updateMatrixWorld();
+    motesBox.copy(bg.motesBounds).applyMatrix4(bgPivot.matrixWorld);
+    projView.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    frustum.setFromProjectionMatrix(projView, camera.coordinateSystem);
+    return frustum.intersectsBox(motesBox);
   }
 
   function updateCamera(d: number) {
@@ -1037,13 +1062,13 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         done.resolve();
       }
     } else if (goalWatch) {
-      // hold position, look at the ball as it flies away, but never tilt more than ~38° up so the goal
-      // ribbon stays in frame under the fireworks
+      // hold position, look at the ball as it flies away, but never tilt more than ~26° up so the goal
+      // ribbon stays in frame under the fireworks (the ball leaves the top of the frame)
       camPos.copy(goalCam);
       const want = ballPos.clone();
       const off = want.clone().sub(camPos);
       const horiz = Math.hypot(off.x, off.z) || 1e-3;
-      const maxUp = Math.tan((38 * Math.PI) / 180) * horiz;
+      const maxUp = Math.tan((26 * Math.PI) / 180) * horiz;
       if (off.y > maxUp) want.y = camPos.y + maxUp;
       camTarget.lerp(want, 1 - Math.exp(-d / 0.25));
       camUp.copy(UP);
