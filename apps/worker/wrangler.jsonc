@@ -112,7 +112,7 @@
   "triggers": { "crons": ["17 3 * * *"] },
 
   // ── Deploy target (Phase 12 → Phase 17). Named-environment keys are NOT inherited from the top level, so every
-  // var and binding is redeclared. Deploys: .github/workflows/deploy.yml (main) and preview.yml (PRs).
+  // var and binding is redeclared. Deploys: .github/workflows/ci.yml (jobs deploy-production on main, preview on PRs).
   "env": {
     "production": {
       "name": "wwm",
