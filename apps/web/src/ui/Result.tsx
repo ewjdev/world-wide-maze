@@ -8,7 +8,7 @@ import { type FormEvent, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ordinal } from '../game/rules.ts';
 import { useGame, useView } from './GameApp.tsx';
-import { Facets, GemIcon, Icon, SmallItemIcon } from './parts.tsx';
+import { Facets, GemIcon, Icon, SmallItemIcon, useSiteTitle } from './parts.tsx';
 
 async function share(text: string, url: string): Promise<'shared' | 'copied' | 'failed'> {
   try {
@@ -28,6 +28,7 @@ export function ResultScreen() {
   const v = useView();
   const { t } = useTranslation();
   const r = v.result;
+  const siteTitle = useSiteTitle();
   const [secs, setSecs] = useState(0);
   const [stage, setStage] = useState(0); // 0 counting time, 1 large, 2 small, 3 totals
   const [shared, setShared] = useState(false);
@@ -91,7 +92,7 @@ export function ResultScreen() {
       <Facets seed={3} className="wwm-result__band" />
       <header className="wwm-result__head">
         <h2 id="res-h" className="wwm-h1 wwm-result__title">
-          {r.title}
+          {siteTitle(r.title)}
         </h2>
         <p className="wwm-result__url">
           {host && !host.startsWith('wwm:') ? `${host} · ` : ''}
@@ -155,7 +156,7 @@ export function ResultScreen() {
           className="wwm-btn wwm-btn--ghost"
           onClick={async (e) => {
             e.stopPropagation();
-            const res = await share(t('result.shareText', { title: r.title }), g.shareUrl());
+            const res = await share(t('result.shareText', { title: siteTitle(r.title) }), g.shareUrl());
             setShared(res !== 'failed');
           }}
         >

@@ -13,9 +13,12 @@ describe('URL input', () => {
   ])('%s → %s', (raw, want) => {
     expect(normalizeInputUrl(raw)).toBe(want);
   });
-  test.each(['', 'not a url', 'ftp://example.com', 'javascript:alert(1)', 'intranet'])('rejects %s', (raw) => {
-    expect(normalizeInputUrl(raw)).toBeNull();
-  });
+  test.each(['', 'not a url', 'ftp://example.com', 'javascript:alert(1)', 'intranet'])(
+    'rejects %s',
+    (raw) => {
+      expect(normalizeInputUrl(raw)).toBeNull();
+    },
+  );
 });
 
 describe('catalog', () => {

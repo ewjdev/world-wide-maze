@@ -4,7 +4,7 @@
  */
 import { chromium } from 'playwright';
 
-const [base = 'http://localhost:5173', ref = 'fixture-hn-front'] = process.argv.slice(2);
+const [base = 'http://localhost:5173', ref = 'fixture-hn-front', mode = 'drive'] = process.argv.slice(2);
 const browser = await chromium.launch({
   headless: true,
   args: ['--enable-unsafe-webgpu', '--enable-gpu', '--ignore-gpu-blocklist', '--use-angle=metal'],
@@ -25,9 +25,30 @@ await page.waitForFunction(() => document.body.dataset.phase === 'play', null, {
 const st = () =>
   page.evaluate(() => {
     const d = window.__wwmGame?.debugState();
-    return JSON.stringify(d && { phase: d.phase, driver: d.driver, ball: d.ball.map((v) => +v.toFixed(2)), t: d.timer.int });
+    return JSON.stringify(
+      d && { phase: d.phase, driver: d.driver, ball: d.ball.map((v) => +v.toFixed(2)), t: d.timer.int },
+    );
   });
 console.log('start', await st());
+if (mode === 'fall') {
+  // jump the rail: hold a direction, hop repeatedly, and log the fall → lost → restart flow
+  await page.keyboard.down(process.argv[5] ?? 'ArrowUp');
+  for (let i = 0; i < 40; i++) {
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(350);
+    const s = await st();
+    console.log('hop', s);
+    if (s.includes('"falling"')) break;
+  }
+  await page.keyboard.up(process.argv[5] ?? 'ArrowUp');
+  for (let i = 0; i < 16; i++) {
+    await page.waitForTimeout(700);
+    console.log('after', await st(), await page.evaluate(() => window.__wwmGame?.getView().spares));
+  }
+  await page.screenshot({ path: '/tmp/fall.png' });
+  await browser.close();
+  process.exit(0);
+}
 for (const [key, n] of [
   ['ArrowUp', 4],
   ['ArrowRight', 3],

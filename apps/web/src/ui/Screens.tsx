@@ -12,7 +12,7 @@ import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
 import { useGame, useView } from './GameApp.tsx';
 import { PlayLayer } from './Play.tsx';
-import { Facets, Icon, Logo, Stars, TiltRing } from './parts.tsx';
+import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
 import { RankingScreen, ResultScreen } from './Result.tsx';
 import { TopBar } from './Settings.tsx';
 
@@ -501,7 +501,8 @@ function Building() {
   const b = v.build;
   const pct = Math.round(b?.pct ?? 0);
   const step = b?.step && BUILD_STEPS.includes(b.step) ? b.step : 'building';
-  const label = v.run?.title || b?.label || '';
+  const siteTitle = useSiteTitle();
+  const label = siteTitle(v.run?.title) || b?.label || '';
   return (
     <section
       className="wwm-panel wwm-building"

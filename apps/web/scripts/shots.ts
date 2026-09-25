@@ -19,8 +19,8 @@ const errors: string[] = [];
 
 async function shot(page: Page, name: string) {
   if (only && !only.has(name)) return;
-  await page.screenshot({ path: join(out, `${name}.png`) });
-  console.log(`  ${name}.png`);
+  await page.screenshot({ path: join(out, `${name}.jpg`), type: 'jpeg', quality: 84 });
+  console.log(`  ${name}.jpg`);
 }
 
 function watch(page: Page, who: string) {
@@ -71,7 +71,9 @@ try {
   watch(host, 'host');
   await host.goto(`${base}/`);
   await host.getByTestId('start').waitFor();
-  await host.waitForFunction(() => !(document.querySelector('[data-testid=start]') as HTMLButtonElement).disabled);
+  await host.waitForFunction(
+    () => !(document.querySelector('[data-testid=start]') as HTMLButtonElement).disabled,
+  );
   await host.waitForTimeout(6000);
   console.log('title');
   await shot(host, '01-title');
@@ -103,7 +105,7 @@ try {
   await waitPhase(host, 'select', 20_000);
   await host.waitForTimeout(1200);
   await shot(host, '06-select');
-  await phone.screenshot({ path: join(out, 'phone-01-select.png') });
+  await phone.screenshot({ path: join(out, 'phone-01-select.jpg'), type: 'jpeg', quality: 84 });
 
   await host.getByTestId('site-fixture-hn-front').click();
   await waitPhase(host, 'building');
@@ -127,7 +129,7 @@ try {
   await host.waitForTimeout(1800);
   await shot(host, '11-play-power');
   await power.dispatchEvent('pointerup', { pointerId: 3, isPrimary: true, pointerType: 'touch' });
-  await phone.screenshot({ path: join(out, 'phone-02-play.png') });
+  await phone.screenshot({ path: join(out, 'phone-02-play.jpg'), type: 'jpeg', quality: 84 });
   await host.waitForTimeout(8000);
   await shot(host, '12-play-hud');
 
@@ -168,12 +170,19 @@ try {
   await phone.context().close();
 
   // ── session 2: replay run on the practice stage → goal → result → ranking ──
-  const replay = JSON.parse(readFileSync(new URL('../../../fixtures/replays/handmade-simple.keyboard.json', import.meta.url), 'utf8'));
+  const replay = JSON.parse(
+    readFileSync(new URL('../../../fixtures/replays/handmade-simple.keyboard.json', import.meta.url), 'utf8'),
+  );
   const desk2 = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   await desk2.addInitScript((r) => {
     localStorage.setItem('wwm.howtoSeen', '1');
     localStorage.setItem('wwm.tutorialDone', '1');
-    (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = { replay: r, lockstep: true, noAutoPause: true, timeScale: 2 };
+    (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = {
+      replay: r,
+      lockstep: true,
+      noAutoPause: true,
+      timeScale: 2,
+    };
   }, replay);
   const p2 = await desk2.newPage();
   watch(p2, 'host2');
@@ -195,7 +204,9 @@ try {
   await waitPhase(p2, 'result', 20_000);
   await p2.waitForTimeout(700);
   await shot(p2, '20-result-tally');
-  await p2.waitForFunction(() => !!document.querySelector('[data-testid=res-total][data-final]:not([data-final=""])'));
+  await p2.waitForFunction(
+    () => !!document.querySelector('[data-testid=res-total][data-final]:not([data-final=""])'),
+  );
   await p2.waitForTimeout(500);
   await shot(p2, '21-result');
   await p2.getByTestId('res-finish').click();

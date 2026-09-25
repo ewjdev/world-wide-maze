@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
 import { useGame, useView } from './GameApp.tsx';
-import { BallIcon, GemIcon, Glyphs, Icon, TiltRing } from './parts.tsx';
+import { BallIcon, GemIcon, Glyphs, Icon, TiltRing, useSiteTitle } from './parts.tsx';
 
 const IN_STAGE = new Set([
   'intro',
@@ -45,6 +45,7 @@ function IntroCaption() {
   const g = useGame();
   const v = useView();
   const { t } = useTranslation();
+  const title = useSiteTitle();
   const host = v.run?.url ? v.run.url.replace(/^https?:\/\//, '').replace(/\/$/, '') : '';
   return (
     <>
@@ -56,7 +57,7 @@ function IntroCaption() {
         data-testid="intro-skip"
       />
       <div className="wwm-intro">
-        <p className="wwm-intro__title">{v.run?.title}</p>
+        <p className="wwm-intro__title">{title(v.run?.title)}</p>
         {host && !host.startsWith('wwm:') && <p className="wwm-intro__url">{host}</p>}
         {v.run && v.run.count > 1 && (
           <p className="wwm-intro__slice">
@@ -183,6 +184,7 @@ function MapMenu() {
   const g = useGame();
   const v = useView();
   const { t } = useTranslation();
+  const siteTitle = useSiteTitle();
   const first = useRef<HTMLButtonElement>(null);
   // biome-ignore lint/correctness/useExhaustiveDependencies: refocus when the confirm view swaps in
   useEffect(() => first.current?.focus(), [v.confirm]);
@@ -194,7 +196,7 @@ function MapMenu() {
             <h2 id="map-h" className="wwm-h2">
               <Icon name="map" /> {t('map.title')}
             </h2>
-            <p className="wwm-map__site">{v.run?.title}</p>
+            <p className="wwm-map__site">{siteTitle(v.run?.title)}</p>
             <div className="wwm-map__actions">
               <button
                 ref={first}

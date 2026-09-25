@@ -581,6 +581,11 @@
   font-weight: 700;
   font-size: 17px;
 }
+.wwm-connect__status.is-on {
+  color: var(--go);
+  font: 800 24px / 1.1 var(--display);
+  animation: wwm-rise 400ms var(--ease) both;
+}
 .wwm-dot {
   width: 10px;
   height: 10px;
@@ -620,6 +625,7 @@
   display: flex;
   gap: 6px;
   align-items: center;
+  text-align: left;
   font-size: 13px;
 }
 .wwm-connect__foot {
@@ -738,6 +744,9 @@
   font: 600 20px / 1.2 var(--ui);
   color: var(--ink);
   padding: 12px 0;
+}
+.wwm-urlbar input:focus-visible {
+  outline: none;
 }
 .wwm-urlbar input::placeholder {
   color: var(--ink-3);
@@ -1781,6 +1790,13 @@
   }
   .wwm-select__body {
     grid-template-columns: 1fr;
+  }
+  .wwm-site--featured {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  }
+  .wwm-site--featured .wwm-site__thumb {
+    aspect-ratio: auto;
+    min-height: 100%;
   }
   .wwm-grid--compact {
     grid-template-columns: repeat(2, 1fr);

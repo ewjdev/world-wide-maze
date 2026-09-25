@@ -3,7 +3,15 @@
  * (red elevators, green bridges, blue island sides, yellow rails) and the teal item colour.
  */
 import { type ReactNode, useEffect, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+import { PRACTICE } from '../game/catalog.ts';
 import type { Game } from '../game/game.ts';
+
+/** Site titles as shown to players: the built-in practice stage uses the localized E name. */
+export function useSiteTitle(): (title: string | undefined) => string {
+  const { t } = useTranslation();
+  return (title) => (title === PRACTICE.title ? t('select.practice') : (title ?? ''));
+}
 
 export const ROLE = {
   red: '#e0524f',
@@ -257,14 +265,33 @@ export function Glyphs({ text }: { text: string }) {
   );
 }
 
+const ARROW_ROT = { up: 0, left: 270, down: 180, right: 90 } as const;
+function ArrowCap({ dir }: { dir: keyof typeof ARROW_ROT }) {
+  return (
+    <kbd className="wwm-cap wwm-cap--key">
+      <svg width="0.8em" height="0.8em" viewBox="0 0 12 12" aria-hidden="true">
+        <path
+          d="M6 2v8M2.5 5.5L6 2l3.5 3.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          transform={`rotate(${ARROW_ROT[dir]} 6 6)`}
+        />
+      </svg>
+    </kbd>
+  );
+}
+
 function ArrowKeys() {
   return (
     <span className="wwm-arrows" role="img" aria-label="arrow keys">
-      <kbd className="wwm-cap wwm-cap--key">↑</kbd>
+      <ArrowCap dir="up" />
       <span>
-        <kbd className="wwm-cap wwm-cap--key">←</kbd>
-        <kbd className="wwm-cap wwm-cap--key">↓</kbd>
-        <kbd className="wwm-cap wwm-cap--key">→</kbd>
+        <ArrowCap dir="left" />
+        <ArrowCap dir="down" />
+        <ArrowCap dir="right" />
       </span>
     </span>
   );

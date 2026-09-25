@@ -79,7 +79,12 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     const { unstable_startWorker } = await import('wrangler');
     worker = await unstable_startWorker({
       config: WORKER_CONFIG,
-      dev: { server: { hostname: '127.0.0.1', port: 0 }, inspector: false, persist: false, logLevel: 'error' },
+      dev: {
+        server: { hostname: '127.0.0.1', port: 0 },
+        inspector: false,
+        persist: false,
+        logLevel: 'error',
+      },
     } as Parameters<typeof unstable_startWorker>[0]);
     await worker.ready;
     process.env.WWM_API_URL = (await worker.url).toString().replace(/\/$/, '');
@@ -172,7 +177,10 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       const ctx = await browser.newContext({ ...devices['iPhone 15 Pro'] });
       await ctx.addInitScript(() => {
         const w = window as unknown as Record<string, unknown>;
-        const DOE = (w.DeviceOrientationEvent ?? function DeviceOrientationEvent() {}) as Record<string, unknown>;
+        const DOE = (w.DeviceOrientationEvent ?? function DeviceOrientationEvent() {}) as Record<
+          string,
+          unknown
+        >;
         DOE.requestPermission = () => Promise.resolve('granted');
         w.__pose = { beta: 45, gamma: 0 };
         setInterval(() => {
@@ -218,7 +226,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       expect(moved).toBeGreaterThan(0.5);
       expect(after?.timer.running).toBe(true);
       // host → controller `state`: the phone shows the host HUD values
-      await expect.poll(async () => (await phone.textContent('body')) ?? '', { timeout: 5000 }).toMatch(/TIME/);
+      await expect
+        .poll(async () => (await phone.textContent('body')) ?? '', { timeout: 5000 })
+        .toMatch(/TIME/);
     }, 180_000);
 
     test('disconnect → freeze + reconnect overlay → reconnect → resume from the same state', async () => {
@@ -247,9 +257,9 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
       expect(resumed?.hold).toBeNull();
       expect(resumed?.phase).toBe('play');
       expect(Math.abs((resumed?.timer.remains ?? 0) - (frozen?.timer.remains ?? 0))).toBeLessThan(1.5);
-      await expect.poll(async () => (await state(host))?.timer.remains ?? 0, { timeout: 5000 }).toBeLessThan(
-        (frozen?.timer.remains ?? 0) - 0.3,
-      ); // and it runs again
+      await expect
+        .poll(async () => (await state(host))?.timer.remains ?? 0, { timeout: 5000 })
+        .toBeLessThan((frozen?.timer.remains ?? 0) - 0.3); // and it runs again
       expect(problems).toEqual([]);
       await phone.context().close();
       await host.context().close();

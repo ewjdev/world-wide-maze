@@ -39,7 +39,17 @@ for (;;) {
   await page.waitForTimeout(1000);
   const s = await page.evaluate(() => {
     const d = window.__wwmGame?.debugState();
-    return d && { phase: d.phase, tick: d.tick, timer: d.timer, total: d.total, small: d.small, large: d.large, ball: d.ball.map((v) => +v.toFixed(2)) };
+    return (
+      d && {
+        phase: d.phase,
+        tick: d.tick,
+        timer: d.timer,
+        total: d.total,
+        small: d.small,
+        large: d.large,
+        ball: d.ball.map((v) => +v.toFixed(2)),
+      }
+    );
   });
   console.log(((Date.now() - t0) / 1000).toFixed(0), JSON.stringify(s));
   if (!s || ['result', 'ranking', 'error', 'gameover'].includes(s.phase) || Date.now() - t0 > 120_000) break;

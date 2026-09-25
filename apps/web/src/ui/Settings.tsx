@@ -33,6 +33,7 @@ export function TopBar() {
         className="wwm-chip"
         onClick={() => g.setMuted(!v.muted)}
         aria-pressed={!v.muted}
+        aria-label={t('common.soundOn')}
         data-testid="sound-toggle"
       >
         <Icon name={v.muted ? 'mute' : 'sound'} size={18} />
