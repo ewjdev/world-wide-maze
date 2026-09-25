@@ -73,7 +73,7 @@ no content gets one plain fallback island, so a run never breaks.
 - a unit test per module on synthetic inputs (two rectangles → 2 islands + 1 bridge, and others)
 - end-to-end synthetic builds (determinism, stageId, DPR 2 equivalence, slices, fallback, loops, `BuildError`)
 - the fixture matrix: every `fixtures/captures/*` × slice × difficulty × seeds 1–5 passes `validateStage`
-- golden snapshots `fixtures/builder/<slug>.normal.seed1.json` for every capture (the eval-* set too), count ranges, and < 1.5 s per page
+- golden snapshots `fixtures/builder/<slug>.normal.seed1.json` for every capture (the eval-* set too), count ranges, and < 1.5 s per page (4× on CI runners)
 - the 03b playability invariants per build (lift rises, rail depth over islands, no reachability issue) and `test/playability.test.ts`
 
 Regenerate the goldens after an intentional change with `node tools/stage-debugger/src/cli/goldens.ts`, and check

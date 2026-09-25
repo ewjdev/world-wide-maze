@@ -32,6 +32,7 @@ import {
   Vector3,
   WebGPURenderer,
 } from 'three/webgpu';
+import { markWarned, markWebGPUFailed, quietErrorScopes, replaceCanvas, wantWebGPU } from './backend.ts';
 import { CHASE, ChaseCamera, tiltQuaternion } from './camera/chase.ts';
 import {
   type CamKey,
@@ -168,27 +169,77 @@ interface Tween {
 
 const UP = new Vector3(0, 1, 0);
 
+type DeviceLostInfo = { api: string; message: string; reason: string | null };
+
+function isWebGPU(r: WebGPURenderer): boolean {
+  return !!(r.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend;
+}
+
 export async function createEngine(opts: EngineOptions): Promise<Engine> {
-  const renderer = new WebGPURenderer({
-    canvas: opts.canvas,
-    antialias: false,
-    forceWebGL: opts.forceWebGL ?? false,
-    powerPreference: 'high-performance',
-  });
-  await renderer.init();
-  const backend: 'webgpu' | 'webgl2' = (renderer.backend as { isWebGPUBackend?: boolean }).isWebGPUBackend
-    ? 'webgpu'
-    : 'webgl2';
-  renderer.info.autoReset = false;
-  const nodeClock = new NodeFrameClock(renderer);
-  renderer.toneMapping = NoToneMapping;
-  renderer.outputColorSpace = SRGBColorSpace;
+  let disposed = false;
+  /** set while the WebGPU device is gone and the WebGL2 renderer is not ready yet: frames skip rendering */
+  let deviceLost = false;
+  let canvas = opts.canvas;
+  /** the canvas the engine put in place of `opts.canvas` after a device loss (removed on dispose) */
+  let ownCanvas: HTMLCanvasElement | null = null;
+  /** false until createEngine has built everything: a loss before that is recovered before it returns */
+  let ready = false;
+  let recovery: Promise<void> | null = null;
+  let contextLostWarned = false;
+  const onDeviceLost = (r: WebGPURenderer, info: DeviceLostInfo) => {
+    if (disposed) return;
+    if (!isWebGPU(r)) {
+      // WebGL2 context loss: nothing further to fall back to. Log once, quietly (the page stays usable).
+      if (!contextLostWarned) console.warn(`[@wwm/engine] WebGL2 context lost: ${info.message}`);
+      contextLostWarned = true;
+      return;
+    }
+    if (deviceLost) return;
+    deviceLost = true;
+    markWebGPUFailed(
+      `WebGPU device lost (${info.reason ?? 'unknown'}: ${info.message}); continuing on WebGL2.`,
+    );
+    if (ready) void recoverOnWebGL2();
+  };
+
+  const makeRenderer = async (forceWebGL: boolean): Promise<WebGPURenderer> => {
+    const r = new WebGPURenderer({
+      canvas,
+      antialias: false,
+      forceWebGL,
+      powerPreference: 'high-performance',
+    });
+    // Installed before init(): a device lost during startup takes the same path as one lost mid-session.
+    r.onDeviceLost = (info: DeviceLostInfo) => onDeviceLost(r, info);
+    await r.init();
+    if (isWebGPU(r)) {
+      const device = (r.backend as { device?: Parameters<typeof quietErrorScopes>[0] }).device;
+      if (device) quietErrorScopes(device);
+    } else if (!forceWebGL) {
+      // No WebGPU adapter/device: three fell back to WebGL2 and warned once. Later engines start on WebGL2.
+      markWebGPUFailed(null);
+      markWarned();
+    }
+    return r;
+  };
+
+  const tryWebGPU = wantWebGPU(opts.forceWebGL);
+  let renderer = await makeRenderer(!tryWebGPU);
+  let backend: 'webgpu' | 'webgl2' = isWebGPU(renderer) ? 'webgpu' : 'webgl2';
   const maxDpr = opts.maxDpr ?? 2;
   const baseDpr = () => Math.min(globalThis.devicePixelRatio || 1, maxDpr);
-  renderer.setPixelRatio(baseDpr());
   const w0 = opts.canvas.clientWidth || opts.canvas.width || 1280;
   const h0 = opts.canvas.clientHeight || opts.canvas.height || 720;
-  renderer.setSize(w0, h0, false);
+  const size = { w: w0, h: h0 };
+  const setupRenderer = (r: WebGPURenderer) => {
+    r.info.autoReset = false;
+    r.toneMapping = NoToneMapping;
+    r.outputColorSpace = SRGBColorSpace;
+    r.setPixelRatio(baseDpr());
+    r.setSize(size.w, size.h, false);
+  };
+  setupRenderer(renderer);
+  let nodeClock = new NodeFrameClock(renderer);
 
   const scene = new Scene();
   scene.background = new Color(FOG_COLOR);
@@ -214,7 +265,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     noFxaa: renderOutput(composite),
     noGlow: renderOutput(colorTex),
   };
-  const pipeline = new RenderPipeline(renderer);
+  let pipeline = new RenderPipeline(renderer);
   pipeline.outputColorTransform = false;
   let currentOutput: keyof typeof outputs | null = null;
   const setOutput = (k: keyof typeof outputs) => {
@@ -505,7 +556,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       if (goal) goal.visibility.value = 1;
       view = 'chase';
       // compile everything up front so the first frames don't hitch
-      await renderer.compileAsync(scene, camera);
+      if (recovery) await recovery;
+      if (!deviceLost) await renderer.compileAsync(scene, camera);
     },
 
     unloadStage() {
@@ -833,6 +885,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     resize(w, h) {
+      size.w = w;
+      size.h = h;
       renderer.setSize(w, h, false);
       camera.aspect = w / Math.max(1, h);
       camera.updateProjectionMatrix();
@@ -909,6 +963,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       updateCamera(d);
       particles.update(time);
       if (bg) bg.motes.visible = ladder.value.features.richBackground && motesInView();
+      if (deviceLost) return; // switching to WebGL2 (recoverOnWebGL2); the state above keeps advancing
 
       // The renderer only re-runs pass nodes once per *its own* rAF frame id. We are driven externally
       // (possibly several frames per rAF, e.g. a manual clock); see three-private.ts.
@@ -977,12 +1032,14 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     dispose() {
+      disposed = true;
       clearStage();
       scene.clear();
       globalBin.disposeAll();
       pipeline.dispose();
       scenePass.dispose();
       renderer.dispose();
+      ownCanvas?.remove();
     },
   };
 
@@ -1242,6 +1299,51 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   void TIERS;
   void MAX_TIER;
   void GOAL_RADIUS_M;
+  /**
+   * The WebGPU device is gone: recreate the renderer on the WebGL2 backend (fresh canvas in the old one's place)
+   * and keep going with the same scene, stage and state. Frames skip rendering until it is ready. See backend.ts.
+   */
+  function recoverOnWebGL2(): Promise<void> {
+    recovery ??= (async () => {
+      const old = renderer;
+      const oldPipeline = pipeline;
+      canvas = replaceCanvas(canvas);
+      ownCanvas = canvas;
+      let r: WebGPURenderer;
+      try {
+        r = await makeRenderer(true);
+      } catch (e) {
+        console.warn('[@wwm/engine] the WebGL2 fallback failed to start; rendering stops', e);
+        return;
+      }
+      if (disposed) {
+        void r.dispose();
+        return;
+      }
+      setupRenderer(r);
+      renderer = r;
+      backend = 'webgl2';
+      nodeClock = new NodeFrameClock(r);
+      pipeline = new RenderPipeline(r);
+      pipeline.outputColorTransform = false;
+      currentOutput = null;
+      applyTier();
+      envPrimed = false;
+      // The old renderer's GPU objects died with the device; drop its caches and listeners.
+      try {
+        oldPipeline.dispose();
+        void old.dispose().catch(() => {});
+      } catch {
+        // a lost device can throw anywhere in teardown; nothing left to free
+      }
+      await r.compileAsync(scene, camera).catch(() => {});
+      deviceLost = false;
+    })();
+    return recovery;
+  }
+
+  ready = true;
+  if (deviceLost) await recoverOnWebGL2();
   return engine;
 }
 
