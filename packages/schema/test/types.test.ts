@@ -96,7 +96,7 @@ describe('contract surface', () => {
       PX_PER_METER: 13.5,
       BALL_RADIUS_M: 0.5,
       LEVEL_HEIGHT_M: 1.0,
-      MAX_RAMP_SLOPE: 0.176,
+      MAX_RAMP_SLOPE: 0.1765,
       MIN_BRIDGE_WIDTH_PX: 34,
       MIN_ISLAND_SIZE_PX: 27,
       MAX_PAGE_HEIGHT_PX: 6000,
@@ -268,8 +268,11 @@ describe('slicing (contracts §3/§4)', () => {
     const c = cap(6000);
     const n = schema.sliceCount(c);
     const slices = Array.from({ length: n }, (_, i) => schema.sliceRange(c, i));
-    expect(slices[0]).toEqual({ index: 0, count: 4, y: 0, height: 1700 });
-    expect(slices[3]).toEqual({ index: 3, count: 4, y: 5100, height: 900 });
+    expect(slices[0]).toEqual({ index: 0, count: 4, y: 0, height: 1500 });
+    expect(slices[3]).toEqual({ index: 3, count: 4, y: 4500, height: 1500 });
+    // balanced: no tiny tail slice
+    const c2 = cap(1701);
+    expect([0, 1].map((i) => schema.sliceRange(c2, i).height)).toEqual([851, 850]);
     expect(slices.reduce((s, x) => s + x.height, 0)).toBe(6000);
     for (let i = 1; i < n; i++)
       expect(slices[i]?.y).toBe((slices[i - 1]?.y ?? 0) + (slices[i - 1]?.height ?? 0));

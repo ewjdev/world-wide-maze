@@ -33,7 +33,7 @@
  * | `elevator-crosses-island` | the elevator footprint must not overlap islands it doesn't connect |
  * | `elevator-mouth-blocked`  | rails need gaps at elevator mouths too |
  * | `too-many-large-items`    | §3: at most MAX_LARGE_ITEMS large items |
- * | `item-outside-island`     | §3: items inside their island, ≥ BALL_RADIUS_PX from any edge |
+ * | `item-outside-island`     | §3: items inside their island, ≥ ITEM_EDGE_CLEARANCE_PX from any edge |
  * | `restart-outside-island`  | §3: restart points inside their island, ≥ BALL_RADIUS_PX from any edge |
  * | `start-outside-island`    | start inside its island, ≥ BALL_RADIUS_PX from any edge |
  * | `goal-outside-island`     | goal position inside its island |
@@ -42,6 +42,7 @@ import type { z } from 'zod';
 import {
   BALL_RADIUS_PX,
   ENDPOINT_TOLERANCE_PX,
+  ITEM_EDGE_CLEARANCE_PX,
   LEVEL_HEIGHT_M,
   MAX_LARGE_ITEMS,
   MAX_RAMP_SLOPE,
@@ -356,16 +357,15 @@ export function validateStage(input: unknown): StageValidationResult {
   if (large > MAX_LARGE_ITEMS)
     err('too-many-large-items', `${large} large items > MAX_LARGE_ITEMS (${MAX_LARGE_ITEMS})`, 'items');
 
-  const clear = (pt: Vec2, isl: Island) =>
-    pointInPolygon(pt, isl.contour, isl.holes) &&
-    distanceToPolygonEdge(pt, isl.contour, isl.holes) >= BALL_RADIUS_PX;
+  const clear = (pt: Vec2, isl: Island, margin = BALL_RADIUS_PX) =>
+    pointInPolygon(pt, isl.contour, isl.holes) && distanceToPolygonEdge(pt, isl.contour, isl.holes) >= margin;
 
   stage.items.forEach((it, i) => {
     const isl = ref(it.islandId, `items[${i}].islandId`);
-    if (isl && !clear(it.pos, isl))
+    if (isl && !clear(it.pos, isl, ITEM_EDGE_CLEARANCE_PX))
       err(
         'item-outside-island',
-        `item ${it.id} is not inside island ${isl.id} with ${BALL_RADIUS_PX}px clearance`,
+        `item ${it.id} is not inside island ${isl.id} with ${ITEM_EDGE_CLEARANCE_PX}px clearance`,
         `items[${i}].pos`,
       );
   });

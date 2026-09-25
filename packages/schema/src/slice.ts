@@ -1,6 +1,7 @@
 /**
  * Page → stage slicing (contracts §3/§4). A long page becomes several stages played in order as one run:
- * slice i covers page y ∈ [i·MAX_STAGE_HEIGHT_PX, min((i+1)·MAX_STAGE_HEIGHT_PX, page.height)).
+ * the page is split into n = ceil(height / MAX_STAGE_HEIGHT_PX) slices of balanced height (no tiny tail slice);
+ * slice i covers page y ∈ [round(i·h/n), round((i+1)·h/n)).
  * Pure math, shared by the builder (which re-exports `sliceCount`), the capture service and the game.
  */
 import { MAX_STAGE_HEIGHT_PX } from './constants.ts';
@@ -24,7 +25,8 @@ export function sliceRange(capture: PageSized, index: number): StageSlice {
   const count = sliceCount(capture);
   if (!Number.isInteger(index) || index < 0 || index >= count)
     throw new RangeError(`sliceRange: index ${index} outside [0, ${count})`);
-  const y = index * MAX_STAGE_HEIGHT_PX;
-  const height = Math.min(MAX_STAGE_HEIGHT_PX, capture.page.height - y);
+  const h = capture.page.height;
+  const y = Math.round((index * h) / count);
+  const height = Math.round(((index + 1) * h) / count) - y;
   return { index, count, y, height };
 }

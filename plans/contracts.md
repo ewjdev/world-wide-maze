@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.0`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.1`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -313,3 +313,12 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **CD-8 accepted:** both per-stage boards and a global run board.
 - **CD-9 accepted as optional messages.** **CD-10 accepted:** the `island`, `elevator` and `lost` events, plus `FALL_DEPTH_M` relative to the lowest island (replaces `OCEAN_Y_M`). **CD-11:** documented.
 - **New in 0.2 (orchestrator):** `source.slice`, `size`, `texture.scale`, `BuildInput.sliceIndex`, `sliceCount()`, `runId`, and the stage schema tag becomes `wwm.stage/2`. `Simulation.step` returns elevator heights.
+
+**v0.2.1, from the Phase 02b CCRs (orchestrator, 2026-09-25):**
+- **CCR1:** `MAX_RAMP_SLOPE` = 0.1765 (tan 10° plus float tolerance, matching the 2013 ramps).
+- **CCR2:** items use `ITEM_EDGE_CLEARANCE_PX` = 0.25 D, because they're pickup zones. Restart points and the start keep the full ball-radius clearance.
+- **CCR3:** confirmed. Elevators follow the same minimum width as bridges (N: a playability choice, since 2013 decks were 1.6–2.9 D).
+- **CCR4:** confirmed. `ENDPOINT_TOLERANCE_PX` = 20.
+- **CCR5:** slices are **balanced**: n = ceil(h / 1700), and slice i covers [round(i·h/n), round((i+1)·h/n)), so there's no tiny tail stage.
+- **CCR6, CCR7:** accepted (`texture.path` may be `''` before storage, and `stars` is an integer from 0 to 5).
+- **G0 check:** the converted 2013 AID-DCC stage passes `validateStage`, except for 13 intentional width-minimum differences.

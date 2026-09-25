@@ -156,7 +156,7 @@ Notes for dependent phases:
 | Phase | Status | Branch | Last gate | Notes |
 |---|---|---|---|---|
 | 01 | merged | main | G0 | fidelity spec + contract deltas; contracts → v0.2 |
-| 02 | merged; 02b (schema v0.2) running | main | G0 pending | 106 tests green; CRs logged in contracts §9 |
+| 02 | merged (+02b v0.2.1) | main | G0 ✅ | 106 tests green; CRs logged in contracts §9 |
 | 03 | not started | | | |
 | 04 | not started | | | |
 | 05 | not started | | | |

@@ -308,13 +308,17 @@ describe('invariants (one negative test each)', () => {
     expect(mutate((s) => Object.assign(s.source.slice, { index: 1 }))).toEqual(['slice-invalid']);
   });
 
-  test('item-outside-island: items inside with BALL_RADIUS_PX clearance', () => {
+  test('item-outside-island: items inside with ITEM_EDGE_CLEARANCE_PX clearance', () => {
     // Outside entirely (in the A–B gap).
     expect(mutate((s) => Object.assign(at(s.items, 0), { pos: [320, 330] }))).toContain(
       'item-outside-island',
     );
-    // Inside, but 4 px from the edge (< 6.75 px clearance).
-    expect(mutate((s) => Object.assign(at(s.items, 0), { pos: [44, 150] }))).toContain('item-outside-island');
+    // Inside, but 2 px from the edge (< 3.375 px clearance).
+    expect(mutate((s) => Object.assign(at(s.items, 0), { pos: [42, 150] }))).toContain('item-outside-island');
+    // 4 px from the edge is fine for items (pickup zones) …
+    expect(mutate((s) => Object.assign(at(s.items, 0), { pos: [44, 150] }))).not.toContain(
+      'item-outside-island',
+    );
   });
 
   test('restart-outside-island: restart points need clearance too', () => {

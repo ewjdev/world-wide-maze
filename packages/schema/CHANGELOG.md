@@ -40,3 +40,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 - Zod schemas for every type, `parseStage`, `parseCapture`, `parseControlMessage`, and `validateStage` (every §3 invariant plus the consistency rules; see README).
 - `space.ts` (`pageToWorld`/`worldToPage`), `rng.ts` (mulberry32 plus `fork(label)`), and the 12-byte INPUT codec.
 - Interpretations recorded as Contract Change Requests in `docs/build-log/phase-02.md`: ring-orientation definition, `|`-joined id hashing, the `JobEvent` SSE shape, extra derived constants, and the extra validation rules (bridge endpoint levels, flat ⇔ equal levels, guardrail gaps at bridge mouths, start/goal inside their island).
+
+## 0.2.1
+- MAX_RAMP_SLOPE 0.1765; ITEM_EDGE_CLEARANCE_PX (0.25 D) for items; balanced slices (no tiny tail).

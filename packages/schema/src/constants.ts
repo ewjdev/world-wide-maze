@@ -14,7 +14,7 @@ export const BALL_RADIUS_M = 0.5;
 /** `level` is a float in ball diameters (2013 island heights ≈ 9–23 D). */
 export const LEVEL_HEIGHT_M = 1.0;
 /** Max ramp slope |Δh| / horizontal length, 10° (E). */
-export const MAX_RAMP_SLOPE = 0.176;
+export const MAX_RAMP_SLOPE = 0.1765; // tan 10° ≈ 0.17633 plus float tolerance (2013 ramps measure 0.17625–0.17643)
 /** 2.5 D (2013 decks 1.6–3.6 D). */
 export const MIN_BRIDGE_WIDTH_PX = 34;
 /** 2 D. */
@@ -68,6 +68,8 @@ export const ONEUP_SCORE = 3000;
 export const BALL_RADIUS_PX = BALL_RADIUS_M * PX_PER_METER;
 /** contracts §9 (v0.1.0): bridge / elevator endpoints must be on, or within this many px of, their island. */
 export const ENDPOINT_TOLERANCE_PX = 20;
+/** Items are pickup zones: they may sit closer to the edge than the ball radius (2013 fixture: 3.75 px ≈ 0.28 D). */
+export const ITEM_EDGE_CLEARANCE_PX = 0.25 * PX_PER_METER;
 /** contracts §3 Elevator.travelSec default: 1 + ELEVATOR_TRAVEL_SEC_PER_M × Δh_m (cubicInOut). */
 export const ELEVATOR_TRAVEL_BASE_SEC = 1;
 export const ELEVATOR_TRAVEL_SEC_PER_M = 0.162;
