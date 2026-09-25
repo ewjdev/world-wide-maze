@@ -87,7 +87,14 @@ export async function verifyReplay(
   } catch (e) {
     return { status: 'unverified', reason: `simulation failed: ${String(e).slice(0, 200)}` };
   }
-  const result = scoreReplayEvents(r.events, replay.inputs, stage.timeLimitSec, r.goalTick, r.ticks);
+  const result = scoreReplayEvents(
+    r.events,
+    replay.inputs,
+    stage.timeLimitSec,
+    r.goalTick,
+    r.ticks,
+    replay.timerStartTick,
+  );
   const ms = performance.now() - t0;
   return replayMatches(claimed, result)
     ? { status: 'verified', result, ms }
@@ -147,7 +154,9 @@ scoresRoutes.get('/stage/:stageId/ghost', async (c) => {
     .bind(stageId)
     .first<{ name: string; score: number; time_ms: number; replay_key: string }>();
   const obj = row ? await c.env.STAGES.get(row.replay_key) : null;
-  if (!row || !obj) return Response.json({ error: 'no verified replay yet' }, { status: 404 });
+  // No ghost yet is a normal state, not an error: 204 keeps browsers from logging a failed request.
+  if (!row || !obj)
+    return new Response(null, { status: 204, headers: { 'cache-control': 'public, max-age=10' } });
   const replay = (await obj.json()) as { physicsVersion: string; inputs: unknown[] };
   return c.json({ name: row.name, score: row.score, timeMs: row.time_ms, ...replay }, 200, {
     'cache-control': 'public, max-age=60',

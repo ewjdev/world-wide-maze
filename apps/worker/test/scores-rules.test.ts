@@ -115,6 +115,12 @@ describe('replays', () => {
     );
     expect(lost.timeBonus).toBe(5 * 294); // the timer restarted at the respawn
     expect(scoreReplayEvents(ev, ins, 300, -1, 100)).toMatchObject({ goal: false, score: 101 });
+    // timerStartTick (v0.2.6): an earlier start (timer began at GO) lowers the bonus…
+    expect(scoreReplayEvents(ev, ins, 300, goalTick, goalTick, 0).timeBonus).toBe(
+      5 * Math.floor(300 - goalTick / SIM_HZ),
+    );
+    // …but a later one is clamped to the first POWER press, so it can't inflate the score.
+    expect(scoreReplayEvents(ev, ins, 300, goalTick, goalTick, goalTick - 5).timeBonus).toBe(5 * 290);
   });
 
   test('matching tolerance: items exact, time bonus within the slack, multiples of 5', () => {

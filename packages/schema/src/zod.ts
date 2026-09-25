@@ -174,7 +174,11 @@ export const InputSampleSchema = z.object({
   jump: z.boolean(),
 });
 export const ReplaySchema = z.array(InputSampleSchema);
-export const VersionedReplaySchema = z.object({ physicsVersion: z.string().min(1), inputs: ReplaySchema });
+export const VersionedReplaySchema = z.object({
+  physicsVersion: z.string().min(1),
+  inputs: ReplaySchema,
+  timerStartTick: z.int().min(0).optional(),
+});
 
 // §6 ---------------------------------------------------------------------------------------------
 

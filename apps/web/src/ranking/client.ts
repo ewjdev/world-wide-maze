@@ -155,7 +155,7 @@ export function createRankingClient(opts: HttpRankingOptions = {}): RankingClien
     runBoard: () => board('/api/scores/run'),
     ghost: async (id) => {
       const res = await f(`${base}/api/scores/stage/${encodeURIComponent(id)}/ghost`);
-      if (res.status === 404) return null;
+      if (res.status === 204 || res.status === 404) return null;
       if (!res.ok) throw new Error(`ghost: HTTP ${res.status}`);
       return (await res.json()) as GhostRun;
     },

@@ -260,6 +260,8 @@ export type Replay = InputSample[];
 export interface VersionedReplay {
   physicsVersion: string;
   inputs: Replay;
+  /** Tick at which the stage timer started (2013: GO, or the first POWER press on the first game). */
+  timerStartTick?: number;
 }
 
 // ================================================================================================

@@ -210,6 +210,8 @@ export const MAX_REPLAY_SAMPLES = 4 * 300 * SIM_HZ;
 export interface ReplayEnvelope {
   physicsVersion: string | null;
   inputs: InputSample[];
+  /** contracts v0.2.6: when the stage timer started. Clamped to ≤ the first POWER press (can't inflate). */
+  timerStartTick?: number;
 }
 
 export function parseReplay(raw: unknown): ReplayEnvelope | null {
@@ -219,7 +221,7 @@ export function parseReplay(raw: unknown): ReplayEnvelope | null {
     if (!r.success) throw new Error(`replay: ${r.error.issues[0]?.message ?? 'invalid'}`);
     return { physicsVersion: null, inputs: r.data };
   }
-  const o = raw as { physicsVersion?: unknown; inputs?: unknown };
+  const o = raw as { physicsVersion?: unknown; inputs?: unknown; timerStartTick?: unknown };
   if (
     typeof o !== 'object' ||
     typeof o.physicsVersion !== 'string' ||
@@ -228,7 +230,14 @@ export function parseReplay(raw: unknown): ReplayEnvelope | null {
     throw new Error('replay: expected {physicsVersion, inputs}');
   const r = ReplaySchema.max(MAX_REPLAY_SAMPLES).safeParse(o.inputs);
   if (!r.success) throw new Error(`replay: ${r.error.issues[0]?.message ?? 'invalid'}`);
-  return { physicsVersion: o.physicsVersion, inputs: r.data };
+  const t = o.timerStartTick;
+  if (t !== undefined && !(Number.isInteger(t) && (t as number) >= 0))
+    throw new Error('replay: timerStartTick must be a non-negative integer');
+  return {
+    physicsVersion: o.physicsVersion,
+    inputs: r.data,
+    ...(t !== undefined ? { timerStartTick: t as number } : {}),
+  };
 }
 
 /** Slack between the simulated timer and the game's timer (cage drop, POWER press, frame rounding), seconds. */
@@ -249,7 +258,7 @@ type TickedEvent = { tick: number; event: { type: string; kind?: string; itemId?
 
 /**
  * Score a replay's event stream with the 2013 rules (fidelity-spec §4–5): items + 5 × whole seconds left at the
- * goal. The timer starts at the first POWER press and resets to the full limit after each respawn (`lost`).
+ * goal. The timer starts at `timerStartTick` (clamped) or else the first POWER press, and resets to the full limit after each respawn (`lost`).
  */
 export function scoreReplayEvents(
   events: readonly TickedEvent[],
@@ -257,14 +266,16 @@ export function scoreReplayEvents(
   timeLimitSec: number,
   goalTick: number,
   ticks: number,
+  timerStartTick?: number,
 ): ReplayScore {
   const seen = new Set<number>();
   let small = 0;
   let large = 0;
-  let timerStart = Math.max(
-    0,
-    inputs.findIndex((s) => s.power),
-  );
+  // The timer starts at GO or at the first POWER press, never later than the first POWER press — so a
+  // client-supplied `timerStartTick` can only lower the bonus, not inflate it.
+  const firstPower = inputs.findIndex((s) => s.power);
+  const powerStart = firstPower < 0 ? 0 : firstPower;
+  let timerStart = timerStartTick === undefined ? powerStart : Math.min(timerStartTick, powerStart);
   for (const { tick, event } of events) {
     if (goalTick >= 0 && tick > goalTick) break;
     if (event.type === 'item' && event.itemId !== undefined && !seen.has(event.itemId)) {

@@ -52,3 +52,6 @@ Initial implementation of `plans/contracts.md` v0.1.0.
 
 ## 0.2.5
 - VersionedReplay; SubmitScoreResponse.verified/note.
+
+## 0.2.6
+- VersionedReplay.timerStartTick (server clamps to first POWER).

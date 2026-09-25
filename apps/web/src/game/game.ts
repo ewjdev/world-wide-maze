@@ -287,6 +287,8 @@ export class Game {
 
   // replay recording (08b): the InputSample of every sim tick of the current stage attempt
   #rec: InputSample[] = [];
+  /** Replay tick at which this stage's timer first started (contracts v0.2.6 `timerStartTick`). */
+  #timerStartTick: number | undefined;
   /** The recording reproduces the attempt headlessly (lockstep, and no respawn the replay format can't express). */
   #recExact = true;
   /** Replay of each entry in `#results` that has one (same index). */
@@ -597,7 +599,10 @@ export class Game {
         e?.setView('chase');
         d?.setPaused(false);
         // E: the timer starts on entering GAME, except on the first game where the first POWER starts it.
-        if (!this.#timerArmed) this.#timer.start();
+        if (!this.#timerArmed) {
+          if (this.#timerStartTick === undefined) this.#timerStartTick = this.#rec.length;
+          this.#timer.start();
+        }
         this.#music(this.#timer.remainsInt <= 30 ? 'timeup' : 'game');
         if (from === 'intro' || from === 'countdown') this.#startGhost();
         break;
@@ -1090,6 +1095,7 @@ export class Game {
     if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'building') return;
     // A fresh recording per attempt: tick 0 is the first step after load (08b).
     this.#rec = [];
+    this.#timerStartTick = undefined;
     this.#recExact = d.kind === 'lockstep';
     const stageId = got.stage.stageId;
     const ch = this.#view.challenge;
@@ -1359,8 +1365,13 @@ export class Game {
     };
     this.#results.push(result);
     if (cleared && this.#recExact && this.#rec.length > 0)
-      this.#replays.set(this.#results.length - 1, { physicsVersion: PHYSICS_VERSION, inputs: this.#rec });
+      this.#replays.set(this.#results.length - 1, {
+        physicsVersion: PHYSICS_VERSION,
+        inputs: this.#rec,
+        ...(this.#timerStartTick !== undefined ? { timerStartTick: this.#timerStartTick } : {}),
+      });
     this.#rec = [];
+    this.#timerStartTick = undefined;
     this.#set({ result, total: f.score.total, spares: f.score.spares, sign: null });
   }
 
@@ -1502,6 +1513,7 @@ export class Game {
     if (this.#timerArmed && s.power) {
       // E: on the first game the first POWER press starts the timer
       this.#timerArmed = false;
+      if (this.#timerStartTick === undefined) this.#timerStartTick = this.#rec.length;
       this.#timer.start();
     }
     if (v.tutorial === 3 && s.power) this.#tutorialAdvance(4);

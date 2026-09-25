@@ -5,7 +5,7 @@
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.2.5';
+export const CONTRACT_VERSION = '0.2.6';
 
 // --- contract §1: scale --------------------------------------------------------------------------
 /** 1 ball diameter = 1 m = 13.5 px (2013: 10.8 px of a 1024 stage). */

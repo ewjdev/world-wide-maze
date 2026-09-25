@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.5`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.6`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -360,3 +360,8 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **New endpoint:** `GET /api/scores/stage/:stageId/ghost` returns the #1 replay track for ghost racing.
 - **Share page:** `GET /s/:stageId?beat=&by=`, plus a card image at `GET /api/share/:stageId/card`.
 - **G3 check (orchestrator):** every credit, date and award on `/about` (`apps/web/src/pages/about/history.ts`) was cross-checked against `research/world-wide-maze.md`. No unsupported claims found.
+
+**v0.2.6, from the Phase 08b CCRs (orchestrator, 2026-09-25):**
+- **`VersionedReplay.timerStartTick?`:** the tick at which the stage timer started. In 2013 that was GO, except on the first game, where it was the first POWER press. The server clamps it to be no later than the first POWER press, so it can lower the bonus but never inflate it.
+- **Ghost endpoint:** `GET /api/scores/stage/:id/ghost` returns **204** when there's no ghost yet (previously 404), so the browser console stays clean.
+- **Physics driver:** the game now runs lockstep physics on the main thread by default, so recorded replays verify exactly (3 of 3 identical). The worker driver is still available with `?physics=worker`.
