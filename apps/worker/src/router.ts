@@ -9,6 +9,8 @@ import { Hono } from 'hono';
 import type { AppEnv } from './app-env.ts';
 import { createServices } from './config.ts';
 import { errorResponse, toServiceError } from './errors.ts';
+import { scoresRoutes } from './routes/scores.ts';
+import { shareRoutes } from './routes/share.ts';
 import { stagesRoutes } from './routes/stages.ts';
 
 export function createApp(): Hono<AppEnv> {
@@ -25,6 +27,8 @@ export function createApp(): Hono<AppEnv> {
 
   // ── Route registration: one line per feature. ──
   app.route('/api', stagesRoutes);
+  app.route('/api/scores', scoresRoutes); // Phase 10
+  app.route('/', shareRoutes); // Phase 10: /s/:stageId, /api/share/:stageId/card
 
   app.notFound(() => Response.json({ error: 'not found' }, { status: 404 }));
   app.onError((err, c) => {

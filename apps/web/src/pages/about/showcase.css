@@ -1,0 +1,285 @@
+/*
+ * Showcase pages (/about, /making, /log). An exhibition-catalogue voice: paper, ink, a reading serif, a plain sans
+ * for navigation and labels, mono only for dates, measurements and code. Accent colours are the 2013 colour roles
+ * (fidelity-spec §11): item teal, bridge green, elevator red, rail yellow.
+ */
+@import "@fontsource-variable/newsreader/opsz.css";
+@import "@fontsource-variable/newsreader/opsz-italic.css";
+@import "@fontsource-variable/instrument-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+.sc {
+  --paper: #f7f6f2;
+  --paper-2: #efece4;
+  --panel: #fffefb;
+  --ink: #16181d;
+  --ink-2: #353a44;
+  --muted: #5d6370;
+  --rule: #d8d4c9;
+  --rule-2: #e7e3d9;
+  --teal: #0b6f79;
+  --teal-soft: #dcefef;
+  --green: #2c8a4b;
+  --red: #b8412f;
+  --yellow: #e2a900;
+  --serif: "Newsreader Variable", "Newsreader", Georgia, serif;
+  --sans: "Instrument Sans Variable", "Instrument Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --measure: 40rem;
+  --wide: 76rem;
+  --gutter: clamp(1.25rem, 4vw, 3rem);
+  background: var(--paper);
+  color: var(--ink);
+  font: 400 1.125rem / 1.6 var(--serif);
+  font-optical-sizing: auto;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+body:has(> #root > .sc),
+body:has(.sc) {
+  margin: 0;
+  background: #f7f6f2;
+}
+.sc *,
+.sc *::before,
+.sc *::after {
+  box-sizing: border-box;
+}
+.sc ::selection {
+  background: var(--teal-soft);
+}
+.sc a {
+  color: var(--teal);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.18em;
+}
+.sc a:hover {
+  color: var(--ink);
+}
+.sc :focus-visible {
+  outline: 3px solid var(--yellow);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+.sc code {
+  font: 0.85em / 1 var(--mono);
+  background: var(--paper-2);
+  padding: 0.1em 0.3em;
+  border-radius: 3px;
+}
+.sc a.sc-skip {
+  position: absolute;
+  left: -999px;
+  top: 0.5rem;
+  font: 600 0.9rem var(--sans);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 0.5rem 0.75rem;
+  z-index: 10;
+}
+.sc a.sc-skip:focus {
+  left: 0.5rem;
+}
+
+/* ── masthead ── */
+.sc-mast {
+  border-bottom: 1px solid var(--rule);
+}
+.sc-mast__inner {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 1rem var(--gutter);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.sc a.sc-brand {
+  font: 600 0.9375rem / 1 var(--sans);
+  color: var(--ink);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  letter-spacing: -0.005em;
+}
+.sc-brand small {
+  font-weight: 400;
+  color: var(--muted);
+}
+.sc-brand svg {
+  width: 1.375rem;
+  height: 1.375rem;
+}
+.sc-nav {
+  display: flex;
+  gap: 0.25rem;
+  font: 500 0.9375rem / 1 var(--sans);
+  flex-wrap: wrap;
+}
+.sc-nav a {
+  color: var(--ink-2);
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  transition: background-color 150ms ease-out;
+}
+.sc-nav a:hover {
+  background: var(--paper-2);
+  color: var(--ink);
+}
+.sc-nav a[aria-current="page"] {
+  color: var(--ink);
+  box-shadow: inset 0 -2px 0 var(--ink);
+  border-radius: 0;
+}
+.sc-nav a.sc-nav__play {
+  background: var(--ink);
+  color: var(--paper);
+  margin-left: 0.5rem;
+}
+.sc-nav a.sc-nav__play:hover {
+  background: var(--ink-2);
+  color: var(--paper);
+}
+
+@media (max-width: 40rem) {
+  .sc-mast__inner {
+    padding-top: 0.75rem;
+    padding-bottom: 0.5rem;
+    gap: 0.5rem;
+  }
+  .sc-brand small {
+    display: none;
+  }
+  .sc-nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    margin: 0 calc(-1 * var(--gutter));
+    padding: 0 var(--gutter) 0.25rem;
+    width: calc(100% + 2 * var(--gutter));
+    scrollbar-width: none;
+    font-size: 0.875rem;
+  }
+  .sc-nav a {
+    white-space: nowrap;
+    padding: 0.5rem 0.625rem;
+  }
+  .sc-nav a.sc-nav__play {
+    margin-left: auto;
+  }
+}
+
+/* ── page scaffolding ── */
+.sc-main {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 0 var(--gutter) 6rem;
+}
+.sc-section {
+  margin-top: clamp(4rem, 9vw, 7rem);
+}
+.sc-h2 {
+  font: 500 clamp(1.75rem, 3.2vw, 2.5rem) / 1.1 var(--serif);
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  text-wrap: balance;
+  max-width: 22ch;
+}
+.sc-h3 {
+  font: 600 1.0625rem / 1.3 var(--sans);
+  letter-spacing: -0.005em;
+  margin: 0 0 0.35rem;
+}
+.sc-prose {
+  max-width: var(--measure);
+}
+.sc-prose p {
+  margin: 0 0 1em;
+}
+.sc-lede {
+  font-size: clamp(1.2rem, 1.8vw, 1.375rem);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 36rem;
+}
+.sc-note {
+  font: 400 0.9375rem / 1.55 var(--sans);
+  color: var(--muted);
+  max-width: var(--measure);
+}
+.sc-mono {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.sc-split {
+  display: grid;
+  grid-template-columns: minmax(0, 17rem) minmax(0, 1fr);
+  gap: 2rem clamp(2rem, 5vw, 5rem);
+  align-items: start;
+}
+.sc-split > :first-child {
+  position: sticky;
+  top: 1.5rem;
+}
+@media (max-width: 52rem) {
+  .sc-split {
+    grid-template-columns: 1fr;
+  }
+  .sc-split > :first-child {
+    position: static;
+  }
+}
+
+/* ── footer ── */
+.sc-foot {
+  border-top: 1px solid var(--rule);
+  font: 400 0.875rem / 1.55 var(--sans);
+  color: var(--muted);
+}
+.sc-foot__inner {
+  max-width: var(--wide);
+  margin: 0 auto;
+  padding: 2rem var(--gutter) 3rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem 3rem;
+  flex-wrap: wrap;
+}
+.sc-foot p {
+  margin: 0;
+  max-width: 44rem;
+}
+
+/* ── E / R / N marks (shape + letter, never colour alone) ── */
+.sc-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font: 600 0.75rem / 1 var(--sans);
+  border-radius: 3px;
+  flex: none;
+  vertical-align: middle;
+}
+.sc-mark[data-k="E"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+.sc-mark[data-k="R"] {
+  border: 1.5px dashed var(--ink-2);
+  color: var(--ink);
+}
+.sc-mark[data-k="N"] {
+  background: var(--teal-soft);
+  color: var(--teal);
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1.5px var(--teal);
+}
+.sc-mark[data-k="?"] {
+  border: 1.5px solid var(--rule);
+  color: var(--muted);
+}

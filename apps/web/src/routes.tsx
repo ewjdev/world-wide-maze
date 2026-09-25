@@ -6,6 +6,7 @@ import { CONTRACT_VERSION } from '@wwm/schema';
 import { Link, Outlet, type RouteObject, useParams } from 'react-router';
 import { ControllerPage } from './controller/ControllerPage.tsx';
 import { InputSandbox } from './dev/input-sandbox.tsx';
+import { AboutPage } from './pages/about/AboutPage.tsx';
 
 function Layout() {
   return (
@@ -67,7 +68,6 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <Home /> },
       { path: 'play/:stageId', element: <Play /> },
-      { path: 'about', element: <About /> },
       {
         path: 'dev/physics',
         lazy: () => import('./dev/physics-sandbox.tsx').then((m) => ({ Component: m.default })),
@@ -78,6 +78,17 @@ export const routes: RouteObject[] = [
   },
   // The phone controller renders without the desktop layout.
   { path: '/c/:code', element: <ControllerPage /> }, // Phase 06
+  // Phase 10 showcase pages (own full-page layout).
+  { path: '/about', element: <AboutPage /> },
+  {
+    path: '/making/:stageId?',
+    lazy: async () => ({ Component: (await import('./pages/making/MakingPage.tsx')).default }),
+  },
+  { path: '/log', lazy: async () => ({ Component: (await import('./pages/log/LogPage.tsx')).default }) },
+  {
+    path: '/dev/ranking',
+    lazy: async () => ({ Component: (await import('./ranking/Preview.tsx')).default }),
+  },
   {
     path: '/dev/engine',
     lazy: async () => ({ Component: (await import('./dev/engine-sandbox.tsx')).default }),
