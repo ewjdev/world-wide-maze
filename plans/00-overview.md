@@ -211,3 +211,12 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
 | 16 | in progress | worktree | — | build story |
 | 17 | in progress | worktree | — | Cloudflare: production `wwm` + Worker Previews per PR; provisioning scripts (dry-run default); not run |
 - **A2 done (2026-09-25):** the owner approved the curated list (12 runs; 4 pending permission). **A3:** legal drafts are being filled with placeholders for another agent's review.
+- **A3 (2026-09-25):** the legal drafts are filled in, with a reviewer README listing 8 placeholders, 30 defaults and 12 lawyer questions. **Implementation gaps to close before publishing** (from the README):
+  - Delete scores after 12 months, and strip IP hashes after 30 days.
+  - A TTL on the docent cache, and no question text in logs.
+  - Switch off AI Gateway logging.
+  - The opt-out check on uploads.
+  - The `WorldWideMaze` user agent, and `robots.txt` handling.
+  - Source and licence shown for featured stages.
+  - `/privacy`, `/terms` and `/takedown` routes.
+  - A LICENSE file.
