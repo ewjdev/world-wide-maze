@@ -87,6 +87,31 @@ All three run `captureWithBrowser` (`src/capture/core.ts`): the SSRF guard, then
 - **Reads.** 100 per minute per IP, through the `READ_LIMITER` Rate Limiting binding. The IP comes from `cf-connecting-ip`.
 - **Browsers.** A global semaphore (`Limiter` DO `browser`, leased). If it's still full after 45 s, the job returns `RATE_LIMITED`. The capture budget starts only once a slot is held.
 
+## AI docent (Phase 15, contracts §10.3)
+`POST /api/docent` answers questions about the 2013 original and this rebuild **only** from the project corpus, as
+SSE (`delta`… → `citations` → `done`, or `error`). Code: `src/routes/docent.ts` (transport, cache, limits) and
+`src/docent/` (engine free of bindings, shared with the tests and the eval runner).
+- **Corpus.** `src/docent/corpus.json`: `research/**`, `RESEARCH.md`, `docs/reference/**`, `docs/build-log/**` and the
+  `/about` history data in ~300–600-token chunks, built by `pnpm docent:index` (tools/docent-index). Never
+  `reference/`. A test fails when it's stale; regenerate after any build-log or research change.
+- **Retrieval.** BM25 (`@wwm/docent-index`) with a small query-expansion list; up to 6 excerpts go to the model as
+  `S1`…`S6`.
+- **Guardrails.** Injection clauses, markup and bidi/control characters are stripped from the question before it
+  is searched or sent (`guard.ts`); off-topic questions get `QUESTION_REJECTED` before any budget is spent. The
+  system prompt (`prompt.ts`) allows answering only from the excerpts, requires `[Sn]` citations, and the exact
+  "The sources don’t cover that." otherwise.
+- **Grounding gate** (`grounding.ts`). Markers are renumbered `[1]`, `[2]`… in order of use while streaming, and no
+  text leaves the Worker until the answer has cited a real excerpt (or said it doesn't know). An answer that ends
+  uncited is replaced with the "don't know" sentence, so an unsupported answer is never shown.
+- **Provider.** Claude through **Cloudflare AI Gateway** (`https://gateway.ai.cloudflare.com/v1/{account}/{gateway}/anthropic`)
+  with the Anthropic SDK; default model `claude-haiku-4-5` (`DOCENT_MODEL`), `max_tokens` ≤ 1024 (`DOCENT_MAX_TOKENS`,
+  600). Without gateway config: the **mock** in development (quotes the best passages, labelled "Offline mode"),
+  `DOCENT_UNAVAILABLE` in deployed envs. Setup: `infra/README.md` "AI docent".
+- **Cost and abuse.** KV answer cache by normalised question (no-history requests only, `DOCENT_CACHE_TTL_DAYS`);
+  per-IP 20 model calls/hour and a global 500/rolling 24 h (`Limiter` DO; cache hits and rejections don't count);
+  kill switch KV `kill:docent` or `DOCENT_PROVIDER=off`; one `docent answer` log line per answer with provider,
+  model, outcome, input/output tokens and latency (no question text, no IP).
+
 ## Retention (task 9)
 A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS` (30): their stage JSON, textures, capture bundle, and D1 rows. It handles at most 200 runs per tick. Curated runs are the `run_id`s in Phase 10's `curated` table. KV cache entries expire on their own after 7 days.
 

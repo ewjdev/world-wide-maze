@@ -42,8 +42,23 @@
     // Phase 12 (contracts v0.2.3): "1" exposes GET /api/rooms/:code/stats. Dev/test ONLY; "0" in staging/prod.
     "ROOM_STATS": "1",
     // Phase 12: "1" accepts client telemetry at POST /api/t (logged, never stored). Off until the user approves.
-    "TELEMETRY_INGEST": "0"
-    // Secret (not a var): IP_HASH_SALT. Locally the code falls back to a dev default (see .dev.vars.example).
+    "TELEMETRY_INGEST": "0",
+    // Phase 15 AI docent (POST /api/docent, infra/README.md "AI docent"). "auto": Claude through Cloudflare AI
+    // Gateway when AI_GATEWAY_ACCOUNT_ID + AI_GATEWAY_ID + a secret (ANTHROPIC_API_KEY and/or AI_GATEWAY_TOKEN)
+    // are set, else the offline mock in development and "unavailable" in deployed envs. "mock" | "off" force it.
+    "DOCENT_PROVIDER": "auto",
+    "AI_GATEWAY_ACCOUNT_ID": "",
+    "AI_GATEWAY_ID": "",
+    "DOCENT_MODEL": "claude-haiku-4-5",
+    "DOCENT_MAX_TOKENS": "600",
+    // Model calls per rolling 24 h across all visitors ("0" turns the docent off); per IP per hour.
+    "DOCENT_DAILY_LIMIT": "500",
+    "DOCENT_LIMIT_PER_HOUR": "20",
+    "DOCENT_CACHE_TTL_DAYS": "7",
+    // Dev only: delay between the mock's streamed words, so streaming is visible.
+    "DOCENT_MOCK_DELAY_MS": "25"
+    // Secrets (not vars): IP_HASH_SALT (locally a dev default, see .dev.vars.example); Phase 15: ANTHROPIC_API_KEY
+    // and/or AI_GATEWAY_TOKEN.
   },
 
   // Stage JSON, slice textures and capture bundles.
@@ -119,7 +134,17 @@
         "RETENTION_DAYS": "30",
         "CAPTURE_ENABLED": "1",
         "ROOM_STATS": "0",
-        "TELEMETRY_INGEST": "0"
+        "TELEMETRY_INGEST": "0",
+        // Phase 15 AI docent: fill in the gateway ids and `wrangler secret put ANTHROPIC_API_KEY` (infra/README.md).
+        "DOCENT_PROVIDER": "auto",
+        "AI_GATEWAY_ACCOUNT_ID": "",
+        "AI_GATEWAY_ID": "",
+        "DOCENT_MODEL": "claude-haiku-4-5",
+        "DOCENT_MAX_TOKENS": "600",
+        "DOCENT_DAILY_LIMIT": "500",
+        "DOCENT_LIMIT_PER_HOUR": "20",
+        "DOCENT_CACHE_TTL_DAYS": "7",
+        "DOCENT_MOCK_DELAY_MS": "0"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-staging" }],
       "d1_databases": [
@@ -176,7 +201,17 @@
         "RETENTION_DAYS": "30",
         "CAPTURE_ENABLED": "1",
         "ROOM_STATS": "0",
-        "TELEMETRY_INGEST": "0"
+        "TELEMETRY_INGEST": "0",
+        // Phase 15 AI docent: fill in the gateway ids and `wrangler secret put ANTHROPIC_API_KEY` (infra/README.md).
+        "DOCENT_PROVIDER": "auto",
+        "AI_GATEWAY_ACCOUNT_ID": "",
+        "AI_GATEWAY_ID": "",
+        "DOCENT_MODEL": "claude-haiku-4-5",
+        "DOCENT_MAX_TOKENS": "600",
+        "DOCENT_DAILY_LIMIT": "500",
+        "DOCENT_LIMIT_PER_HOUR": "20",
+        "DOCENT_CACHE_TTL_DAYS": "7",
+        "DOCENT_MOCK_DELAY_MS": "0"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
       "d1_databases": [

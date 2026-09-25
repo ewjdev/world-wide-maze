@@ -1,3 +1,10 @@
 # Copy to .dev.vars for local secrets (gitignored). Staging/production: `wrangler secret put IP_HASH_SALT --env <env>`.
 # Without it the Worker uses a built-in dev default and logs a warning.
 IP_HASH_SALT=change-me-to-32-random-characters
+
+# Phase 15 AI docent (optional; without these `pnpm dev` uses the offline mock). Real answers through Cloudflare
+# AI Gateway need both gateway ids and at least one of the two secrets. See infra/README.md "AI docent".
+# AI_GATEWAY_ACCOUNT_ID=your-cloudflare-account-id
+# AI_GATEWAY_ID=wwm-docent
+# ANTHROPIC_API_KEY=sk-ant-...
+# AI_GATEWAY_TOKEN=...   # authenticated gateway (cf-aig-authorization); alone = keys stored in the gateway (BYOK)

@@ -40,6 +40,44 @@ Then:
    then `node infra/scripts/smoke.mjs https://wwm-staging.<subdomain>.workers.dev`.
 5. Seed the curated runs (Phase 10 `content/scripts/curate.mjs`, after the user approves the list).
 
+## AI docent: Cloudflare AI Gateway + Anthropic key (Phase 15; user action, optional)
+The docent (`POST /api/docent`, the "Ask the docent" panel on `/about` and `/log`) calls Claude through
+**Cloudflare AI Gateway**'s Anthropic endpoint, `https://gateway.ai.cloudflare.com/v1/<ACCOUNT_ID>/<GATEWAY_ID>/anthropic`
+(checked against the AI Gateway docs, 2026-09-25). Until this is set up, `pnpm dev` uses the offline mock and
+staging/production answer `DOCENT_UNAVAILABLE` ("The docent is resting right now"); nothing else is affected.
+
+1. **Anthropic API key.** In the Claude Console, create a key for this project (ideally in its own workspace with a
+   monthly spend limit).
+2. **Gateway.** Cloudflare dashboard → **AI → AI Gateway → Create Gateway**, name e.g. `wwm-docent`. In its
+   **Settings**:
+   - **Authenticated Gateway** (recommended): *Create authentication token* (it needs the `Run` permission; copy it,
+     it isn't shown again), then switch Authenticated Gateway on. AI Gateway tokens are account-scoped.
+   - Optional: logs on (the docent sends only the sanitised question and excerpts; no IPs), a gateway **rate limit**
+     and a **spend limit** as a second budget behind the Worker's own caps. Gateway caching can stay off: the
+     Worker already caches answers in KV.
+3. **Worker config** (`apps/worker/wrangler.jsonc`, in `env.staging.vars` and `env.production.vars`):
+   `"AI_GATEWAY_ACCOUNT_ID": "<your account id>"`, `"AI_GATEWAY_ID": "wwm-docent"`. Keep `"DOCENT_PROVIDER": "auto"`.
+4. **Secrets** (per environment; never in the repo):
+   ```sh
+   cd apps/worker
+   pnpm exec wrangler secret put ANTHROPIC_API_KEY --env staging   # sent as x-api-key, through the gateway
+   pnpm exec wrangler secret put AI_GATEWAY_TOKEN --env staging    # sent as cf-aig-authorization
+   ```
+   Alternative: store the Anthropic key **in the gateway** (Provider keys / BYOK) and set only `AI_GATEWAY_TOKEN`;
+   the Worker then omits `x-api-key`, as the gateway requires.
+5. **Budget knobs** (vars): `DOCENT_DAILY_LIMIT` (model calls per rolling 24 h, all visitors; default 500; `"0"` turns
+   the docent off), `DOCENT_LIMIT_PER_HOUR` (per IP, 20), `DOCENT_MAX_TOKENS` (600, capped at 1024),
+   `DOCENT_MODEL` (`claude-haiku-4-5`, the fast, inexpensive default; any current Claude model id works),
+   `DOCENT_CACHE_TTL_DAYS` (7). Runtime kill switch without a deploy: KV key `kill:docent` in `CACHE`.
+6. **Check it.** Deploy, then ask a suggested question on `/about`: the answer must not start with "Offline mode",
+   and Workers Logs shows `docent answer` lines with `provider: "gateway"` and token counts. The gateway's own logs
+   show the same requests.
+7. **Eval with the real model** (costs ~26 short calls): from the repo root,
+   `AI_GATEWAY_ACCOUNT_ID=… AI_GATEWAY_ID=wwm-docent ANTHROPIC_API_KEY=… AI_GATEWAY_TOKEN=… pnpm docent:eval --real`.
+
+Local development against the real gateway: put the two ids and the secret(s) in `apps/worker/.dev.vars`
+(gitignored; see `.dev.vars.example`), then `pnpm dev`.
+
 ## Enabling the deploy workflow (user action)
 1. GitHub → Settings → Environments: create `staging` and `production`. On `production` add **Required
    reviewers** (you) — this is the manual approval gate for every production deploy.

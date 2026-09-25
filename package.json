@@ -18,7 +18,9 @@
     "dev:phone": "node scripts/dev-phone.mjs",
     "fixture:capture": "pnpm --filter @wwm/fixture-capture capture",
     "fixture:texture": "pnpm --filter @wwm/fixture-capture texture",
-    "ref:fetch": "pnpm --filter @wwm/ref-fetch run fetch"
+    "ref:fetch": "pnpm --filter @wwm/ref-fetch run fetch",
+    "docent:index": "node tools/docent-index/src/cli/build.ts",
+    "docent:eval": "node tools/docent-index/src/cli/eval.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

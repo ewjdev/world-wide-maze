@@ -5,6 +5,7 @@
 import { marked } from 'marked';
 import { useEffect, useMemo } from 'react';
 import { Link } from 'react-router';
+import { DocentPanel } from '../../docent/DocentPanel.tsx';
 import { ShowcaseFrame } from '../about/ShowcaseFrame.tsx';
 import { fmtClock, type LogFile, type LogSummary, modelOf, summarize, totals } from './parse-log.ts';
 import './log.css';
@@ -94,6 +95,9 @@ export function LogPage() {
           </p>
         </div>
       </header>
+
+      {/* Phase 15: AI docent */}
+      <DocentPanel variant="compact" />
 
       <section className="sc-section" aria-labelledby="ledger">
         <h2 className="sc-h2" id="ledger">
