@@ -1,0 +1,204 @@
+{
+  "$comment": "The /log bug gallery. Rules (enforced by tools/build-story/test/bugs.test.ts): every `quote` appears verbatim in its `file` (ignoring markdown emphasis and line wraps); the plain-language fields (`title`, `plain`) contain no numbers, so every figure on the page comes from a quote or from timeline.json; every image exists. `saw` is the solver's own failure message, re-produced by the command in `sawCommand`.",
+  "batch": {
+    "title": "819 generated stages, before and after the fixes",
+    "quotes": [
+      {
+        "file": "docs/build-log/phase-03.md",
+        "quote": "solved easy / normal / hard | 255 (93.4 %) / 257 (94.1 %) / 257 (94.1 %) | 273 / 273 / 273 (100 %)"
+      },
+      {
+        "file": "docs/build-log/phase-03.md",
+        "quote": "runs fully playable | 283 / 315 (89.8 %) | 315 / 315"
+      }
+    ],
+    "rows": [
+      { "label": "Stages solved at normal", "before": "257 / 273", "after": "273 / 273", "quoteIndex": 0 },
+      { "label": "Runs fully playable", "before": "283 / 315", "after": "315 / 315", "quoteIndex": 1 }
+    ],
+    "images": {
+      "before": "phase-09/dashboard-failures.png",
+      "after": "phase-09/dashboard-failures-after.png"
+    }
+  },
+  "solver": [
+    {
+      "id": "BI-1",
+      "title": "An island cut in two by a neck thinner than the ball",
+      "plain": "A text block and its thinner caption line became one island, joined by a strip of land narrower than the ball. A bridge landed on the far side, so the ball could never reach it without discovering a jump that nothing on screen explains.",
+      "repro": "eval-go-dev 0 easy 2",
+      "saw": "island 9 is split by a neck narrower than the ball; the bridge 31 mouth is cut off",
+      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-go-dev:0:easy:2 (at af7db69, builder 0.3.0)",
+      "evidence": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "narrow-neck 13 → 0, jump-solved 57 → 0, audit split stages 241 → 0"
+      },
+      "fix": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "mouths, lift ends, start, goal, items and restart points only on the main part"
+      },
+      "fixedIn": "Phase 03b, builder 0.4.0",
+      "images": {
+        "before": "phase-16/issues/issue-bi1-before.png",
+        "after": "phase-16/issues/issue-bi1-after.png"
+      }
+    },
+    {
+      "id": "BI-2",
+      "title": "Elevators with nowhere to get off",
+      "plain": "Elevator platforms have rails along their sides, so the ball boards and leaves at the ends. On thin strips of headline text, a platform end sat right at the island’s edge: the ball could ride it, but not step off.",
+      "repro": "eval-python-home 1 normal 2",
+      "saw": "no room for the ball beyond the arrival end of elevator 0 (platform ends at the island edge)",
+      "sawCommand": "node tools/batch-eval/src/cli/thumb.ts eval-python-home:1:normal:2 (at af7db69, builder 0.3.0)",
+      "evidence": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "elevator-blocked 37 → 0"
+      },
+      "fix": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "A lift needs main-walkable ground 1 D beyond both platform ends"
+      },
+      "fixedIn": "Phase 03b, builder 0.4.0",
+      "images": {
+        "before": "phase-16/issues/issue-bi2-before.png",
+        "after": "phase-16/issues/issue-bi2-after.png"
+      }
+    },
+    {
+      "id": "BI-3",
+      "title": "A low elevator that pins the ball: a softlock",
+      "plain": "When an elevator rose less than the ball’s height plus the island slab, the returning platform came back down around the ball and wedged it in place. No tilt could move it, and it never fell, so a player would simply wait for the clock to run out. The fix exposed a second wedge, which the new test caught.",
+      "repro": "eval-rust-lang 0 easy 3",
+      "saw": "The ball stayed frozen for more than 10 s with full tilt, with |v| = 0.",
+      "sawCommand": "docs/build-log/phase-09-builder-issues.md, BI-3 (a physics measurement; the solver itself routes around these lifts)",
+      "evidence": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "42 of the 1,273 elevators in 546 easy and normal builds, all on easy"
+      },
+      "fix": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "Builder: lifts rise ≥ 3.7 D (the smallest 2013 rise), low loops are dropped. Physics 0.2.0: the partner platform is re-enabled only after the ball has left its volume"
+      },
+      "fixedIn": "Phase 03b/05b, builder 0.4.0 and physics 0.2.0",
+      "images": {
+        "before": "phase-16/issues/issue-bi3-before.png",
+        "after": "phase-16/issues/issue-bi3-after.png"
+      }
+    },
+    {
+      "id": "BI-4",
+      "title": "Bridge rails standing on dry land",
+      "plain": "Physics runs a bridge’s side rails along its whole length. Where an island’s edge was slanted, the end of a rail stood on the island itself, a wall across the path beside the bridge.",
+      "repro": "eval-debian 0 normal 1",
+      "saw": "The original solver (without rail modelling) pinned the ball at (594.7, 166) for 20 s.",
+      "sawCommand": "docs/build-log/phase-09-builder-issues.md, BI-4",
+      "evidence": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "124 of the 22,020 deck corners in easy and normal builds are more than a ball radius inside their island"
+      },
+      "fix": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "Bands whose side rails would run more than a ball radius over their island are rejected"
+      },
+      "fixedIn": "Phase 03b, builder 0.4.0",
+      "images": {
+        "before": "phase-16/issues/issue-bi4-before.png",
+        "after": "phase-16/issues/issue-bi4-after.png"
+      }
+    },
+    {
+      "id": "BI-5",
+      "title": "“Hard” was the same maze as “normal”",
+      "plain": "Only one parameter depended on difficulty, and it was zero for both normal and hard. The solver noticed that every hard stage had exactly the normal geometry.",
+      "repro": "govuk-card-grid 0 hard 1",
+      "saw": "All 273 hard stages have exactly the normal geometry, with only the stageId differing",
+      "sawCommand": "docs/build-log/phase-09-builder-issues.md, BI-5; re-checked for Phase 16: the normal and hard renders at af7db69 are byte-identical PNGs",
+      "evidence": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "hard builds exactly the normal geometry | — | 273/273 hard stages"
+      },
+      "fix": {
+        "file": "docs/build-log/phase-09-builder-issues.md",
+        "quote": "easy = loops + gentler heights; hard = 2.67 D decks, bumpier heights, more lifts, restart points on one ring 4 D apart, 2 D rail gaps every 16 D."
+      },
+      "fixedIn": "Phase 03b, builder 0.4.0",
+      "images": {
+        "before": "phase-16/issues/issue-bi5-before.png",
+        "after": "phase-16/issues/issue-bi5-after.png"
+      },
+      "imageLabels": { "before": "hard, builder 0.3.0 (identical to normal)", "after": "hard, builder 0.4.0" }
+    }
+  ],
+  "other": [
+    {
+      "id": "rail-wedge",
+      "title": "The ball wedged between two rails",
+      "caughtBy": "Phase 05 agent, driving the ball across the real 2013 stage in its own test",
+      "plain": "Rails were thin boxes centred on the island edge, which ate into narrow strips. The fix put them just outside the edge, like the 2013 ribbons.",
+      "kind": "bug",
+      "evidence": {
+        "file": "docs/build-log/phase-05.md",
+        "quote": "Island 20 is a 14 px (1.04 m) strip. My rails were 0.1 m boxes centred on the edge, which left 0.94 m for a 1 m ball, so the ball wedged between the rails."
+      }
+    },
+    {
+      "id": "ssrf-redirect",
+      "title": "A redirect hop that slipped past the network guard",
+      "caughtBy": "Phase 07 agent, testing its own capture sandbox against a fake internal server",
+      "plain": "The capture service must never let a submitted page reach private addresses. The first guard watched requests, but redirects went around it; enforcement moved to the browser’s own request pipeline.",
+      "kind": "security",
+      "evidence": {
+        "file": "docs/build-log/phase-07.md",
+        "quote": "a subresource redirect to a \"private\" host was fetched 4 times while route() saw only the first URL"
+      }
+    },
+    {
+      "id": "websocketstream",
+      "title": "A socket API nobody had blocked",
+      "caughtBy": "Phase 12b helper agent, attacking the capture sandbox from iframes, workers and popups",
+      "plain": "Every known socket API was already stripped from captured pages, in every frame. One newer API wasn’t, so all the bypass attempts reached the internal test server until it was added.",
+      "kind": "security",
+      "evidence": {
+        "file": "docs/build-log/phase-12.md",
+        "quote": "But WebSocketStream leaked from every realm, the top-level page included (11 of 11 cases hit the internal server)."
+      }
+    },
+    {
+      "id": "three-private",
+      "title": "Screenshots of frames that never rendered",
+      "caughtBy": "Phase 04 agent, because a draw-call count didn’t add up",
+      "plain": "With several frames per animation tick, three.js silently skipped re-rendering the scene. The fix relies on a private three.js field, so a later pass fenced it in with a test that fails loudly if three.js changes it.",
+      "kind": "bug",
+      "evidence": {
+        "file": "docs/build-log/phase-04.md",
+        "quote": "Draw-call counter read 13 while the env pass alone was 12."
+      }
+    },
+    {
+      "id": "ref-fetch",
+      "title": "A script name pnpm had already taken",
+      "caughtBy": "The orchestrating session, while merging Phase 01",
+      "plain": "The download script was called “fetch”, and pnpm has a built-in fetch command, so the shortcut ran pnpm’s command instead of the project’s. Adding “run” fixed it.",
+      "kind": "bug",
+      "evidence": {
+        "file": "git:96414f5",
+        "quote": "Post-merge fixes: ref:fetch script, /reference/ ignore, vitest for ref-fetch, formatting"
+      },
+      "diff": [
+        "-    \"ref:fetch\": \"pnpm --filter @wwm/ref-fetch fetch\"",
+        "+    \"ref:fetch\": \"pnpm --filter @wwm/ref-fetch run fetch\""
+      ]
+    },
+    {
+      "id": "nagle",
+      "title": "The 2013 lag problem, checked for and not found",
+      "caughtBy": "Phase 06 agent’s device-test script, run by the owner on an iPhone",
+      "plain": "In 2013 the team had to send filler packets because phone input arrived in clumps. The rebuild measured real iPhone input instead of assuming the same fix was needed.",
+      "kind": "check",
+      "evidence": {
+        "file": "docs/build-log/phase-06-device-test.md",
+        "quote": "16 ms / 21 ms: no Nagle clumping (the 2013 problem was 500 ms clumps)"
+      }
+    }
+  ]
+}
