@@ -31,7 +31,14 @@ export interface ProviderInput {
 export interface ProviderResult {
   model: string;
   stopReason: string | null;
-  usage?: { inputTokens: number; outputTokens: number };
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    /** Present when the API reports them (prompt caching, thinking). */
+    cacheReadTokens?: number;
+    cacheWriteTokens?: number;
+    thinkingTokens?: number;
+  };
 }
 
 export interface DocentProvider {
@@ -50,9 +57,36 @@ export interface GatewayConfig {
   /** AI Gateway token for an authenticated gateway (Worker secret `AI_GATEWAY_TOKEN`). */
   gatewayToken?: string;
   model: string;
+  /**
+   * `output_config.effort` for models that take it (see `modelParams`). Unset: the model's default
+   * (`high` on Claude Sonnet 5 / Opus 5, `medium` on Claude Opus 5.5). Ignored on Claude Haiku 4.5.
+   */
+  effort?: Effort;
+  /** Send `cf-aig-skip-cache: true` so a gateway cache can't replay answers (the bake-off sets it). */
+  skipCache?: boolean;
   /** Test hook. */
   fetch?: typeof fetch;
   timeoutMs?: number;
+}
+
+export const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'] as const;
+export type Effort = (typeof EFFORTS)[number];
+
+/** Models that reject `output_config.effort` (it 400s on Haiku 4.5 and Sonnet 4.5). */
+const NO_EFFORT = /^claude-(haiku-4-5|sonnet-4-5|haiku-3|3-)/;
+
+/**
+ * Per-model request parameters. The docent never sends `temperature`/`top_p`/`top_k` (a 400 on Claude Sonnet 5 and
+ * the Opus 4.7+ line) and never sends `thinking`:
+ * - Claude Haiku 4.5: omitting `thinking` means no thinking (it only takes `budget_tokens`); no `effort`.
+ * - Claude Sonnet 5 / Opus 5: omitting `thinking` runs adaptive thinking; depth is set with `effort`.
+ * - Claude Opus 5.5: thinking can't be disabled (`{type: "disabled"}` is a 400), so `effort` is the only
+ *   control; its default is `medium`.
+ * Thinking tokens count towards `max_tokens`, so thinking models need the higher `DOCENT_MAX_TOKENS` (≤ 1024).
+ */
+export function modelParams(model: string, effort?: Effort): { output_config?: { effort: Effort } } {
+  if (!effort || NO_EFFORT.test(model)) return {};
+  return { output_config: { effort } };
 }
 
 export function gatewayBaseUrl(accountId: string, gatewayId: string): string {
@@ -63,6 +97,7 @@ export function gatewayProvider(cfg: GatewayConfig): DocentProvider {
   const headers: Record<string, string | null> = {};
   if (cfg.gatewayToken) headers['cf-aig-authorization'] = `Bearer ${cfg.gatewayToken}`;
   if (!cfg.apiKey) headers['x-api-key'] = null; // the gateway supplies the provider key
+  if (cfg.skipCache) headers['cf-aig-skip-cache'] = 'true';
   const client = new Anthropic({
     apiKey: cfg.apiKey ?? null,
     authToken: null,
@@ -82,15 +117,25 @@ export function gatewayProvider(cfg: GatewayConfig): DocentProvider {
           max_tokens: input.maxTokens,
           system: input.system,
           messages: input.messages,
+          ...modelParams(cfg.model, cfg.effort),
         },
         input.signal ? { signal: input.signal } : undefined,
       );
       stream.on('text', (t) => onText(t));
       const msg = await stream.finalMessage();
+      const u = msg.usage;
       return {
         model: msg.model,
         stopReason: msg.stop_reason,
-        usage: { inputTokens: msg.usage.input_tokens, outputTokens: msg.usage.output_tokens },
+        usage: {
+          inputTokens: u.input_tokens,
+          outputTokens: u.output_tokens,
+          ...(u.cache_read_input_tokens ? { cacheReadTokens: u.cache_read_input_tokens } : {}),
+          ...(u.cache_creation_input_tokens ? { cacheWriteTokens: u.cache_creation_input_tokens } : {}),
+          ...(u.output_tokens_details?.thinking_tokens
+            ? { thinkingTokens: u.output_tokens_details.thinking_tokens }
+            : {}),
+        },
       };
     },
   };

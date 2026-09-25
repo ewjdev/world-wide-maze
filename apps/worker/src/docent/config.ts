@@ -1,7 +1,7 @@
 /**
  * Docent configuration from the Worker environment (contracts §10.3, infra/README.md "AI docent").
  *
- * Vars: `AI_GATEWAY_ACCOUNT_ID`, `AI_GATEWAY_ID`, `DOCENT_PROVIDER`, `DOCENT_MODEL`, `DOCENT_MAX_TOKENS`,
+ * Vars: `AI_GATEWAY_ACCOUNT_ID`, `AI_GATEWAY_ID`, `DOCENT_PROVIDER`, `DOCENT_MODEL`, `DOCENT_EFFORT`, `DOCENT_MAX_TOKENS`,
  * `DOCENT_DAILY_LIMIT`, `DOCENT_LIMIT_PER_HOUR`, `DOCENT_CACHE_TTL_DAYS`, `DOCENT_MOCK_DELAY_MS`.
  * Secrets: `ANTHROPIC_API_KEY` and/or `AI_GATEWAY_TOKEN`.
  *
@@ -10,7 +10,7 @@
  * - `mock`, or `auto` in development without gateway config → the offline mock (no network, no keys);
  * - `off`, or `auto` in a deployed environment without gateway config → `DOCENT_UNAVAILABLE` (fails closed).
  */
-import { type DocentProvider, gatewayProvider, mockProvider } from './providers.ts';
+import { type DocentProvider, EFFORTS, type Effort, gatewayProvider, mockProvider } from './providers.ts';
 
 /** The docent's vars and secrets. Declared here so the generated `Env` needn't be regenerated for them. */
 export interface DocentVars {
@@ -20,6 +20,8 @@ export interface DocentVars {
   AI_GATEWAY_TOKEN?: string;
   DOCENT_PROVIDER?: string;
   DOCENT_MODEL?: string;
+  /** `output_config.effort` (`low`…`max`) for models that take it; unset = the model's default. */
+  DOCENT_EFFORT?: string;
   DOCENT_MAX_TOKENS?: string;
   DOCENT_DAILY_LIMIT?: string;
   DOCENT_LIMIT_PER_HOUR?: string;
@@ -30,13 +32,15 @@ export interface DocentVars {
 
 /**
  * Default answer model: fast and inexpensive, as the Phase 15 brief asks. Override with `DOCENT_MODEL`
- * (e.g. `claude-sonnet-5` or `claude-opus-5`); the request uses no model-specific parameters.
+ * (e.g. `claude-sonnet-5` or `claude-opus-5-5`) and `DOCENT_EFFORT`; per-model request parameters are in
+ * `modelParams` (providers.ts). Pick the model with the bake-off (`pnpm docent:bakeoff`, infra/README.md).
  */
 export const DEFAULT_MODEL = 'claude-haiku-4-5';
 
 export interface DocentSettings {
   mode: 'gateway' | 'mock' | 'off';
   model: string;
+  effort?: Effort;
   maxTokens: number;
   dailyLimit: number;
   perIpPerHour: number;
@@ -77,9 +81,11 @@ export function docentSettings(env: DocentVars): DocentSettings {
     mode = 'off';
     offReason = 'DOCENT_DAILY_LIMIT=0';
   }
+  const effort = (env.DOCENT_EFFORT ?? '').toLowerCase() as Effort;
   return {
     mode,
     model: env.DOCENT_MODEL || DEFAULT_MODEL,
+    ...(EFFORTS.includes(effort) ? { effort } : {}),
     maxTokens: Math.min(1024, Math.max(64, num(env.DOCENT_MAX_TOKENS, 600))),
     dailyLimit,
     perIpPerHour: num(env.DOCENT_LIMIT_PER_HOUR, 20),
@@ -98,5 +104,6 @@ export function createProvider(env: DocentVars, s: DocentSettings): DocentProvid
     ...(env.ANTHROPIC_API_KEY ? { apiKey: env.ANTHROPIC_API_KEY } : {}),
     ...(env.AI_GATEWAY_TOKEN ? { gatewayToken: env.AI_GATEWAY_TOKEN } : {}),
     model: s.model,
+    ...(s.effort ? { effort: s.effort } : {}),
   });
 }

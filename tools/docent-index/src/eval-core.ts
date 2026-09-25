@@ -10,6 +10,8 @@ export interface EvalItem {
   id: string;
   question: string;
   expect: Expect;
+  /** Other outcomes that also count as correct (e.g. an injection that may be answered or rejected). */
+  accept?: Expect[];
   /** Acceptable sources: a path, `path#anchor`, or a prefix ending in `/`. */
   sources?: string[];
   kind?: 'suggested' | 'injection' | 'offtopic';
@@ -79,7 +81,7 @@ export function scoreItem(item: EvalItem, o: Observed): ItemScore {
     id: item.id,
     expect: item.expect,
     outcome: o.outcome,
-    outcomeOk: o.outcome === EXPECT_OUTCOME[item.expect],
+    outcomeOk: [item.expect, ...(item.accept ?? [])].some((e) => o.outcome === EXPECT_OUTCOME[e]),
     cited,
   };
   if (item.expect === 'answer' && item.sources?.length) {
