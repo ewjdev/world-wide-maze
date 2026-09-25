@@ -162,7 +162,7 @@ Notes for dependent phases:
 | 05 | merged | main | G1 ✅ (own criteria) | deterministic Rapier; 1000/1000 tunneling; aid-dcc traversable |
 | 06 | merged | main | G1 ✅ iPhone | iPhone 17 Pro: 60 Hz, p95 interval 21 ms, 0 lost; lock/reconnect unverified; Android pending |
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
-| 08 | in progress | worktree | — | Wave 2 started 2026-09-25 |
+| 08 | merged (+08b ranking wiring running) | main | G2 pending human playtest | E2E 4/4; replay run scores exactly 1484; disconnect→pause→resume verified |
 | 09 | in progress | worktree | — | Wave 2 started 2026-09-25 |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
@@ -183,7 +183,7 @@ Notes for dependent phases:
 - ~~Idle particle pool~~: fixed in 04b (chase scene 27.7k → 19.5k triangles).
 - ~~Private three.js field~~: isolated and guarded in 04b (`three-private.ts`, with a loud test). Only used by the manual clock.
 - The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
-- Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase.
+- Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase. **Visible in-game:** the 1× text is blocky up close (phase-08 `12-play-hud.jpg`). Do this after Phase 09 merges.
 - Phase 10 follow-ups:
   - The `/dev/engine` sandbox pulls the BBC fixture into production builds. Gate the dev routes out of prod.
   - Add an `engine.addGhost()` API (the ghost currently goes through `debug()`).
