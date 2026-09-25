@@ -164,7 +164,7 @@ Notes for dependent phases:
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
 | 08 | in progress | worktree | — | Wave 2 started 2026-09-25 |
 | 09 | in progress | worktree | — | Wave 2 started 2026-09-25 |
-| 10 | not started | | | |
+| 10 | in progress | worktree | — | started early (parallel w/ 08) 2026-09-25 |
 | 11 | optional | | | |
 | 12 | not started | | | |
 
