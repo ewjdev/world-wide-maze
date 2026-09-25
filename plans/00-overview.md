@@ -163,7 +163,7 @@ Notes for dependent phases:
 | 06 | merged | main | G1 ✅ iPhone | iPhone 17 Pro: 60 Hz, p95 interval 21 ms, 0 lost; lock/reconnect unverified; Android pending |
 | 07 | merged | main | G1 ✅ (local) | real builder wired; 7 live URLs → stage in 1.0–4.7 s; SSRF 57 tests; Browser Rendering enablement pending (needs Workers Paid + resources) |
 | 08 | merged (+08b) | main | G2 pending human playtest | E2E 4/4; replay run scores exactly 1484; disconnect→pause→resume verified |
-| 09 | merged | main | G2 ✅ (solver) | 94.1% solved @normal (≥90% target); par p50 49.8 s, max 133 s; 5 builder issues filed → 03b |
+| 09 | merged (+03b/05b fixes) | main | G2 ✅ (solver) | 819/819 stages solved at all difficulties; 315/315 runs; solver runs in workerd with seed reroll; builder 0.4.0, physics 0.2.0 |
 | 10 | merged | main | G3 partial | about/making/log/scores/share done; credits cross-checked; awaiting: curated approval, 08 mounting ranking+ghost, public URL for card validators |
 | 11 | optional | | | |
 | 12 | in progress (local-only) | worktree | — | no deploy/resources; drafts for approval |
@@ -183,10 +183,11 @@ Notes for dependent phases:
 - ~~Idle particle pool~~: fixed in 04b (chase scene 27.7k → 19.5k triangles).
 - ~~Private three.js field~~: isolated and guarded in 04b (`three-private.ts`, with a loud test). Only used by the manual clock.
 - The controller socket double-connects in dev (1001), probably React StrictMode. Verify in production builds.
-- Re-capture the fixtures at 2× (about 22–26 MB) before the curated showcase. **Visible in-game:** the 1× text is blocky up close (phase-08 `12-play-hud.jpg`). Do this after Phase 09 merges.
+- Offline fixtures use the 1× analysis screenshot as their texture, so text is blocky up close (phase-08 `12-play-hud.jpg`). Live and curated stages built through the service get 2× textures (CCR-07-2). Decide with the user whether offline fixtures also need 2× textures (repo size versus fidelity).
 - Phase 10 follow-ups:
   - The `/dev/engine` sandbox pulls the BBC fixture into production builds. Gate the dev routes out of prod.
   - Add an `engine.addGhost()` API (the ghost currently goes through `debug()`).
   - Let `loadRapier()` accept a precompiled WASM module, so the workerd shim can go.
   - Store par times so the scores API can use `par × 0.5`.
   - The worker bundle is 3.7 MB gzipped with Rapier, so the Workers Paid plan is required.
+- **G2 status (2026-09-25 overnight):** all automated criteria pass (E2E 8/8, solver 100%, replays verified). **Remaining: the human playtest** (`docs/build-log/phase-08-playtest.md`, with keyboard and iPhone, including lock/reconnect).
