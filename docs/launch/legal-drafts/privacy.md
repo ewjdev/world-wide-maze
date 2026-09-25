@@ -12,13 +12,13 @@
 | `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site (the data controller) |
 | `{{POSTAL_ADDRESS}}` | Contact postal address for the operator |
 | `{{CONTACT_EMAIL}}` | Address for privacy, removal and takedown requests |
-| `{{DOMAIN}}` | The site's domain |
+| `wwm.ewj.dev` | The site's domain |
 | `{{JURISDICTION}}` | Country/state whose law governs, and where the operator is based |
 | `{{EFFECTIVE_DATE}}` | Date this notice takes effect / was last updated |
 
 ---
 
-**World Wide Maze (revival)** at `https://{{DOMAIN}}` is run by {{OPERATOR_NAME}}, {{POSTAL_ADDRESS}}
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` is run by {{OPERATOR_NAME}}, {{POSTAL_ADDRESS}}
 ({{JURISDICTION}}). Contact: {{CONTACT_EMAIL}}.
 Effective: {{EFFECTIVE_DATE}}.
 
@@ -111,7 +111,7 @@ Events go to Workers Logs (7 days). Browsers that send Do Not Track or Global Pr
 ## 7. Cookies and similar technology
 We don't set cookies. The game uses your browser's local storage only for the settings in §1, which are needed
 for the features you use and never leave your device. There are no advertising, analytics or social-media
-trackers, and fonts and game assets are served from `{{DOMAIN}}` itself.
+trackers, and fonts and game assets are served from `wwm.ewj.dev` itself.
 
 ## 8. Service providers
 We use these providers to run the service. They process data on our behalf, for the purposes described here.

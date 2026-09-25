@@ -10,7 +10,7 @@
 |---|---|
 | `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site |
 | `{{CONTACT_EMAIL}}` | Contact address for rights holders |
-| `{{DOMAIN}}` | The site's domain |
+| `wwm.ewj.dev` | The site's domain |
 
 ---
 
@@ -20,7 +20,7 @@
 > [Takedown & opt-out](/takedown)
 
 **Long (about / terms):**
-> World Wide Maze (revival) at `{{DOMAIN}}` is an independent, free, non-commercial tribute by {{OPERATOR_NAME}} to
+> World Wide Maze (revival) at `wwm.ewj.dev` is an independent, free, non-commercial tribute by {{OPERATOR_NAME}} to
 > the 2013 Chrome Experiment *World Wide Maze*, created by Google Japan with PARTY and collaborators (full credits
 > on /about).
 >

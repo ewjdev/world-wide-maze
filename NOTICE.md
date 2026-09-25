@@ -72,3 +72,6 @@ written before the removal still quote figures measured with them.
 Web fonts (Figtree, Instrument Sans, Newsreader, Unbounded, IBM Plex Mono) come from `@fontsource` npm packages
 under the SIL Open Font License and are not stored in this repository. Other dependencies are installed from npm
 under their own licences (see `pnpm-lock.yaml`).
+
+## Licence
+The project's own code is released under the [MIT License](LICENSE). Third-party pages in `fixtures/` keep their own licences (see above); no original 2013 World Wide Maze assets are included.

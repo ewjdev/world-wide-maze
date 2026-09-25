@@ -9,15 +9,15 @@
 |---|---|
 | `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site |
 | `{{CONTACT_EMAIL}}` | Contact address for questions and notices |
-| `{{DOMAIN}}` | The site's domain |
+| `wwm.ewj.dev` | The site's domain |
 | `{{JURISDICTION}}` | Governing law and courts |
 | `{{EFFECTIVE_DATE}}` | Date these terms take effect / were last updated |
-| `{{REPO_URL}}` | Public source-code repository |
-| `{{CODE_LICENSE}}` | Licence of the project's own source code (e.g. MIT, Apache-2.0) |
+| `https://github.com/ewjdev/world-wide-maze` | Public source-code repository |
+| `MIT` | Licence of the project's own source code (e.g. MIT, Apache-2.0) |
 
 ---
 
-**World Wide Maze (revival)** at `https://{{DOMAIN}}` ("the site", "the game") is run by {{OPERATOR_NAME}}
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` ("the site", "the game") is run by {{OPERATOR_NAME}}
 ("we", "us"). Contact: {{CONTACT_EMAIL}}. Effective: {{EFFECTIVE_DATE}}.
 
 By using the site you agree to these terms. If you don't agree, please don't use it.
@@ -74,7 +74,7 @@ or break its protections, or use it to attack other sites. Rate limits apply, an
 breaks these terms.
 
 ## 9. Content and licences
-- **Our code.** The source code of this project is available at {{REPO_URL}} under the {{CODE_LICENSE}} licence.
+- **Our code.** The source code of this project is available at https://github.com/ewjdev/world-wide-maze under the MIT licence.
   Third-party components keep their own licences, listed on `/about`.
 - **Featured stages.** Featured stages are made from pages whose licences allow reuse (for example Creative Commons
   or the Open Government Licence) or whose owners gave permission. Each one credits its source and licence in the

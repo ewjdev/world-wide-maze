@@ -11,7 +11,7 @@
 | `{{OPERATOR_NAME}}` | Legal name of the operator (also the designated copyright agent unless someone else is named) |
 | `{{POSTAL_ADDRESS}}` | Postal address for notices (needed for a US DMCA designated-agent registration) |
 | `{{CONTACT_EMAIL}}` | Address that receives takedown, opt-out and copyright notices |
-| `{{DOMAIN}}` | The site's domain |
+| `wwm.ewj.dev` | The site's domain |
 | `{{JURISDICTION}}` | Governing law / where the operator is based |
 | `{{EFFECTIVE_DATE}}` | Date this page takes effect / was last updated |
 
@@ -19,7 +19,7 @@
 
 # Part A — public page
 
-**World Wide Maze (revival)** at `https://{{DOMAIN}}` · run by {{OPERATOR_NAME}} · Effective: {{EFFECTIVE_DATE}}
+**World Wide Maze (revival)** at `https://wwm.ewj.dev` · run by {{OPERATOR_NAME}} · Effective: {{EFFECTIVE_DATE}}
 
 World Wide Maze turns public web pages into game levels: a screenshot of a page becomes the ground a ball rolls
 on. Mazes that players build are unlisted (reachable only by their link) and are deleted automatically after
@@ -56,7 +56,7 @@ can't block the capture itself; but a shared maze of an opted-out domain is refu
 request.
 
 **How our capture browser identifies itself.** Captures run in a headless Chrome on Cloudflare's network. Its user
-agent includes the token `WorldWideMaze` and a link to `https://{{DOMAIN}}/about`. Each build fetches one page and
+agent includes the token `WorldWideMaze` and a link to `https://wwm.ewj.dev/about`. Each build fetches one page and
 the resources it needs to display, once; results are cached for 7 days so popular pages aren't fetched repeatedly.
 We follow `robots.txt` rules that name `WorldWideMaze` specifically:
 
@@ -69,7 +69,7 @@ Because a capture is a one-off fetch that a person asked for (like a link previe
 `User-agent: *` rules as an opt-out; use the rule above or the email opt-out.
 
 ## 2. Remove a specific maze or leaderboard entry
-Send the link (`https://{{DOMAIN}}/play/<id>` or `https://{{DOMAIN}}/s/<id>`) and say what should be removed and
+Send the link (`https://wwm.ewj.dev/play/<id>` or `https://wwm.ewj.dev/s/<id>`) and say what should be removed and
 why. Players can ask for their own leaderboard entries to be removed; give the name, score, date and stage.
 
 ## 3. Copyright notices

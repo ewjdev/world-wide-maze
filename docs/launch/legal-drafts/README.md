@@ -19,12 +19,12 @@
 |---|---|---|
 | `{{OPERATOR_NAME}}` | Legal name of the person or entity running the site (data controller; copyright agent) | all four |
 | `{{CONTACT_EMAIL}}` | One address for privacy, removal, opt-out and copyright notices | all four |
-| `{{DOMAIN}}` | The production domain (not yet chosen) | all four |
+| `wwm.ewj.dev` | The production domain (not yet chosen) | all four |
 | `{{JURISDICTION}}` | Governing law/courts and the operator's country | privacy, terms, takedown |
 | `{{EFFECTIVE_DATE}}` | Effective / last-updated date | privacy, terms, takedown |
 | `{{POSTAL_ADDRESS}}` | Postal address (privacy controller identity; required for a US DMCA agent registration) | privacy, takedown |
-| `{{REPO_URL}}` | Public source repository | terms |
-| `{{CODE_LICENSE}}` | Licence of the project's own code — **the repo has no LICENSE file yet** | terms |
+| `https://github.com/ewjdev/world-wide-maze` | Public source repository | terms |
+| (resolved) | Code licence: **MIT** (LICENSE, 2026-09-25) | terms |
 
 Find any left over with `grep -rn '{{' docs/launch/legal-drafts`.
 
