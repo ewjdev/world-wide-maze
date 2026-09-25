@@ -156,7 +156,7 @@ None.
 
 - **Agent:** Claude Opus 5.5 (1M context), a Claude Code sub-agent in an isolated git worktree, branch
   `fix/docent-grounding` (PR against `main`, not merged: merging deploys production, which is the owner's call).
-- **Date:** 2026-09-25, about 21:55Z to 23:00Z.
+- **Date:** 2026-09-25, about 21:55Z to 22:40Z.
 
 ## Instructions received (summary)
 The live docent (production, `claude-haiku-4-5` through AI Gateway) got two of three spot checks wrong, recorded here
@@ -178,7 +178,7 @@ fact" check, verify on the PR Preview (at most 15 model calls), and don't merge.
   - `status`: the new `docs/facts/whats-built.md`.
   - `reference`: the fidelity spec.
   Small sections of different kinds are never merged into one chunk (before, `RESEARCH.md`'s goal statement and
-  Part 1 shared a chunk). Result: 319 chunks (with this log), of which 53 are history, 31 plan, 220 build-log, 4 status and 11
+  Part 1 shared a chunk). Result: 320 chunks (with this log), of which 53 are history, 31 plan, 221 build-log, 4 status and 11
   reference.
 - **Headings in chunk titles:** a title is now `Document › Part › Section`, plus the headings of merged sections and,
   for split pieces, bold pseudo-headings. Before, the 2013 builder steps were titled "1.3 How it was built
@@ -219,6 +219,12 @@ fact" check, verify on the PR Preview (at most 15 model calls), and don't merge.
 2. The first retrieval test demanded no plan chunk anywhere in the top 6 for a rebuild question. Without the
    Worker's query expansion one Part 5 chunk still lands at rank 4–6, which is harmless now that it is labelled.
    The test now checks that the top 3 contain no plans and that a status chunk ranks first.
+3. The first eval run against the Preview scored every item as an empty "don't know". The runner sets
+   `cf-connecting-ip`, so that each question comes from a distinct client, and Cloudflare's edge answers 403 to a
+   request that sets that header, so no model call was made. The runner now sets the header only for a local Worker,
+   and records a non-SSE HTTP failure as an error instead of an empty answer.
+4. The PR's first Preview smoke test failed on `POST /api/rooms` (500) right after the deploy. The same request
+   succeeded by hand a minute later, so the job was re-run. This PR doesn't touch rooms.
 
 ## Manual human interventions
 None.
@@ -244,7 +250,13 @@ None.
     retrieved third.
   - `ho-time-limit` now cites the right sources.
   These are the mock's quoting heuristics; the real model reads all six excerpts.
-- Live answers before, and the Preview answers after: `docs/build-log/assets/phase-15c/live-check.md`.
+- **Real model on the PR Preview** (`claude-haiku-4-5`, 10 model calls). On the 10 grounding items: 10/10
+  answered, citation accuracy 100%, source kind 100%, plan as fact 0.
+  - The 2013 builder items cite the "Stage builder algorithm" chunk.
+  - The AI and plan-versus-built items cite the status page and say what was not built.
+  - The credits answer is unchanged in substance.
+  The verbatim answers from before (production) and after (Preview), with review notes, are in
+  `docs/build-log/assets/phase-15c/live-check.md`.
 - Tests: `tools/docent-index/test/provenance.test.ts` (11): kinds by path and part, no merging across kinds,
   headings and pseudo-headings in titles, intent weights and ranking, the plan-as-fact rule (markers before and
   after the full stop, hedged and mixed sentences), kind scoring, and the status page's numbers against the

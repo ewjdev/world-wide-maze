@@ -101,10 +101,20 @@ for (const item of set.items) {
     const res = await fetch(new URL('/api/docent', url), {
       method: 'POST',
       // a distinct client per question, so the per-IP limit doesn't stop the run (only honoured locally)
-      headers: { 'content-type': 'application/json', 'cf-connecting-ip': `198.51.100.${(i++ % 250) + 1}` },
+      // (Cloudflare's edge answers 403 to a request that sets it, so only for a local Worker)
+      headers: {
+        'content-type': 'application/json',
+        ...(/^https?:\/\/(localhost|127\.0\.0\.1)[:/]/.test(url)
+          ? { 'cf-connecting-ip': `198.51.100.${(i++ % 250) + 1}` }
+          : {}),
+      },
       body: JSON.stringify(req),
     });
-    o = observe(parseSse(await res.text()), { ms: Date.now() - t0 });
+    const body = await res.text();
+    o = observe(parseSse(body), { ms: Date.now() - t0 });
+    // a non-SSE failure (e.g. a 500 before the docent ran) is an error, not an empty "don't know"
+    if (!res.ok && !body.startsWith('event:'))
+      o = { ...o, outcome: 'error', errorCode: `HTTP ${res.status}`, text: body.slice(0, 200) };
   } else {
     const prepared = prepareDocent(req, searcher());
     const events: DocentEvent[] = [];
