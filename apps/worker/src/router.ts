@@ -13,6 +13,7 @@ import { scoresRoutes } from './routes/scores.ts';
 import { shareRoutes } from './routes/share.ts';
 import { stagesRoutes } from './routes/stages.ts';
 import { telemetryRoutes } from './routes/telemetry.ts';
+import { uploadRoutes } from './routes/upload.ts';
 import { clientIp, crossSiteRefused, isCrossSite } from './security.ts';
 
 export function createApp(): Hono<AppEnv> {
@@ -36,6 +37,7 @@ export function createApp(): Hono<AppEnv> {
   app.route('/api', stagesRoutes);
   app.route('/api/scores', scoresRoutes); // Phase 10
   app.route('/', shareRoutes); // Phase 10: /s/:stageId, /api/share/:stageId/card
+  app.route('/api/stages', uploadRoutes); // Phase 14: POST /api/stages/upload (local capture → shared run)
   app.route('/api', telemetryRoutes); // Phase 12: POST /api/t (off unless TELEMETRY_INGEST=1)
 
   app.notFound(() => Response.json({ error: 'not found' }, { status: 404 }));
