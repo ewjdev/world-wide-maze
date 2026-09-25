@@ -76,6 +76,10 @@ export const routes: RouteObject[] = [
       { index: true, element: <Home /> },
       { path: 'play/:stageId', element: <Play /> },
       { path: 'about', element: <About /> },
+      {
+        path: 'dev/physics',
+        lazy: () => import('./dev/physics-sandbox.tsx').then((m) => ({ Component: m.default })),
+      },
       { path: '*', element: <NotFound /> },
     ],
   },

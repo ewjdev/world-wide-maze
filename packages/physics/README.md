@@ -1,9 +1,53 @@
 # @wwm/physics
 
-Rapier 3D simulation (Web Worker + headless) implementing the contract `Simulation` interface.
+A deterministic Rapier 3D simulation of the ball. It implements the contract `Simulation` (plans/contracts.md §5). The same code runs **headless** (Node: tests and the solver) and **in a Web Worker** (the game). Phase 05.
 
-**Status:** scaffold (Phase 02). Owned and implemented by **Phase 05** — see `plans/phase-05-*.md`.
+## API
 
-- Contract types come from `@wwm/schema` (never redeclare them).
-- Tests: `pnpm vitest run --project @wwm/physics` (or `pnpm test` at the root).
-- Typecheck: `pnpm --filter @wwm/physics typecheck`.
+```ts
+import { createSimulation, createWorkerSimulation, replay, record, DEFAULT_PARAMS, PHYSICS_VERSION } from '@wwm/physics';
+
+const sim = await createSimulation();            // headless; RapierSimulation implements Simulation
+await sim.load(stage);                            // StageData (wwm.stage/2)
+const { ball, events, elevators } = sim.step(input); // advances exactly 1/SIM_HZ
+sim.reset(restartAt);                             // teleport to a stage px point (default: start), zero velocity
+
+const ws = await createWorkerSimulation();        // browser only (Web Worker); same interface, non-blocking step()
+const r = await replay(stage, inputs);            // { final, events: {tick, event}[], ticks, goalTick }
+```
+
+- `createSimulation({ params?, rapier? })`: `params` overrides `DEFAULT_PARAMS`, for example `{ simHz: 60 }` for the 2013 60 Hz parity mode. `rapier` is `'deterministic'` (default) or `'standard'` (benchmark only).
+- Extras on `RapierSimulation` beyond the contract: `getBallState()`, `setBallState(pos, vel)` (test hook), `debugLines()` (the Rapier collider wireframe), `stats()` (triangles, colliders, last step ms, tick).
+- `createWorkerSimulation({ params?, interpDelayMs?, worker? })` returns a `WorkerSimulation`. It adds `setPaused(bool)`, `replayInWorker(stage, inputs)` (a deterministic replay inside the worker), `debugLines()` and `stats()` (worker step ms and steps per second).
+- `replay` / `runInputs` / `record`: replays are `InputSample[]` at SIM_HZ. `runInputs` applies the contract restart flow: on `lost`, it calls `reset(restartAt)`.
+- `staticSpecs(stage, params)` and `elevatorFootprint(elevator, params)` are the pure StageData → collider geometry, in world metres.
+
+### Conventions (see the CCRs in docs/build-log/phase-05.md)
+- **frameYaw:** yaw 0 means forward (+tiltZ) is world −Z (page up) and right (+tiltX) is +X. Yaw grows counter-clockwise seen from above. This equals three.js `camera.rotation.y` (Euler `'YXZ'`). forward = (−sin ψ, 0, −cos ψ), right = (cos ψ, 0, −sin ψ).
+- **BallState.quat** is `[x, y, z, w]`. `pos` and `vel` are world metres and m/s.
+- **`step().elevators[].y`** is the world height of the top of platform A, which starts at `levelLow`. Platform B is always at `levelLow + levelHigh − y`. Both share the footprint from `elevatorFootprint()`: length `max(|b−a|, 18.75 px)` along a→b, ending at `b`.
+- **Events:**
+  - `island` fires on the first contact with a different island. After `load()`, the first contact with the start island emits one. `reset()` silently sets the island under the reset point.
+  - `landed` fires on ground contact after ≥ 0.1 s in the air with impact ≥ 1 m/s.
+  - `bump` fires on a new non-ground contact with impact ≥ 1 m/s. The impact is the approach speed along the contact normal.
+  - `item` and `goal` each fire once per `load()`.
+  - `fell` fires once. `lost` follows 3 s later.
+- **Elevators:** entering a platform footprint at either level (an edge trigger, outside the cooldown) starts a ride. The ball becomes kinematic and rides with the platform, and its velocity is zeroed at both ends. The partner platform's colliders are disabled during the ride.
+
+## Model (E = evidenced by the 2013 build, R = reconstructed, N = new)
+All tunables live in `src/params.ts`, each labelled. Tilt **rotates gravity** (E). The smoothed tilt is applied in the `frameYaw` frame only while POWER is held (τ 0.18 s, E). Angular damping is 1.20/s with POWER and 4.61/s without (E). Jump gives +16.7 m/s and needs a contact within 100 ms (E). Falls trigger 9 m below the lowest island; after that, input is off and gravity doubles over 1 s. `lost` comes 3 s later (E). Friction and restitution use the 2013 values with Multiply combine (E). Rails are solid boxes 0.556 m tall, placed **just outside** the edge line (R/N: 2013 used zero-thickness ribbons at the edge, and this keeps 1 D-wide text strips walkable).
+
+## Rapier build
+`@dimforge/rapier3d-deterministic-compat@0.20.0` (the enhanced-determinism build, with WASM inlined as base64 so it needs no bundler plugin in Node, Vite or workers). Measured with `pnpm --filter @wwm/physics bench:builds` on an M-series Mac:
+
+| build | handmade replay µs/step | 400k-tri µs/step |
+|---|---|---|
+| deterministic-compat | 21.5 | 18.5 |
+| compat (standard) | 16.5 | 17.8 |
+
+The cost is about 5 µs/step against an 8.3 ms budget. In return, replays are bit-identical across Node and a Chromium worker, which the Playwright test verifies. JS-side trig uses `dsin`/`dcos` (arithmetic only), because `Math.sin` is implementation-defined across JS engines.
+
+## Commands
+- Tests: `pnpm vitest run --project @wwm/physics`. This covers feel, events, determinism, 1,000 tunneling trials and perf. The Chromium worker test needs Playwright Chromium. The aid-dcc tests need `pnpm ref:fetch`.
+- Regenerate the fixture replay after any physics change: `pnpm --filter @wwm/physics replay:make` (also bump `PHYSICS_VERSION`).
+- Sandbox: `pnpm --filter @wwm/web dev`, then http://localhost:5173/dev/physics. Arrows tilt, and any arrow or Shift gives POWER. Space jumps and R respawns. The sandbox also has param sliders with JSON export, a worker/main-thread switch, a 60 Hz parity switch and a stage picker (including `reference/*.stage.json` if fetched).

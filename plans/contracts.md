@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.2.1`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.2.2`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -322,3 +322,16 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **CCR5:** slices are **balanced**: n = ceil(h / 1700), and slice i covers [round(i·h/n), round((i+1)·h/n)), so there's no tiny tail stage.
 - **CCR6, CCR7:** accepted (`texture.path` may be `''` before storage, and `stars` is an integer from 0 to 5).
 - **G0 check:** the converted 2013 AID-DCC stage passes `validateStage`, except for 13 intentional width-minimum differences.
+
+**v0.2.2, from the Phase 05 CCRs (orchestrator, 2026-09-25):**
+- **`frameYaw` convention:**
+  - At yaw 0, forward (+tiltZ) is world −Z (page up) and right (+tiltX) is +X.
+  - Positive yaw is counter-clockwise seen from above, the same as three.js `camera.rotation.y` with Euler order `'YXZ'`.
+  - `engine.cameraYaw()` returns exactly this value.
+- **`BallState.quat` order** is `[x, y, z, w]`.
+- **Elevator geometry** (two platforms share one footprint):
+  - Length `max(|b−a|, ELEVATOR_MIN_PLATFORM_PX)` along a→b, ending at `b`, with width `width`.
+  - `step().elevators[].y` is the top of platform A, which starts at `levelLow`. Platform B is at `levelLow + levelHigh − y`.
+  - The reference implementation is `elevatorFootprint` in `@wwm/physics/src/geometry.ts`. The renderer must match it.
+- **New constants `SLAB_THICKNESS_M`, `RAIL_HEIGHT_M`, `ELEVATOR_MIN_PLATFORM_PX`.** Rails sit just outside the island edge line, and outside a bridge deck's width.
+- **Replays** carry `physicsVersion`, and score submissions include `replay?: {physicsVersion, inputs}`. The server only verifies replays whose version matches its `PHYSICS_VERSION`.
