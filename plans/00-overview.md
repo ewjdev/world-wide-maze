@@ -262,4 +262,4 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
 | Phase | Status | Branch | Notes |
 |---|---|---|---|
 | 19 | PR #9 | feat/education-phase-19 | standalone learning pages, `wwm-learning/0.1`, parent AI draft review |
-| 20 | in progress | feat/guided-lessons-phase-20 | `wwm-learning/0.2` (rounds, theme, voice); Pip voice: 97 clips via AI Gateway → ElevenLabs `eleven_v3`, in R2 `wwm-learning-audio` (learning-audio.ewj.dev); Pip gates in the game; issue #10 (voice for personalized intros) deferred |
+| 20 | built, PR open | feat/guided-lessons-phase-20 | `wwm-learning/0.2` (rounds, theme, voice); Pip voice: 97 clips via AI Gateway → ElevenLabs `eleven_v3`, in R2 `wwm-learning-audio` (learning-audio.ewj.dev); Pip gates in the game; issue #10 (voice for personalized intros) deferred |

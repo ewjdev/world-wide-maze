@@ -1,7 +1,7 @@
 # Phase 20 — Guided lessons: Pip, Sky Islands, and a voice that explains
 **Wave:** education track · **Contracts:** `@wwm/learning` → `wwm-learning/0.2` (CCR-EDU-02) · **Label:** N (new; not a 2013 feature)
 
-> **Status: APPROVED and in progress (September 26, 2026).** Decisions D1–D7 are answered below. The user added two requirements: walk through the finished HTML, and prove it loads into the game maze. The second pulls a minimal WWM adapter (formerly Phase 21) into this phase as M4b.
+> **Status: BUILT (September 26, 2026); PR open, stacked on Phase 19. Build log: `docs/build-log/phase-20.md`.** Decisions D1–D7 are answered below. The user added two requirements: walk through the finished HTML, and prove it loads into the game maze. The second pulls a minimal WWM adapter (formerly Phase 21) into this phase as M4b.
 
 ## Goal
 Turn "Which has more?" (`compare-groups`) into the **reference lesson** for every future lesson: a short, escalating, themed challenge a 4–6-year-old can play without reading, guided by one voiced character, where the visuals and voice *explain* the math instead of decorating it. The same learning HTML document carries the theme — the guide ball and the maze pieces — as safe declarative data, so the standalone page draws it today and the WWM game can draw the same checkpoint later without extra assets.

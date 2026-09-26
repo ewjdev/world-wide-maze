@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "af8efa92d371de10",
+  "hash": "fc97303fc4305c8c",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -26,6 +26,8 @@
     "docs/build-log/phase-17.md",
     "docs/build-log/phase-18-share-cards.md",
     "docs/build-log/phase-19.md",
+    "docs/build-log/phase-20-m4b.md",
+    "docs/build-log/phase-20.md",
     "docs/facts/whats-built.md",
     "docs/reference/archive-index.md",
     "docs/reference/bundle-notes.md",
@@ -2232,6 +2234,94 @@
       "url": "/log#phase-19",
       "kind": "build-log",
       "text": "## Independent finish verdict: pass for the scoped local pilot\n| Review finding | Final verdict |\n| --- | --- |\n| Yellow learning-shape contrast | Resolved; at least 3.21:1 across choice states |\n| Personalized text overflow | Resolved; wrapping plus long-text browser acceptance |\n| Counting instructions versus tap behavior | Resolved |\n| Mobile heading whitespace | Resolved |\n| Pale CTA screenshots | Resolved in settled production screenshots |\n| Missing content-source notes | Resolved |\n\nNo remaining material findings within the review scope. This verdict does not cover educator approval, physical-device use, educational effectiveness, or the separate extension-test failures.\n\n## Corrections and limits\nThe design context helper initially treated the not-yet-created app as missing product context; confirmed conversation decisions were recorded in `apps/education/PRODUCT.md`. The visual system was inherited from WWM. Independent review found and prompted fixes for low-contrast yellow stimuli, long personalized copy overflow, tap/count wording, and mobile heading whitespace. No new human intervention was needed.\n\nMaterial is pilot content awaiting educator and family review, not a full curriculum or efficacy claim. The portable contract is experimental. Live AI authoring, learner identity, hosted forks, game integration, and deployment are future work. See `docs/education/opportunity.md` for the evidence and decision sequence."
+    },
+    {
+      "id": "docs/build-log/phase-20-m4b.md",
+      "title": "Phase 20 M4b: Pip gates (the game adapter)",
+      "path": "docs/build-log/phase-20-m4b.md",
+      "url": "/log#phase-20-m4b",
+      "kind": "build-log",
+      "text": "September 26, 2026. Claude Code sub-agent in its own worktree, working on the approved Phase 20 plan (`plans/phase-20-guided-lessons.md`, M4b and §4 \"The game reads the same data\"). This file covers only M4b. Phase 20's own build log is `phase-20.md`."
+    },
+    {
+      "id": "docs/build-log/phase-20-m4b.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 20 M4b: Pip gates (the game adapter) › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-20-m4b.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-20-m4b",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\nA learning document now loads into the maze. Its rounds are asked at \"Pip gates\" on the stage.\n\n- **Loading** (`apps/web/src/learning/load.ts`) follows the consumer rules in `docs/education/html-contract.md`. Only the inert JSON block is parsed (`readLearningHtml` → `parseLearningJson`). No document markup is inserted or run, and no URL is fetched. There are two ways in:\n  - `?learn=<activityId>` selects an activity of the bundled baseline.\n  - \"Load a learning page…\" on site select reads a downloaded learning HTML file with `File.text()`.\n  - Without an id, the first activity whose rounds are all `choose`, `compare` or `difference` is used. Errors are shown as kind, translated messages.\n- **Gates ride the link-portal pipeline.** When a lesson is loaded, a stage's link portals are replaced by Pip gates before the engine and the simulation load it. They reuse the same physics sensor, the same pause (driver paused, timer stopped) and the same \"used\" state after a gate is done.\n  - Each gate has a `wwm-learning:<activity>/<n>#<gate colour>` href, which the engine draws in the theme's gate colour with Pip as the monogram.\n  - The game never treats a gate as a link: no travel, no journey stop, no health probe, no `portal_selected` telemetry.\n- **Placement** (`placement.ts`) re-applies the builder's portal rules at runtime:\n  - on islands reachable from the start, with the whole ring on the island;\n  - ≥ 4 D from the start and the goal, ≥ 2 D from bridge and lift mouths and from large items;\n  - no small item or restart point inside the ring, and ≥ 6 D apart.\n\n  The grid is fixed, so placement is deterministic. Gates are spread evenly from the start towards the goal."
+    },
+    {
+      "id": "docs/build-log/phase-20-m4b.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 20 M4b: Pip gates (the game adapter) › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-20-m4b.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-20-m4b",
+      "kind": "build-log",
+      "text": "**Count:** the main rounds plus the trick follow-ups (5 for compare-groups, capped at 5). With only `requiredRounds` gates, a child who needed help on round 3 would never reach round 4. An extra gate offers the bonus.\n\n  If a stage has no room for a gate, the round is asked when the intro ends, before the countdown.\n- **The card** (`LearningGateCard.tsx`) draws the round with the shared `sceneSvg`. It is a trusted renderer, so the output goes into `dangerouslySetInnerHTML`.\n  - **Choosing:** transparent buttons over the choice boxes take taps. Phone or gamepad tilt (with hysteresis and repeat) and ←/→ move the `is-focus` cursor. 1–3 answer directly. JUMP (after a release) or Enter/Space confirms.\n  - **Help:** Help climbs the hint ladder, \"Match them up\" runs the match tool, and \"Skip gate\" is never a penalty.\n  - **Effects** follow scene.ts. The step's `show` sets the classes, and voice cues light gems, draw pairs and mark leftovers. If the voice is cut short or silent, the full match still appears.\n  - **One `LessonState` per session.** It lasts across gates, stages and retries, and resets on a new game or a new document.\n  - **Voice:** Pip speaks through `createVoicePlayer` with `DEFAULT_AUDIO_BASE`. It follows the game's mute and is unlocked on the game's first gesture.\n- **UI chrome:**\n  - a loader strip under the address bar on site select;\n  - a HUD chip showing the lesson and its bridge progress;\n  - a notice for a lesson that didn't load.\n\n  Strings are in en and ja. Lesson content stays in the document's language.\n- **Scoring:** a solved gate awards no points, and falls and scores never reach the lesson. Replays stay verifiable, because a paused gate records no ticks and the gates don't touch physics.\n\n**Outside `apps/web`:** there is one additive change in `packages/engine/src/world/portals.ts` (and its export in `index.ts`). `LEARNING_HREF` and `isLearningHref` were added. `portalColor` returns a learning href's own colour, and the label atlas draws Pip and no host line for such hrefs. Link portals render exactly as before."
+    },
+    {
+      "id": "docs/build-log/phase-20-m4b.md#verification",
+      "title": "Phase 20 M4b: Pip gates (the game adapter) › Verification",
+      "path": "docs/build-log/phase-20-m4b.md",
+      "anchor": "verification",
+      "url": "/log#phase-20-m4b",
+      "kind": "build-log",
+      "text": "## Verification\n- **Typecheck:** passes for every package except `apps/education`. That app is being rebuilt against `wwm-learning/0.2` in parallel, and its failures are confined to it.\n- **`biome check .`:** clean. The two remaining diagnostics are pre-existing and outside this change: a warning in `apps/web/src/pages/log/story.css` and an info note in `scripts/dev-phone.mjs`.\n- **`vitest run`:** 1099 passed, 18 skipped, and 4 failed. All four failures are the expected ones: three in `@wwm/education` (the parallel rebuild) and the `@wwm/learning` voice-manifest test.\n- **`@wwm/web` alone:** 220 passed. This includes the unchanged portal e2e and the new tests:\n  - `test/learning.test.ts`: 17 tests covering placement, the gate → state-machine glue, cursor and tilt, loading, and the href parity with the engine.\n  - `test/learning.e2e.test.ts`: 2 tests.\n- **Screenshots:** the walkthrough screenshots at 1280×720 and 1920×1080 were inspected at `/tmp/wwm-game-learning/`. They are local QA artefacts and are not committed."
+    },
+    {
+      "id": "docs/build-log/phase-20.md",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) · What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-20.md",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "**Date:** September 26, 2026 (America/Los_Angeles).\n**Agents:** Claude Code (Claude Opus 5.5) as orchestrator, plus two sub-agents in their own git worktrees: the lesson pages (M2–M4) and the game adapter (M4b, see [phase-20-m4b.md](phase-20-m4b.md)).\n**Plan:** [plans/phase-20-guided-lessons.md](../../plans/phase-20-guided-lessons.md). The plan came out of a thought-partner review of the Phase 19 \"Which has more?\" lesson; the user approved decisions D1–D7 before anything was built.\n**Time:** git timestamps from 15:32 (first Phase 20 commit) to about 16:20. Before that came the review, the plan, and the M0 spike, and the two sub-agents ran in parallel. These are elapsed times, not effort multipliers.\n\n## What changed (N: new, not a 2013 feature)"
+    },
+    {
+      "id": "docs/build-log/phase-20.md#the-learning-contract-wwm-learning02-packageslearning",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) › What changed (N: new, not a 2013 feature) › The learning contract, wwm-learning/0.2 (packages/learning)",
+      "path": "docs/build-log/phase-20.md",
+      "anchor": "the-learning-contract-wwm-learning02-packageslearning",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "### The learning contract, wwm-learning/0.2 (packages/learning)\n- **Rounds:** activities are now sequences of rounds of three kinds: `choose`, `compare` (two gem islands, optionally with \"same\") and `difference` (\"how many more?\").\n  - Validation checks answers against the gem counts, so the data can't state a wrong answer.\n  - Bonus rounds are optional and come last. `onlyAfterHelpOn` plays a follow-up only when the child needed the strategy on an earlier round.\n- **Sky Islands theme:** a palette plus declarative vector sprites for Pip (the WWM ball with eyes), gem, island, plank, gate and cloud.\n  - Sprites are limited to circle, ellipse, rect, polygon and path, and paths may only use line and curve commands.\n  - Colours must be palette keys, and the theme is capped at 12 KB. Tests reject URLs, markup, arcs, unknown keys and oversized themes.\n  - `sceneSvg` is the trusted renderer. The lesson page, the portable download and the game all draw from it.\n- **Pip's script (`pathScript`):** counting lines (\"One, two, three. Three gems.\") and match lines (\"Match, match, match. Two left over!\") are generated from round data. Cues tie spoken words to gems lighting and match lines drawing.\n- **Shared state machine (`step`):**\n  - the hint ladder: nudge → match tool → worked example, which counts both islands;\n  - a solved round is locked;\n  - a trick follow-up plays after help;\n  - the bonus is offered and can be skipped;\n  - planks count only required rounds.\n- **Voice player:** clips from a consumer-configured origin, then browser speech, then silent timing. Cues fire in every mode.\n- **Compatibility:** `checkpointSpec` returns engine-neutral round data for games. 0.1 documents upgrade automatically, and Phase 19 family drafts (baseline 1.0.0) still apply.\n- **Content:** compare-groups now has five rounds plus a conditional follow-up and a two-part bonus:\n  - warm-up: 2 vs 4\n  - close: 5 vs 4\n  - trick: 3 spread out vs 5 bunched up\n  - follow-up: 6 small vs 4 big\n  - same: 4 vs 4\n  - bonus: 3 vs 6, then \"how many more?\" → 3\n\n  The other five lessons became themed single rounds with a three-step hint ladder."
+    },
+    {
+      "id": "docs/build-log/phase-20.md#voice-toolslearning-voice-pnpm-learningvoice",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) › What changed (N: new, not a 2013 feature) › Voice (tools/learning-voice, pnpm learning:voice) · Lesson pages (apps/education)",
+      "path": "docs/build-log/phase-20.md",
+      "anchor": "voice-toolslearning-voice-pnpm-learningvoice",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "### Voice (tools/learning-voice, pnpm learning:voice)\n- **Generation:** 97 lines (about 3,900 characters) went through **AI Gateway `wwm` → ElevenLabs `eleven_v3` `with-timestamps`**, using the voice \"Jessica\" (default, pending the user's pick).\n- **Storage:** MP3s are in the R2 bucket **`wwm-learning-audio`**, public at `https://learning-audio.ewj.dev/` with content-hashed, immutable names. Git holds only the manifest (hashes and word start times, 30 KB).\n- **Credentials:** the gateway is authenticated and holds the ElevenLabs key (BYOK). The tool reaches it through a Workers AI binding in a local `wrangler dev` helper Worker, so no key or token is on disk.\n- **Audition:** 3 voices × 4 lines in `audition/`. `pnpm learning:voice --audition` writes the listening page.\n\n### Lesson pages (apps/education)\n- **Flow:** \"Tap Pip to start\" (which also unlocks audio). The prompt highlights each word as it's spoken. The scene has real answer buttons over the islands, plus \"Help me\" and \"Match them up\".\n- **After a correct answer:** Next appears under the feedback inside the first mobile viewport. Then comes the bonus offer, and an end card with the off-screen activity.\n- **Settings and fallbacks:** the mute setting persists, reduced motion is respected, and the tall layout is used on phones.\n- **Portable download:** still one inert JSON script and no external resources. It now includes the themed SVG for every round, and the game can load it."
+    },
+    {
+      "id": "docs/build-log/phase-20.md#the-game-appsweb-m4b",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) › What changed (N: new, not a 2013 feature) › The game (apps/web, M4b) · Infrastructure (created with the user's approval)",
+      "path": "docs/build-log/phase-20.md",
+      "anchor": "the-game-appsweb-m4b",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "### The game (apps/web, M4b)\n- **Loading:** `/play/practice?learn=compare-groups`, or \"Load a learning page…\" on site select.\n- **Gates:** up to 5 Pip gates ride the link-portal pipeline. Each one pauses play and shows the next round in a card drawn by the shared renderer. Answers come from tilt, arrow keys, number keys or a tap, and \"Roll on!\" resumes play.\n\n### Infrastructure (created with the user's approval)\n- The R2 bucket `wwm-learning-audio`, with CORS for GET/HEAD and the custom domain `learning-audio.ewj.dev`.\n- GitHub issue #10 records deferred decision D5: voicing parent-personalized introductions through a Worker route."
+    },
+    {
+      "id": "docs/build-log/phase-20.md#attempts-that-failed-and-why",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) › Attempts that failed, and why · Manual human interventions · Test evidence",
+      "path": "docs/build-log/phase-20.md",
+      "anchor": "attempts-that-failed-and-why",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "## Attempts that failed, and why\n- **M0 spike:**\n  - Calling the gateway's REST endpoint with the wrangler OAuth token as `cf-aig-authorization` returned 401, because an authenticated gateway wants an AI Gateway token.\n  - `getPlatformProxy` hung.\n  - A two-file helper Worker under `wrangler dev`, using `env.AI.gateway('wwm').run(...)`, worked. That became the tool's proxy.\n- **R2 setup:** creating the bucket through the Cloudflare API connector failed (its token has no R2 write), so the bucket was created with wrangler instead.\n- **Layout:** the first hexagonal \"tight\" layout overlapped gems (0.21 < 0.22), and so did the six-dot die face after the gems were enlarged. The deterministic \"no overlap\" test caught both.\n- **Contrast:** white \"Island A/B\" labels on the game's `#4f9fd6` measured 2.9:1. The island side became `#2f7fbd` (4.3:1).\n- **Match lines:** in the tall layout they struck through the island labels. Labels are now drawn above the lines.\n\n## Manual human interventions\n- The user answered the plan decisions (Pip, audition, AI Gateway key already present, R2 for MP3s, a GitHub issue for D5, committing Phase 19 first, optional bonus).\n- No code was written by hand.\n\n## Test evidence\n- `pnpm check` is green after the final fixes and the docent index refresh.\n- `@wwm/learning` has 32 tests: contract, theme safety, layout, script, play-through and consumers. `@wwm/learning-voice` has 3.\n- Education e2e (Chromium): 11 tests covering every lesson, the full compare-groups play-through, blocked audio, the family fork and reduced motion.\n- Web: 17 unit tests and 2 e2e tests (a gate round trip, and a file loaded then played at a gate).\n- **Orchestrator walkthrough (screenshots, not committed):**\n  - Lesson page at 1440×900 and 390×844, with real clips streamed from R2 (HTTP 206) and no console errors.\n  - Game at 1440×900: the education app's `portablePage` output, loaded through the file input, played gate 1 (wrong answer → match tool → correct answer → Roll on, timer resumed) and then gate 2 (round 2)."
+    },
+    {
+      "id": "docs/build-log/phase-20.md#remaining-defects-and-follow-ups",
+      "title": "Phase 20: Guided lessons (Pip, Sky Islands, a voice that explains) › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-20.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-20",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- **Voice:** the user and their tester still need to pick a voice from the audition, then run `--write`.\n- **Physical phone:** tilt selection at gates is unit-tested but hasn't been tried on the physical iPhone.\n- **Lesson depth:** the other five lessons are single rounds (§8 of the plan), and their deeper redesigns are open.\n- **Personalized introductions** fall back to browser speech (issue #10).\n- **Review and deployment:** educator review is still a gate before any public launch, and the education app isn't deployed.\n- **Game UI:** the HUD lesson chip can briefly overlap a gate's floating label."
     },
     {
       "id": "docs/facts/whats-built.md",
