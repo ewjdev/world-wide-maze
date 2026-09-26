@@ -61,6 +61,20 @@ jobs:
 
       - run: pnpm check
 
+      - name: Build standalone education pages
+        run: pnpm build:education
+
+      - name: Exercise education pages in Chromium
+        run: |
+          pnpm --filter @wwm/education preview > /tmp/wwm-education-preview.log 2>&1 &
+          education_pid=$!
+          trap 'kill "$education_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4174/ > /dev/null; then break; fi
+            sleep 1
+          done
+          WWM_EDUCATION_E2E_BASE=http://127.0.0.1:4174 pnpm vitest run --project @wwm/education education.e2e
+
   # ── PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
   # (wrangler.jsonc env.production.previews).
   preview:

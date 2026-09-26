@@ -57,6 +57,8 @@ packages/ai/              Phase 11
 tools/fixture-capture/    Phase 02
 tools/stage-debugger/     Phase 03
 tools/batch-eval/         Phase 09
+apps/education/          Phase 19 (education app and parent workspace)
+packages/learning/       Phase 19 (independent learning contract and starter content)
 fixtures/                 Phase 02 creates; others ADD files in their own subfolder only
 docs/reference/           Phase 01
 docs/build-log/           every agent appends ONE entry file; orchestrator curates
@@ -64,6 +66,8 @@ reference/                gitignored, downloaded third-party material (never com
 ```
 
 ## 4. Phases
+
+Education is an additive product track authorized September 26, 2026. Phase 19 owns `apps/education`, `packages/learning`, and `docs/education`, plus root documentation/scripts and CI wiring. See [Phase 19](phase-19-education.md). Existing game contracts remain unchanged; the independent learning domain imports from `@wwm/learning`.
 
 | # | Plan | Summary | Depends on | Wave |
 |---|---|---|---|---|

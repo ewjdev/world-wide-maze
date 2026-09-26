@@ -24,6 +24,25 @@ importers:
         specifier: ^5.0.1
         version: 5.0.1(@types/node@26.6.2)(vite@8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15))
 
+  apps/education:
+    dependencies:
+      '@fontsource-variable/figtree':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/unbounded':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@wwm/learning':
+        specifier: workspace:*
+        version: link:../../packages/learning
+    devDependencies:
+      playwright:
+        specifier: ^1.63.0
+        version: 1.63.0
+      vite:
+        specifier: ^8.3.1
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15)
+
   apps/extension:
     dependencies:
       '@wwm/capture-script':
@@ -220,6 +239,12 @@ importers:
       playwright:
         specifier: ^1.63.0
         version: 1.63.0
+
+  packages/learning:
+    dependencies:
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   packages/net:
     dependencies:
