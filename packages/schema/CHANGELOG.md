@@ -2,6 +2,10 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.2 (2026-09-26, analytics)
+- Added the shared versioned telemetry event/context/envelope schemas with closed categories and bounded numeric fields.
+- Visit and optional consented browser identity, attempt correlation, active-time deltas and provider deduplication IDs.
+
 ## 0.2.0 (2026-09-25, Phase 02b, gate G0)
 Implements `plans/contracts.md` v0.2.0 (contract deltas CD-1…CD-11 from Phase 01). **Breaking.**
 - **Scale (CD-1):** `PX_PER_METER` 40 → 13.5 (1 m = 1 ball diameter), `LEVEL_HEIGHT_M` 1.5 → 1.0,

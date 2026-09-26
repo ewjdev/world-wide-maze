@@ -23,8 +23,8 @@
 Effective: September 25, 2026.
 
 ## The short version
-- **No accounts, no ads, no analytics trackers, no third-party scripts, and no cookies.** The game remembers your
-  settings in your own browser's local storage; that data isn't sent to us.
+- **No accounts, no ads, no third-party browser scripts, and no cookies.** The game remembers your
+  gameplay settings in your own browser. Analytics identifiers and choices are described in §6–7.
 - When you turn a website into a maze, our server takes a screenshot of that **public** page. The screenshot and
   the maze are **unlisted** (only people with the link can open them) and are **deleted after 30 days**.
 - If you put a name on a leaderboard, the name, your score and a recording of your ball's movements are **public**
@@ -33,8 +33,7 @@ Effective: September 25, 2026.
   next to leaderboard entries, and short-lived rate-limit counters are keyed by it.
 - Questions you ask the "Ask about the original" assistant are sent, with excerpts from our own documentation, to
   an AI model provider (Anthropic) through Cloudflare. Don't put personal information in them.
-- Usage statistics ("telemetry") are **off**. If we ever turn them on, they will be anonymous and this notice will
-  change first.
+- Usage statistics use explicit events and pseudonymous visit IDs, with optional return-visit measurement. The analytics notice at `/privacy/analytics` describes these choices.
 
 ## 1. What happens when you play
 | What | Where it's kept | How long | Why |
@@ -106,23 +105,22 @@ headers) to deliver the site and protect it from attacks. It does this under its
 - We count questions per IP address for a short period to stop abuse, and we don't use questions to identify
   anyone. **Please don't include personal information in a question.**
 
-## 6. Usage statistics (telemetry) — off
-Telemetry is switched off. If we turn it on in future, we will update this notice first, and it will work like
-this: anonymous game-progress events (reached the title screen, paired a phone, started, finished, a build failed
-with an error code, and script errors with web addresses removed), grouped by a random id that is created for each
-page load and never saved in your browser. No names, scores, room codes, page addresses or IP addresses are sent.
-Events go to Workers Logs (7 days). Browsers that send Do Not Track or Global Privacy Control send nothing.
+## 6. Usage statistics (telemetry)
+The approved analytics integration sends explicit website/game events through Cloudflare to our PostHog US project. The branch enables collection when deployed. `/privacy/analytics` provides an immediate opt-out and a separate optional return-visit choice. Do Not Track and Global Privacy Control suppress collection.
+
+Events contain canonical page categories, broad traffic source/campaign/device/browser/language categories, game phases, control method, build outcomes, attempt IDs, restarts and active-time deltas. We do not send player names, arbitrary website URLs, page content, room codes, pairing tokens, raw sensor data, client IP addresses, or error-message text to PostHog. No session recording, autocapture, advertising, fingerprinting or person-profile processing is enabled.
+
+A random visit ID in sessionStorage expires after 30 minutes without events. Only when a visitor explicitly chooses return-visit measurement do we store a random browser ID in localStorage, expiring after 90 days. These identifiers are pseudonymous, not a verified identity or a count of individual humans. The selected PostHog Free plan retains events for up to one year (verified in its setup screen on September 26, 2026). Expiring or removing a browser ID does not delete events already received. Requests about retained information can be sent to the contact above.
 
 ## 7. Cookies and similar technology
-We don't set cookies. The game uses your browser's local storage only for the settings in §1, which are needed
-for the features you use and never leave your device. There are no advertising, analytics or social-media
-trackers, and fonts and game assets are served from `wwm.ewj.dev` itself.
+We do not set cookies. In addition to feature settings described above, session storage holds the visit ID, and local storage holds analytics preferences and, only after explicit selection, the return-visit ID. Choosing Off clears the visitor ID and unsent queue and stops future events. Choosing visit-only clears the persistent ID. DNT/GPC take precedence over these choices.
 
 ## 8. Service providers
 We use these providers to run the service. They process data on our behalf, for the purposes described here.
 
 | Provider | What it does for us | What it receives |
 |---|---|---|
+| **PostHog, Inc.** — US Cloud product analytics | Stores the explicit analytics described in §6 for up to one year on the selected Free plan | Pseudonymous visit/optional browser identifiers and allowed categorical/numeric event fields; no client IP |
 | **Cloudflare, Inc.** — Workers, static hosting, Durable Objects, Workers Logs | Hosts the site and API, relays phone ↔ screen messages, keeps logs | All requests to the site, including IP addresses and request headers; pairing messages; the log fields in §1 |
 | **Cloudflare** — Browser Rendering | Opens pages in a headless browser and takes screenshots | The web address you enter (not your IP address or identity) |
 | **Cloudflare** — R2, D1, KV | Stores mazes, screenshots, leaderboard entries, cache entries and rate-limit data | The data in §§2–5 |

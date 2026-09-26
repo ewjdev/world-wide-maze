@@ -115,6 +115,7 @@ function Title() {
       <footer className="wwm-title__foot">
         <p>{t('app.tribute')}</p>
         <a href="/about">{t('title.about')}</a>
+        <a href="/privacy/analytics">{t('analytics.title')}</a>
       </footer>
     </div>
   );

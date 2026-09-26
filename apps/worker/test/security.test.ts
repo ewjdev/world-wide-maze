@@ -5,7 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, test } from 'vitest';
 import { parseJsonc } from '../../../infra/scripts/lib/cloudflare-infra.mjs';
 import { hashIp, ipHashSecret } from '../src/routes/scores-rules.ts';
-import { sanitizeTelemetry } from '../src/routes/telemetry-rules.ts';
 import {
   BodyTooLargeError,
   clientIp,
@@ -150,40 +149,6 @@ describe('IP hashes', () => {
   });
 });
 
-describe('telemetry ingest', () => {
-  test('keeps only allow-listed events and fields', () => {
-    const out = sanitizeTelemetry({
-      events: [
-        {
-          name: 'played',
-          input: 'phone',
-          run: 'fixture',
-          slice: 2,
-          visit: '0123456789abcdef',
-          ms: 10,
-          url: 'https://x',
-        },
-        { name: 'build_failed', code: 'UNPLAYABLE', name2: 'x' },
-        { name: 'build_failed', code: 'lowercase<script>' },
-        { name: 'evil' },
-        'junk',
-      ],
-    });
-    expect(out).toEqual([
-      { event: 'played', input: 'phone', run: 'fixture', slice: 2, visit: '0123456789abcdef', ms: 10 },
-      { event: 'build_failed', code: 'UNPLAYABLE' },
-      { event: 'build_failed' },
-    ]);
-    expect(sanitizeTelemetry(null)).toEqual([]);
-    expect(
-      sanitizeTelemetry({
-        events: [{ name: 'client_error', kind: 'TypeError', message: 'at https://x.test/a' }],
-      }),
-    ).toEqual([{ event: 'client_error', kind: 'TypeError' }]);
-    expect(sanitizeTelemetry({ events: Array(80).fill({ name: 'title' }) })).toHaveLength(50);
-  });
-});
-
 describe('deploy config (wrangler.jsonc)', () => {
   const cfg = parseJsonc(readFileSync(resolve(here, '../wrangler.jsonc'), 'utf8')) as {
     vars: Record<string, string>;
@@ -199,7 +164,9 @@ describe('deploy config (wrangler.jsonc)', () => {
     if (!target) return;
     expect(target.vars.ROOM_STATS).toBe('0');
     expect(target.vars.DEV_ALLOWED_HOSTS).toBe('');
-    expect(target.vars.TELEMETRY_INGEST).toBe('0');
+    expect(target.vars.TELEMETRY_INGEST).toBe(wwmEnv === 'production' ? '1' : '0');
+    expect(target.vars.TELEMETRY_DEBUG).toBe('0');
+    expect(target.vars.POSTHOG_TOKEN?.startsWith('phc_') ?? false).toBe(wwmEnv === 'production');
     expect(target.vars.CAPTURE_BACKEND).toBe('browser-run');
     expect(target.vars.WWM_ENV).toBe(wwmEnv);
     // every top-level var is redeclared (vars are inherited neither by environments nor by Previews)

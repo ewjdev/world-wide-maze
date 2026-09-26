@@ -93,6 +93,8 @@ jobs:
 
       - name: Build the web app (static assets; telemetry off in Previews)
         run: pnpm --filter @wwm/web build
+        env:
+          VITE_TELEMETRY_URL: ""
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews
@@ -226,7 +228,7 @@ jobs:
       - name: Build the web app (static assets)
         run: pnpm --filter @wwm/web build
         env:
-          VITE_TELEMETRY_URL: ${{ vars.WWM_TELEMETRY_URL }} # empty = telemetry off
+          VITE_TELEMETRY_URL: /api/t
 
       - name: Refuse placeholder ids, dev switches, missing domain
         run: node infra/scripts/check-deploy-config.mjs production

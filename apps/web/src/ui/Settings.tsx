@@ -91,6 +91,7 @@ export function TopBar() {
                 <small>{t('settings.pixelHint')}</small>
               </span>
             </label>
+            <a href="/privacy/analytics">{t('analytics.title')}</a>
           </div>
         )}
       </div>

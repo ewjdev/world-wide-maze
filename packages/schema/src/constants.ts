@@ -5,7 +5,9 @@
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.3.1';
+export const CONTRACT_VERSION = '0.3.2';
+/** Version of the explicit event envelope, independent from game/physics versions. */
+export const ANALYTICS_VERSION = 1;
 
 // --- contract §1: scale --------------------------------------------------------------------------
 /** 1 ball diameter = 1 m = 13.5 px (2013: 10.8 px of a 1024 stage). */

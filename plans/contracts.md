@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.1`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.2`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -435,3 +435,11 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **CCR-14-3:** the worker's `SliceTexture.contentType` is `'image/webp' | 'image/png'`.
 - **CCR-14-4:** `provenance.notes` may include `'local-capture'` and `'sketch-mode'`.
 - `/play/local` drops `Cross-Origin-Opener-Policy`, which the bookmarklet handoff needs. Every other header, including CSP, still applies.
+
+
+**v0.3.2, analytics integration (orchestrator, 2026-09-26):**
+- CCR-analytics-1: `packages/schema/src/telemetry.ts` is the shared v1 event, context and envelope contract for `POST /api/t`. The web client imports these types and the Worker validates both boundaries, stripping unknown properties.
+- Each event has a UUID for deduplication, a visit UUID, timestamp, version and categorical context. Optional visitor UUIDs require `identity: browser` and an explicit browser preference. Visit IDs rotate after 30 minutes without events.
+- Per-attempt UUIDs correlate builds, play, completion and active-time deltas. No arbitrary text, URL, room code, captured content or IP is part of the contract.
+- `204` means the sanitized batch was accepted by PostHog (or collection is disabled); provider failure returns `502` for bounded retry. Client timestamps older than a day or more than a minute ahead are rejected.
+- The user authorized implementation and analytics validation on a new branch. Production configuration enables collection when this branch is deployed; previews stay disabled.
