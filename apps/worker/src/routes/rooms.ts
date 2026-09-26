@@ -34,6 +34,23 @@ export function randomRoomCode(random: () => number = cryptoRandom): string {
   return String(100000 + Math.floor(random() * 900000));
 }
 
+/**
+ * Durable Object calls can fail transiently, most often right after a deploy, when Cloudflare restarts the
+ * object ("Durable Object reset because its code was updated"). Such errors carry `retryable: true`. Following
+ * Cloudflare's guidance, retry those (with a fresh stub each time, via `call`) unless `overloaded` is set.
+ */
+export async function withDoRetry<T>(call: () => Promise<T>, attempts = 3, baseDelayMs = 50): Promise<T> {
+  for (let i = 0; ; i++) {
+    try {
+      return await call();
+    } catch (e) {
+      const err = e as { retryable?: boolean; overloaded?: boolean };
+      if (i + 1 >= attempts || err?.retryable !== true || err?.overloaded === true) throw e;
+      await new Promise((r) => setTimeout(r, baseDelayMs * 2 ** i));
+    }
+  }
+}
+
 function cryptoRandom(): number {
   const a = new Uint32Array(1);
   crypto.getRandomValues(a);
@@ -89,7 +106,7 @@ export async function handleRooms(
     const tokens = { hostToken: token(), pairToken: token() };
     for (let i = 0; i < ROOM_CODE_ATTEMPTS; i++) {
       const code = randomRoomCode(opts.random);
-      if (await stub(code).claim(code, tokens)) {
+      if (await withDoRetry(() => stub(code).claim(code, tokens))) {
         // The tokens are secrets: never cache this response.
         return Response.json({ code, ...tokens } satisfies CreateRoomResponse, {
           headers: { 'cache-control': 'no-store' },
@@ -114,5 +131,7 @@ export async function handleRooms(
     if (token !== null && token !== '' && !TOKEN_RE.test(token))
       return Response.json({ error: 'malformed room token' }, { status: 400 });
   }
-  return stub(code).fetch(request);
+  // WebSocket upgrades can't be replayed once the body/socket is consumed; plain GETs (stats) are safe to retry.
+  if (action === 'ws') return stub(code).fetch(request);
+  return withDoRetry(() => stub(code).fetch(request)); // body-less GET: safe to resend
 }
