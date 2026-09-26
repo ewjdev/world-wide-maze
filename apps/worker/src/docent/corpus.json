@@ -1,8 +1,9 @@
 {
   "format": 2,
-  "hash": "eb1b7e95b823ff8f",
+  "hash": "28570abc53bcefe8",
   "files": [
     "RESEARCH.md",
+    "docs/build-log/analytics.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
     "docs/build-log/phase-03.md",
@@ -204,6 +205,32 @@
       "anchor": "sources",
       "kind": "history",
       "text": "## Sources\n- Saqoosha, *Case Study – Inside World Wide Maze* (web.dev, originally HTML5 Rocks): https://web.dev/case-studies/world-wide-maze\n- Engadget launch coverage: https://www.engadget.com/2013-03-21-chrome-world-wide-maze-browser-game.html\n- Experiments with Google entry: https://experiments.withgoogle.com/world-wide-maze\n- Google Japan blog (JA): https://blog.google/intl/ja-jp/products/android-chrome-play/2013_03_chrome-experimen/\n- INTERNET Watch (JA): https://internet.watch.impress.co.jp/docs/news/592683.html\n- The FWA case: https://thefwa.com/cases/chrome-world-wide-maze\n- Cannes Lions Interactive Silver (Party Inc.): https://www.youtube.com/watch?v=tStREdp85PQ\n- Hacker News discussion: https://news.ycombinator.com/item?id=5414235\n- TechZone360 (WebSocket coverage): https://www.techzone360.com/topics/techzone/articles/2013/03/26/331949-google-maze-new-fun-game-powered-html5-websocket.htm\n- Back2Gaming: https://www.back2gaming.com/news/google-chrome-experiment-world-wide-maze/"
+    },
+    {
+      "id": "docs/build-log/analytics.md",
+      "title": "Build log: explicit website and game analytics · What changed",
+      "path": "docs/build-log/analytics.md",
+      "url": "/log#analytics",
+      "kind": "build-log",
+      "text": "- Date: 2026-09-26.\n- Agent: Codex, with a separate browser-validation sub-agent requested by the user.\n- Branch: `feat/product-analytics`, based on `fix/portal-dismiss-once` at `9b19e1b`.\n- Authorization: implement the analytics plan on a new branch, commit it, independently browser-test it, and validate analytics in PostHog. The user also selected optional return-visit measurement. No production deployment, merge or push was requested or performed.\n\n## What changed\nExtended the existing first-party telemetry endpoint into a versioned, shared-schema pipeline to PostHog project 260845. Explicit events cover website navigation, onboarding/pairing, building, gameplay, completion/failure, retries and outbound clicks. Visit and stage-attempt IDs support meaningful counts; provider UUIDs support deduplication on bounded retries.\n\nActive and play duration are monotonic, non-overlapping deltas. Hidden, idle, paused, disconnected and portal-prompt time are handled explicitly. Host/controller surfaces stay separate. Last observed game phase is an inferred stop after inactivity, not a claim about a player's reason for leaving.\n\nAdded an English/Japanese analytics preference page linked from title, settings and website footer. Visit-only is the default; persistent browser identity requires the optional choice and expires after 90 days. Off, DNT and GPC suppress capture. Arbitrary URLs, captured content, room/pairing credentials, raw errors and client IP are excluded. No replay, autocapture, third-party browser SDK or person profiles were enabled.\n\nProduction configuration is prepared to collect after deployment; preview/dev defaults remain disabled. PostHog's existing project was configured on its Free plan; report definitions and saved links are in `infra/analytics/`. The organization-level external AI processing opt-in was left untouched."
+    },
+    {
+      "id": "docs/build-log/analytics.md#verification",
+      "title": "Build log: explicit website and game analytics › Verification",
+      "path": "docs/build-log/analytics.md",
+      "anchor": "verification",
+      "url": "/log#analytics",
+      "kind": "build-log",
+      "text": "## Verification\n- Independent browser pass: actual app on localhost:5174 through local Worker:8790 to PostHog US. Navigation, pairing/no-sensor fallback, keyboard gameplay, failed build, pause/resume, restart, exit, optional identity and opt-out tested. See [browser report](../launch/evidence/analytics-browser-2026-09-26.md).\n- Provider transport snapshot: 114 sanitized records, 38/38 batches accepted. PostHog SQL returned stored host/site/controller events. Exact final `title` and `game_phase` UUIDs were read back for visit `0c2773d7-75a2-48fb-9cf1-f18c50feeecb`; occurrence 18:18:47 UTC, Worker receipt 18:18:52.271 UTC.\n- Browser testing found duplicate development title events from React StrictMode. Observer attachment now skips the discarded mount; fresh browser readback confirmed one title and one initial phase.\n- Additional review fixed denied-storage-write handling: current-page opt-out remains honored, and failed persistence never claims browser identity.\n- Production web build and production/preview deploy-config checks passed. The analytics base module imports the small constants export, preserving lazy loading of schema/game code.\n- Initial `pnpm check`: 78 suites passed, 1 skipped; 1,054 tests passed, 11 skipped. Final check after the storage regression test: typecheck/lint passed and all 1,055 assertions passed; the share-card suite failed only its existing 60-second `afterAll` server-close hook. Isolated rerun of that suite passed all 40 tests and cleanup (38.30 seconds). No unrelated test-harness code was changed.\n- Seven production reports were saved and read back in PostHog, plus a separate QA receipt table. Development variants returned the expected 2 visits → 1 loaded → 1 played → 0 finished funnel and 8.928 seconds of play. Temporary QA servers were stopped after verification; the user's existing development servers were left running.\n- Existing style warnings, Node experimental warnings and large game-bundle warnings remain unrelated to this change."
+    },
+    {
+      "id": "docs/build-log/analytics.md#release-follow-up",
+      "title": "Build log: explicit website and game analytics › Release follow-up · Remaining release boundary",
+      "path": "docs/build-log/analytics.md",
+      "anchor": "release-follow-up",
+      "url": "/log#analytics",
+      "kind": "build-log",
+      "text": "## Release follow-up\nPR #8 CI found the generated docent corpus stale because this build log was added after the local full check. Regenerated the committed index and ran the corpus consistency tests before resubmitting the release. The check is also present locally; this was an ordering omission, not a CI-only requirement.\n\n## Remaining release boundary\nThe branch is locally implemented and provider-validated. Production collection still requires deployment and a real production visit/readback. No physical phone tilt or full stage completion was manually exercised; lifecycle unit tests and the repository's replay tests cover those deterministic game transitions. Return metrics describe the opt-in cohort, not all people or cross-device identity. Browser blocking, sudden process termination and network loss can leave gaps."
     },
     {
       "id": "docs/build-log/phase-01.md",

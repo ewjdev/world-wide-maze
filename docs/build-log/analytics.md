@@ -26,6 +26,10 @@ Production configuration is prepared to collect after deployment; preview/dev de
 - Seven production reports were saved and read back in PostHog, plus a separate QA receipt table. Development variants returned the expected 2 visits → 1 loaded → 1 played → 0 finished funnel and 8.928 seconds of play. Temporary QA servers were stopped after verification; the user's existing development servers were left running.
 - Existing style warnings, Node experimental warnings and large game-bundle warnings remain unrelated to this change.
 
+## Release follow-up
+
+PR #8 CI found the generated docent corpus stale because this build log was added after the local full check. Regenerated the committed index and ran the corpus consistency tests before resubmitting the release. The check is also present locally; this was an ordering omission, not a CI-only requirement.
+
 ## Remaining release boundary
 
 The branch is locally implemented and provider-validated. Production collection still requires deployment and a real production visit/readback. No physical phone tilt or full stage completion was manually exercised; lifecycle unit tests and the repository's replay tests cover those deterministic game transitions. Return metrics describe the opt-in cohort, not all people or cross-device identity. Browser blocking, sudden process termination and network loss can leave gaps.
