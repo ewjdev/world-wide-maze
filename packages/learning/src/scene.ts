@@ -364,9 +364,6 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
       out.push(`<g class="mark" data-choice-mark="${id}">`);
       if (choice) out.push(halo(choice, 24));
       out.push(spriteSvg(theme, 'island', island.box, { stretch: true }));
-      out.push(
-        `<text x="${n(island.box.x + island.box.w / 2)}" y="${n(island.box.y + island.box.h - 14)}" text-anchor="middle" font-size="${view.orientation === 'wide' ? 30 : 30}" font-weight="700" fill="${p.paper}">Island ${LETTERS[i]}</text>`,
-      );
       if (choice) out.push(check(choice));
       out.push('</g>');
     });
@@ -391,6 +388,12 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
           `<g class="gem" data-gem="${id}-${k}"><circle class="ring" cx="${n(x)}" cy="${n(y)}" r="${n(r * 1.45)}" fill="none" stroke="${p.glow}" stroke-width="6"/>${spriteSvg(theme, 'gem', { x: x - r, y: y - r, w: r * 2, h: r * 2 })}</g>`,
         );
       });
+    });
+    // island names go above the match lines so a line never strikes through them
+    layout.islands.forEach((island, i) => {
+      out.push(
+        `<text x="${n(island.box.x + island.box.w / 2)}" y="${n(island.box.y + island.box.h - 14)}" text-anchor="middle" font-size="30" font-weight="700" fill="${p.paper}" paint-order="stroke" stroke="${p.islandSide}" stroke-width="10" stroke-linejoin="round">Island ${LETTERS[i]}</text>`,
+      );
     });
     // stones: "Same" or numbers
     for (const choice of layout.choices.filter((c) => c.id !== 'a' && c.id !== 'b')) {
