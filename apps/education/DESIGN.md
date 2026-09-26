@@ -14,8 +14,6 @@ colors:
   secondary-hover: "#dce3e7"
   soft-green: "#e2eddf"
   transparency-blue: "#e7eef5"
-  choice-blue: "#f0f6fb"
-  choice-blue-hover: "#e2eef7"
   choice-border: "#cbd8e2"
   retry-yellow: "#fff5d8"
   retry-border: "#856300"
@@ -31,6 +29,17 @@ colors:
   brand-blue: "#4f9fd6"
   brand-yellow: "#f2c230"
   brand-green: "#3f9a4c"
+  pip-surface: "#e7eef5"
+  pip-surface-hover: "#dce8f2"
+  spoken-highlight: "#fbe39a"
+  sky: "#f8f8f8"
+  cloud: "#edf1f4"
+  island-side: "#4f9fd6"
+  island-edge: "#9fb3c2"
+  gem: "#31a4ae"
+  gem-edge: "#206a71"
+  bridge: "#3f9a4c"
+  glow: "#f2c230"
 typography:
   display:
     fontFamily: '"Unbounded Variable", sans-serif'
@@ -50,6 +59,15 @@ typography:
     fontWeight: 650
     lineHeight: 1.24
     letterSpacing: "-0.025em"
+  prompt:
+    fontFamily: '"Unbounded Variable", sans-serif'
+    fontSize: "clamp(26px, 2.8vw, 38px)"
+    fontWeight: 650
+    lineHeight: 1.22
+  pip-start-label:
+    fontFamily: '"Unbounded Variable", sans-serif'
+    fontSize: "clamp(24px, 3vw, 34px)"
+    fontWeight: 650
   body:
     fontFamily: '"Figtree Variable", sans-serif'
     fontSize: "18px"
@@ -58,17 +76,13 @@ typography:
     fontFamily: '"Figtree Variable", sans-serif'
     fontSize: "21px"
     lineHeight: 1.55
-  choice-label:
-    fontFamily: '"Figtree Variable", sans-serif'
-    fontSize: "17px"
-    fontWeight: 650
   small:
     fontFamily: '"Figtree Variable", sans-serif'
     fontSize: "14px"
     lineHeight: 1.55
 rounded:
   control: "8px"
-  choice: "14px"
+  pip-card: "28px"
   circle: "50%"
 spacing:
   tight: "8px"
@@ -99,16 +113,29 @@ components:
     rounded: "{rounded.control}"
     padding: "14px"
     width: "100%"
-  choice:
-    backgroundColor: "{colors.choice-blue}"
+  pip-start:
+    backgroundColor: "{colors.pip-surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.choice}"
-    padding: "28px 18px 18px"
-    width: "250px"
-  choice-correct:
-    backgroundColor: "{colors.soft-green}"
-  choice-retry:
-    backgroundColor: "{colors.retry-yellow}"
+    rounded: "28px"
+    padding: "28px 44px 26px"
+  pip-replay:
+    backgroundColor: "{colors.pip-surface}"
+    rounded: "{rounded.circle}"
+    size: "60px (52px mobile)"
+  helper-button:
+    backgroundColor: "{colors.secondary}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.control}"
+    height: "60px (52px mobile)"
+  next:
+    backgroundColor: "{colors.action-green}"
+    textColor: "{colors.paper}"
+    rounded: "{rounded.control}"
+    height: "64px (56px mobile, full width)"
+  scene-choice:
+    backgroundColor: "transparent"
+    rounded: "22px"
+    minSize: "44px"
   status:
     backgroundColor: "{colors.soft-green}"
     padding: "14px 18px"
@@ -122,12 +149,13 @@ components:
 
 This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.
 
-The interface alternates between readable adult guidance and generous child-facing choices. Shapes are literal mathematical stimuli, built with CSS; imagery is not required to communicate them. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
+The interface alternates between readable adult guidance and generous child-facing play. Lessons take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
 
 **Key Characteristics:**
 - Fog-white pages with flat, softly tinted sections.
 - Geometric display type paired with clear, roomy body text.
-- Large shape choices with persistent verbal feedback.
+- One voiced guide, Pip, and a scene where the counted gems are the highest-contrast things on screen.
+- Persistent written feedback, with the spoken word highlighted.
 - Readable learning intent beside optional parent controls.
 
 ## Colors
@@ -145,10 +173,16 @@ The palette combines WWM's geometric color roles with darker action and stimulus
 ### Neutral
 - **Fog White, Paper, and Ink:** page, activity/field surfaces, and primary text.
 - **Muted and Line:** explanatory text and structural dividers.
-- **Soft Green:** introduction panel, saved-state strip, and correct choices.
-- **Transparency Blue:** the explanation section; **Choice Blue** and its hover shade distinguish selectable activity groups.
-- **Retry Yellow and Retry Border:** another-attempt feedback on a choice. The visible feedback sentence carries meaning alongside color.
+- **Soft Green:** introduction panel, saved-state strip, and the end card’s offline-activity panel.
+- **Transparency Blue:** the explanation section; the same value is Pip Surface behind Pip’s buttons. **Choice Border** outlines Pip’s buttons and the mute toggle.
+- **Retry Yellow and Retry Border:** the muted state of the mute toggle. Another-attempt feedback in the scene uses a dashed Glow halo plus the feedback sentence.
 - **Secondary:** quiet actions, with a darker hover surface. Fields and stop markers use the dedicated frontmatter border, placeholder, background, and ink tokens.
+
+### Sky Islands (scene)
+The scene colours are the theme palette in the learning document (`packages/learning/src/theme.ts`), sourced from the game: sky, cloud, island side and edge, gem and gem edge, bridge, glow. They are listed in the frontmatter for reference only; change them in the theme, never in CSS.
+- **Clutter rule:** the counted gems, with their dark Gem Edge outline, are the highest-contrast objects. Sky, clouds, the goal island and the gate stay faint and never move while the child is deciding.
+- **Glow** (the brand yellow) marks match lines, lit and leftover gems, and choice halos. A dashed halo means "try again"; a solid halo with a green check means solved.
+- **Pip surface** is the soft blue behind Pip's buttons. **Spoken highlight** is the pale yellow behind the word Pip is saying.
 
 ## Typography
 
@@ -160,10 +194,11 @@ Unbounded gives headings and the wordmark their geometric silhouette; Figtree ca
 ### Hierarchy
 - **Display:** the path title; balanced wrapping with a narrow measure. Custom titles and their lead text use `overflow-wrap: anywhere`.
 - **Headline:** section headings. Grown-up notes locally switch their heading to Figtree at 24px.
-- **Activity title:** centered questions with a maximum measure of 22ch.
+- **Prompt:** the round's question, next to Pip's replay button, in Unbounded. It is 19px on phones so the question, scene and Next fit one screen. Each word is its own span so the spoken word can be highlighted.
+- **Lesson title:** the page's h1, set small (17px, 15px on phones) in the lesson bar. The question carries the visual weight.
 - **Body:** prose has a maximum measure of 68ch. Mobile body text becomes 17px.
 - **Lead:** introductory adult text; mobile size becomes 19px.
-- **Choice label:** semibold captions beneath stimuli; mobile size becomes 15px.
+
 - **Small:** supporting context and source/status caveats.
 
 ## Layout
@@ -172,7 +207,12 @@ The header is capped at 1320px with 28px by 40px padding. Main content and foote
 
 At 760px and below, parent and path layouts become single columns with 32px gaps, the introduction becomes static, and page gutters become 20px. The header wraps. The path title becomes 40px with a 12ch measure; activity titles become 29px. Custom text wraps rather than forcing the introduction beyond its column.
 
-Lessons use a 1000px maximum-width canvas. Choices are centered and 250px wide with a 206px minimum height; mobile choices wrap at half the row width minus 6px, with a 174px minimum height. Lesson navigation becomes a reversed column on mobile, placing the onward action above the return action. Feedback reserves a 60px minimum height.
+Lessons use a 1040px maximum-width canvas, in this order: lesson bar (back link, title, mute), then the prompt row, the scene, the feedback, and the controls. Next sits directly under the feedback.
+- **Scene sizing:** the scene keeps its viewBox aspect ratio. Its width is sized so the prompt, scene, feedback and Next fit the viewport; the script measures the space around the scene, because prompts wrap. There is a floor so gems never get too small: 600px for wide scenes, 280px for tall ones.
+- **Orientation:** at 640px and below the scene switches to the tall orientation (islands stacked). The site navigation hides, the back link becomes an arrow, the helpers share one row, and Next spans the full width.
+- **Checked:** at 390×844, Next after a correct answer is inside the first viewport without scrolling.
+- **Feedback** reserves about two lines.
+- **Grown-up material** sits below the activity canvas: the version note, the notes disclosure, and navigation. Navigation stacks on mobile.
 
 ## Elevation & Depth
 
@@ -180,9 +220,9 @@ There are no shadows in the education stylesheet. Depth comes from white activit
 
 ## Shapes
 
-Large section surfaces remain rectangular. Controls use the control radius; answer choices use the larger choice radius. Circular stop numbers echo circular stimuli. Triangles are CSS polygons (`50% 0, 100% 100%, 0 100%`); squares retain straight edges.
+Large section surfaces remain rectangular. Controls use the control radius; the scene draws its own rounded islands, cards and stones. Circular stop numbers echo Pip. Triangles are CSS polygons (`50% 0, 100% 100%, 0 100%`); squares retain straight edges.
 
-Activity shapes are 42px squares before circle rounding or triangle clipping. Mobile choice and stimulus shapes are 30px. The introduction's display shapes scale from 48px to 88px and become 64px on mobile. Brand shapes are 12px. Preserve these distinct contexts rather than applying one shape size everywhere.
+Activity shapes and gems are drawn inside the scene SVG and scale with it. Brand shapes are 12px. Pip's buttons are round (replay) or 28px-radius cards (start). Scene choices follow the drawn island, card, or stone.
 
 ## Components
 
@@ -200,21 +240,63 @@ The header uses text links beside the wordmark, with semibold 16px text (14px on
 
 Arrows (`↗`, `←`, `→`) are text navigation notation in the current implementation, not a canonized icon system. The brand's geometry and activity stimuli likewise do not establish a general-purpose icon library.
 
-### Answer Choices
+### Pip buttons
 
-Large rounded buttons group literal shapes above a short caption. Their 2px border changes with hover, correct, and retry states. Correct uses Soft Green with Action Green borders; retry uses Retry Yellow with Retry Border. Meaning also appears in the live feedback text. Counting and comparison display neutral group names; accessible labels describe each option.
+- **Start:** a large Pip Surface card with Pip (132px) and "Tap Pip to start" in Unbounded. Pip bobs gently until tapped; this stops with reduced motion. The tap unlocks audio and starts the lesson.
+- **Replay:** a 60px round Pip button (52px on mobile) beside the prompt, labelled "Hear it again". It re-says the current prompt (or the bonus/finale line). It matches the height of the Help me and Match them up buttons.
+- **Mute:** a 48px round icon toggle in the lesson bar (`aria-pressed`). Muted uses Retry Yellow. It is remembered in `localStorage` (`wwm-learning.muted`). When muted, the cues and highlights still run.
+
+### Scene and answer controls
+
+The scene is one decorative SVG from `sceneSvg`, in two islands (compare/difference) or choice cards (choose). The real answer controls are transparent `<button>`s over each choice box:
+- They are positioned in percent of the viewBox, so they track the drawing at any size.
+- They are at least 44px, with a 4px Focus Blue outline offset 6px.
+- On hover-capable devices they show a faint blue tint.
+- Accessible names start with the visible label ("Island A: 3 gems, spread out").
+- They are disabled until JavaScript runs.
+- After success they stay focusable but `aria-disabled`, and taps are ignored: success is locked.
+
+State is shown on the drawing, never by colour alone. The feedback sentence carries the meaning:
+- A dashed Glow halo marks another try.
+- A solid halo plus a green check marks the solved choice.
+- Both islands pulse once for a nudge.
+- A glowing halo marks the worked example.
+- Lit gems count along with the voice; match lines draw one per spoken "match"; leftover gems ring and bob.
+With reduced motion, all of this still appears without animation.
+
+### Stones
+
+"Same" and "how many more" numbers are white stones with an Island Side border, drawn between the islands. They are answer choices like the islands.
+
+### The bridge
+
+It runs along the bottom of every scene: the home island, one dashed plank slot per required round, and the goal island with its gate.
+- A correct answer drops in a green plank. Pip rolls onto it, then hops.
+- Conditional follow-ups and bonus rounds add no plank.
+- The end card shows the finished bridge (the bottom strip of a wide scene) with Pip at the gate.
+
+### Lesson controls
+
+- Help me and Match them up are secondary buttons. Match them up appears only on island rounds.
+- After success they give way to a prominent green Next (64px; full width on phones).
+- The bonus offer shows "Bonus round!", a dimmed preview of the bonus islands, and Play the bonus round / Skip.
+- The end card shows "You built the whole bridge!", Pip's finale line, Next activity, Play again, and the offline activity on a Soft Green panel for grown-ups.
 
 ### Containers and Disclosure
 
 The introduction, transparency section, saved-state strip, and activity canvas are flat surfaces rather than elevated cards. Dividers organize ordered stops, draft changes, and parent disclosure sections. Native details/summary provides optional adult explanation and AI import content, with a minimum 44px summary height.
 
-The portable HTML download intentionally uses its own compact system-font reading layout. It is not the source for the interactive site's visual system.
+The home path introduction shows a small Sky Islands picture composed from theme sprites, and a "Meet Pip" line. Each stop in the path shows its length ("5-round challenge with the match tool") in Stop Ink.
+
+The portable HTML download intentionally uses its own compact system-font reading layout, with the theme's palette and each round's scene inline. It is not the source for the interactive site's visual system.
 
 ## Do's and Don'ts
 
 ### Do:
 - **Do** retain the Figtree/Unbounded pairing and fog-white ground when extending this surface.
 - **Do** make mathematical objects literal and keep visible explanations alongside their machine-readable intent.
+- **Do** draw lesson pictures only from the document theme through the shared renderer, so the page and the game show the same thing.
+- **Do** keep counted gems the highest-contrast element; keep scenery faint and still.
 - **Do** preserve keyboard outlines, textual answer feedback, reduced-motion behavior, and wrapping for custom titles and introductions.
 - **Do** preserve the distinction between stimulus yellow and the brighter wordmark yellow.
 
