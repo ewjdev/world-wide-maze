@@ -91,3 +91,8 @@ None.
   the fixtures recaptured) to drop the sidecar mechanism.
 - The phone controller shows the normal play UI during the prompt (JUMP/MENU work; no special phone screen).
 - The time bonus is forfeited on a portal exit; a "travel bonus" is a design choice left open.
+
+## 2026-09-26 portal dismissal follow-up
+- Corrected the interaction after playtesting: `stayHere()` declines that portal for the rest of the stage. The physics sensor can still detect a crossing, but game logic ignores the declined portal so it cannot pause the maze again. Other portals remain available; a freshly loaded stage starts with no declines.
+- A declined gate uses the existing `used` state and appears dimmed, so it no longer looks like an active exit.
+- The Chromium journey test now separates travel from dismissal. After clicking Stay here, the ball rolls beyond the sensor and back through it using keyboard input, with no debug reposition and no second prompt.

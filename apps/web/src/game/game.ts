@@ -337,6 +337,8 @@ export class Game {
   #portalTimer = false;
   #portalAt = 0;
   #prevJump = true;
+  /** A declined link stays inactive for the rest of this stage. */
+  #dismissedPortals = new Set<number>();
   /** A travel is building: the journey's last stop is its target. */
   #travelling = false;
   /** Test / automation: a fixed input for the next ticks (`debugRollIntoPortal`). */
@@ -1241,6 +1243,7 @@ export class Game {
       },
     });
     this.#recordStop(got.stage, run);
+    this.#dismissedPortals.clear();
     this.#applyPortalStates(got.stage);
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
@@ -1390,7 +1393,12 @@ export class Game {
         if (ev.phase === 'start') this.audio.play('elevator');
         return false;
       case 'portal':
-        if (this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel) {
+        if (
+          this.#view.phase === 'play' &&
+          !this.#view.portal &&
+          !this.#view.travel &&
+          !this.#dismissedPortals.has(ev.portalId)
+        ) {
           this.#openPortal(ev.portalId);
           return true;
         }
@@ -1569,6 +1577,7 @@ export class Game {
     this.#results = [];
     this.#replays.clear();
     this.#travelling = false;
+    this.#dismissedPortals.clear();
     this.#set({
       total: 0,
       spares: NUM_BALLS,
@@ -1609,7 +1618,11 @@ export class Game {
       for (const p of portals)
         this.#engine?.setPortalState(
           p.id,
-          this.#api === 'offline' && !fixtureFor(p.href) ? 'offline' : 'open',
+          this.#dismissedPortals.has(p.id)
+            ? 'used'
+            : this.#api === 'offline' && !fixtureFor(p.href)
+              ? 'offline'
+              : 'open',
         );
     };
     apply();
@@ -1644,6 +1657,7 @@ export class Game {
   }
 
   #openPortal(id: number): void {
+    if (this.#dismissedPortals.has(id)) return;
     const p = this.#stage()?.portals?.find((x) => x.id === id);
     if (!p) return;
     this.#engine?.handleEvent({ type: 'portal', portalId: id });
@@ -1669,10 +1683,13 @@ export class Game {
       });
   }
 
-  /** "Stay here": close the prompt and play on (the portal re-arms once the ball leaves it). */
+  /** "Stay here": decline this link for the stage and let the ball pass through it. */
   stayHere(): void {
-    if (!this.#view.portal) return;
+    const portal = this.#view.portal;
+    if (!portal) return;
     this.audio.play('click');
+    this.#dismissedPortals.add(portal.id);
+    this.#engine?.setPortalState(portal.id, 'used');
     this.#set({ portal: null });
     if (this.#view.phase !== 'play') return;
     if (this.#portalTimer) this.#timer.start();
