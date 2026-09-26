@@ -261,6 +261,7 @@ function portalMaterial(
   const isPart = (k: number): N => abs(part.sub(k)).lessThan(0.5);
 
   const offline = s.y.greaterThan(0.5).and(s.y.lessThan(1.5));
+  const used = s.y.greaterThan(1.5);
   const hot = exp(clamp(u.time.sub(s.x), 0, 10).mul(-2.2)); // entry pulse, decays in ~1 s
   const surgeK = clamp(u.time.sub(s.z).div(1.2), 0, 1).mul(select(s.z.greaterThan(-50), float(1), float(0)));
   const mapK = clamp(u.mapScale.sub(1).div(2.2), 0, 1);
@@ -292,8 +293,8 @@ function portalMaterial(
   const grey = vec3(base0.dot(vec3(0.3, 0.59, 0.11)))
     .mul(0.8)
     .add(0.12);
-  const base = select(offline, grey, base0);
-  const speed = select(offline, float(0.25), float(1).add(surgeK.mul(4)));
+  const base = select(offline.or(used), grey, base0);
+  const speed = select(offline.or(used), float(0.25), float(1).add(surgeK.mul(4)));
   const time = u.time.mul(speed).add(st.w.mul(20));
 
   // vortex: a log spiral that turns inward, white-hot centre
@@ -358,11 +359,11 @@ function portalMaterial(
     ),
   );
   const shown = clamp(color, 0, 1);
-  m.opacityNode = clamp(alpha.mul(max(u.appear, float(0))), 0, 1);
+  m.opacityNode = clamp(alpha.mul(max(u.appear, float(0))).mul(select(used, float(0.24), float(1))), 0, 1);
   const glow = float(1)
     .add(hot.mul(1.4))
     .add(surgeK.mul(1.5))
-    .mul(select(offline, float(0.25), float(1)));
+    .mul(select(offline, float(0.25), select(used, float(0.15), float(1))));
   const em = select(
     isPart(0),
     vortexCol.mul(arms.mul(0.55).add(core.mul(0.6)).add(0.1)).mul(vortexA),

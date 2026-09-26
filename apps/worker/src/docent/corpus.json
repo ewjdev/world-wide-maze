@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "65aa367cf29b0e0b",
+  "hash": "eb1b7e95b823ff8f",
   "files": [
     "RESEARCH.md",
     "docs/build-log/phase-01.md",
@@ -1536,6 +1536,15 @@
       "url": "/log#phase-13",
       "kind": "build-log",
       "text": "## Manual human interventions\nNone.\n\n## Test evidence\n- `pnpm check`: typecheck, lint, **760 tests passed**, 13 skipped (environment-gated suites, e.g. ones needing `WWM_E2E_BASE`).\n- New: capture-script link targets (browser); builder `test/portals.test.ts` (synthetic placement, ranking,\n  helpers, `applyLinkTargets`, all 7 fixtures × every slice × 3 difficulties keep §10.1 invariants on link islands,\n  HN portals all off-site, ≥ 3 Wikipedia article portals per slice); physics `test/portal.test.ts` (fires once,\n  re-arms, placement doesn't fire, bit-identical trajectories with and without portals); solver\n  `test/portals.test.ts` (a portal on the route changes nothing; every slice of the 7 fixtures still solves);\n  web `test/journey.test.ts` and the machine `TRAVEL` edge; `test/portal.e2e.test.ts` (Chromium: roll in → prompt,\n  sim paused → stay → re-arm → travel → mocked `POST /api/stages` + SSE → second site loads, score and spares\n  carried, trail + share link → `/j/` card without three.js; and the offline prompt).\n- Every fixture stage still passes `validateStage` (fixture matrix) and the solver.\n\n## Remaining defects / follow-ups\n- The `/j/` share card has no server-rendered Open Graph image; link unfurls show the generic page. A Worker route\n  like `/s/:id` would fix it (Phase 10/12 territory).\n- The eval-* captures have no link sidecars (no portals); the batch eval report was not regenerated.\n- `fixtures/builder/links/*.json` could be folded into `fixtures/captures/*/capture.json` by the orchestrator (or\n  the fixtures recaptured) to drop the sidecar mechanism.\n- The phone controller shows the normal play UI during the prompt (JUMP/MENU work; no special phone screen).\n- The time bonus is forfeited on a portal exit; a \"travel bonus\" is a design choice left open."
+    },
+    {
+      "id": "docs/build-log/phase-13.md#2026-09-26-portal-dismissal-follow-up",
+      "title": "Build log: Phase 13 (Link portals: \"roll across the web\") › 2026-09-26 portal dismissal follow-up",
+      "path": "docs/build-log/phase-13.md",
+      "anchor": "2026-09-26-portal-dismissal-follow-up",
+      "url": "/log#phase-13",
+      "kind": "build-log",
+      "text": "## 2026-09-26 portal dismissal follow-up\n- Corrected the interaction after playtesting: `stayHere()` declines that portal for the rest of the stage. The physics sensor can still detect a crossing, but game logic ignores the declined portal so it cannot pause the maze again. Other portals remain available; a freshly loaded stage starts with no declines.\n- A declined gate uses the existing `used` state and appears dimmed, so it no longer looks like an active exit.\n- The Chromium journey test now separates travel from dismissal. After clicking Stay here, the ball rolls beyond the sensor and back through it using keyboard input, with no debug reposition and no second prompt."
     },
     {
       "id": "docs/build-log/phase-14.md",

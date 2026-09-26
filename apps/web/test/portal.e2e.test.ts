@@ -3,17 +3,19 @@
  *
  * Stage A is the practice stage served as a capture-service stage with one link portal on its start island.
  *  1. The ball rolls into the portal with the real physics → "Travel to … (…)?" with the sim paused.
- *     MENU (M) keeps playing; rolling in again reopens it; Travel builds the link through `POST /api/stages` +
+ *     Travel builds the link through `POST /api/stages` +
  *     SSE → the second site's maze loads; score and spare balls carry over; the trail and the ranking share link
  *     list both sites.
- *  2. With the capture service unreachable, the portal says "Needs the online service" and travel is refused.
- *  3. The `/j/<trail>` share page renders the journey without loading the game.
+ *  2. Stay here declines that link for the stage; a second crossing keeps playing without a prompt.
+ *  3. With the capture service unreachable, the portal says "Needs the online service" and travel is refused.
+ *  4. The `/j/<trail>` share page renders the journey without loading the game.
  *
  * Needs Playwright Chromium; skipped locally without it, required in CI.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { computeRunId, type StageData, validateStage } from '@wwm/schema';
+import { computeRunId, PORTAL_RADIUS_M, type StageData, validateStage } from '@wwm/schema';
+import { pageToWorld } from '@wwm/schema/space';
 import { type Browser, chromium, type Page, type Route } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
@@ -161,6 +163,7 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
     portal: { label: string; host: string; offline: boolean } | null;
     journey: { host: string; via: string; ref: string | null }[];
     tick: number;
+    ball: [number, number, number];
   };
   const state = (p: Page) =>
     p.evaluate(() => {
@@ -193,13 +196,6 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
     const t0 = (await state(page)).tick;
     await page.waitForTimeout(400);
     expect((await state(page)).tick).toBe(t0);
-
-    // MENU keeps playing; the portal re-arms after the ball leaves; rolling in again reopens the prompt
-    await page.keyboard.press('KeyM');
-    await page.waitForSelector('[data-testid="portal-prompt"]', { state: 'detached' });
-    expect((await state(page)).phase).toBe('play');
-    expect(await roll(page)).toBe(true);
-    await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
 
     const before = await state(page);
     await page.click('[data-testid="portal-travel"]');
@@ -247,6 +243,31 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
     await ctx.close();
     expect(problems).toEqual([]);
   }, 180_000);
+
+  test('declining a portal lets the ball roll through it again without interrupting play', async () => {
+    const { page, ctx } = await open(true);
+    expect(await roll(page)).toBe(true);
+    await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
+    await page.click('[data-testid="portal-stay"]');
+    await page.waitForSelector('[data-testid="portal-prompt"]', { state: 'detached' });
+
+    const portal = STAGE_A.portals?.[0];
+    const island = HANDMADE.islands.find((i) => i.id === portal?.islandId);
+    const [px, , pz] = pageToWorld(portal?.pos ?? [0, 0], island?.level ?? 0);
+    const distance = async () => {
+      const { ball } = await state(page);
+      return Math.hypot(ball[0] - px, ball[2] - pz);
+    };
+    await expect.poll(distance, { timeout: 15_000 }).toBeGreaterThan(PORTAL_RADIUS_M + 0.2);
+    await page.keyboard.down('ArrowDown');
+    await expect.poll(distance, { timeout: 15_000 }).toBeLessThan(PORTAL_RADIUS_M * 0.5);
+    await expect.poll(distance, { timeout: 15_000 }).toBeGreaterThan(PORTAL_RADIUS_M + 0.2);
+    await page.keyboard.up('ArrowDown');
+    expect((await state(page)).phase).toBe('play');
+    expect((await state(page)).portal).toBeNull();
+    expect(await page.locator('[data-testid="portal-prompt"]').count()).toBe(0);
+    await ctx.close();
+  }, 120_000);
 
   test('offline: the portal needs the online service and travel is refused', async () => {
     const { page, posts, ctx } = await open(false);
