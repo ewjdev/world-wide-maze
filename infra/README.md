@@ -230,3 +230,13 @@ The docent (`POST /api/docent`, the "Ask the docent" panel on `/about` and `/log
    pnpm docent:bakeoff --real --yes --resume tools/docent-index/bakeoff/<timestamp>
    ```
    The estimates are deliberately high: they assume the Opus-line tokenizer uses 1.3× Haiku's tokens and that every question reaching the model gets a judged answer. Then read `judge-sample.md` (all flagged answers plus a random sample) and check that the judge's verdicts are fair before trusting the recommendation. Set `DOCENT_MODEL` / `DOCENT_EFFORT` (and `DOCENT_MAX_TOKENS`) to the result. `pnpm docent:bakeoff` with no flags is the offline dry run: no keys, no calls, and fake numbers.
+
+## Learning audio (Phase 20)
+
+Pip's voice clips for the education pages and the game's learning gates are stored in R2.
+- **Bucket:** `wwm-learning-audio`, created September 26, 2026 with `wrangler r2 bucket create`. It isn't bound to the `wwm` Worker.
+- **Public access:** read-only through the custom domain `learning-audio.ewj.dev` (zone `ewj.dev`, min TLS 1.2).
+- **CORS:** GET/HEAD from any origin.
+- **Objects:** `<32-hex hash>.mp3` with `cache-control: public, max-age=31536000, immutable`, plus `audition/*.mp3` samples.
+- **Writing:** only `pnpm learning:voice --write`, from a developer machine. See `tools/learning-voice/README.md`.
+- **Generation:** runs through AI Gateway `wwm`. Its ElevenLabs provider key is stored in the gateway, next to the Anthropic key.
