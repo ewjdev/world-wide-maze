@@ -210,7 +210,8 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
       options.onLine?.(null);
     },
     unlock() {
-      if (!audio) return;
+      // never interrupt Pip: unlocking only matters before the first clip plays
+      if (!audio || !audio.paused) return;
       // a silent, gesture-initiated play unlocks this element for later programmatic plays (iOS Safari)
       audio.muted = true;
       void audio

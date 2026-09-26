@@ -300,6 +300,7 @@ const STYLE = `.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-
 .wwm-scene .mark .halo{opacity:0;transition:opacity .2s}
 .wwm-scene .mark.is-correct .halo,.wwm-scene .mark.is-retry .halo,.wwm-scene .mark.is-glow .halo,.wwm-scene .mark.is-focus .halo{opacity:1}
 .wwm-scene .mark.is-retry .halo{stroke-dasharray:14 10}
+.wwm-scene .mark.is-focus:not(.is-correct):not(.is-retry):not(.is-glow) .halo{stroke:var(--wwm-focus);stroke-dasharray:2 16;stroke-width:12}
 .wwm-scene .mark.is-glow .halo{animation:wwm-glow 1s ease-in-out infinite}
 .wwm-scene .mark.is-pulse{animation:wwm-pulse .7s ease-in-out 2}
 .wwm-scene .mark.is-correct .check{opacity:1}
@@ -331,6 +332,7 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
   const out: string[] = [];
   out.push(
     `<svg class="wwm-scene" viewBox="0 0 ${width} ${height}" width="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><style>${STYLE}</style>`,
+    `<style>.wwm-scene{--wwm-focus:${p.ballSeam}}</style>`,
   );
   out.push(`<rect width="${width}" height="${height}" rx="28" fill="${p.sky}"/>`);
   // scenery stays faint and still
