@@ -23,7 +23,7 @@ export interface LessonState {
   choice: string | null;
   result: 'correct' | 'try-again' | null;
   solved: boolean;
-  /** Rounds solved so far (drives the bridge). */
+  /** Required rounds solved so far: the bridge's built planks (follow-ups and bonus rounds don't add one). */
   built: number;
 }
 
@@ -61,9 +61,11 @@ export function currentRound(activity: Activity, state: LessonState): Round {
   return activity.rounds[state.index] as Round;
 }
 
+const isRequired = (round: Round) => !round.optional && !round.onlyAfterHelpOn;
+
 /** Rounds on the main path, the bridge's planks (bonus and conditional follow-ups excluded). */
 export function requiredRounds(activity: Activity): number {
-  return activity.rounds.filter((round) => !round.optional && !round.onlyAfterHelpOn).length;
+  return activity.rounds.filter(isRequired).length;
 }
 
 const hasIslands = (round: Round) => round.kind !== 'choose';
@@ -119,7 +121,13 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       if (state.phase !== 'round' || state.solved) return none;
       if (checkRound(round, event.choice) === 'correct')
         return {
-          state: { ...state, choice: event.choice, result: 'correct', solved: true, built: state.built + 1 },
+          state: {
+            ...state,
+            choice: event.choice,
+            result: 'correct',
+            solved: true,
+            built: state.built + (isRequired(round) ? 1 : 0),
+          },
           say: [lineId.success(activity.id, round.id)],
           show: 'celebrate',
         };

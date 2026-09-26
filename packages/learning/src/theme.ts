@@ -24,7 +24,7 @@ export const skyIslands: Theme = {
     ink: '#20262d',
     paper: '#ffffff',
     islandTop: '#ffffff',
-    islandSide: '#4f9fd6',
+    islandSide: '#2f7fbd',
     islandEdge: '#9fb3c2',
     bridge: '#3f9a4c',
     gem: '#31a4ae',

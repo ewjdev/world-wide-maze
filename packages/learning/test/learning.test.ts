@@ -334,6 +334,9 @@ describe('a play-through', () => {
       { type: 'next' },
     ]);
     expect(compare.rounds[helped.state.index]?.id).toBe('r3b');
+    expect(helped.state.built).toBe(3);
+    const afterFollowUp = step(compare, helped.state, { type: 'answer', choice: 'a' }).state;
+    expect(afterFollowUp.built).toBe(3);
   });
   it('offers the bonus, which can be skipped straight to the finale', () => {
     const toBonus: Parameters<typeof step>[2][] = [
