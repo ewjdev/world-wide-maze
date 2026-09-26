@@ -1,0 +1,10 @@
+// Local-only helper Worker for `pnpm learning:voice` (never deployed). Under `wrangler dev` the AI binding and the
+// R2 binding marked `remote` reach the real account with the developer's wrangler login, so no gateway token or
+// ElevenLabs key is stored locally: the ElevenLabs key lives in AI Gateway `wwm` (BYOK).
+{
+  "name": "wwm-learning-voice-proxy",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "ai": { "binding": "AI" },
+  "r2_buckets": [{ "binding": "AUDIO", "bucket_name": "wwm-learning-audio", "remote": true }]
+}
