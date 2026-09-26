@@ -14,7 +14,7 @@ import { GameBoards } from '../game/leaderboard.ts';
 import type { RunSource } from '../game/stages.ts';
 import { createI18n } from '../i18n/index.ts';
 import { readChallenge } from '../ranking/share.ts';
-import { observeGame } from '../telemetry/index.ts';
+import { observeGame } from '../telemetry/observe-game.ts';
 import { Screens } from './Screens.tsx';
 
 const GameCtx = createContext<Game | null>(null);
@@ -78,9 +78,15 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
     });
     window.__wwmGame = g;
     setGame(g);
-    const stopFunnel = observeGame(g); // Phase 12: no-op unless telemetry is enabled at build time
+    let alive = true;
+    let stopFunnel = () => {};
+    // StrictMode discards its first mount synchronously. Observe only the surviving instance.
+    queueMicrotask(() => {
+      if (alive) stopFunnel = observeGame(g);
+    });
     void g.mount(el);
     return () => {
+      alive = false;
       stopFunnel();
       g.dispose();
       if (window.__wwmGame === g) window.__wwmGame = undefined;

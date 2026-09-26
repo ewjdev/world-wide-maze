@@ -29,7 +29,7 @@ account; every command was checked locally against `wrangler dev` unless it says
     `oversized`.
   - Relay health: `svc = "wwm-room"` `msg` starting with `keepalive` (once a minute per live room: RTT p50/p95,
     input rate, lost frames).
-  - Funnel (only if telemetry is enabled, §6): `msg = "telemetry"`, group by `event` →
+  - Funnel (when telemetry is enabled, §6): PostHog production reports, group by `event` →
     `title → paired → played → finished`, `ended` by `reason`, `build_failed` by `code`, `client_error` by `kind`.
 - **Workers → wwm → Metrics**: requests, errors, CPU time, subrequests; **Durable Objects** tab per class
   (requests, duration GB-s — the Room relay is the main cost driver, see cost-model.md).
@@ -39,7 +39,7 @@ account; every command was checked locally against `wrangler dev` unless it says
 
 ## 3. Routine checks (weekly, 10 minutes)
 1. `node infra/scripts/smoke.mjs https://<DOMAIN>` — all PASS.
-2. Workers Logs: error rate, top `code` of failed builds, `client_error` count (if telemetry on).
+2. Workers Logs: error rate and top `code` of failed builds. PostHog: production `client_error` count (if telemetry on).
 3. Browser Run hours vs. the 10 included; R2 GB vs. the model; DO GB-s trend.
 4. Leaderboards: scan the top 20 of `/api/scores/run` for implausible names/scores (see §5.4).
 
@@ -100,10 +100,10 @@ switch.
 `IP_HASH_SALT` (≥ 16 chars): `pnpm exec wrangler secret put IP_HASH_SALT --env production`. Rotating it only
 changes future hashes. Without it the Worker logs `IP_HASH_SALT is not set` and falls back to a public dev default.
 
-## 6. Telemetry (off by default)
-Client: `apps/web/src/telemetry` — no-op unless the web build sets `VITE_TELEMETRY_URL=/api/t` (GitHub variable
-`WWM_TELEMETRY_URL`). Server: `TELEMETRY_INGEST = "1"` in the env's vars. Both need the user's approval and the
-privacy notice's telemetry paragraph. DNT/GPC browsers send nothing.
+## 6. Product analytics
+The user approved implementation and provider validation on September 26, 2026. See [analytics.md](analytics.md) for event semantics, dashboards, QA, environment isolation, privacy and rollback.
+
+The production web build uses `VITE_TELEMETRY_URL=/api/t`; production Worker configuration has `TELEMETRY_INGEST=1`, `POSTHOG_HOST`, the public ingest-only `POSTHOG_TOKEN`, and `ANALYTICS_RELEASE`. Preview/development defaults stay off; local QA explicitly overrides them. No personal API key belongs in the app or Worker. Provider forwarding happens only after schema validation. `TELEMETRY_DEBUG=1` logs allowed event records only in development; production logs delivery counts/status only. A received HTTP 204 is not proof of dashboard persistence; check PostHog Activity as part of release validation.
 
 ## 7. Budget alerts (to set up in the dashboard — requires the account owner)
 Billing → Notifications → "Usage-based billing" alerts at **$25 / $100 / $250 per month** (the estimates are

@@ -10,6 +10,7 @@ export * from './ids.ts';
 export * from './rng.ts';
 export * from './slice.ts';
 export * from './space.ts';
+export * from './telemetry.ts';
 export * from './types.ts';
 export * from './validate.ts';
 export * from './zod.ts';

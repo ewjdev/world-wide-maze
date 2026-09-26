@@ -13,7 +13,7 @@ Part A is done once by the account owner. After that, everything goes through Gi
 | Durable Objects | local | own namespace + storage per Preview (automatic) | production |
 | AI Gateway | none (docent mock) | `wwm-preview` | `wwm` |
 | Rate-limit namespace ids | 7001–7003 | 7301–7303 | 7201–7203 |
-| `WWM_ENV` / `ROOM_STATS` / `TELEMETRY_INGEST` | development / 1 / 0 | preview / 0 / 0 | production / 0 / 0 until approved |
+| `WWM_ENV` / `ROOM_STATS` / `TELEMETRY_INGEST` | development / 1 / 0 | preview / 0 / 0 | production / 0 / 1 (analytics branch; see docs/launch/analytics.md) |
 | Build caps | 600/h global, 2 browsers | 60/h global, 1 browser, cache 1 day | 600/h global, 2 browsers |
 | Cron (retention sweep) | `--test-scheduled` | never (crons only run on production) | daily 03:17 UTC |
 | Deployed by | nobody | `.github/workflows/ci.yml` job `preview` | `.github/workflows/ci.yml` job `deploy-production` (push to `main`) |
@@ -98,7 +98,7 @@ Previews need), so run them as `pnpm --filter @wwm/worker exec wrangler …`, or
    gh secret set CLOUDFLARE_ACCOUNT_ID         # the account id (provision.mjs prints it)
    gh variable set WWM_PREVIEWS_ENABLED --body true
    gh variable set WWM_DEPLOY_ENABLED --body true
-   # optional, only after approving telemetry: gh variable set WWM_TELEMETRY_URL --body https://<domain>/api/t
+   # production analytics defaults to /api/t; preview telemetry stays disabled
    ```
    Also *Settings → Environments → New environment* `production`. Set *Deployment branches* to `main` only.
    *Required reviewers* (you) is **optional**: with it, every merge waits for a click before going live. Without

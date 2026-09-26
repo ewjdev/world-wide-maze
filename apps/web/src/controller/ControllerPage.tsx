@@ -12,10 +12,12 @@ import {
   type PointerEvent as ReactPointerEvent,
   useEffect,
   useMemo,
+  useRef,
   useState,
   useSyncExternalStore,
 } from 'react';
 import { useNavigate, useParams } from 'react-router';
+import { telemetry } from '../telemetry/index.ts';
 import { browserEnv } from './browser-env.ts';
 import { type ButtonName, ControllerSession, type ControllerView } from './session.ts';
 import { strings } from './strings.ts';
@@ -72,6 +74,14 @@ function ControllerForCode({ code }: { code: string }) {
     session?.getView ?? (() => fallback),
     () => fallback,
   );
+  const lastAnalytics = useRef({ screen: '', connection: '' });
+  useEffect(() => {
+    if (lastAnalytics.current.screen !== view.screen)
+      telemetry.track({ name: 'controller_state', state: view.screen });
+    if (lastAnalytics.current.connection !== view.connection)
+      telemetry.track({ name: 'controller_connection', state: view.connection });
+    lastAnalytics.current = { screen: view.screen, connection: view.connection };
+  }, [view.screen, view.connection]);
   const debug = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 
   return (

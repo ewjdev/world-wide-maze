@@ -86,6 +86,10 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
   : [];
 
 const pageRoutes: RouteObject[] = [
+  {
+    path: '/privacy/analytics',
+    lazy: async () => ({ Component: (await import('./pages/privacy/AnalyticsPrivacy.tsx')).default }),
+  },
   // The game renders full-screen without the document layout.
   { path: '/', lazy: homeRoute },
   { path: '/play/:stageId', lazy: playRoute },

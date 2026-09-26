@@ -41,6 +41,9 @@ import { openHostRoom } from '../controller/useHostRoom.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
 import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
 import type { Challenge } from '../ranking/share.ts';
+import { gameActivity } from '../telemetry/engagement.ts';
+import { telemetry } from '../telemetry/index.ts';
+import { analyticsRun } from '../telemetry/observe-game.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
@@ -842,6 +845,7 @@ export class Game {
   // ── actions (UI) ──────────────────────────────────────────────────────────────────────────────────────
 
   start(): void {
+    if (this.#view.phase === 'title') telemetry.track({ name: 'start_clicked' });
     this.audio.unlock();
     this.audio.play('click');
     const ready = this.#view.inputMode === 'keyboard' || this.#view.room.controllerConnected;
@@ -874,6 +878,7 @@ export class Game {
   }
 
   chooseEntry(entry: CatalogEntry): void {
+    telemetry.track({ name: 'stage_selected', run: entry === PRACTICE ? 'practice' : 'fixture' });
     this.audio.unlock();
     this.audio.play('click');
     const run = entry === PRACTICE ? new PracticeRun() : new FixtureRun(entry, this.#pool);
@@ -882,6 +887,7 @@ export class Game {
 
   /** Build any public URL through the capture service. */
   chooseUrl(url: string): void {
+    telemetry.track({ name: 'stage_selected', run: 'api' });
     this.audio.unlock();
     this.audio.play('click');
     this.#buildAbort?.abort();
@@ -923,6 +929,7 @@ export class Game {
   retryStage(): void {
     this.audio.play('click');
     if (!this.#run || !this.#loaded) return;
+    telemetry.track({ name: 'stage_restarted' });
     // N: retry gives the stage back from its start; points earned on it are removed.
     this.#set({ total: this.#stageStartTotal });
     const loaded = this.#loaded;
@@ -945,6 +952,7 @@ export class Game {
 
   /** Result: next slice of this page, or back to site select after the last one (score and spares kept). */
   next(): void {
+    telemetry.track({ name: 'next_selected' });
     this.audio.play('click');
     const run = this.#run;
     const more = !!run && this.#slice + 1 < run.sliceCount();
@@ -1152,6 +1160,7 @@ export class Game {
     this.#set({ inputMode: this.#view.inputMode ?? 'keyboard' });
     try {
       const { run, slice } = await runFromRef(ref, this.#opts.origin, this.#pool);
+      telemetry.track({ name: 'stage_selected', run: analyticsRun(run.kind) });
       this.#beginRun(run, slice);
     } catch (err) {
       this.#send({ type: 'CHOOSE' });
@@ -1685,6 +1694,7 @@ export class Game {
 
   /** "Stay here": decline this link for the stage and let the ball pass through it. */
   stayHere(): void {
+    if (this.#view.portal) telemetry.track({ name: 'portal_selected', action: 'stay' });
     const portal = this.#view.portal;
     if (!portal) return;
     this.audio.play('click');
@@ -1702,6 +1712,7 @@ export class Game {
    * error screens). A link to one of the offline fixture pages is built in the browser instead.
    */
   travelPortal(): void {
+    if (this.#view.portal) telemetry.track({ name: 'portal_selected', action: 'travel' });
     const pr = this.#view.portal;
     const run = this.#run;
     if (!pr || pr.offline || this.#view.phase !== 'play' || !run || this.#view.travel) return;
@@ -1823,6 +1834,8 @@ export class Game {
       s = kb;
       this.#lastSource = this.#view.inputMode === 'phone' ? 'phone' : 'keyboard';
     }
+    if (this.#view.phase === 'play' && (s.power || s.jump || (this.#lastSource !== 'phone' && active(s))))
+      gameActivity();
     return s;
   }
 

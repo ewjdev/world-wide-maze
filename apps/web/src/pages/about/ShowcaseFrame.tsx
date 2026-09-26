@@ -65,7 +65,8 @@ export function ShowcaseFrame({ children }: { children: ReactNode }) {
             Google or the original team, and uses none of the original art, audio or logos.
           </p>
           <p>
-            <Link to="/about#sources">Sources</Link> · <Link to="/log">How this was built</Link>
+            <Link to="/privacy/analytics">Analytics privacy</Link> · <Link to="/about#sources">Sources</Link>{' '}
+            · <Link to="/log">How this was built</Link>
           </p>
         </div>
       </footer>

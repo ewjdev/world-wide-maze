@@ -3,6 +3,33 @@
  * lightly adapted; N = new in the rebuild. Button glyphs (__POWER__ etc.) are rendered by the UI.
  */
 export const en = {
+  analytics: {
+    title: 'Analytics privacy',
+    intro:
+      'Help us understand where players get stuck and how the game performs. Choose how this browser contributes.',
+    choice: 'Your analytics preference',
+    off: 'Off',
+    offHint: 'Do not send analytics events from this browser.',
+    visit: 'Measure this visit',
+    visitHint:
+      'Connect events during a visit, without recognizing you on a later visit. This is the default.',
+    browser: 'Remember my visits for analytics',
+    browserHint: 'Optional: use a random browser ID to measure return visits for up to 90 days.',
+    blocked: 'Your browser’s Do Not Track or Global Privacy Control signal has disabled analytics.',
+    saved: 'Changes apply immediately. Your preference is saved in this browser when storage is available.',
+    collectTitle: 'What we measure',
+    collect:
+      'Page categories, broad traffic sources and approved campaign labels, device and browser categories, language, game phases, control method, build outcomes, restarts, and active time. Phone controller visits are labeled separately from game hosts.',
+    excludeTitle: 'What stays out of analytics',
+    exclude:
+      'We do not send player names, submitted website addresses, captured page content, room codes, pairing secrets, raw device motion, IP addresses, or error-message text to PostHog. There is no session recording, click autocapture, advertising tracking, or fingerprinting.',
+    storageTitle: 'Where events go',
+    storage:
+      'Our Cloudflare service validates each event and sends the allowed fields to our PostHog project in the United States. A random visit ID is stored in session storage and rotates after 30 minutes without events. If you choose return-visit measurement, a separate random ID is stored locally for up to 90 days. Our PostHog Free plan retains events for up to one year; the browser ID expiry does not delete earlier events.',
+    withdraw:
+      'Choosing Off stops future analytics and clears the browser ID and queued events. Choosing Measure this visit clears the persistent ID. Neither choice deletes events already received. Contact us with questions or deletion requests.',
+    contact: 'Contact the operator',
+  },
   app: {
     name: 'World Wide Maze',
     tribute: 'A tribute to the 2013 Chrome Experiment by Google Japan and PARTY. Not affiliated with Google.', // N

@@ -50,8 +50,12 @@
     "WWM_ENV": "development",
     // Phase 12 (contracts v0.2.3): "1" exposes GET /api/rooms/:code/stats. Dev/test ONLY; "0" when deployed.
     "ROOM_STATS": "1",
-    // Phase 12: "1" accepts client telemetry at POST /api/t (logged, never stored). Off until the user approves.
+    // Explicit event analytics: first-party ingest forwards allow-listed records to PostHog.
     "TELEMETRY_INGEST": "0",
+    "POSTHOG_HOST": "https://us.i.posthog.com",
+    "POSTHOG_TOKEN": "",
+    "ANALYTICS_RELEASE": "local",
+    "TELEMETRY_DEBUG": "0",
     // Phase 15 docent (Cloudflare AI Gateway → Anthropic). Empty here = the deterministic mock provider.
     "AI_GATEWAY_ACCOUNT_ID": "",
     "AI_GATEWAY_ID": "",
@@ -149,7 +153,11 @@
         "RETENTION_DAYS": "30",
         "CAPTURE_ENABLED": "1",
         "ROOM_STATS": "0",
-        "TELEMETRY_INGEST": "0",
+        "TELEMETRY_INGEST": "1",
+        "POSTHOG_HOST": "https://us.i.posthog.com",
+        "POSTHOG_TOKEN": "phc_BN7wQ6HnKnE2igr7V1U1a8jVsjz2riFP3NWnb2b9i84",
+        "ANALYTICS_RELEASE": "analytics-v1",
+        "TELEMETRY_DEBUG": "0",
         "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
         "AI_GATEWAY_ID": "wwm",
         "DOCENT_DAILY_LIMIT": "500",
@@ -216,6 +224,10 @@
           "CAPTURE_ENABLED": "1",
           "ROOM_STATS": "0",
           "TELEMETRY_INGEST": "0",
+          "POSTHOG_HOST": "https://us.i.posthog.com",
+          "POSTHOG_TOKEN": "",
+          "ANALYTICS_RELEASE": "local",
+          "TELEMETRY_DEBUG": "0",
           "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
           "AI_GATEWAY_ID": "wwm", // one gateway for production and Previews (owner decision 2026-09-25)
           "DOCENT_DAILY_LIMIT": "50",
