@@ -26,6 +26,8 @@ export { MAX_TIER, QualityLadder, type QualitySetting, TIERS, type TierFeatures 
 export {
   GATE_Y,
   hostOf as portalHost,
+  isLearningHref,
+  LEARNING_HREF,
   PORTAL_COLORS,
   type PortalState,
   portalColor,

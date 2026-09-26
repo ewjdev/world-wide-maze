@@ -38,6 +38,8 @@ import {
 } from '@wwm/schema';
 import type { AudioManager, Bgm } from '../audio/audio.ts';
 import { openHostRoom } from '../controller/useHostRoom.ts';
+import { type GateOutcome, LearningGates } from '../learning/gates.ts';
+import { gateNumber, isLearningHref } from '../learning/href.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
 import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
 import type { Challenge } from '../ranking/share.ts';
@@ -347,6 +349,11 @@ export class Game {
   /** Test / automation: a fixed input for the next ticks (`debugRollIntoPortal`). */
   #autopilot: { sample: InputSample; ticks: number } | null = null;
 
+  // Pip gates (Phase 20 M4b): a lesson's checkpoints ride the portal pipeline (learning/gates.ts)
+  readonly learning: LearningGates;
+  /** The stage-start fallback card (a stage with no room for a gate) continues the intro when it closes. */
+  #afterGate: (() => void) | null = null;
+
   // ghost race (08b)
   #ghostTrack: GhostTrack | null = null;
   #ghostFor: string | null = null;
@@ -406,6 +413,10 @@ export class Game {
       journey: [],
     };
     this.#cleanups.push(opts.audio.onChange(() => this.#set({ muted: opts.audio.muted })));
+    this.learning = new LearningGates({
+      muted: () => this.audio.muted,
+      onClose: (id, outcome) => this.#closeGate(id, outcome),
+    });
   }
 
   // ── store ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -483,7 +494,10 @@ export class Game {
       if (document.visibilityState === 'hidden') this.#autoPause();
     };
     const onResize = () => this.#resize();
-    const onGesture = () => this.audio.unlock();
+    const onGesture = () => {
+      this.audio.unlock();
+      this.learning.unlock();
+    };
     addEventListener('keydown', onKey);
     addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVis);
@@ -574,6 +588,7 @@ export class Game {
     this.#canvas?.remove();
     this.audio.setMusic(null);
     this.#listeners.clear();
+    this.learning.clear();
   }
 
   /** The bitmap the engine currently textures from (single-tile stages use it directly); close the old one. */
@@ -621,6 +636,11 @@ export class Game {
   #enter(to: GamePhase, from: GamePhase): void {
     const e = this.#engine;
     const d = this.#driver;
+    // a Pip gate card belongs to play (or the intro fallback); leaving the stage closes it without a resume
+    if (to !== 'play' && this.learning.isOpen) {
+      this.#afterGate = null;
+      this.learning.abort();
+    }
     switch (to) {
       case 'title':
         this.#endGhost();
@@ -1199,6 +1219,8 @@ export class Game {
       got.image.close();
       return;
     }
+    // Phase 20 M4b: with a lesson loaded, the stage's link portals become Pip gates (same sensor, same pause)
+    if (this.learning.active) got = { ...got, stage: this.learning.decorate(got.stage) };
     this.#loaded = got;
     await this.#playLoaded(got, ac, t0);
   }
@@ -1309,18 +1331,29 @@ export class Game {
     if (this.#opts.test?.skipIntro) this.#after(0.05, () => e.skipIntro());
     void done.then(() => {
       if (this.#view.phase !== 'intro') return;
-      const tutorial = firstGame && !this.#replay;
-      if (tutorial) this.#set({ tutorial: 2 });
-      this.#send({ type: 'INTRO_DONE', countdown: !tutorial });
-      if (tutorial)
-        this.#after(
-          TUTORIAL_STEP_SEC,
-          () => {
-            if (this.#view.tutorial === 2 && IN_STAGE.has(this.#view.phase)) this.#set({ tutorial: 3 });
-          },
-          null,
-        );
+      // Phase 20 M4b: a stage with no room for a Pip gate asks its round here, before the countdown
+      if (this.learning.active && (stage.portals ?? []).length === 0 && !this.learning.isOpen) {
+        this.#afterGate = () => this.#introDone(firstGame);
+        this.learning.open(-1, 0);
+        return;
+      }
+      this.#introDone(firstGame);
     });
+  }
+
+  #introDone(firstGame: boolean): void {
+    if (this.#view.phase !== 'intro') return;
+    const tutorial = firstGame && !this.#replay;
+    if (tutorial) this.#set({ tutorial: 2 });
+    this.#send({ type: 'INTRO_DONE', countdown: !tutorial });
+    if (tutorial)
+      this.#after(
+        TUTORIAL_STEP_SEC,
+        () => {
+          if (this.#view.tutorial === 2 && IN_STAGE.has(this.#view.phase)) this.#set({ tutorial: 3 });
+        },
+        null,
+      );
   }
 
   #tutorialAdvance(step: TutorialStep): void {
@@ -1402,6 +1435,19 @@ export class Game {
         if (ev.phase === 'start') this.audio.play('elevator');
         return false;
       case 'portal':
+        if (this.#isGate(ev.portalId)) {
+          if (
+            this.#view.phase === 'play' &&
+            !this.learning.isOpen &&
+            !this.#view.portal &&
+            !this.#view.travel &&
+            !this.#dismissedPortals.has(ev.portalId)
+          ) {
+            this.#openGate(ev.portalId);
+            return true;
+          }
+          return false;
+        }
         if (
           this.#view.phase === 'play' &&
           !this.#view.portal &&
@@ -1583,6 +1629,7 @@ export class Game {
   }
 
   #resetSession(): void {
+    this.learning.resetProgress();
     this.#results = [];
     this.#replays.clear();
     this.#travelling = false;
@@ -1620,7 +1667,11 @@ export class Game {
 
   /** Portals the service can't reach are shown greyed out (fixture targets travel offline). */
   #applyPortalStates(stage: StageData): void {
-    const portals = stage.portals ?? [];
+    // Pip gates are open until used, whatever the capture service's state (they never travel)
+    for (const p of stage.portals ?? [])
+      if (isLearningHref(p.href))
+        this.#engine?.setPortalState(p.id, this.#dismissedPortals.has(p.id) ? 'used' : 'open');
+    const portals = (stage.portals ?? []).filter((p) => !isLearningHref(p.href));
     if (portals.length === 0) return;
     const apply = () => {
       if (this.#stage() !== stage) return;
@@ -1762,10 +1813,48 @@ export class Game {
     });
   }
 
+  // ── Pip gates (Phase 20 M4b) ──────────────────────────────────────────────────────────────────────────
+
+  #isGate(id: number): boolean {
+    const p = this.#stage()?.portals?.find((x) => x.id === id);
+    return !!p && isLearningHref(p.href);
+  }
+
+  /** Like a link portal's prompt: the world waits (driver paused, timer stopped) while the round is on. */
+  #openGate(id: number): void {
+    const p = this.#stage()?.portals?.find((x) => x.id === id);
+    if (!p) return;
+    this.#engine?.handleEvent({ type: 'portal', portalId: id });
+    this.#driver?.setPaused(true);
+    this.#portalTimer = this.#timer.running;
+    this.#timer.stop();
+    this.audio.setRoll(0, false);
+    this.audio.play('oneup', { gain: 0.8, rate: 0.8 });
+    this.#haptic('large');
+    this.learning.open(id, gateNumber(p.href) ?? id + 1);
+  }
+
+  /** The card closed ("Roll on!" or "Skip gate"): the gate stays used for this stage and play resumes. */
+  #closeGate(id: number, _outcome: GateOutcome): void {
+    this.audio.play('click');
+    if (id < 0) {
+      const next = this.#afterGate;
+      this.#afterGate = null;
+      next?.();
+      return;
+    }
+    this.#dismissedPortals.add(id);
+    this.#engine?.setPortalState(id, 'used');
+    if (this.#view.phase !== 'play') return;
+    if (this.#portalTimer) this.#timer.start();
+    this.#driver?.setPaused(false);
+  }
+
   // ── input ─────────────────────────────────────────────────────────────────────────────────────────────
 
   #onKeyDown(ev: KeyboardEvent): void {
     const p = this.#view.phase;
+    if (this.learning.isOpen && this.learning.key(ev)) return;
     if (p === 'play' && this.#view.portal && !ev.repeat) {
       if (ev.code === 'Enter' || ev.code === 'NumpadEnter' || ev.code === 'KeyY') {
         ev.preventDefault();
@@ -1792,6 +1881,10 @@ export class Game {
 
   #onMenuKey(): void {
     const p = this.#view.phase;
+    if (this.learning.isOpen) {
+      this.learning.skip();
+      return;
+    }
     if (p === 'play' && this.#view.portal) {
       this.stayHere();
       return;
@@ -1808,7 +1901,7 @@ export class Game {
   /** E: losing window focus pauses the game (map). */
   #autoPause(): void {
     if (this.#opts.test?.noAutoPause) return;
-    if (this.#view.travel) return;
+    if (this.#view.travel || this.learning.isOpen) return;
     const p = this.#view.phase;
     if (p === 'play' || p === 'countdown') this.#send({ type: 'MENU' });
   }
@@ -1948,7 +2041,12 @@ export class Game {
       }
     }
     this.#prevJump = sample.jump;
-    const stepping = !!d && !hold && !v.portal && !v.travel && (v.phase === 'play' || v.phase === 'falling');
+    // Pip gate card: phone / gamepad tilt moves the choice, JUMP confirms; the ball doesn't move meanwhile
+    const gate = this.learning.isOpen;
+    if (gate && !hold)
+      this.learning.input(sample.tiltX / MAX_TILT_ROLL, sample.jump, this.#lastSource, performance.now());
+    const stepping =
+      !!d && !hold && !gate && !v.portal && !v.travel && (v.phase === 'play' || v.phase === 'falling');
     if (stepping) {
       const r = d.advance(gdt, this.#inputForStep, this.#onSimEvent);
       if (r.ball) {
@@ -1961,7 +2059,7 @@ export class Game {
     }
     if (this.#ghostBall) this.#ghostBall.update((d?.tick ?? 0) / SIM_HZ);
     const control =
-      this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel
+      this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel && !this.learning.isOpen
         ? sample
         : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
@@ -2014,6 +2112,7 @@ export class Game {
       ghost: { ...this.#view.ghost, loaded: !!this.#ghostTrack, ticks: this.#ghostTrack?.ticks ?? 0 },
       portal: this.#view.portal,
       journey: this.#view.journey,
+      learning: this.learning.debug(),
       api: this.#api,
       engine: this.#engine?.stats() ?? null,
     };
