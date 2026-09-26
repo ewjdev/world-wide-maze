@@ -10,6 +10,7 @@ import { formatCode, QrCode } from '../controller/index.ts';
 import { type CatalogEntry, FIXTURES, PRACTICE } from '../game/catalog.ts';
 import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
+import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyTrail } from './Journey.tsx';
@@ -76,6 +77,7 @@ export function Screens() {
         </main>
       )}
       {menuPhase && <TopBar />}
+      {v.phase !== 'select' && <LearningNotice />}
       {!v.engineReady && v.phase === 'title' && (
         <p className="wwm-sr" role="status">
           {t('building.step.world')}
@@ -439,6 +441,7 @@ function Select() {
           {bad ? t('select.invalidUrl') : t('select.tip')}
         </p>
         <SelectHint /> {/* Phase 14: bookmarklet + /mazify */}
+        <LearningPanel /> {/* Phase 20 M4b: a lesson through Pip gates */}
       </header>
       <div className="wwm-select__body">
         <SiteCard entry={PRACTICE} featured />
