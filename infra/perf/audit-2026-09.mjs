@@ -142,9 +142,9 @@ async function record(page, cdp, seconds, drive = false, profile = false) {
     window.__auditRender = [];
     window.__auditStart = performance.now();
     window.__originalFrame = engine.frame;
-    engine.frame = function (dt) {
+    engine.frame = function (...args) {
       const t = performance.now();
-      const result = window.__originalFrame.call(this, dt);
+      const result = window.__originalFrame.apply(this, args);
       window.__auditRender.push(performance.now() - t);
       return result;
     };
@@ -375,8 +375,8 @@ try {
           r.backend.trackTimestamp = true;
           window.__gpuSamples = [];
           let pending = false;
-          e.frame = function (dt) {
-            original.call(this, dt);
+          e.frame = function (...args) {
+            original.apply(this, args);
             if (!pending) {
               pending = true;
               r.resolveTimestampsAsync('render')
@@ -416,14 +416,14 @@ try {
       const e = window.__wwmGame.engine,
         original = e.frame;
       window.__stall = true;
-      e.frame = function (dt) {
+      e.frame = function (...args) {
         if (window.__stall) {
           const end = performance.now() + 200;
           while (performance.now() < end) {
             /* calibrated workload, not device emulation */
           }
         }
-        return original.call(this, dt);
+        return original.apply(this, args);
       };
     });
     report.runs.push({ name: '200ms-main-thread-stall', ...(await record(page, cdp, 14)) });
