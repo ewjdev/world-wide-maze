@@ -1,0 +1,54 @@
+{
+  "version": "jev-spectator/1",
+  "model": "jev-1.13.0",
+  "at": "2026-09-27T06:49:09.411Z",
+  "mode": "smoke",
+  "account": "User-provided TYPESAFE_API_KEY in ignored .env.jev; account identity not exposed by this API",
+  "pricing": {
+    "source": "https://docs.typesafe.ai/models",
+    "inputPerMillionUSD": 0.042,
+    "outputUSD": 0,
+    "conservativePilotEstimateUSD": 1.6128,
+    "basis": "600 requests × 64000 model context tokens; actual 16 KiB payload cap is smaller; estimate, not a billing guarantee"
+  },
+  "limits": {
+    "attempts": 64,
+    "pilotAttempts": 600,
+    "actions": 256,
+    "ticks": 36000,
+    "payload": 16384,
+    "response": 262144,
+    "recording": 10485760,
+    "runBytes": 33554432,
+    "pilotBytes": 536870912
+  },
+  "fixtures": [
+    {
+      "id": "first-fork",
+      "hash": "06ac1b541db77613daf67c73988c5ba398ca52b8b79cdc9eca3f74cf2e389319"
+    }
+  ],
+  "results": [
+    {
+      "runId": "22a176b5-7221-4708-96a6-a2ca7db5122e",
+      "fixture": "first-fork",
+      "policy": "jev",
+      "seed": 0,
+      "status": "finished",
+      "reason": "goal",
+      "decisions": 7,
+      "forced": 3,
+      "revisits": 1,
+      "ticks": 5235,
+      "activeSeconds": 43.625,
+      "providerWaitMs": 715.804707999996,
+      "executionWallMs": 1674.4098339999998,
+      "latencyP50": 165.25037500000326,
+      "latencyP95": 226.78870800000004,
+      "inputTokens": 3402,
+      "outputTokens": 175,
+      "estimatedUsageCostUSD": 0.00014288400000000002,
+      "replayMatch": true
+    }
+  ]
+}

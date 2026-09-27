@@ -25,7 +25,7 @@ export {
   surfaceAt,
   walkable,
 } from './nav.ts';
-export { DEFAULT_GAINS, NEUTRAL, type PilotGains, steer } from './pilot.ts';
+export { DEFAULT_GAINS, NEUTRAL, newTracking, type PilotGains, steer, type Tracking } from './pilot.ts';
 export {
   astar,
   DEFAULT_TUNING,

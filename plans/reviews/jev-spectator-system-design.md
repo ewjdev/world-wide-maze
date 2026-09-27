@@ -115,3 +115,18 @@ Disposition: **RESOLVED IN PLAN**. Revised archive boundary explicitly denies fi
 Addendum re-review: re-read the revised archive/recovery and ownership contracts, including the final distinction between full-page refresh and temporary transport loss. **JEV-SD-05, JEV-SD-06 and JEV-SD-07 are all resolved in the plan.**
 
 Addendum final verdict: **READY FOR USER REVIEW AND SIGN-OFF**. The plan now gives the user's run/decision-tracking requirement a durable archive, browsable attempt-level evidence, retention without automatic deletion, and explicit crash/unknown limits. That is document-level readiness; none of those mechanisms has been implemented or verified at runtime. No implementation, provider activity or runtime tests were performed. **User execution approval remains PENDING.**
+
+## Implementation follow-up (2026-09-27)
+
+The independent reviewer accepted inline evidence plus its lifecycle event in one fsynced journal record as a sound simplification of the planned separate artifact/reference protocol.
+
+| Implementation finding | Final disposition |
+| --- | --- |
+| Short writes and uncertain fsync could leave disk ahead of memory | Resolved: complete-write loop, new-file directory fsync, latched mutation failure. |
+| Capacity admission prevented terminal/error evidence | Resolved: new-work reserve separated from bounded completion metadata. |
+| Refreshed paused runs lacked wired ownership recovery | Resolved: new-document recovery interrupts old physics; owner capability is removed only after confirmed terminal state; failed recovery retains it. |
+| Oversized response branch skipped credential redaction | Resolved: truncation and error paths sanitize credentials before persistence. |
+
+Reviewer verification was read-only. Dedicated tests independently exercised the runtime, storage faults and session lifecycle. An additional defensive change stages a new run's first durable journal before publishing its UUID directory, so an interrupted create cannot introduce an empty visible run.
+
+UI finish review used a fresh independent agent with the Impeccable fallback contract because the named reviewer role was not exposed by this harness. Its one material finding—Run history remaining hidden after mobile notebook collapse—was fixed and verified in recaptured screenshots. Final verdict: **ship**; remaining material findings: **clear**.

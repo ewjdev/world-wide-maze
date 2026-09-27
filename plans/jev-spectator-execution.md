@@ -1,6 +1,6 @@
 # Jev maze spectator — execution plan
 
-Status: SYSTEM DESIGN REVIEW AND RUN-HISTORY RE-REVIEW COMPLETE — READY FOR USER SIGN-OFF. Implementation is not authorized.
+Status: APPROVED — local implementation in progress.
 
 ## 1. Approval boundary and repository baseline
 
@@ -217,7 +217,7 @@ The reference policy performs graph depth-first exploration: choose the first el
 
 ## 9. Execution sequence and acceptance gates
 
-All phases below are blocked on explicit user sign-off. Estimates are planning ranges for one senior implementer, exclude credential delays, and are not commitments.
+The user authorized all phases in chat; implementation and local validation are now complete, with the repository-wide regression limitations recorded in `plans/evidence/jev-handoff.md`. Estimates are planning ranges for one senior implementer, exclude credential delays, and are not commitments.
 
 | Milestone | Work and ownership | Acceptance evidence | Indicative effort |
 | --- | --- | --- | --- |
@@ -256,6 +256,19 @@ Implementation handoff must include commands to launch the local demo, exact tes
 
 Independent system-design review is saved to `plans/reviews/jev-spectator-system-design.md`. All four findings (JEV-SD-01 through JEV-SD-04) are resolved in this plan: goal completion, per-step lifecycle, local provider/ledger scope, and historical decision replay. The independent reviewer confirmed readiness for user review; the findings and dispositions are recorded there. Reviewer approval means the plan is ready for the user to assess; it never authorizes implementation.
 
-Run-history addendum: the user explicitly requested tracking each run and all Jev decisions. The independent reviewer confirmed all three additional findings (JEV-SD-05 through JEV-SD-07) resolved: crash evidence recovery, run ownership/reconnection, and authenticated-only archive access. The updated plan is ready for user review; this scope update is not permission to execute.
+Run-history addendum: the user explicitly requested tracking each run and all Jev decisions. The independent reviewer confirmed all three additional findings (JEV-SD-05 through JEV-SD-07) resolved: crash evidence recovery, run ownership/reconnection, and authenticated-only archive access. The updated plan was reviewed before the user subsequently authorized execution.
 
-User approval: **PENDING**. Stop here until the user explicitly signs off or supplies revisions.
+User approval: **APPROVED** in chat: “execute on the plan in the worktree and start the server so i can test it out once its ready”. Local implementation and server startup authorized; public deployment remains out of scope.
+
+
+## 12. Implementation decisions and acceptance record
+
+Implemented in `codex/jev-spectator-plan`. See `plans/evidence/jev-handoff.md` and the full measured table in `plans/evidence/jev-evaluation/pilot.json`.
+
+The implementation uses one inline, append-only, fsynced `journal.ndjson` per run: evidence and its lifecycle reference are the same record, eliminating the separate artifact/reference orphan window. The independent system-design reviewer accepted this simplification, conditioned on complete writes and failure latching. Writes loop until all bytes are written; new-file and new-run directory entries are fsynced; uncertain write/fsync errors disable further mutation until restart/recovery. The separate attempts ledger remains authoritative for spending, with orphan reservations reconciled as unknown. Torn final records require the explicit `pnpm jev:recover <pilot-id> --confirm` command, which preserves the original damaged bytes. Interior corruption fails closed. This replaces the multi-file artifact commit protocol above; it does not promise recovery of a response that never reached durable storage.
+
+The authoritative archive directly powers history and replay. An additional IndexedDB cache was omitted: browser cache eviction cannot affect retention, and every retained run is readable from the local archive. Imported JSON recordings are read-only and do not create provider calls or overwrite the archive. Per-run JSON contains evidence and replay chunks; summary CSV includes run IDs, which link back to full history. Recording limits, fixture/physics identity, per-chunk digests, event checks, and replay prefix continuity are validated.
+
+The frozen pilot ran headlessly through the exact local API, observations, selector adapter, corridor controller, and fixed-step physics used by the UI. Rendering was intentionally omitted for throughput. `activeSeconds` measures simulation time; `executionWallMs` is headless execution time and must not be presented as real-time watch duration. The browser walkthrough separately verified watching, pause, one-decision stepping, resume, replay and responsive layout. Ordering seeds 0 and 2 share the same ordering under the frozen parity-based ordering policy; these are repeated trials, not three distinct ordering permutations. The fourth fixture was used for controller validation only, never for Jev tuning or measured selection trials.
+
+M1–M3 functional acceptance passed. M4 measured result: 9/9 Jev and 9/9 baseline completions across the three fixtures; all 18 final-state replays matched. Live smoke also completed and matched replay. This is a feasibility result, not a statistical model-ranking claim. The initial concurrent full-suite invocation failed; all 10 failed files subsequently passed in focused/serial reruns. See the handoff for exact results. Public rollout remains out of scope.
