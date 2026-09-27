@@ -231,7 +231,25 @@ export type SimEvent =
   | { type: 'elevator'; elevatorId: number; phase: 'start' | 'end' }
   | { type: 'landed'; impact: number }
   | { type: 'bump'; impact: number }
-  | { type: 'portal'; portalId: number }; // contracts §10.1
+  | { type: 'portal'; portalId: number } // contracts §10.1
+  | { type: 'locked'; lockId: number }; // contracts §10.4: the ball touched a closed lock (≤ 1/s per lock)
+
+/**
+ * Contracts §10.4 (CCR-GAME-01, Phase 22): a runtime lock a game places over a stage (learning mode). Locks are
+ * not part of `StageData`; they are passed to `Simulation.load` and opened with `setLock`. All start closed.
+ * - `bridge`: a barrier across bridge `targetId` at its mouth on island `islandId`.
+ * - `elevator`: lift `targetId` won't start; a barrier stands at its entry on island `islandId`.
+ * - `goal`: the goal (targetId 0, islandId = goal island) emits `locked` instead of `goal` until opened.
+ */
+export interface LockSpec {
+  id: number;
+  kind: 'bridge' | 'elevator' | 'goal';
+  targetId: number;
+  islandId: number;
+}
+export interface SimLoadOptions {
+  locks?: LockSpec[];
+}
 
 export interface BallState {
   pos: [number, number, number];

@@ -443,3 +443,23 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - Per-attempt UUIDs correlate builds, play, completion and active-time deltas. No arbitrary text, URL, room code, captured content or IP is part of the contract.
 - `204` means the sanitized batch was accepted by PostHog (or collection is disabled); provider failure returns `502` for bounded retry. Client timestamps older than a day or more than a minute ahead are rejected.
 - The user authorized implementation and analytics validation on a new branch. Production configuration enables collection when this branch is deployed; previews stay disabled.
+
+### 10.4 Runtime locks for learning mode (v0.3.3, CCR-GAME-01, orchestrator, 2026-09-26)
+Phase 22 (`plans/phase-22-learning-mechanics.md`) lets a learning document lock the way forward until a Pip gate or mission is done. Locks are a **runtime overlay**: `StageData` is unchanged, and stored stages, builder output and validation are unaffected.
+
+```ts
+export interface LockSpec { id: number; kind: 'bridge' | 'elevator' | 'goal'; targetId: number; islandId: number }
+export interface SimLoadOptions { locks?: LockSpec[] }
+// Simulation gains:
+load(stage: StageData, options?: SimLoadOptions): Promise<void>;   // all locks start closed
+setLock(id: number, open: boolean): void;                          // worker protocol: `lock` message
+// SimEvent gains:
+| { type: 'locked'; lockId: number }   // the ball touched a closed lock; at most once per second per lock
+```
+
+**Semantics:**
+- **`bridge`:** a static barrier across the deck at the mouth on `islandId`. It is tall enough that POWER + JUMP can't clear it, and is disabled when opened.
+- **`elevator`:** the ride trigger is ignored while closed, and a barrier stands at the entry on `islandId`.
+- **`goal`:** while closed, the goal sensor emits `locked` and doesn't latch; opening re-arms it.
+- **Determinism:** with no locks (every ranked run), the behaviour is byte-identical to v0.3.2.
+- **Scores:** runs with locks are **unranked**. They are never submitted, because server replay verification knows nothing about locks.
