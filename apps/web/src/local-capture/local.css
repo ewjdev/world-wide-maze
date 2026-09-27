@@ -410,7 +410,18 @@
   display: grid;
   gap: 10px;
 }
+.wwm-way__download {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+.wwm-way__download .wwm-btn {
+  max-width: 100%;
+  white-space: normal;
+  text-align: center;
+}
 .wwm-way__steps li {
+  overflow-wrap: anywhere;
   counter-increment: step;
   display: grid;
   grid-template-columns: 30px 1fr;
