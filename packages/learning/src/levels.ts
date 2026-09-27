@@ -99,6 +99,8 @@ export function levelRequires(activity: Activity, level: Level): string[] {
   const needs = new Set<string>();
   if (locks.goal) needs.add('locks.goal');
   for (const connector of locks.connectors) needs.add(`locks.path.${connector}`);
+  // a level that hides padlocks on the map needs a game that can actually hide them (fail closed)
+  if (locks.mode !== 'none' && !locks.signals.mapPadlocks) needs.add('signals.hide-map-padlocks');
   for (const step of levelPlan(activity, level))
     if (step.kind === 'mission') needs.add(`mission.${step.mission.kind}`);
   return [...needs].sort();

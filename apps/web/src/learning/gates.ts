@@ -29,6 +29,7 @@ import {
   type Level,
   levelPlan,
   lineId,
+  MAX_GATE_NUMBER,
   nudgeLine,
   type PlanStep,
   type ResolvedLocks,
@@ -902,7 +903,12 @@ export class LearningGates {
     if (owner && this.#config?.signals.banner) this.#showBanner(owner);
     if (now - this.#oopsAt >= GUARD_LINE_MS) {
       this.#oopsAt = now;
-      this.#say([systemLineId.oops]);
+      // name the gate when a round opens the way ("Oops! Solve Pip gate two first."), else the general line
+      this.#say([
+        owner?.step.kind === 'round'
+          ? systemLineId.oopsGate(Math.min(MAX_GATE_NUMBER, Math.max(1, owner.number)))
+          : systemLineId.oops,
+      ]);
     }
     if (owner?.spot && this.#config?.signals.beacon) this.#beacon(owner.index, owner.spot.pos);
     return true;

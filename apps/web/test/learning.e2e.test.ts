@@ -300,7 +300,7 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
     await game(page, 'debugIsland', 2);
     await expect.poll(async () => (await state(page)).learning.guards, { timeout: 5_000 }).toBe(1);
     s = await state(page);
-    expect(s.learning.said).toContain('pip.oops');
+    expect(s.learning.said).toContain('pip.oops.gate.1');
     expect(s.phase).toBe('play');
 
     // solve gate 1 → the lock opens

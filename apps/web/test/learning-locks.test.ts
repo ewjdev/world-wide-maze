@@ -616,7 +616,7 @@ describe('the session: locks (fake port)', () => {
     const { g, said, tick } = session();
     expect(g.island(0)).toBe(false);
     expect(g.island(1)).toBe(true);
-    expect(said()).toEqual([systemLineId.oops]);
+    expect(said()).toEqual([systemLineId.oopsGate(1)]);
     expect(g.getView().banner).toMatchObject({ kind: 'gate', n: 1 });
     g.overrideNext();
     expect(g.island(1)).toBe(false);
@@ -639,12 +639,12 @@ describe('the session: locks (fake port)', () => {
     tick(1000);
     expect(g.guard(2)).toBe(true);
     expect(g.guard(3)).toBe(true);
-    expect(said().filter((l) => l === systemLineId.oops)).toHaveLength(1);
+    expect(said().filter((l) => l.startsWith('pip.oops'))).toHaveLength(1);
     // the same banner isn't restarted while it still shows (the physics reports a pressed lock every second)
     expect(g.getView().banner?.seq).toBe(1);
     tick(GUARD_LINE_MS);
     expect(g.guard(2)).toBe(true);
-    expect(said().filter((l) => l === systemLineId.oops)).toHaveLength(2);
+    expect(said().filter((l) => l.startsWith('pip.oops'))).toHaveLength(2);
     expect(g.getView().banner?.seq).toBe(2);
     expect(g.debug().guards).toBe(4);
     // once gate 1 is solved, the island behind its bridges is fine; the one behind gate 2's bridge is not

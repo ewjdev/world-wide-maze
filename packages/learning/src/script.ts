@@ -182,6 +182,7 @@ export const systemLineId = {
   unlockedLift: 'pip.unlocked.lift',
   unlockedGoal: 'pip.unlocked.goal',
   oops: 'pip.oops',
+  oopsGate: (gate: number) => `pip.oops.gate.${gate}`,
   missionPost: 'pip.mission.post',
 };
 
@@ -221,6 +222,8 @@ export function systemScript(): ScriptLine[] {
   }
   for (const letter of MISSION_LETTERS)
     lines.push(plain(systemLineId.reachLetter(letter), `Roll to island ${letter}!`));
+  for (let gate = 1; gate <= MAX_GATE_NUMBER; gate++)
+    lines.push(plain(systemLineId.oopsGate(gate), `Oops! Solve Pip gate ${numberWord(gate)} first.`));
   for (let gate = 1; gate <= MAX_GATE_NUMBER; gate++)
     lines.push(
       plain(
