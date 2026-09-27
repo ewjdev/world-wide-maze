@@ -41,6 +41,11 @@ export function PlayLayer() {
       {(v.phase === 'intro' || v.phase === 'countdown' || v.phase === 'paused') && v.ghost.run && (
         <GhostToggle />
       )}
+      {(v.ghost.status === 'preparing' || v.ghost.status === 'unavailable') && (
+        <p className="wwm-ghosttag" role="status" data-testid="ghost-status">
+          {t(`ghost.${v.ghost.status}`)}
+        </p>
+      )}
       {v.phase === 'play' && v.ghost.racing && v.ghost.run && (
         <p className="wwm-ghosttag" data-testid="ghost-racing">
           <Icon name="ghost" size={16} /> {t('ghost.racing', { name: v.ghost.run.name })}

@@ -1,0 +1,49 @@
+{
+  "baseCommit": "d88697faed5a2f5791b7bd8ee0b22dd56add95aa",
+  "runtime": "Node 26.0.0, pnpm 11.5.0, macOS M5 Max",
+  "fullCheck": {
+    "typecheck": "pass",
+    "lint": "pass, 32 warnings and 4 infos",
+    "tests": {
+      "passed": 1341,
+      "failed": 2,
+      "skipped": 32,
+      "seconds": 177.91
+    },
+    "failures": [
+      {
+        "test": "extension click -> scroll-stitched capture -> /play/local -> a playable maze",
+        "error": "scroll restoration expected 420, received 0",
+        "isolatedRetry": "pass",
+        "retrySeconds": 11.84
+      },
+      {
+        "test": "build failure -> fallback screen -> curated alternative plays (offline fixture build)",
+        "error": "url-go locator.click timeout: element unstable then detached",
+        "isolatedRetry": "pass",
+        "retrySeconds": 10.16
+      }
+    ]
+  },
+  "focused": {
+    "ghostUnitTests": 11,
+    "ghostUnitResult": "pass",
+    "ghostBrowserCases": [
+      {
+        "name": "worker vs Node full pose parity",
+        "result": "pass"
+      },
+      {
+        "name": "pending preparation/pause/retry/error/unmount lifecycle",
+        "result": "pass"
+      },
+      {
+        "name": "late network result after same-stage retry",
+        "result": "pass",
+        "seconds": 4.39,
+        "testSetupRepair": "Removed second countdown wait and accelerated countdowns so a held HTTP response arrives before the existing six-second timeout"
+      }
+    ]
+  },
+  "integrationGate": "Relevant gain and targeted correctness verified; parent must run final combined staging check. No physical lower-tier acceptance claimed."
+}

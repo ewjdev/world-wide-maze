@@ -228,6 +228,7 @@ describe('ranking', () => {
   });
   test('ghost tracks interpolate and clamp', () => {
     const track = {
+      physicsVersion: '0.2.0',
       hz: 120,
       ticks: 3,
       goalTick: -1,

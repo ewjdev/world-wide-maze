@@ -42,7 +42,8 @@ import { type GateOutcome, LearningGates } from '../learning/gates.ts';
 import { isLearningHref } from '../learning/href.ts';
 import { createLockPort } from '../learning/port.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
-import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
+import { createGhostBall, type GhostBall, type GhostTrack } from '../ranking/ghost.ts';
+import { GhostClient } from '../ranking/ghost-client.ts';
 import type { Challenge } from '../ranking/share.ts';
 import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
@@ -200,6 +201,7 @@ export interface RankingView {
 }
 
 export interface GhostView {
+  status: 'idle' | 'preparing' | 'ready' | 'unavailable';
   /** The stage's #1 verified run, when the server has one for this physics version. */
   run: { name: string; score: number; timeMs: number } | null;
   /** The player's choice (persisted). */
@@ -363,6 +365,8 @@ export class Game {
   #afterGate: (() => void) | null = null;
 
   // ghost race (08b)
+  #ghostClient = new GhostClient();
+  #ghostAbort: AbortController | null = null;
   #ghostTrack: GhostTrack | null = null;
   #ghostFor: string | null = null;
   #ghostBall: GhostBall | null = null;
@@ -410,7 +414,7 @@ export class Game {
       result: null,
       stageSource: null,
       ranking: null,
-      ghost: { run: null, on: this.#get(GHOST_KEY) === '1', racing: false },
+      ghost: { status: 'idle', run: null, on: this.#get(GHOST_KEY) === '1', racing: false },
       challenge: opts.challenge ? { ...opts.challenge, stageId: null } : null,
       muted: opts.audio.muted,
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
@@ -593,6 +597,8 @@ export class Game {
 
   dispose(): void {
     this.#disposed = true;
+    this.#cancelGhostPreparation();
+    this.#ghostClient.dispose();
     cancelAnimationFrame(this.#raf);
     this.#buildAbort?.abort();
     for (const c of this.#cleanups) c();
@@ -663,6 +669,7 @@ export class Game {
     }
     switch (to) {
       case 'title':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#resetSession();
         this.#set({
@@ -692,6 +699,7 @@ export class Game {
         this.#after(CALIBRATE_TIMEOUT_SEC, () => this.#set({ calibrateTimedOut: true }));
         break;
       case 'select':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({
           confirm: null,
@@ -707,6 +715,7 @@ export class Game {
         if (IN_STAGE.has(from) && e) e.setView('map');
         break;
       case 'building':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({ confirm: null, sign: null, result: null, tutorial: null });
         d?.setPaused(true);
@@ -1145,24 +1154,49 @@ export class Game {
     else if (this.#view.phase === 'play') this.#startGhost();
   }
 
+  #cancelGhostPreparation(): void {
+    this.#ghostAbort?.abort();
+    this.#ghostAbort = null;
+    this.#ghostClient.cancel();
+    if (!this.#disposed && this.#view.ghost.status === 'preparing')
+      this.#set({ ghost: { ...this.#view.ghost, status: 'idle' } });
+  }
+
   async #fetchGhost(stage: StageData): Promise<void> {
+    this.#cancelGhostPreparation();
+    const ac = new AbortController();
+    this.#ghostAbort = ac;
     const id = stage.stageId;
     this.#ghostFor = id;
     this.#ghostTrack = null;
-    this.#set({ ghost: { ...this.#view.ghost, run: null } });
-    const run = await this.#boards.ghost(id);
-    // A replay only reproduces on the physics build it was recorded with.
-    if (!run || run.physicsVersion !== PHYSICS_VERSION || this.#ghostFor !== id || !run.inputs.length) return;
+    this.#set({ ghost: { ...this.#view.ghost, run: null, status: 'preparing' } });
     try {
-      const track = await recordGhostTrack(stage, run.inputs);
-      if (this.#ghostFor !== id || this.#disposed) return;
+      const run = await this.#boards.ghost(id);
+      // Request identity matters even when retrying the same stage id. A stale
+      // fetch must not start a worker or overwrite a newer ghost.
+      if (ac.signal.aborted || this.#disposed) return;
+      if (!run || run.physicsVersion !== PHYSICS_VERSION || !run.inputs.length) {
+        this.#set({ ghost: { ...this.#view.ghost, status: 'idle' } });
+        return;
+      }
+      const track = await this.#ghostClient.prepare(stage, run.inputs, ac.signal);
+      if (ac.signal.aborted || this.#disposed) return;
       this.#ghostTrack = track;
       this.#set({
-        ghost: { ...this.#view.ghost, run: { name: run.name, score: run.score, timeMs: run.timeMs } },
+        ghost: {
+          ...this.#view.ghost,
+          status: 'ready',
+          run: { name: run.name, score: run.score, timeMs: run.timeMs },
+        },
       });
       if (this.#view.phase === 'play') this.#startGhost();
     } catch (err) {
-      console.info('[wwm] ghost unavailable', err);
+      if (!ac.signal.aborted && !this.#disposed) {
+        this.#set({ ghost: { ...this.#view.ghost, status: 'unavailable' } });
+        console.info('[wwm] ghost unavailable', err);
+      }
+    } finally {
+      if (this.#ghostAbort === ac) this.#ghostAbort = null;
     }
   }
 
@@ -1289,7 +1323,7 @@ export class Game {
     else if (source !== 'server' || learningRun) {
       this.#ghostFor = null;
       this.#ghostTrack = null;
-      this.#set({ ghost: { ...this.#view.ghost, run: null } });
+      this.#set({ ghost: { ...this.#view.ghost, run: null, status: 'idle' } });
     }
     this.#set({
       run: {
