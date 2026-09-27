@@ -267,7 +267,9 @@ export interface SimStepResult {
 
 export interface Simulation {
   // same interface in worker and headless (Node) builds
-  load(stage: StageData): Promise<void>;
+  load(stage: StageData, options?: SimLoadOptions): Promise<void>; // §10.4: runtime locks (learning mode)
+  /** §10.4: open or close a lock passed to `load`; takes effect before the next step. Unknown ids are ignored. */
+  setLock(id: number, open: boolean): void;
   step(input: InputSample): SimStepResult; // advances exactly 1/SIM_HZ
   reset(to?: Vec2): void;
   dispose(): void;

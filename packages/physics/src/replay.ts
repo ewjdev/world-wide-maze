@@ -101,10 +101,11 @@ export function runInputs(
 export function record(sim: Simulation): { sim: Simulation; inputs: InputSample[] } {
   const inputs: InputSample[] = [];
   const wrapped: Simulation = {
-    load: (stage) => {
+    load: (stage, options) => {
       inputs.length = 0;
-      return sim.load(stage);
+      return sim.load(stage, options);
     },
+    setLock: (id, open) => sim.setLock(id, open),
     step: (input) => {
       inputs.push({ ...input });
       return sim.step(input);
