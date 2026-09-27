@@ -5,6 +5,11 @@ behind a login or a bot wall, and that page, as you see it, becomes a World Wide
 maze are made in your browser. Nothing is uploaded unless you press **Share** in the game.
 
 ## Load it (unpacked)
+For the hosted game, download the ZIP from [wwm.ewj.dev/mazify](https://wwm.ewj.dev/mazify),
+unzip it, and load the folder containing `manifest.json` using the instructions on that page.
+The public download is configured for `https://wwm.ewj.dev`.
+
+For a development build:
 1. `pnpm --filter @wwm/extension build`. This writes `apps/extension/dist/chrome/` and a zip next to it.
    - Pass `--origin https://your-game.example` (or set `WWM_GAME_ORIGIN`) to point it at a deployed game.
      The default is the dev server, `http://localhost:5173`.
@@ -75,5 +80,12 @@ There's no `tabs`, `storage` or `<all_urls>`. The chosen game address lives in t
   locally; it's required in CI.
 
 ## Publishing
-Not published. `STORE_LISTING.md` is a **draft** of the Chrome Web Store listing. Publishing needs the
+Every `pnpm --filter @wwm/web build` first runs this package's `build:web` script. It builds
+against the production domain in `infra/cloudflare.config.json` (ignoring `WWM_GAME_ORIGIN`),
+then writes a versioned ZIP and SHA-256 sidecar to the web app's generated `public/downloads/`.
+Vite copies them into the deployed static assets. The page reads the version from this package's
+`package.json`, so its link and the archive name stay in sync. Bump the version before releasing
+extension changes. `build:web` can also be run before `pnpm dev` to enable the local download link.
+
+Not published to the Chrome Web Store. `STORE_LISTING.md` is a **draft** of the listing. Store publishing needs the
 project owner's developer account and a production `--origin` build.

@@ -6,6 +6,7 @@
   "description": "\"Maze this page\": a Chrome MV3 extension that captures the page you're on and hands it to /play/local.",
   "scripts": {
     "build": "tsx scripts/build.ts",
+    "build:web": "tsx scripts/build-web.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {

@@ -39,15 +39,19 @@ const en = {
   mazifyLead:
     'Turn any page you can see into a maze, including pages behind a login. The capture and the maze are made in your browser. Nothing is uploaded unless you press Share.',
   extTitle: 'Browser extension',
-  extTag: 'Best',
+  extTag: 'Preview',
   extBody:
     'One click captures the whole page as you see it, screenshot included. Chrome, Edge and other Chromium browsers.',
   extSteps: [
-    'Download the extension folder, or build it with pnpm --filter @wwm/extension build.',
-    'Open chrome://extensions and switch on Developer mode.',
-    'Click “Load unpacked” and pick the folder.',
+    'Download the ZIP above and unzip it. Keep the extracted folder on your computer.',
+    'Open chrome://extensions in Chrome (edge://extensions in Edge) and switch on Developer mode.',
+    'Click “Load unpacked” and select the extracted folder containing manifest.json.',
     'Pin World Wide Maze and click it on any page.',
   ],
+  extDownload: 'Download extension ZIP',
+  extInstallNote: 'Desktop Chrome and Edge · Manual install; not yet in the Chrome Web Store.',
+  extUpdate:
+    'To update, unzip the new download into the same folder and click Reload on the extension’s card. Browser settings and store pages cannot be captured.',
   extNote:
     'It asks for the active tab only when you click it, and can talk to this game’s address and nothing else.',
   bmTitle: 'Bookmarklet',
@@ -102,15 +106,19 @@ const ja: Strings = {
   mazifyLead:
     'ログインが必要なページも含めて、見えているページをそのまま迷路にできます。キャプチャも迷路づくりもブラウザの中で行います。「共有」を押さない限り、何もアップロードされません。',
   extTitle: 'ブラウザ拡張機能',
-  extTag: 'おすすめ',
+  extTag: 'プレビュー',
   extBody:
     'ワンクリックで、見えているとおりのページ全体をスクリーンショットごとキャプチャします。Chrome、Edge などの Chromium 系ブラウザ用。',
   extSteps: [
-    '拡張機能のフォルダをダウンロードするか、pnpm --filter @wwm/extension build でビルドします。',
-    'chrome://extensions を開き、デベロッパーモードをオンにします。',
-    '「パッケージ化されていない拡張機能を読み込む」でフォルダを選びます。',
+    '上の ZIP をダウンロードして解凍します。解凍したフォルダはパソコンに保存しておいてください。',
+    'Chrome で chrome://extensions（Edge では edge://extensions）を開き、デベロッパーモードをオンにします。',
+    '「パッケージ化されていない拡張機能を読み込む」をクリックし、manifest.json が入った解凍済みフォルダを選びます。',
     'World Wide Maze を固定して、好きなページでクリックします。',
   ],
+  extDownload: '拡張機能の ZIP をダウンロード',
+  extInstallNote: 'パソコン版 Chrome・Edge 用。手動インストール（Chrome ウェブストアでは未公開）。',
+  extUpdate:
+    '更新するときは、新しい ZIP を同じフォルダに解凍し、拡張機能のカードで「再読み込み」をクリックします。ブラウザの設定ページやストアのページはキャプチャできません。',
   extNote: 'クリックしたときだけ表示中のタブにアクセスし、このゲームのアドレス以外とは通信しません。',
   bmTitle: 'ブックマークレット',
   bmTag: 'スケッチモード',
