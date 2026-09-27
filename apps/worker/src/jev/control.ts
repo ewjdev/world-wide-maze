@@ -31,19 +31,46 @@ export class JevControl extends DurableObject<Env & { TYPESAFE_API_KEY?: string 
         // The reservation must reach durable storage before any billable request leaves this object.
         await this.ctx.storage.sync();
         const reservation = await requireCost(this.env, 'jev');
+        const release = () => releaseCost(this.env, reservation);
+        let response: Response;
         try {
-          const response = await fetch(input, {
+          response = await fetch(input, {
             ...init,
             signal: AbortSignal.any([...(init?.signal ? [init.signal] : []), AbortSignal.timeout(30_000)]),
           });
-          // Keep the lease until the provider response finishes, not just until headers arrive.
-          return new Response(await response.arrayBuffer(), {
-            status: response.status,
-            headers: response.headers,
-          });
-        } finally {
-          await releaseCost(this.env, reservation);
+        } catch (error) {
+          await release();
+          throw error;
         }
+        if (!response.body) {
+          await release();
+          return response;
+        }
+        // The caller enforces its response-size cap while consuming this stream.
+        // Keep the lease until consumption or cancellation without buffering provider data here.
+        const reader = response.body.getReader();
+        const body = new ReadableStream<Uint8Array>({
+          async pull(controller) {
+            try {
+              const { done, value } = await reader.read();
+              if (done) {
+                controller.close();
+                await release();
+              } else controller.enqueue(value);
+            } catch (error) {
+              controller.error(error);
+              await release();
+            }
+          },
+          async cancel(reason) {
+            try {
+              await reader.cancel(reason);
+            } finally {
+              await release();
+            }
+          },
+        });
+        return new Response(body, { status: response.status, headers: response.headers });
       },
       (runId, receipt) => {
         if (receipt.usage) this.budget.settle(runId, receipt.attemptId, receipt.usage.input_tokens);

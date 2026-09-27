@@ -277,11 +277,9 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
     log.warn('card render rate limited', { kind, scope: a.ok ? 'global' : 'ip' });
     return c.redirect('/og/log.png', 302);
   }
-  const admission = await reserveCost(
-    c.env,
-    'card',
-    `card:${await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key)).then((b) => Array.from(new Uint8Array(b), (n) => n.toString(16).padStart(2, '0')).join(''))}`,
-  );
+  // A failed cache write must not make this card unrenderable until the receipt expires.
+  // The global render limiter and the budget bound retries independently.
+  const admission = await reserveCost(c.env, 'card');
   if (!admission.ok) return c.redirect('/og/log.png', 302);
   try {
     const { renderCard } = await import('../cards/render.ts');
@@ -289,12 +287,10 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
     const out = await renderCard(src.data, art, site);
     log.info('card rendered', { kind, ms: Math.round(out.ms), bytes: out.png.byteLength });
     await reserveWrite(c.env, out.png.byteLength);
-    c.executionCtx.waitUntil(
-      c.env.STAGES.put(key, out.png, {
-        httpMetadata: { contentType: 'image/png', cacheControl: IMMUTABLE },
-        customMetadata: { kind, renderMs: String(Math.round(out.ms)) },
-      }),
-    );
+    await c.env.STAGES.put(key, out.png, {
+      httpMetadata: { contentType: 'image/png', cacheControl: IMMUTABLE },
+      customMetadata: { kind, renderMs: String(Math.round(out.ms)) },
+    });
     return new Response(out.png, {
       headers: {
         'content-type': 'image/png',
