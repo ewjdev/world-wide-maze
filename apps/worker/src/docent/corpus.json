@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "4c9bf8bb69dfbca9",
+  "hash": "7c68c4ba4a1819cc",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -11,6 +11,7 @@
     "docs/build-log/performance-p1-staging.md",
     "docs/build-log/performance-regression-p1.md",
     "docs/build-log/performance-render-p1.md",
+    "docs/build-log/performance-resources-p2.md",
     "docs/build-log/performance-startup-p2.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
@@ -473,6 +474,50 @@
       "url": "/log#performance-render-p1",
       "kind": "build-log",
       "text": "## Rejected experiments and validation discipline\nAll raw intermediate evidence remains. `graphics-*` freed bloom/pass but missed FXAA's implicit RTT (156 MiB lowered versus 61 fresh). `final-*` disposed FXAA too but exposed a genuine unused default framebuffer (96.7 versus 61 MiB; `final-inspect` recorded its 2880×1800 dimensions after shrinking the canvas). `accepted-*` is a rejected intermediate despite its provisional label: premature async MRT restoration produced console validation errors. `verified-*` preceded the manual-compile guard. `release-*` fixed resource convergence and errors but failed cyclic program growth. Reusing a stable MRT identity fixes that last issue in `qualified-*`. None of these rejected candidates was committed or admitted.\n\nAn independent renderer review by the ghost sub-agent verified installed Three source semantics, identified async builder state dependence and traced program growth to MRT/context cache identity. Measured gates were retained through every iteration.\n\n## Reproduction\nUse `node infra/perf/render-p1.mjs <mode>` against production preview port 4321, with a unique `PERF_LABEL` and optional `PERF_BACKEND=webgl2`. `PERF_REQUIRE_IMPROVEMENT=1` makes `gpu` reject failure to converge to fresh-low targets/textures or a >2 MiB gap, and makes `transitions` reject growing resource totals/counts. `compile-race` checks pending precompile mutation; `recovery` invokes a synthetic loss callback and verifies WebGL2 fallback. `PERF_REPLAY_THROTTLES=6` selects the final stress replay. Other modes include `tiers`, `visibility`, `stall`, `frames`, and diagnostic `inspect`. Every frame wrapper forwards all arguments."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md",
+      "title": "Performance P2: stage buffer and bitmap ownership · Confirmed owner and narrow fix",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Date: 2026-09-27. Issue [#24](https://github.com/ewjdev/world-wide-maze/issues/24), parent performance epic #19. Baseline is accepted P1 staging `ebd368b`. Worktree `performance-render`, branch `codex/performance-resources-p2`.\n\n## Confirmed owner and narrow fix\nOn both native WebGPU and WebGL2, fifteen retries increase retained attributes from 65 to 93 and attribute bytes from 1,518,020 to 2,145,220. Each additional load contributes exactly two 22,400-byte arrays. The original motes' two attributes remain in both Three's Attributes and backend resource maps after replacement. The probe deliberately retains those first attribute handles to inspect explicit release; all later loads still reproduce the original audit's same slope.\n\nInstalled Three 0.186.1 `renderers/common/Geometries.js` releases node-only attributes through its geometry-dispose listener and the associated render object's attributes. `objects/Sprite.js` gives every Sprite a global shared geometry. The stage-owned mote material had no stage-owned geometry to trigger buffer disposal. Motes now clone the shared quad and register that geometry in the stage Bin, preserving identical vertex data and visuals while giving these buffers an explicit lifetime.\n\nThe other node-only instance attributes (ball streaks, items, portals, locks, and global particles) use owned mesh geometries. The ball halo's shared Sprite has no per-stage node-only instance buffers. No private renderer cache mutation or gameplay changes are added."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "## Bitmap ownership\n`makeStageImages` borrows a fitting single source image and owns only bitmaps created by cropping/downscaling. It closes already-created crops if a later crop fails. The owner is registered before GPU textures so the Bin's reverse disposal frees textures first, then closes their image sources. Partial asynchronous loads cancelled by unload/disposal close their generated bitmaps before adoption. Caller-owned sources remain usable until their caller closes them. The probe deliberately retains tile handles to test explicit closure (`width === 0`); it does not establish an OS-memory saving because unreferenced baseline bitmaps may eventually be reclaimed by browser garbage collection.\n\nFocused tests cover isolated Sprite geometry disposal, caller-source borrowing, tiled and downscaled image ownership, partial failure, and texture-before-bitmap teardown. Engine typecheck passes; focused engine suite passes 48 tests. The candidate passes all native hard gates on both backends: fifteen normal retries hold **63 attributes / 1,473,220 bytes**, compared with **93 / 2,145,220 bytes** after fifteen baseline retries. This removes the **44,800-byte-per-load growth** (672,000 fewer accounted bytes at that endpoint). Three additional retries with the camera outside the background bounds hold **54 attributes / 918,700 bytes**, with `motes.visible === false` in every sample."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership~2",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership (continued)",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Fifteen alternating example-sparse/HN stage loads retain stable per-stage resources: **1,258,660 / 8,058,948 attribute bytes**, respectively, on both backends. Geometry, texture, render-target, program and uniform-buffer counts plateau per scene after its first occurrence as well (example-sparse uniform buffers warm from 85 to 87 on WebGPU). Owning the quad can add one bounded geometry when the ball halo also uses the shared Sprite quad; it does not grow per stage. Four post-recovery WebGL2 retries stay at **63 attributes / 1,258,500 bytes**. All page/console error lists are empty.\n\nBoth backends keep **3 live cropped tiles** across four oversized texture loads, then **0 on unload**, **0 after a cancelled pending crop**, and **0 after engine disposal**, while preserving the caller source at width 512 until the caller closes it. Baseline explicit-close counts are 12 live tiles after four loads/unload and 15 after the cancelled load. Unit tests also cover partial crop failure and downscaling. The manual visual check retains the ocean, visible motes, ball, rails, pickups and HUD. Both backends additionally render a 5120×6400 labelled checker image as two observed tile materials (4096×2560 each after downscaling), with correctly separated top/bottom artwork and no page/console errors. Settled normal and large-tiled screenshots are preserved in the `candidate-v1b-*` folders."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership~3",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership (continued)",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Qualified raw results are `candidate-v1-*/tiles.json` and `candidate-v1b-*/{retries,stages}.json`; all use exactly the product-source hashes and asset hashes in `candidate-v1-build.json`. The `b` suffix changes only the culling probe setup. The compact `candidate-v1-gates.json` records plateau counters. `pnpm check` passed: workspace typechecks and lint, **115 test files / 1370 tests passed**, 3 files / 32 tests skipped, 148.70 seconds. Existing lint warnings remain unchanged. Full and focused check logs are preserved alongside the raw measurements. No gameplay constants, simulation cadence, score/replay format, production analytics, regression waivers or shared gate configuration changed.\n\nThe first candidate culling probe changed the camera far plane but did not actually place motes out of view; its visibility assertion failed while GPU bytes stayed flat. This is a preserved probe-setup failure (`candidate-v1-webgpu/retries.json` and the accompanying failure log), not a qualified culling result. The corrected probe places the camera far outside the background bounds and restores it afterward, exercising the engine's explicit `motesInView()` visibility gate without changing production culling. Candidate product source did not change between these probe versions.\n\nA peer reviewed the installed Three disposal path, cloned Sprite geometry ownership, crop cleanup and cancelled-load adoption guard and found no static blocker."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#evidence-and-limits",
+      "title": "Performance P2: stage buffer and bitmap ownership › Evidence and limits",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "evidence-and-limits",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "## Evidence and limits\nRaw data, source/build identities and screenshots live in `docs/launch/evidence/resources-p2/`. `baseline-*` serves the unchanged accepted P1 build even while candidate source is edited. Native headed Chromium/Metal uses the same M5 Max host as P1. API calls are stubbed and analytics remain off. Host-heavy work is serialized across agents. This is a GPU resource lifecycle measurement, not physical low-end desktop/mobile acceptance or OS VRAM residency.\n\nRun `PERF_LABEL=<unique-label> [PERF_BACKEND=webgl2] node infra/perf/resources-p2.mjs retries|stages|tiles` against production preview port 4321. `PERF_REQUIRE_IMPROVEMENT=1` enables hard count/byte plateau and ownership gates. `PERF_CULL_CASE=1` adds three out-of-view retries; `visual` captures settled normal and large tiled texture images. `stages` includes a synthetic WebGPU loss callback followed by WebGL2 retries; this is not a physical driver-reset test. `tiles` holds a pending crop across unload and counts actual live bitmap handles while preserving the caller source."
     },
     {
       "id": "docs/build-log/performance-startup-p2.md",

@@ -1,0 +1,4363 @@
+{
+  "date": "2026-09-27T23:34:11.302Z",
+  "base": "http://127.0.0.1:4321",
+  "mode": "retries",
+  "browser": "153.0.8010.12",
+  "headless": false,
+  "commit": "ebd368bfb01f20c77ffa7bf395769fa9caca6df4",
+  "hardware": "Apple M5 Max\n137438953472",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4203,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+          "driverVendor": "Apple",
+          "driverVersion": "26.6.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.061221,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_2d_canvas_auto_flush",
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6"
+  },
+  "runs": [],
+  "initial": {
+    "metrics": {
+      "Timestamp": 1730729.343095,
+      "AudioHandlers": 0,
+      "AudioWorkletProcessors": 0,
+      "Documents": 1,
+      "Frames": 1,
+      "JSEventListeners": 197,
+      "LayoutObjects": 64,
+      "MediaKeySessions": 0,
+      "MediaKeys": 0,
+      "Nodes": 151,
+      "Resources": 29,
+      "ContextLifecycleStateObservers": 7,
+      "V8PerContextDatas": 2,
+      "WorkerGlobalScopes": 0,
+      "UACSSResources": 0,
+      "RTCPeerConnections": 0,
+      "ResourceFetchers": 1,
+      "AdSubframes": 0,
+      "DetachedScriptStates": 0,
+      "ArrayBufferContents": 197,
+      "LayoutCount": 17,
+      "RecalcStyleCount": 255,
+      "LayoutDuration": 0.01027,
+      "RecalcStyleDuration": 0.026413,
+      "DevToolsCommandDuration": 0.005672,
+      "ScriptDuration": 0.479465,
+      "V8CompileDuration": 0,
+      "TaskDuration": 0.799508,
+      "TaskOtherDuration": 0.277688,
+      "ThreadTime": 0.82253,
+      "ProcessTime": 1.875936,
+      "JSHeapUsedSize": 13064120,
+      "JSHeapTotalSize": 14483456,
+      "FirstMeaningfulPaint": 1730723.811284,
+      "DomContentLoaded": 1730723.592953,
+      "NavigationStart": 1730723.534616
+    },
+    "dom": {
+      "documents": 1,
+      "nodes": 151,
+      "jsEventListeners": 197
+    },
+    "heap": {
+      "usedSize": 13064120,
+      "totalSize": 14483456,
+      "embedderHeapUsedSize": 1468792,
+      "backingStorageSize": 4593660
+    },
+    "processes": [
+      {
+        "type": "browser",
+        "id": 22649,
+        "cpuTime": 2.950832,
+        "rssKiB": 230064
+      },
+      {
+        "type": "renderer",
+        "id": 22678,
+        "cpuTime": 0.049857,
+        "rssKiB": 99056
+      },
+      {
+        "type": "renderer",
+        "id": 22679,
+        "cpuTime": 1.876792,
+        "rssKiB": 325904
+      },
+      {
+        "type": "renderer",
+        "id": 22677,
+        "cpuTime": 0.193551,
+        "rssKiB": 190256
+      },
+      {
+        "type": "GPU",
+        "id": 22658,
+        "cpuTime": 1.736282,
+        "rssKiB": 222608
+      },
+      {
+        "type": "network.mojom.NetworkService",
+        "id": 22659,
+        "cpuTime": 0.126076,
+        "rssKiB": 107840
+      },
+      {
+        "type": "storage.mojom.StorageService",
+        "id": 22661,
+        "cpuTime": 0.03758,
+        "rssKiB": 79728
+      }
+    ],
+    "game": {
+      "state": {
+        "phase": "play",
+        "driver": "lockstep",
+        "tick": 190,
+        "timer": {
+          "remains": 298.4166666666681,
+          "int": 298,
+          "running": true
+        },
+        "total": 0,
+        "spares": 3,
+        "small": 0,
+        "large": 0,
+        "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+        "rollLevel": 0,
+        "island": 0,
+        "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+        "clock": 5.666700000000008,
+        "hold": null,
+        "recording": {
+          "ticks": 190,
+          "exact": true,
+          "replays": 0
+        },
+        "ghost": {
+          "status": "idle",
+          "run": null,
+          "on": false,
+          "racing": false,
+          "loaded": false,
+          "ticks": 0
+        },
+        "portal": null,
+        "journey": [],
+        "learning": {
+          "active": false,
+          "activityId": null,
+          "level": null,
+          "mode": null,
+          "seed": null,
+          "phase": null,
+          "index": null,
+          "built": 0,
+          "done": [],
+          "overridden": [],
+          "gate": null,
+          "binding": null,
+          "missions": [],
+          "banner": null,
+          "said": [],
+          "guards": 0,
+          "notes": [],
+          "port": {
+            "physics": true,
+            "engine": true
+          }
+        },
+        "learningRun": false,
+        "api": "unknown",
+        "engine": {
+          "fps": 59.998723431416394,
+          "qualityStatus": "fixed",
+          "drawCalls": 44,
+          "triangles": 19484,
+          "tier": 0,
+          "sceneDrawCalls": 19,
+          "envDrawCalls": 11,
+          "postDrawCalls": 14,
+          "backend": "webgpu",
+          "memory": {
+            "geometries": 18,
+            "textures": 21,
+            "programs": 62,
+            "renderTargets": 14
+          },
+          "tierLog": []
+        }
+      },
+      "rendererMemory": {
+        "attributes": 63,
+        "attributesSize": 1473220,
+        "geometries": 18,
+        "indexAttributes": 6,
+        "indexAttributesSize": 80304,
+        "indirectStorageAttributes": 0,
+        "indirectStorageAttributesSize": 0,
+        "programs": 62,
+        "programsSize": 177157,
+        "readbackBuffers": 0,
+        "readbackBuffersSize": 0,
+        "renderTargets": 14,
+        "storageAttributes": 0,
+        "storageAttributesSize": 0,
+        "textures": 21,
+        "texturesSize": 216433191,
+        "uniformBuffers": 87,
+        "uniformBuffersSize": 18448,
+        "total": 218182320
+      },
+      "canvas": {
+        "width": 2880,
+        "height": 1800
+      },
+      "deviceFeatures": [
+        "depth32float-stencil8",
+        "rg11b10ufloat-renderable",
+        "bgra8unorm-storage",
+        "texture-formats-tier1",
+        "texture-compression-bc",
+        "dual-source-blending",
+        "core-features-and-limits",
+        "float32-filterable",
+        "indirect-first-instance",
+        "texture-compression-astc-sliced-3d",
+        "float32-blendable",
+        "texture-compression-astc",
+        "texture-compression-etc2",
+        "depth-clip-control",
+        "texture-compression-bc-sliced-3d",
+        "shader-f16",
+        "texture-formats-tier2",
+        "timestamp-query",
+        "clip-distances",
+        "subgroups"
+      ],
+      "visibility": "visible"
+    }
+  },
+  "retries": [
+    {
+      "metrics": {
+        "Timestamp": 1730733.858662,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 24,
+        "RecalcStyleCount": 423,
+        "LayoutDuration": 0.012132,
+        "RecalcStyleDuration": 0.038436,
+        "DevToolsCommandDuration": 0.038479,
+        "ScriptDuration": 0.752716,
+        "V8CompileDuration": 0,
+        "TaskDuration": 1.264002,
+        "TaskOtherDuration": 0.422239,
+        "ThreadTime": 1.326955,
+        "ProcessTime": 2.886237,
+        "JSHeapUsedSize": 13746060,
+        "JSHeapTotalSize": 15532032,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 13747268,
+        "totalSize": 15532032,
+        "embedderHeapUsedSize": 1627504,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.013725,
+          "rssKiB": 230080
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050263,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 2.887284,
+          "rssKiB": 332240
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.194364,
+          "rssKiB": 190304
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 2.772386,
+          "rssKiB": 226192
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.130467,
+          "rssKiB": 107888
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037604,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 10.166700000000008,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.989567031820314,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730738.372531,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 31,
+        "RecalcStyleCount": 591,
+        "LayoutDuration": 0.013579,
+        "RecalcStyleDuration": 0.050203,
+        "DevToolsCommandDuration": 0.060316,
+        "ScriptDuration": 1.013429,
+        "V8CompileDuration": 0,
+        "TaskDuration": 1.704416,
+        "TaskOtherDuration": 0.566889,
+        "ThreadTime": 1.807882,
+        "ProcessTime": 3.801323,
+        "JSHeapUsedSize": 14135900,
+        "JSHeapTotalSize": 16318464,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14189016,
+        "totalSize": 16318464,
+        "embedderHeapUsedSize": 1673056,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.077854,
+          "rssKiB": 230112
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050263,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 3.802662,
+          "rssKiB": 334832
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.194502,
+          "rssKiB": 190304
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 3.804337,
+          "rssKiB": 228656
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.134297,
+          "rssKiB": 107904
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037604,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 47,
+          "timer": {
+            "remains": 299.6083333333337,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967485666275024, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 14.68299999999997,
+          "hold": null,
+          "recording": {
+            "ticks": 47,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.98956703182062,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730742.876821,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 38,
+        "RecalcStyleCount": 758,
+        "LayoutDuration": 0.014961,
+        "RecalcStyleDuration": 0.061868,
+        "DevToolsCommandDuration": 0.077874,
+        "ScriptDuration": 1.278029,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.146653,
+        "TaskOtherDuration": 0.713921,
+        "ThreadTime": 2.288969,
+        "ProcessTime": 4.738705,
+        "JSHeapUsedSize": 14319964,
+        "JSHeapTotalSize": 16318464,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14383372,
+        "totalSize": 16318464,
+        "embedderHeapUsedSize": 1666216,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.136441,
+          "rssKiB": 230064
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050263,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 4.7397,
+          "rssKiB": 335216
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.194588,
+          "rssKiB": 190304
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 4.839525,
+          "rssKiB": 229568
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.138323,
+          "rssKiB": 107904
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037604,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 19.183299999999875,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.005217845030096,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730747.38965,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 45,
+        "RecalcStyleCount": 927,
+        "LayoutDuration": 0.016393,
+        "RecalcStyleDuration": 0.073677,
+        "DevToolsCommandDuration": 0.095111,
+        "ScriptDuration": 1.544724,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.590129,
+        "TaskOtherDuration": 0.860224,
+        "ThreadTime": 2.771557,
+        "ProcessTime": 5.629583,
+        "JSHeapUsedSize": 14544640,
+        "JSHeapTotalSize": 16580608,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14544640,
+        "totalSize": 16580608,
+        "embedderHeapUsedSize": 1657800,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.196847,
+          "rssKiB": 230096
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050275,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 5.630483,
+          "rssKiB": 335776
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.195042,
+          "rssKiB": 190336
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 5.86203,
+          "rssKiB": 231248
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.142701,
+          "rssKiB": 107904
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037616,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 50,
+          "timer": {
+            "remains": 299.5833333333337,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 23.71659999999974,
+          "hold": null,
+          "recording": {
+            "ticks": 50,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.76095617529901,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730751.909934,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 52,
+        "RecalcStyleCount": 1096,
+        "LayoutDuration": 0.017788,
+        "RecalcStyleDuration": 0.085303,
+        "DevToolsCommandDuration": 0.112957,
+        "ScriptDuration": 1.809418,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.029497,
+        "TaskOtherDuration": 1.004031,
+        "ThreadTime": 3.251097,
+        "ProcessTime": 6.510426,
+        "JSHeapUsedSize": 14621904,
+        "JSHeapTotalSize": 16318464,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14621904,
+        "totalSize": 16318464,
+        "embedderHeapUsedSize": 1594432,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.255278,
+          "rssKiB": 230160
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050275,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 6.510707,
+          "rssKiB": 336656
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.195185,
+          "rssKiB": 190336
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 6.884033,
+          "rssKiB": 231552
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.147395,
+          "rssKiB": 107904
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037616,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 28.24999999999958,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.99520038396918,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730756.457961,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 59,
+        "RecalcStyleCount": 1267,
+        "LayoutDuration": 0.019133,
+        "RecalcStyleDuration": 0.09677,
+        "DevToolsCommandDuration": 0.128845,
+        "ScriptDuration": 2.05084,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.435848,
+        "TaskOtherDuration": 1.14026,
+        "ThreadTime": 3.699546,
+        "ProcessTime": 7.345866,
+        "JSHeapUsedSize": 14740292,
+        "JSHeapTotalSize": 16580608,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14740292,
+        "totalSize": 16580608,
+        "embedderHeapUsedSize": 1613672,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.326623,
+          "rssKiB": 231216
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050289,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 7.346603,
+          "rssKiB": 337184
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227048,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 7.849919,
+          "rssKiB": 232368
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151132,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037631,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 32.76659999999948,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.005217845030096,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730760.944545,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 66,
+        "RecalcStyleCount": 1435,
+        "LayoutDuration": 0.020611,
+        "RecalcStyleDuration": 0.10792,
+        "DevToolsCommandDuration": 0.145706,
+        "ScriptDuration": 2.299463,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.853936,
+        "TaskOtherDuration": 1.280236,
+        "ThreadTime": 4.158501,
+        "ProcessTime": 8.204355,
+        "JSHeapUsedSize": 14849532,
+        "JSHeapTotalSize": 16580608,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 14849532,
+        "totalSize": 16580608,
+        "embedderHeapUsedSize": 1556856,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.367464,
+          "rssKiB": 231168
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050289,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 8.204519,
+          "rssKiB": 337680
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227048,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 8.823968,
+          "rssKiB": 232560
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151132,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037631,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 37.249899999999705,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.005217845029534,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730765.445401,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 73,
+        "RecalcStyleCount": 1604,
+        "LayoutDuration": 0.022044,
+        "RecalcStyleDuration": 0.119623,
+        "DevToolsCommandDuration": 0.162548,
+        "ScriptDuration": 2.550651,
+        "V8CompileDuration": 0,
+        "TaskDuration": 4.276977,
+        "TaskOtherDuration": 1.422111,
+        "ThreadTime": 4.622315,
+        "ProcessTime": 9.071591,
+        "JSHeapUsedSize": 15069836,
+        "JSHeapTotalSize": 17104896,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15069836,
+        "totalSize": 17104896,
+        "embedderHeapUsedSize": 1683712,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.409482,
+          "rssKiB": 231168
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050302,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 9.072252,
+          "rssKiB": 338320
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227105,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 9.828741,
+          "rssKiB": 232736
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151146,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037642,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 41.74999999999989,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.83350676378747,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730769.94448,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 80,
+        "RecalcStyleCount": 1771,
+        "LayoutDuration": 0.023395,
+        "RecalcStyleDuration": 0.131394,
+        "DevToolsCommandDuration": 0.179808,
+        "ScriptDuration": 2.810841,
+        "V8CompileDuration": 0,
+        "TaskDuration": 4.71454,
+        "TaskOtherDuration": 1.569102,
+        "ThreadTime": 5.100259,
+        "ProcessTime": 9.959273,
+        "JSHeapUsedSize": 15118964,
+        "JSHeapTotalSize": 17104896,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15169952,
+        "totalSize": 17104896,
+        "embedderHeapUsedSize": 1716168,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.451935,
+          "rssKiB": 231168
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050302,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 9.960399,
+          "rssKiB": 339120
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227105,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 10.823004,
+          "rssKiB": 233040
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151146,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037642,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 46.2500000000001,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00521784502953,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730774.427085,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 87,
+        "RecalcStyleCount": 1939,
+        "LayoutDuration": 0.024764,
+        "RecalcStyleDuration": 0.143324,
+        "DevToolsCommandDuration": 0.196358,
+        "ScriptDuration": 3.071122,
+        "V8CompileDuration": 0,
+        "TaskDuration": 5.154251,
+        "TaskOtherDuration": 1.718683,
+        "ThreadTime": 5.577544,
+        "ProcessTime": 10.836274,
+        "JSHeapUsedSize": 15161928,
+        "JSHeapTotalSize": 17367040,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15225032,
+        "totalSize": 17367040,
+        "embedderHeapUsedSize": 1595760,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.494782,
+          "rssKiB": 231168
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050317,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 10.837383,
+          "rssKiB": 339280
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227117,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 11.832418,
+          "rssKiB": 233056
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151156,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037652,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 49,
+          "timer": {
+            "remains": 299.59166666666704,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 50.74990000000035,
+          "hold": null,
+          "recording": {
+            "ticks": 49,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.88023952095762,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730778.954979,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 94,
+        "RecalcStyleCount": 2108,
+        "LayoutDuration": 0.026161,
+        "RecalcStyleDuration": 0.155325,
+        "DevToolsCommandDuration": 0.212977,
+        "ScriptDuration": 3.332209,
+        "V8CompileDuration": 0,
+        "TaskDuration": 5.5919,
+        "TaskOtherDuration": 1.865228,
+        "ThreadTime": 6.056227,
+        "ProcessTime": 11.734748,
+        "JSHeapUsedSize": 15242104,
+        "JSHeapTotalSize": 17367040,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15310144,
+        "totalSize": 17367040,
+        "embedderHeapUsedSize": 1643184,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.537937,
+          "rssKiB": 231168
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050317,
+          "rssKiB": 99120
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 11.736152,
+          "rssKiB": 339648
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227117,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 12.840827,
+          "rssKiB": 233344
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.151347,
+          "rssKiB": 108432
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.037652,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 48,
+          "timer": {
+            "remains": 299.60000000000036,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996747374534607, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 55.26660000000056,
+          "hold": null,
+          "recording": {
+            "ticks": 48,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00521784503068,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730783.452402,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 101,
+        "RecalcStyleCount": 2276,
+        "LayoutDuration": 0.027512,
+        "RecalcStyleDuration": 0.165928,
+        "DevToolsCommandDuration": 0.230848,
+        "ScriptDuration": 3.564053,
+        "V8CompileDuration": 0,
+        "TaskDuration": 5.984578,
+        "TaskOtherDuration": 1.996237,
+        "ThreadTime": 6.489624,
+        "ProcessTime": 12.545497,
+        "JSHeapUsedSize": 15290224,
+        "JSHeapTotalSize": 16842752,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15290224,
+        "totalSize": 16842752,
+        "embedderHeapUsedSize": 1111088,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.578572,
+          "rssKiB": 231632
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050558,
+          "rssKiB": 99136
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 12.545607,
+          "rssKiB": 340288
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227455,
+          "rssKiB": 183952
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 13.758481,
+          "rssKiB": 233536
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.154429,
+          "rssKiB": 108576
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038054,
+          "rssKiB": 79952
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 45,
+          "timer": {
+            "remains": 299.62500000000034,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967509508132935, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 59.749600000000775,
+          "hold": null,
+          "recording": {
+            "ticks": 45,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.060060060060756,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730787.936869,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 108,
+        "RecalcStyleCount": 2444,
+        "LayoutDuration": 0.028676,
+        "RecalcStyleDuration": 0.175335,
+        "DevToolsCommandDuration": 0.242891,
+        "ScriptDuration": 3.751315,
+        "V8CompileDuration": 0,
+        "TaskDuration": 6.303155,
+        "TaskOtherDuration": 2.104938,
+        "ThreadTime": 6.842131,
+        "ProcessTime": 13.230442,
+        "JSHeapUsedSize": 15332544,
+        "JSHeapTotalSize": 17629184,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15402568,
+        "totalSize": 17629184,
+        "embedderHeapUsedSize": 1698064,
+        "backingStorageSize": 5235401
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.610567,
+          "rssKiB": 231920
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050731,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 13.231394,
+          "rssKiB": 341344
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227713,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 14.53256,
+          "rssKiB": 233856
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.154968,
+          "rssKiB": 108592
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038285,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 46,
+          "timer": {
+            "remains": 299.616666666667,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996749758720398, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 64.23330000000095,
+          "hold": null,
+          "recording": {
+            "ticks": 46,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.83138428066286,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166380,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171543
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730792.404583,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 115,
+        "RecalcStyleCount": 2611,
+        "LayoutDuration": 0.029828,
+        "RecalcStyleDuration": 0.184768,
+        "DevToolsCommandDuration": 0.254477,
+        "ScriptDuration": 3.942165,
+        "V8CompileDuration": 0,
+        "TaskDuration": 6.623546,
+        "TaskOtherDuration": 2.212308,
+        "ThreadTime": 7.196781,
+        "ProcessTime": 13.914789,
+        "JSHeapUsedSize": 15350820,
+        "JSHeapTotalSize": 17104896,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15442548,
+        "totalSize": 17367040,
+        "embedderHeapUsedSize": 1591640,
+        "backingStorageSize": 5235464
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.641798,
+          "rssKiB": 231936
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050776,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 13.916851,
+          "rssKiB": 341600
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.227952,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 15.311544,
+          "rssKiB": 233984
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.155011,
+          "rssKiB": 108592
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038328,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 45,
+          "timer": {
+            "remains": 299.62500000000034,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967509508132935, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 68.69990000000108,
+          "hold": null,
+          "recording": {
+            "ticks": 45,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.978189749184004,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166443,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171606
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "metrics": {
+        "Timestamp": 1730796.868338,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 207,
+        "LayoutCount": 122,
+        "RecalcStyleCount": 2779,
+        "LayoutDuration": 0.030975,
+        "RecalcStyleDuration": 0.19455,
+        "DevToolsCommandDuration": 0.268139,
+        "ScriptDuration": 4.137885,
+        "V8CompileDuration": 0,
+        "TaskDuration": 6.952893,
+        "TaskOtherDuration": 2.321344,
+        "ThreadTime": 7.553728,
+        "ProcessTime": 14.601771,
+        "JSHeapUsedSize": 15384932,
+        "JSHeapTotalSize": 17629184,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15384932,
+        "totalSize": 17629184,
+        "embedderHeapUsedSize": 1113200,
+        "backingStorageSize": 5235490
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.677699,
+          "rssKiB": 231936
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050788,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 14.602261,
+          "rssKiB": 341440
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.228153,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 16.065415,
+          "rssKiB": 234208
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.155767,
+          "rssKiB": 108592
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038362,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 45,
+          "timer": {
+            "remains": 299.62500000000034,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967509508132935, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 73.16610000000159,
+          "hold": null,
+          "recording": {
+            "ticks": 45,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.07646095029845,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 21,
+              "programs": 61,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 61,
+          "programsSize": 166469,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 87,
+          "uniformBuffersSize": 18448,
+          "total": 218171632
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    }
+  ],
+  "owner": [
+    {
+      "geometryId": 18,
+      "objectAttachedToOldGroup": true,
+      "attributes": [
+        {
+          "id": 88,
+          "bytes": 22400,
+          "retainedByAttributes": false,
+          "retainedByBackend": false
+        },
+        {
+          "id": 89,
+          "bytes": 22400,
+          "retainedByAttributes": false,
+          "retainedByBackend": false
+        }
+      ]
+    },
+    {
+      "geometryId": 18,
+      "objectAttachedToOldGroup": true,
+      "attributes": [
+        {
+          "id": 88,
+          "bytes": 22400,
+          "retainedByAttributes": false,
+          "retainedByBackend": false
+        },
+        {
+          "id": 89,
+          "bytes": 22400,
+          "retainedByAttributes": false,
+          "retainedByBackend": false
+        }
+      ]
+    }
+  ],
+  "culledRetries": [
+    {
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1730801.386017,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 205,
+        "LayoutCount": 130,
+        "RecalcStyleCount": 2949,
+        "LayoutDuration": 0.032192,
+        "RecalcStyleDuration": 0.204166,
+        "DevToolsCommandDuration": 0.281109,
+        "ScriptDuration": 4.328756,
+        "V8CompileDuration": 0,
+        "TaskDuration": 7.271507,
+        "TaskOtherDuration": 2.425284,
+        "ThreadTime": 7.895565,
+        "ProcessTime": 15.260234,
+        "JSHeapUsedSize": 15623248,
+        "JSHeapTotalSize": 17629184,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15623248,
+        "totalSize": 17629184,
+        "embedderHeapUsedSize": 1117168,
+        "backingStorageSize": 5232190
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.833051,
+          "rssKiB": 232672
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050832,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 15.260352,
+          "rssKiB": 342080
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.228335,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 16.799151,
+          "rssKiB": 235664
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.157568,
+          "rssKiB": 108608
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.03841,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 33,
+          "timer": {
+            "remains": 299.72500000000025,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996788799762726, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 77.68320000000209,
+          "hold": null,
+          "recording": {
+            "ticks": 33,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.015003750939705,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 17,
+              "textures": 21,
+              "programs": 59,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 61,
+          "attributesSize": 1473100,
+          "geometries": 17,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 59,
+          "programsSize": 163316,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 85,
+          "uniformBuffersSize": 18288,
+          "total": 218168199
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1730805.754677,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 205,
+        "LayoutCount": 137,
+        "RecalcStyleCount": 3111,
+        "LayoutDuration": 0.033413,
+        "RecalcStyleDuration": 0.213889,
+        "DevToolsCommandDuration": 0.292559,
+        "ScriptDuration": 4.522021,
+        "V8CompileDuration": 0,
+        "TaskDuration": 7.59681,
+        "TaskOtherDuration": 2.534928,
+        "ThreadTime": 8.253145,
+        "ProcessTime": 15.946217,
+        "JSHeapUsedSize": 15685404,
+        "JSHeapTotalSize": 18415616,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15749460,
+        "totalSize": 18415616,
+        "embedderHeapUsedSize": 1701648,
+        "backingStorageSize": 5232190
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.865846,
+          "rssKiB": 232672
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050844,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 15.947231,
+          "rssKiB": 342704
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.228579,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 17.602092,
+          "rssKiB": 235824
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.157715,
+          "rssKiB": 108608
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038441,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 33,
+          "timer": {
+            "remains": 299.72500000000025,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.4996788799762726, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 82.04920000000254,
+          "hold": null,
+          "recording": {
+            "ticks": 33,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.150375939849624,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 17,
+              "textures": 21,
+              "programs": 59,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 61,
+          "attributesSize": 1473100,
+          "geometries": 17,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 59,
+          "programsSize": 163316,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 85,
+          "uniformBuffersSize": 18288,
+          "total": 218168199
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    },
+    {
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1730810.138216,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 197,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 205,
+        "LayoutCount": 144,
+        "RecalcStyleCount": 3274,
+        "LayoutDuration": 0.034665,
+        "RecalcStyleDuration": 0.223884,
+        "DevToolsCommandDuration": 0.304578,
+        "ScriptDuration": 4.721764,
+        "V8CompileDuration": 0,
+        "TaskDuration": 7.940622,
+        "TaskOtherDuration": 2.655731,
+        "ThreadTime": 8.633124,
+        "ProcessTime": 16.660704,
+        "JSHeapUsedSize": 15726112,
+        "JSHeapTotalSize": 17629184,
+        "FirstMeaningfulPaint": 1730723.811284,
+        "DomContentLoaded": 1730723.592953,
+        "NavigationStart": 1730723.534616
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 197
+      },
+      "heap": {
+        "usedSize": 15817592,
+        "totalSize": 17891328,
+        "embedderHeapUsedSize": 1612096,
+        "backingStorageSize": 5232190
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 22649,
+          "cpuTime": 3.900672,
+          "rssKiB": 232672
+        },
+        {
+          "type": "renderer",
+          "id": 22678,
+          "cpuTime": 0.050844,
+          "rssKiB": 99168
+        },
+        {
+          "type": "renderer",
+          "id": 22679,
+          "cpuTime": 16.662315,
+          "rssKiB": 342864
+        },
+        {
+          "type": "renderer",
+          "id": 22677,
+          "cpuTime": 0.228775,
+          "rssKiB": 183968
+        },
+        {
+          "type": "GPU",
+          "id": 22658,
+          "cpuTime": 18.475285,
+          "rssKiB": 236000
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 22659,
+          "cpuTime": 0.157878,
+          "rssKiB": 108608
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 22661,
+          "cpuTime": 0.038472,
+          "rssKiB": 79984
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 34,
+          "timer": {
+            "remains": 299.7166666666669,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967825412750244, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 86.43320000000313,
+          "hold": null,
+          "recording": {
+            "ticks": 34,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.992500937383475,
+            "qualityStatus": "fixed",
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 17,
+              "textures": 21,
+              "programs": 59,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 61,
+          "attributesSize": 1473100,
+          "geometries": 17,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 59,
+          "programsSize": 163316,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 21,
+          "texturesSize": 216433191,
+          "uniformBuffers": 85,
+          "uniformBuffersSize": 18288,
+          "total": 218168199
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      }
+    }
+  ]
+}
