@@ -8,6 +8,7 @@ import { CAPTURE_DPR, type CaptureBundle, computeCaptureId, parseCapture } from 
 import { describe, expect, test, vi } from 'vitest';
 import { icon, manifest } from '../scripts/build.ts';
 import {
+  CAPTURE_QUOTA_RETRY_MS,
   type CaptureDeps,
   CaptureError,
   captureTab,
@@ -188,6 +189,30 @@ describe('captureTab (mocked chrome.*)', () => {
     const err = await captureTab(f.deps, f.tab).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CaptureError);
     expect((err as CaptureError).code).toBe('screenshot');
+    expect(f.log.at(-1)).toBe('restore {"x":0,"y":321}');
+  });
+
+  test('a transient Chrome screenshot quota waits and retries without skipping the frame', async () => {
+    const f = fakeChrome({ width: 1280, height: 800, viewH: 800, dpr: 1 });
+    const shot = vi.mocked(f.deps.api.tabs.captureVisibleTab);
+    shot.mockRejectedValueOnce(
+      new Error('This request exceeds the MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND quota.'),
+    );
+    const out = await captureTab(f.deps, f.tab);
+    expect(shot).toHaveBeenCalledTimes(2);
+    expect(f.sleeps).toEqual([CAPTURE_QUOTA_RETRY_MS]);
+    expect(out.frames).toBe(1);
+    expect(f.draws).toHaveLength(1);
+    expect(f.log.at(-1)).toBe('restore {"x":0,"y":321}');
+  });
+
+  test('a persistent Chrome screenshot quota stops after one retry and restores the page', async () => {
+    const f = fakeChrome({ width: 1280, height: 800, viewH: 800, dpr: 1 });
+    const shot = vi.mocked(f.deps.api.tabs.captureVisibleTab);
+    shot.mockRejectedValue(new Error('MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND'));
+    await expect(captureTab(f.deps, f.tab)).rejects.toMatchObject({ code: 'screenshot' });
+    expect(shot).toHaveBeenCalledTimes(2);
+    expect(f.sleeps).toEqual([CAPTURE_QUOTA_RETRY_MS]);
     expect(f.log.at(-1)).toBe('restore {"x":0,"y":321}');
   });
 

@@ -22,6 +22,8 @@ import { capturable } from './url.ts';
 
 /** `captureVisibleTab` is limited to 2 calls per second per extension (MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND). */
 export const FRAME_INTERVAL_MS = 560;
+/** Allow Chrome's one-second quota window to clear before one bounded retry. */
+export const CAPTURE_QUOTA_RETRY_MS = 1100;
 /** Upper bound on the stitched image (RGBA in memory, and the receiver's decode limit). */
 export const MAX_IMAGE_PIXELS = 30_000_000;
 
@@ -109,6 +111,21 @@ export function framePlan(pageH: number, viewH: number): number[] {
   return ys;
 }
 
+async function captureFrame(deps: CaptureDeps, windowId: number): Promise<string> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await deps.api.tabs.captureVisibleTab(windowId, { format: 'png' });
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      if (attempt === 0 && message.includes('MAX_CAPTURE_VISIBLE_TAB_CALLS_PER_SECOND')) {
+        await deps.sleep(CAPTURE_QUOTA_RETRY_MS);
+        continue;
+      }
+      throw new CaptureError('screenshot', `the screenshot failed (${message})`);
+    }
+  }
+}
+
 export async function captureTab(
   deps: CaptureDeps,
   tab: Tab,
@@ -141,12 +158,7 @@ export async function captureTab(
       const y = await run(deps, tabId, pageScrollTo, [want]);
       const wait = FRAME_INTERVAL_MS - (Date.now() - last);
       if (k > 0 && wait > 0) await deps.sleep(wait);
-      let url: string;
-      try {
-        url = await deps.api.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
-      } catch (e) {
-        throw new CaptureError('screenshot', `the screenshot failed (${(e as Error).message})`);
-      }
+      const url = await captureFrame(deps, tab.windowId);
       last = Date.now();
       const img = await deps.decode(url);
       if (!surface) {
