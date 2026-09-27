@@ -229,6 +229,9 @@ importers:
 
   packages/engine:
     dependencies:
+      '@wwm/physics':
+        specifier: workspace:*
+        version: link:../physics
       '@wwm/schema':
         specifier: workspace:*
         version: link:../schema

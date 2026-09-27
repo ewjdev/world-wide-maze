@@ -436,7 +436,7 @@ function wrap2(ctx: CanvasRenderingContext2D, text: string, max: number): string
 }
 
 /** Pip for a Pip gate's monogram: the chrome ball with its blue seam and two eyes. */
-function drawPip(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
+export function drawPip(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
   const b = r * 0.78;
   ctx.save();
   ctx.beginPath();
@@ -462,7 +462,7 @@ function drawPip(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: numbe
   }
 }
 
-const SANS = '"Figtree Variable", Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif';
+export const SANS = '"Figtree Variable", Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif';
 const DISPLAY = '"Unbounded Variable", Unbounded, "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 /** One 1024 × 256 row per portal: a rounded card with a monogram tile, the link text and the target host. */

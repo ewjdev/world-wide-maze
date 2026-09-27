@@ -59,6 +59,10 @@ input.frameYaw = engine.cameraYaw();
 | `setPortalState(id, 'open' \| 'offline' \| 'used')` | Phase 13 (N). `offline` greys a gate out (the capture service is unreachable). |
 | `playPortal(id)` | Phase 13 (N): travel. The ball spirals into the gate and shrinks away, the gate surges, the camera glides up to it, sparks burst; resolves after ≈ 1.6 s. The `portal` event pulses the gate and bursts sparks. |
 | `spawnBall(pos, {faceTo})` | Phase 13 (additive): the camera faces `faceTo` instead of the goal. |
+| `setLocks([{ lock, label, color, icon }])` | Phase 22 (N): a learning run's runtime locks (`LockSpec`, contracts §10.4). Call after `loadStage`; replaces the set. All start closed. See "Runtime locks" below. |
+| `setLockState(id, 'closed' \| 'opening' \| 'open')` | `opening` drops the bars into the deck with a sparkle (≈ 1.1 s; a plain fade under reduced motion), then the lock is gone and the connector is lit again. |
+| `pulseLock(id)` | Rattle the gate and bounce the padlock. `handleEvent({ type: 'locked' })` calls it. |
+| `setBeacon(pagePos \| null)` | A golden light beam + floor ring over a stage point (the gate or post that opens the lock); visible in every view. |
 | `debug()` | `{renderer, scene, camera}` for dev tools only. Not a stable API. |
 
 ### Conventions (shared with @wwm/physics, contracts v0.2.2)
@@ -88,6 +92,17 @@ atlas, and in the map view a light beam and a 4.2× label. The colour comes from
 all portals (not in the env-map layer). The glow is carved out of the shown colour (emissive ≤ colour), because
 NodeMaterial adds the emissive to the output and the screen-blended bloom would otherwise tint over-white pixels.
 `node packages/engine/scripts/portal-shots.ts <webBase> <outDir> [--travel]` takes the Phase 13 screenshots in the game.
+
+## Runtime locks (Phase 22, N)
+`world/locks.ts`: each closed bridge or lift lock is a **gate of bars** (posts, 7 bars, 3 crossbars) in the lesson's
+gate colour, standing exactly on the collider from `barrierPose` (`@wwm/physics/locks`, the only engine → physics
+import), with a **padlock badge** (white disc, gate-colour ring, padlock with Pip or a gem inside) and a **label
+card** hanging on its island side. A goal lock is the badge + card over the goal, and the goal greys out
+(`goal.locked`). Locked bridge decks and rails are desaturated and darkened through a per-vertex bridge index
+(`bidx`) and a `bridgeDim` uniform array, locked lifts through `elevatorDim` (the `elevatorY` pattern). Signs sit
+below 3 m because the chase camera's top edge is level at ≈ 3.2 m. In the map view the badges grow ×3.6 and the
+cards hide. **One InstancedMesh = one draw call** for all locks (`forceSinglePass`); the beacon is one more while
+shown. `node scripts/lock-shots.ts <webBase> <outDir>` takes the Phase 22 screenshots in `/dev/engine`.
 
 ## Cameras
 - **Chase** (E, `followcamera`): leash 2.1 WU → 1.94 m, distance 5 WU → 4.63 m at 35°, lerp 0.11 per 60 Hz tick converted to a frame-rate independent α, FOV 70°, near 0.09 m. `camera.up` and the offset lean with 20 % pitch / 50 % roll of the tilt (E). N: instead of the 2013 `y ≥ 0` clamp, the camera raises its elevation until a heightfield line-of-sight test clears the slabs.

@@ -24,6 +24,15 @@ export {
 export { clipTriangleToBand, planTiles, type TexTile, type TilePlan, tileUv } from './geom/tiling.ts';
 export { MAX_TIER, QualityLadder, type QualitySetting, TIERS, type TierFeatures } from './quality.ts';
 export {
+  BADGE_M,
+  type LockIcon,
+  type LockInstance,
+  type LockVisual,
+  type LockVisualState,
+  OPENING_SEC,
+  planLocks,
+} from './world/locks.ts';
+export {
   GATE_Y,
   hostOf as portalHost,
   isLearningHref,

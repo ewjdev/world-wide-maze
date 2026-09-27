@@ -10,9 +10,11 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "shots": "node scripts/shots.ts",
-    "ladder": "node scripts/ladder.ts"
+    "ladder": "node scripts/ladder.ts",
+    "lock-shots": "node scripts/lock-shots.ts"
   },
   "dependencies": {
+    "@wwm/physics": "workspace:*",
     "@wwm/schema": "workspace:*",
     "three": "^0.186.1"
   },
