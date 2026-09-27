@@ -393,7 +393,7 @@ describe('Phase 12b: browser queue and failed-job dedupe', () => {
     },
   );
 
-  test("a failed job leaves a newer job's in-flight entry alone; success keeps its entry", async () => {
+  test("a failed job leaves a newer job's in-flight entry alone; success releases its claim", async () => {
     const store = new MemoryStore();
     store.inflight.set(params.cacheKey, 'j-newer');
     await runBuildJob(
@@ -421,6 +421,131 @@ describe('Phase 12b: browser queue and failed-job dedupe', () => {
       },
       () => {},
     );
-    expect(ok.inflight.get(params.cacheKey)).toBe(params.jobId); // the run cache answers first anyway
+    expect(ok.inflight.has(params.cacheKey)).toBe(false); // approved run cache answers the next request
+  });
+});
+
+describe('Phase 21 moderation publication gate', () => {
+  test('provider failure keeps a complete private reviewable run with no cache or done', async () => {
+    const store = new MemoryStore();
+    const records: unknown[] = [];
+    const attempts: unknown[] = [];
+    const { events } = await run({
+      store: Object.assign(store, {
+        recordAttempt: async (r: unknown) => {
+          attempts.push(r);
+        },
+        recordModeration: async (r: unknown) => {
+          records.push(r);
+        },
+      }),
+      moderate: async () => {
+        throw new Error('provider down');
+      },
+    });
+    expect(records).toEqual([
+      expect.objectContaining({
+        status: 'pending_review',
+        reason: 'provider_error',
+        submittedUrl: params.url,
+      }),
+    ]);
+    expect(attempts.at(-1)).toMatchObject({ status: 'pending_review', reason: 'provider_error' });
+    expect(store.stages.size).toBe(sliceCount(bundle));
+    expect([...store.runs.values()][0]?.status).toBe('complete');
+    expect(store.cache.size).toBe(0);
+    expect(terminal(events)).toEqual([
+      expect.objectContaining({
+        type: 'error',
+        code: 'CAPTURE_BLOCKED',
+        message: expect.stringContaining('review'),
+      }),
+    ]);
+  });
+
+  test('a block during capture/build prevents cache and shared ID publication', async () => {
+    const store = new MemoryStore();
+    const { events } = await run({ store: Object.assign(store, { canPublishRun: async () => false }) });
+    expect(store.cache.size).toBe(0);
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error', code: 'CAPTURE_BLOCKED' })]);
+  });
+
+  test('a block racing a cache write prevents done, and policy is rechecked at completion', async () => {
+    const store = new MemoryStore();
+    let checks = 0;
+    const { events } = await run({
+      store: Object.assign(store, { canPublishRun: async () => ++checks === 1 }),
+    });
+    expect(checks).toBe(3);
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error', code: 'CAPTURE_BLOCKED' })]);
+  });
+
+  test('moderation sees every independent slice and blocked evidence stays private without stages', async () => {
+    const store = new MemoryStore();
+    const { events } = await run({
+      store,
+      moderate: async (input) => {
+        expect(input.url).toBe(bundle.url);
+        expect(input.title).toBe(bundle.title);
+        expect(input.textures).toHaveLength(sliceCount(bundle));
+        expect(input.textures?.[3]?.bytes).toEqual(new Uint8Array([3]));
+        return { status: 'blocked', reason: 'explicit_content', provider: 'test', policyVersion: 'v1' };
+      },
+    });
+    expect(store.captures.size).toBe(1);
+    expect(store.textures.size).toBe(sliceCount(bundle));
+    expect(store.stages.size).toBe(0);
+    expect(store.cache.size).toBe(0);
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error', code: 'CAPTURE_BLOCKED' })]);
+  });
+});
+
+describe('policy gate before moderation provider', () => {
+  test.each(['submitted', 'final'] as const)(
+    'a blocked %s URL is never sent to the provider',
+    async (target) => {
+      const store = new MemoryStore();
+      const records: unknown[] = [];
+      let providerCalls = 0;
+      const finalUrl = 'https://example.com/blocked-final';
+      const { events } = await run({
+        capturer: {
+          name: 'redirect',
+          capture: async () => ({ ...fakeCapture(), bundle: { ...bundle, url: finalUrl } }),
+        },
+        isUrlBlocked: async (url) => url === (target === 'submitted' ? params.url : finalUrl),
+        moderate: async () => {
+          providerCalls++;
+          return 'ok';
+        },
+        store: Object.assign(store, {
+          recordModeration: async (record: unknown) => {
+            records.push(record);
+          },
+        }),
+      });
+      expect(providerCalls).toBe(0);
+      expect(records).toEqual([
+        expect.objectContaining({ status: 'blocked', reason: 'url_policy', provider: 'policy' }),
+      ]);
+      expect(store.captures.size).toBe(1);
+      expect(store.cache.size).toBe(0);
+      expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error', code: 'CAPTURE_BLOCKED' })]);
+    },
+  );
+  test('unavailable policy never sends private content to the provider', async () => {
+    let providerCalls = 0;
+    const { events, store } = await run({
+      isUrlBlocked: async () => {
+        throw new Error('D1 down');
+      },
+      moderate: async () => {
+        providerCalls++;
+        return 'ok';
+      },
+    });
+    expect(providerCalls).toBe(0);
+    expect(store.cache.size).toBe(0);
+    expect(terminal(events)).toEqual([expect.objectContaining({ type: 'error', code: 'CAPTURE_BLOCKED' })]);
   });
 });

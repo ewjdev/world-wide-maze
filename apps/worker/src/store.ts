@@ -12,8 +12,8 @@
  */
 import type { CaptureBundle, CuratedRun, RunResponse, StageData } from '@wwm/schema';
 import type { SliceTexture } from './capture/types.ts';
+import { Catalog } from './catalog.ts';
 import type { RunRecord, StageStore } from './pipeline.ts';
-import { domainChain } from './policy/url-policy.ts';
 
 export interface StoreBindings {
   STAGES: R2Bucket;
@@ -28,10 +28,13 @@ export const capturePrefix = (captureId: string) => `captures/${captureId}/`;
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 
 export class CloudflareStore implements StageStore {
+  readonly catalog: Catalog;
   constructor(
     private readonly env: StoreBindings,
     private readonly opts: { cacheTtlDays: number },
-  ) {}
+  ) {
+    this.catalog = new Catalog(env);
+  }
 
   // ── writes (StageStore) ────────────────────────────────────────────────────────────────────────────
 
@@ -110,7 +113,21 @@ export class CloudflareStore implements StageStore {
       .run();
   }
 
+  async recordAttempt(input: Parameters<NonNullable<StageStore['recordAttempt']>>[0]): Promise<void> {
+    await this.catalog.recordAttempt(input);
+  }
+
+  async recordModeration(input: Parameters<NonNullable<StageStore['recordModeration']>>[0]): Promise<void> {
+    await this.catalog.recordRun(input);
+  }
+
+  canPublishRun(runId: string): Promise<boolean> {
+    return this.catalog.canServeRun(runId);
+  }
+
   async cacheRun(cacheKey: string, runId: string): Promise<void> {
+    if (!(await this.catalog.canServeRun(runId))) return;
+    if (!(await this.catalog.publishVariant(cacheKey, runId))) return;
     await this.env.CACHE.put(cacheKey, JSON.stringify({ runId }), {
       expirationTtl: Math.max(60, Math.round(this.opts.cacheTtlDays * 86400)),
     });
@@ -118,9 +135,27 @@ export class CloudflareStore implements StageStore {
 
   // ── reads ──────────────────────────────────────────────────────────────────────────────────────────
 
-  async cachedRunId(cacheKey: string): Promise<string | null> {
+  async cachedRunId(
+    cacheKey: string,
+    legacy?: { url: string; difficulty: string; seed: number; builderVersion: string },
+  ): Promise<string | null> {
     const v = await this.env.CACHE.get<{ runId: string }>(cacheKey, 'json');
-    return v?.runId ?? null;
+    if (v?.runId && (await this.catalog.canServeRun(v.runId))) {
+      const { results } = await this.env.DB.prepare('SELECT stage_id,texture_key FROM stages WHERE run_id=?')
+        .bind(v.runId)
+        .all<{ stage_id: string; texture_key: string }>();
+      const objects = await Promise.all(
+        results.flatMap((s) => [
+          this.env.STAGES.head(stageKey(s.stage_id)),
+          this.env.STAGES.head(s.texture_key),
+        ]),
+      );
+      if (results.length && objects.every(Boolean)) return v.runId;
+      await this.env.CACHE.delete(cacheKey);
+    }
+    const runId = await this.catalog.resolveVariant(cacheKey, legacy);
+    if (runId) await this.cacheRun(cacheKey, runId);
+    return runId;
   }
 
   async inflightJob(cacheKey: string): Promise<string | null> {
@@ -132,18 +167,19 @@ export class CloudflareStore implements StageStore {
   }
 
   async clearInflightJob(cacheKey: string, jobId: string): Promise<void> {
+    await this.catalog.clearBuildClaim(cacheKey, jobId);
     // Only our own entry: a newer job for the same key keeps its dedupe.
     if ((await this.env.CACHE.get(`job:${cacheKey}`)) === jobId)
       await this.env.CACHE.delete(`job:${cacheKey}`);
   }
 
   async isOptedOut(host: string): Promise<boolean> {
-    const hits = await Promise.all(domainChain(host).map((d) => this.env.CACHE.get(`optout:${d}`)));
-    return hits.some((v) => v !== null);
+    return this.catalog.isHostBlocked(host);
   }
 
   /** The run with its stored stages in play order, or null. */
   async getRun(runId: string): Promise<(RunResponse & { sliceCount: number; status: string }) | null> {
+    if (!(await this.catalog.canServeRun(runId))) return null;
     const [run, stages] = await this.env.DB.batch<Record<string, unknown>>([
       this.env.DB.prepare('SELECT url, title, slice_count, status FROM runs WHERE run_id = ?1').bind(runId),
       this.env.DB.prepare('SELECT stage_id FROM stages WHERE run_id = ?1 ORDER BY slice_index').bind(runId),
@@ -160,11 +196,13 @@ export class CloudflareStore implements StageStore {
     };
   }
 
-  getStage(stageId: string): Promise<R2ObjectBody | null> {
+  async getStage(stageId: string): Promise<R2ObjectBody | null> {
+    if (!(await this.catalog.canServeStage(stageId))) return null;
     return this.env.STAGES.get(stageKey(stageId));
   }
 
   async getTexture(stageId: string): Promise<R2ObjectBody | null> {
+    if (!(await this.catalog.canServeStage(stageId))) return null;
     const row = await this.env.DB.prepare('SELECT texture_key FROM stages WHERE stage_id = ?1')
       .bind(stageId)
       .first<{ texture_key: string }>();
@@ -177,13 +215,18 @@ export class CloudflareStore implements StageStore {
       const { results } = await this.env.DB.prepare(
         'SELECT run_id, title, url, thumb, stars FROM curated ORDER BY position, run_id',
       ).all<{ run_id: string; title: string; url: string; thumb: string; stars: number }>();
-      return results.map((r) => ({
-        runId: r.run_id,
-        title: r.title,
-        url: r.url,
-        thumb: r.thumb,
-        stars: Math.max(0, Math.min(5, Math.round(Number(r.stars) || 0))),
-      }));
+      const permitted = await Promise.all(
+        results.map(async (r) => ((await this.catalog.canServeRun(r.run_id)) ? r : null)),
+      );
+      return permitted
+        .filter((r) => r !== null)
+        .map((r) => ({
+          runId: r.run_id,
+          title: r.title,
+          url: r.url,
+          thumb: r.thumb,
+          stars: Math.max(0, Math.min(5, Math.round(Number(r.stars) || 0))),
+        }));
     } catch (e) {
       if (/no such table/i.test(String((e as Error).message))) return [];
       throw e;
@@ -193,45 +236,19 @@ export class CloudflareStore implements StageStore {
   // ── retention (task 9) ─────────────────────────────────────────────────────────────────────────────
 
   /**
-   * Delete runs older than `days` that aren't curated: their stage JSON, textures, capture bundle and D1
-   * rows. Bounded per invocation (`limit` runs) so one cron tick stays small; the next tick continues.
+   * Expire artifacts for runs older than `days` that aren't curated: their stage JSON, textures, capture bundle. Preserve D1 catalog and review history. Pending evidence expires after seven days. Bounded per invocation (`limit` runs) so one cron tick stays small; the next tick continues.
    */
-  async sweep(days: number, now = new Date(), limit = 200): Promise<{ runs: number; objects: number }> {
+  async sweep(days: number, now = new Date(), limit = 200): Promise<{ runs: number }> {
     const cutoff = new Date(now.getTime() - days * 86400_000).toISOString();
-    const hasCurated = await this.env.DB.prepare(
-      "SELECT 1 AS ok FROM sqlite_master WHERE type = 'table' AND name = 'curated'",
-    ).first();
-    const sql = hasCurated
-      ? 'SELECT run_id, capture_id FROM runs WHERE created_at < ?1 AND run_id NOT IN (SELECT run_id FROM curated) LIMIT ?2'
-      : 'SELECT run_id, capture_id FROM runs WHERE created_at < ?1 LIMIT ?2';
-    const { results } = await this.env.DB.prepare(sql)
-      .bind(cutoff, limit)
-      .all<{ run_id: string; capture_id: string }>();
-    let objects = 0;
-    for (const r of results) {
-      // A capture may back several runs (not today, but cheap to respect): keep it if another run uses it.
-      const others = await this.env.DB.prepare(
-        'SELECT COUNT(*) AS n FROM runs WHERE capture_id = ?1 AND run_id != ?2 AND created_at >= ?3',
-      )
-        .bind(r.capture_id, r.run_id, cutoff)
-        .first<{ n: number }>();
-      const { results: stages } = await this.env.DB.prepare('SELECT stage_id FROM stages WHERE run_id = ?1')
-        .bind(r.run_id)
-        .all<{ stage_id: string }>();
-      const keys = stages.map((s) => stageKey(s.stage_id));
-      if (!others?.n) {
-        const listed = await this.env.STAGES.list({ prefix: capturePrefix(r.capture_id) });
-        keys.push(...listed.objects.map((o) => o.key));
-        const tex = await this.env.STAGES.list({ prefix: `textures/${r.capture_id}/` });
-        keys.push(...tex.objects.map((o) => o.key));
-      }
-      if (keys.length) await this.env.STAGES.delete(keys);
-      objects += keys.length;
-      await this.env.DB.batch([
-        this.env.DB.prepare('DELETE FROM stages WHERE run_id = ?1').bind(r.run_id),
-        this.env.DB.prepare('DELETE FROM runs WHERE run_id = ?1').bind(r.run_id),
-      ]);
-    }
-    return { runs: results.length, objects };
+    const reviewCutoff = new Date(now.getTime() - 7 * 86400_000).toISOString();
+    const { results } = await this.env.DB.prepare(`SELECT r.run_id FROM runs r
+      JOIN moderation_cases m ON m.run_id=r.run_id
+      WHERE m.deletion_pending=1 OR (m.artifacts_available=1 AND r.run_id NOT IN (SELECT run_id FROM curated)
+      AND ((m.status='approved' AND r.created_at<?1) OR (m.status!='approved' AND r.created_at<?2)))
+      ORDER BY r.created_at LIMIT ?3`)
+      .bind(cutoff, reviewCutoff, limit)
+      .all<{ run_id: string }>();
+    for (const r of results) await this.catalog.expireArtifacts(r.run_id);
+    return { runs: results.length };
   }
 }

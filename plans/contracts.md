@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.2`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.3`** (URL catalog, 2026-09-26). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -474,3 +474,9 @@ The separate `wwm-learning/0.4` Bridge Builders document and semantic binding ma
 - Route lessons later need departure/arrival corridor observations with monotonic traversal IDs. Energy is committed only after the trusted adapter validates both endpoints and direction. Cancellation on fall, reset or corridor exit returns the ball to its last committed safe spawn.
 
 No simulation, renderer or worker implementation is claimed here. The proposed shape must be reconciled with their actual interfaces and tested against a physical stage before enabling the sampler.
+
+**v0.3.3, Phase 21 CCRs (orchestrator, 2026-09-26):**
+- **CCR-21-1 accepted:** additive private operator API types exported from `packages/schema/src/admin.ts`; consumers are Worker admin routes and the lazy web `/admin` console. `ModerationStatus` is `approved | pending_review | blocked`. Catalog/attempt lists return `items` and nullable `nextCursor`; detail includes original/final URLs, review evidence URLs, events and applicable rules. No admin identity or secret enters the bundle.
+- Every `/api/admin/*` endpoint verifies a Cloudflare Access RS256 JWT, issuer, audience, expiry, subject and an operator email allowlist. Mutations require same-origin requests, bounded JSON and a reason. API responses and evidence are `private, no-store`.
+- Routes: `GET session`, `GET catalog`, `GET attempts`, `GET runs/:runId`, `GET runs/:runId/evidence/:item`, `GET rules`; `POST runs/:runId/decision`, `POST rules`, `POST runs/:runId/refresh`, `POST runs/:runId/remove`.
+- Public wire types remain unchanged; pending/blocked builds use `CAPTURE_BLOCKED`. D1 policy gates all hosted source-content reads; public user captures use `private, no-store`. URL cache keys hash normalized URL, effective seed, difficulty and builder version. Local upload identity includes complete capture content and texture bytes, excluding the untrusted claimed ID.

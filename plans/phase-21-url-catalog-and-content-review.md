@@ -1,6 +1,6 @@
 # Phase 21 — Durable URL catalog and content review
 
-**Status:** proposal, September 26, 2026. Planning only; no migration, capture, provider integration, or production policy change is authorized by this document.
+**Status:** implementation authorized by the owner on September 26, 2026 and under review in PR #13. Deployment and automatic approval activation remain rollout gates. See `docs/launch/url-catalog-validation.md` for chosen defaults and evidence.
 
 **Outcome:** a repeat visitor gets an existing approved maze without another browser capture; an operator can find every hosted URL and run, review uncertain content, and stop a blocked URL or maze from being served through any hosted route.
 
@@ -80,4 +80,4 @@ The repository's `packages/schema` and `plans/contracts.md` are shared contracts
 
 **Rollback:** disable new hosted captures/automatic approvals with existing kill switches or a new moderation-mode flag; continue serving only previously approved runs through the policy gate. Revert the new read path to D1-only if KV pointers misbehave. Keep additive migrations in place and audit data intact. If a content incident occurs, apply the D1 block first, then invalidate KV, remove curated placement, purge reachable caches where possible, and delete R2 objects under the approved retention/takedown procedure. Never roll back by removing the serve gate while user-generated content remains accessible.
 
-**Boundary:** this plan describes proposed behavior. It does not claim a production moderation service, admin, full catalog, or live deployment verification exists today.
+**Boundary:** implementation evidence is local unless the validation rubric explicitly labels it deployed. This document does not claim a production moderation service or live deployment verification.

@@ -9,6 +9,7 @@ import { Hono } from 'hono';
 import type { AppEnv } from './app-env.ts';
 import { createServices } from './config.ts';
 import { errorResponse, toServiceError } from './errors.ts';
+import { adminRoutes } from './routes/admin.ts';
 import { docentRoutes } from './routes/docent.ts';
 import { scoresRoutes } from './routes/scores.ts';
 import { shareRoutes } from './routes/share.ts';
@@ -35,6 +36,7 @@ export function createApp(): Hono<AppEnv> {
   app.get('/api/health', (c) => c.json({ ok: true, contract: CONTRACT_VERSION }));
 
   // ── Route registration: one line per feature. ──
+  app.route('/api/admin', adminRoutes);
   app.route('/api', stagesRoutes);
   app.route('/api/scores', scoresRoutes); // Phase 10
   app.route('/', shareRoutes); // Phase 10: /s/:stageId, /api/share/:stageId/card

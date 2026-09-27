@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "e1098aa8bbbc9134",
+  "hash": "bd9d74aae24e860b",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -28,6 +28,7 @@
     "docs/build-log/phase-19.md",
     "docs/build-log/phase-20-m4b.md",
     "docs/build-log/phase-20.md",
+    "docs/build-log/phase-21.md",
     "docs/build-log/phase-22-game.md",
     "docs/build-log/phase-22-locks.md",
     "docs/build-log/phase-22-page.md",
@@ -2327,6 +2328,32 @@
       "url": "/log#phase-20",
       "kind": "build-log",
       "text": "## Remaining defects and follow-ups\n- **Voice:** the user and their tester still need to pick a voice from the audition, then run `--write`.\n- **Physical phone:** tilt selection at gates is unit-tested but hasn't been tried on the physical iPhone.\n- **Lesson depth:** the other five lessons are single rounds (§8 of the plan), and their deeper redesigns are open.\n- **Personalized introductions** fall back to browser speech (issue #10).\n- **Review and deployment:** educator review is still a gate before any public launch, and the education app isn't deployed.\n- **Game UI:** the HUD lesson chip can briefly overlap a gate's floating label."
+    },
+    {
+      "id": "docs/build-log/phase-21.md",
+      "title": "Phase 21 — URL catalog and content review · Changes",
+      "path": "docs/build-log/phase-21.md",
+      "url": "/log#phase-21",
+      "kind": "build-log",
+      "text": "Date: 2026-09-26. New product behavior, not recovered 2013 behavior.\n\n## Changes\nImplemented the approved plan in the managed `url-catalog-moderation` worktree on `codex/url-catalog-moderation`. Added D1 catalog/attempts/review/audit/build claims; R2 private evidence retention; KV-to-D1 fallback; shared authoritative policy gates; bounded optional classifier; Access-protected operator APIs and a lazy `/admin` console. Added contract version 0.3.3 through CCR-21-1. Shared upload identity covers evidence bytes. Review/removal preserves catalog history.\n\nAutomatic classification is opt-in and fails to private review. Existing non-curated captures migrate to pending. The intended deployment sequence and precise local/deployed boundaries are in [the validation rubric](../launch/url-catalog-validation.md)."
+    },
+    {
+      "id": "docs/build-log/phase-21.md#validation",
+      "title": "Phase 21 — URL catalog and content review › Validation",
+      "path": "docs/build-log/phase-21.md",
+      "anchor": "validation",
+      "url": "/log#phase-21",
+      "kind": "build-log",
+      "text": "## Validation\n- `CI=true VITEST_MAX_WORKERS=4 pnpm check`: **passed**, 85 test files passed / 2 skipped; **1,139 tests passed / 14 skipped**, 185.83 seconds. Typecheck and lint pass; one pre-existing CSS specificity warning and one info diagnostic remain. Skips include optional reference/device coverage and the CI-disabled graphics check; no skipped result is counted as validation.\n- `pnpm --filter @wwm/web build`: passed (existing large Three.js chunk warning).\n- `pnpm exec wrangler deploy --dry-run --outdir /tmp/wwm-phase21-worker` from the Worker directory: passed; bundle only, no deployment.\n- `node apps/web/src/admin/validate-browser.mjs`: **13 checks passed**, desktop and 390px mobile, no overflow or browser errors. Nine admin unit/API/SSR tests also pass in the full suite.\n- `git diff --check`: passed.\n\nEvidence includes real local workerd/D1/R2/KV serving tests, migrated SQLite catalog/API tests, real RS256 token fixtures, synthetic moderation provider tests, upload identity regressions, and a real Chromium same-host redirect test proving the blocked target was never fetched. Admin browser tests use intercepted APIs; they do not verify deployed authentication or provider quality.\n\nEarlier runs exposed and corrected stale immutable-cache assertions, missing approval on shared game fixtures, the upload content-ID expectation and a retention-query typo. Unbounded local test concurrency also produced timing-sensitive controller failures; those tests passed in a focused rerun and the complete four-worker CI-mode run. No controller production code or assertion was weakened.\n\nReview screenshots: [desktop](assets/phase-21/admin-desktop.png), [mobile](assets/phase-21/admin-mobile.png). Both contain synthetic evidence and operator identity."
+    },
+    {
+      "id": "docs/build-log/phase-21.md#risks-and-handoff",
+      "title": "Phase 21 — URL catalog and content review › Risks and handoff",
+      "path": "docs/build-log/phase-21.md",
+      "anchor": "risks-and-handoff",
+      "url": "/log#phase-21",
+      "kind": "build-log",
+      "text": "## Risks and handoff\n- Deploy additive migration before the new Worker; configure real Access before expecting admin availability.\n- Review legacy non-curated withdrawal and provider evaluation before enabling automatic approval.\n- Local no-store responses cannot recall existing client/CDN/social copies; preview and production takedown drills remain required.\n- Two-region performance, storage/cost trends and classification false-positive rates need live measurement.\n- No remote deployment, production data mutation or merge performed as part of this implementation request."
     },
     {
       "id": "docs/build-log/phase-22-game.md",

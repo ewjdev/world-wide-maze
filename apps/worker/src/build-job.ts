@@ -41,7 +41,16 @@ export class BuildJob extends DurableObject<Env> {
   override async fetch(_request: Request): Promise<Response> {
     if (!(await this.ctx.storage.get('params')))
       return Response.json({ error: 'job not found' }, { status: 404 });
-    return (await this.loadHub()).stream();
+    const hub = await this.loadHub();
+    const done = hub.events.find((e) => e.type === 'done');
+    if (
+      done?.type === 'done' &&
+      !(await createServices(this.env, { jobId: done.runId }).store.catalog.canServeRun(done.runId))
+    )
+      return new JobEventHub([
+        { type: 'error', code: 'CAPTURE_BLOCKED', message: 'This maze is unavailable.' },
+      ]).stream();
+    return hub.stream();
   }
 
   override async alarm(): Promise<void> {

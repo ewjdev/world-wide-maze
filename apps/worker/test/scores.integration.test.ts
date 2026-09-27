@@ -11,6 +11,7 @@ import { type ScoresResponse, type StageData, TIME_SCORE } from '@wwm/schema';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { createTestHarness } from 'wrangler';
 import { SUBMIT_LIMIT, stageLimits } from '../src/routes/scores-rules.ts';
+import { seedApprovedStage } from './helpers/approved-stage.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const configPath = resolve(root, 'apps/worker/wrangler.jsonc');
@@ -45,10 +46,10 @@ describe('scores + share (workerd)', { timeout: 30_000 }, () => {
   beforeAll(async () => {
     await server.update({ workers: [{ configPath }] });
     await server.listen();
-    const w = server.getWorker<{ STAGES: { put(key: string, value: string): Promise<unknown> } }>();
+    const w = server.getWorker<Env>();
     await w.applyD1Migrations('DB' as never);
     const env = await w.getEnv();
-    for (const s of [stage, other]) await env.STAGES.put(`stages/${s.stageId}.json`, JSON.stringify(s));
+    for (const s of [stage, other]) await seedApprovedStage(env, s);
   }, 120_000);
 
   afterAll(async () => {

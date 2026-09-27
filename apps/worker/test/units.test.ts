@@ -207,9 +207,16 @@ describe('errors and ids', () => {
     expect(a).toMatch(/^[0-9a-f]{64}$/);
     expect(await computeRunId('cap', 2, '1.0.0', 'normal')).not.toBe(a);
     expect(defaultSeed('https://example.com/')).toBe(defaultSeed('https://example.com/'));
-    expect(runCacheKey('https://example.com/', 'easy', '1.0.0')).toBe('run:https://example.com/:easy:1.0.0');
-    expect(runCacheKey('https://example.com/', 'easy', '1.0.0', 7)).toBe(
-      'run:https://example.com/:easy:1.0.0:seed=7',
+    const key = await runCacheKey('https://example.com/', 'easy', '1.0.0');
+    expect(key).toMatch(/^run:v2:[0-9a-f]{64}$/);
+    expect(
+      await runCacheKey('https://example.com/', 'easy', '1.0.0', defaultSeed('https://example.com/')),
+    ).toBe(key);
+    expect(await runCacheKey('https://example.com/', 'easy', '1.0.0', 7)).not.toBe(key);
+    expect(await runCacheKey('https://example.com/', 'hard', '1.0.0')).not.toBe(key);
+    expect(await runCacheKey('https://example.com/', 'easy', '2.0.0')).not.toBe(key);
+    expect((await runCacheKey(`https://example.com/?q=${'x'.repeat(2000)}`, 'easy', '1.0.0')).length).toBe(
+      71,
     );
   });
 });

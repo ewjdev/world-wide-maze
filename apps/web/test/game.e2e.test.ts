@@ -176,6 +176,12 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
         now,
       )
       .run();
+    // Phase 21: public service fixtures need an explicit approval, just like captured runs.
+    await env.DB.prepare(`INSERT INTO moderation_cases
+      (run_id,url,host,capture_id,status,reason,provider,policy_version,updated_at)
+      VALUES (?1,'https://practice.example/','practice.example',?2,'approved','Owned test fixture','human','test',?3)`)
+      .bind(runId, cap, now)
+      .run();
     api = url.toString().replace(/\/$/, '');
     process.env.WWM_API_URL = api;
     server = await createServer({

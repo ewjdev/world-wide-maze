@@ -2,6 +2,8 @@
  * @wwm/schema — plans/contracts.md in code. Every cross-phase type, constant, codec and validator.
  * Import from here; never redeclare these types elsewhere.
  */
+
+export * from './admin.ts';
 export * from './codec.ts';
 export * from './constants.ts';
 export * from './errors.ts';

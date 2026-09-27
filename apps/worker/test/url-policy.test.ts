@@ -250,3 +250,60 @@ describe('request guard (every browser request)', () => {
     });
   });
 });
+
+describe('Phase 21 exact content rules during capture', () => {
+  test('top-level exact rule blocks only the target URL', async () => {
+    const deps = { resolver, isUrlBlocked: async (url: string) => url === 'https://example.com/' };
+    expect((await checkUrl('https://example.com/', deps)).ok).toBe(false);
+    expect((await checkUrl('https://example.com/allowed', deps)).ok).toBe(true);
+  });
+  test('a warmed host cannot bypass exact redirect or subresource blocks', async () => {
+    let blocked = false;
+    const calls: string[] = [];
+    const guard = createRequestGuard({
+      resolver,
+      isUrlBlocked: async (url) => {
+        calls.push(url);
+        return url.endsWith('/explicit') || blocked;
+      },
+    });
+    expect((await guard.check('https://example.com/allowed')).ok).toBe(true);
+    expect((await guard.check('https://example.com/explicit')).ok).toBe(false);
+    expect((await guard.check('https://example.com/allowed/image.png')).ok).toBe(true);
+    blocked = true;
+    expect((await guard.check('https://example.com/allowed/image.png')).ok).toBe(false);
+    expect(calls).toHaveLength(4);
+  });
+  test('exact root blocks do not contaminate origin-only DNS memoization', async () => {
+    const guard = createRequestGuard({
+      resolver,
+      isUrlBlocked: async (url) => url === 'https://example.com/',
+    });
+    expect((await guard.check('https://example.com/ordinary')).ok).toBe(true);
+    expect((await guard.check('https://example.com/')).ok).toBe(false);
+  });
+  test('policy failure blocks requests even after host DNS was cached', async () => {
+    let fail = false;
+    const guard = createRequestGuard({
+      resolver,
+      isUrlBlocked: async () => {
+        if (fail) throw new Error('D1 down');
+        return false;
+      },
+    });
+    expect((await guard.check('https://example.com/first')).ok).toBe(true);
+    fail = true;
+    expect(await guard.check('https://example.com/second')).toMatchObject({
+      ok: false,
+      reason: 'content policy unavailable',
+    });
+    expect(
+      await checkUrl('https://example.com/', {
+        resolver,
+        isUrlBlocked: async () => {
+          throw new Error('D1 down');
+        },
+      }),
+    ).toMatchObject({ ok: false });
+  });
+});

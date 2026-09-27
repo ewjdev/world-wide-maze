@@ -109,6 +109,8 @@ export interface CheckUrlDeps extends UrlPolicyOptions {
   resolver: DnsResolver;
   /** True if the host (or a parent domain) opted out of capture. */
   isOptedOut?: (host: string) => Promise<boolean>;
+  /** Exact URL/domain content rule; checked for each request, never memoized by host. */
+  isUrlBlocked?: (url: string) => Promise<boolean>;
 }
 
 /** Hosts that skip DNS checks: IP literals (already judged) and dev loopback exemptions. */
@@ -144,6 +146,13 @@ export function domainChain(host: string): string[] {
 export async function checkUrl(input: string, deps: CheckUrlDeps): Promise<PolicyResult> {
   const r = checkUrlStatic(input, deps);
   if (!r.ok) return r;
+  if (deps.isUrlBlocked) {
+    try {
+      if (await deps.isUrlBlocked(r.url)) return { ok: false, reason: 'URL blocked by content policy' };
+    } catch {
+      return { ok: false, reason: 'content policy unavailable' };
+    }
+  }
   if (deps.isOptedOut && (await deps.isOptedOut(r.host)))
     return { ok: false, reason: `${r.host} opted out of capture` };
   const u = new URL(r.url);
@@ -167,6 +176,7 @@ const LOCAL_SCHEMES = new Set(['data:', 'blob:', 'about:']);
  */
 export function createRequestGuard(deps: CheckUrlDeps & { maxRequests?: number }): RequestGuard {
   const hostVerdicts = new Map<string, Promise<PolicyResult>>();
+  const { isUrlBlocked, ...hostDeps } = deps;
   const stats = { allowed: 0, blocked: 0, blockedUrls: [] as string[] };
   const maxRequests = deps.maxRequests ?? 3000;
   const block = (url: string, reason: string): PolicyResult => {
@@ -186,12 +196,19 @@ export function createRequestGuard(deps: CheckUrlDeps & { maxRequests?: number }
       if (LOCAL_SCHEMES.has(u.protocol)) return { ok: true, url, host: '' };
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return block(url, `scheme ${u.protocol}`);
       if (stats.allowed + stats.blocked >= maxRequests) return block(url, 'request budget exceeded');
+      if (isUrlBlocked) {
+        try {
+          if (await isUrlBlocked(url)) return block(url, 'URL blocked by content policy');
+        } catch {
+          return block(url, 'content policy unavailable');
+        }
+      }
       const key = `${u.protocol}//${u.host.toLowerCase()}${u.username || u.password ? '#cred' : ''}`;
       let verdict = hostVerdicts.get(key);
       if (!verdict) {
         // Judge the origin only (path/query don't change the destination); length is checked per URL below.
         const origin = `${u.protocol}//${u.username || u.password ? 'x@' : ''}${u.host}/`;
-        verdict = checkUrl(origin, { ...deps, maxUrlLength: Number.POSITIVE_INFINITY });
+        verdict = checkUrl(origin, { ...hostDeps, maxUrlLength: Number.POSITIVE_INFINITY });
         hostVerdicts.set(key, verdict);
       }
       const v = await verdict;
