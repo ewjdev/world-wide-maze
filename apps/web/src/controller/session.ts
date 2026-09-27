@@ -104,6 +104,8 @@ export interface ControllerEnv {
 
 const SEND_INTERVAL_MS = 1000 / 60 - 1;
 const IDLE_SEND_INTERVAL_MS = 250;
+const PRESENTATION_HZ = 60;
+const RATE_SUMMARY_INTERVAL_MS = 250;
 const SENSOR_TIMEOUT_MS = 2500;
 const SILENCE_RECONNECT_MS = 3000;
 const ZERO_KEY = 'wwm.controller.zero';
@@ -127,6 +129,9 @@ export class ControllerSession {
   readonly #tooTilted = new TooTiltedDetector();
   #view: ControllerView;
   #orientation: OrientationAngles | null = null;
+  #inputTilt: Tilt = { tiltX: 0, tiltZ: 0 };
+  #presentationBucket = Number.NEGATIVE_INFINITY;
+  #lastRateSummaryAt = Number.NEGATIVE_INFINITY;
   #zero: Vec3 | null = null; // device frame
   #calib: CalibrationDetector | null = null;
   #raf: number | null = null;
@@ -465,13 +470,18 @@ export class ControllerSession {
   #step(): void {
     const now = this.#env.now();
     const screen = this.#view.screen;
+    // Presentation has its own cadence; sampling, calibration and wire input retain every frame.
+    const bucket = Math.floor((now * PRESENTATION_HZ) / 1000 + 1e-7);
+    const present = bucket !== this.#presentationBucket;
+    if (present) this.#presentationBucket = bucket;
     if (this.#orientation && (screen === 'calibrate' || screen === 'play')) {
       const angle = this.#env.screenAngle();
       const zero =
         screen === 'play' && this.#zero ? this.#zero : screenToDevice(DEFAULT_NEUTRAL_GRAVITY, angle);
       const r = orientationToTilt(this.#orientation, angle, zero);
       if (r) {
-        const patch: Partial<ControllerView> = { tilt: r.raw, dot: indicator(r.raw) };
+        this.#inputTilt = r.raw;
+        const patch: Partial<ControllerView> = present ? { tilt: r.raw, dot: indicator(r.raw) } : {};
         if (screen === 'play') patch.tooTilted = this.#tooTilted.update(r.raw, now);
         if (screen === 'calibrate' && this.#calib) {
           const st = this.#calib.update(r.gravity, now);
@@ -486,10 +496,11 @@ export class ControllerSession {
             this.#patch({ ...patch, screen: 'calibration-failed' });
             return;
           }
-          patch.calibration = {
-            progress: st.progress,
-            remainingMs: Math.max(0, this.#calib.timeoutMs - (now - this.#calib.startedAt)),
-          };
+          if (present)
+            patch.calibration = {
+              progress: st.progress,
+              remainingMs: Math.max(0, this.#calib.timeoutMs - (now - this.#calib.startedAt)),
+            };
         }
         this.#patch(patch);
       }
@@ -500,9 +511,13 @@ export class ControllerSession {
       }
     }
     this.#send(false);
-    const s = this.#sendStats.summary(now);
-    const sensor = this.#sensorStats.summary(now);
-    this.#patch({ sendRate: s.ratePerSec, sensorRate: sensor.ratePerSec });
+    // These diagnostic rates do not participate in the input/filter pipeline.
+    if (now - this.#lastRateSummaryAt >= RATE_SUMMARY_INTERVAL_MS) {
+      this.#lastRateSummaryAt = now;
+      const s = this.#sendStats.summary(now);
+      const sensor = this.#sensorStats.summary(now);
+      this.#patch({ sendRate: s.ratePerSec, sensorRate: sensor.ratePerSec });
+    }
   }
 
   #send(force: boolean): void {
@@ -518,7 +533,7 @@ export class ControllerSession {
       return;
     }
     if (!force && now - this.#lastSendAt < SEND_INTERVAL_MS) return;
-    const t = this.#orientation ? this.#view.tilt : { tiltX: 0, tiltZ: 0 };
+    const t = this.#orientation ? this.#inputTilt : { tiltX: 0, tiltZ: 0 };
     const c = clampTilt(t);
     const b = this.#view.buttons;
     const playing = screen === 'play';
