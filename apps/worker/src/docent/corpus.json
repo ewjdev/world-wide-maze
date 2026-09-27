@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "22ffd4d76c33ba31",
+  "hash": "b77b6747cdd8e984",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -31,6 +31,7 @@
     "docs/build-log/phase-22-game.md",
     "docs/build-log/phase-22-locks.md",
     "docs/build-log/phase-22-page.md",
+    "docs/build-log/phase-22.md",
     "docs/facts/whats-built.md",
     "docs/reference/archive-index.md",
     "docs/reference/bundle-notes.md",
@@ -2529,6 +2530,50 @@
       "url": "/log#phase-22-page",
       "kind": "build-log",
       "text": "## Known issues\n- `?seed=` is a page convenience for replay and tests, not a contract field.\n- A keyboard is assumed on any device with a fine pointer, so a touchscreen laptop gets badges. Taps are still accepted after two nudges, and tap-only turns the badges off.\n- The \"In the game\" wording adds \"(recommended by the lesson)\" after the label when the level is the author's default, a small extension of the spec's \"In the game: <label>. <description>\"."
+    },
+    {
+      "id": "docs/build-log/phase-22.md",
+      "title": "Phase 22: Learning mechanics (the maze follows the lesson)",
+      "path": "docs/build-log/phase-22.md",
+      "url": "/log#phase-22",
+      "kind": "build-log",
+      "text": "**Date:** September 26, 2026 (America/Los_Angeles).\n**Agents:** Claude Code (Claude Opus 5.5) as orchestrator, with three sub-agents in their own worktrees:\n- **L1, physics and engine locks:** [phase-22-locks.md](phase-22-locks.md)\n- **L2, game adapter:** [phase-22-game.md](phase-22-game.md)\n- **L3, lesson page and parent area:** [phase-22-page.md](phase-22-page.md)\n\n**Plan:** [plans/phase-22-learning-mechanics.md](../../plans/phase-22-learning-mechanics.md). The user approved it after adding decision E5: locking is configured per level, as part of the lesson."
+    },
+    {
+      "id": "docs/build-log/phase-22.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 22: Learning mechanics (the maze follows the lesson) › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-22.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-22",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **`wwm-learning/0.3`** (orchestrator, `packages/learning`):\n  - **Levels:** each level is a recipe of ordered steps (rounds and missions) with its own lock configuration: `mode`, `connectors`, `goal`, `signals` and `override`. Steps can override the level's lock.\n  - **Levels as data:**\n    - `playIssues` rejects contradictions in plain words.\n    - `describeLevel` writes the grown-up's description.\n    - `levelRequires` and `playableLevels` let a game offer only the levels it can fully honour.\n    - `family` carries the grown-up's choice.\n  - **Answering:**\n    - Input modes (tap, letter key, number key, arrows, tilt) with device fallbacks; `judgeInput` nudges twice, then accepts.\n    - Answer positions are shuffled per session.\n    - A voiced callout follows every prompt, and its `choice` cues pulse each choice as it's named.\n  - **Content:** compare-groups ships four levels (Explore, Answer before the finish, Gated as the default, Missions), and the counting lessons get \"collect N\" missions.\n  - **Voice:** 202 Pip lines (105 new) generated through AI Gateway → ElevenLabs into R2. Clips are now looked up by text.\n- **Contracts §10.4 (CCR-GAME-01):** runtime locks. `LockSpec`, `Simulation.load(stage, options?)`, `setLock`, and the `locked` SimEvent. `StageData` is unchanged, and so is ranked play.\n- **Physics and engine locks (L1):**\n  - A bridge gate 4.5 m tall, with invisible side fences.\n  - Lift and goal locks.\n  - `locked` fires at most once per second per lock.\n  - Replays can carry a lock timeline.\n  - Visuals: bars across the bridge, a padlock showing Pip or a gem, a label card, a dimmed deck, a greyed goal, an opening animation, the beacon, and padlocks on the map. All locks together add one draw call.\n- **Game adapter (L2):**\n  - Levels are read from the document, with a grown-up hold-to-change control in the loader strip."
+    },
+    {
+      "id": "docs/build-log/phase-22.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 22: Learning mechanics (the maze follows the lesson) › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-22.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-22",
+      "kind": "build-log",
+      "text": "- `locks.ts` binds steps to any maze: it builds the island graph and cuts it along the start→goal path, limited to the level's connectors, and falls back to a goal lock where no cut exists.\n  - Pip gates and mission posts: collect N, with Pip counting each pickup aloud; reach the island with the most or fewest gems.\n  - At a closed lock: the banner, Pip's line and the beacon.\n  - The region guard, the grown-up override in the pause menu, and unranked learning runs.\n  - The gate card shows key badges, callouts, nudges, and handles tap-only.\n- **Lesson page and parent area (L3):**\n  - Callouts pulse the choices, positions are shuffled (`?seed=` replays a session), and letter-key, number-key and arrows rounds have badges and nudges.\n  - A per-lesson Game settings block with generated descriptions, a tap-only switch and resets.\n  - The download carries `family`, and the grown-ups notes show the game level."
+    },
+    {
+      "id": "docs/build-log/phase-22.md#the-spike-changed-the-design",
+      "title": "Phase 22: Learning mechanics (the maze follows the lesson) › The spike changed the design · Coverage · Orchestrator integration and fixes",
+      "path": "docs/build-log/phase-22.md",
+      "anchor": "the-spike-changed-the-design",
+      "url": "/log#phase-22",
+      "kind": "build-log",
+      "text": "## The spike changed the design\nL1 measured two things:\n- **Gates hold:** 0 crossings in 33 hard attempts; the highest jump reached 3.4 m against a 4.5 m gate.\n- **Mazes leak:** on 50 real-site stages, a ball can hop to a neighbouring island around 90–99% of lock positions (the median gap is 0.89 m).\n\nSo the **region guard became the main enforcement**. Any `island` or `landed` event beyond a closed lock sends the ball back. Pip says \"Oops! Solve Pip gate two first.\", and the banner and beacon point at the gate. The visible gates carry the \"closed\" story. Raising guardrails along lock boundaries is a possible follow-up.\n\n## Coverage\nAcross 666 batch-eval stages, for compare-groups `gated` (L2):\n- 69.8% of steps got a physical lock.\n- 19.4% fell back to a goal lock.\n- 10.8% had no room for a gate; those rounds are asked on the stage-start card.\n\nThis is **below the plan's 80% M0 target**. The limit is room for a gate in front of a cut, not the number of chokepoints. The invariants held on all 666 stages.\n\n## Orchestrator integration and fixes\n- Merged L3, L1 and L2, with no conflicts.\n- Added `setLock` and the `load` options to the schema `Simulation` interface, and forwarded them in `record()`.\n- Voice fixes (from L3): a line is never spoken twice when a clip fails, and key badges scale in place.\n- Guard lines now name the gate, and a level that hides map padlocks requires a game capability that WWM doesn't declare yet (fail closed).\n- The voice tool now waits out AI Gateway rate limits (429s) and keeps progress if interrupted.\n- The generated manifest is excluded from Biome."
+    },
+    {
+      "id": "docs/build-log/phase-22.md#test-evidence",
+      "title": "Phase 22: Learning mechanics (the maze follows the lesson) › Test evidence · Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-22.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-22",
+      "kind": "build-log",
+      "text": "## Test evidence\n- `pnpm check`: 1,188 tests passed, 29 skipped.\n- **Orchestrator walkthrough, lesson page (1440×900, real clips from R2, no errors):**\n  - The parent chose Missions, and the lesson notes described it.\n  - In round 2, a tap got \"Try pressing the letter!\" and the letter key answered.\n  - The downloaded HTML carries `family: { compare-groups: mission }`.\n- **Orchestrator walkthrough, game (1440×900):** that downloaded file, loaded with `?learn=compare-groups`, played the Missions level.\n  - Rolling at gate 1's lock showed the banner \"🔒 Solve Pip gate 1 first\".\n  - Solving the gate opened three bridges.\n  - The mission post said \"Bring Pip four gems!\", and a pickup said \"One!\", with the mission chip on the HUD.\n  - The practice stage had room for two physical locks; the remaining steps lock the finish.\n\n## Remaining defects and follow-ups\n- Physical-lock coverage is 70%, not 80%. Options: relax gate-spot rules near cuts, or have the builder place chokepoints for lessons.\n- Most mazes can be hopped around; the region guard handles it. Raising guardrails at lock boundaries is optional.\n- The engine can't hide map padlocks yet (`signals.mapPadlocks: false` levels aren't offered).\n- Real-site mazes don't show island letters, so letter `reach` missions rely on the beacon. No baseline level uses them.\n- A touchscreen laptop counts as having a keyboard; taps are accepted after two nudges.\n- Tilt selection and the gated flow haven't been tried on the physical iPhone.\n- Educator review is still required before any public launch."
     },
     {
       "id": "docs/facts/whats-built.md",

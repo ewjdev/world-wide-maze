@@ -1,7 +1,7 @@
 # Phase 22 — Learning mechanics: the maze follows the lesson
 **Wave:** education track · **Builds on:** Phase 20 (`wwm-learning/0.2`, Pip gates), PR #11 · **Contracts:** `@wwm/learning` → `wwm-learning/0.3` (CCR-EDU-03); `@wwm/schema` `SimEvent` + physics load options (CCR-GAME-01) · **Label:** N (new; not a 2013 feature)
 
-> **Status: DRAFT FOR SIGN-OFF (September 26, 2026).** The user's decisions from the same day are recorded below. Nothing in this plan has been built.
+> **Status: BUILT (September 26, 2026).** Approved by the user; PR stacked on Phase 20. Build log: `docs/build-log/phase-22.md`. Coverage of physical locks came out at 70% against the 80% target, and the region guard is the main enforcement (see the build log).
 
 ## Goal
 Make the maze the lesson. A learning page declares **how progress works**: which rounds and missions must be done, in what order, and how the child may answer. The game makes any website's maze obey those rules:
