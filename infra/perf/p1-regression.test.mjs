@@ -238,3 +238,17 @@ test('viewport key order is immaterial but DPR differs', () => {
   candidate.frames.viewport.deviceScaleFactor = 2;
   assert.equal(compareEvidence(fixture(), candidate).exitCode, 4);
 });
+
+test('report-level page and GPU console errors fail every mode, including supplemental modes', () => {
+  for (const mode of ['frames', 'gpu', 'replay', 'lifecycle', 'stall', 'cold', 'idle', 'ghost', 'learning']) {
+    const candidate = fixture();
+    candidate[mode] ??= { runs: [] };
+    candidate[mode].errors = [
+      { kind: 'consoleerror', message: 'GPU validation error' },
+      { kind: 'pageerror', message: 'unhandled rejection' },
+    ];
+    const report = compareEvidence(fixture(), candidate);
+    assert.equal(report.exitCode, 1, mode);
+    assert.equal(report.gates.find((gate) => gate.id === `runtime-report:${mode}`).status, 'fail');
+  }
+});

@@ -40,7 +40,9 @@ const report = {
   }).trim(),
   system: await root.send('SystemInfo.getInfo'),
   runs: [],
+  errors: [],
 };
+const pageErrors = new WeakMap();
 const save = () => writeFileSync(new URL(`${mode}.json`, out), JSON.stringify(report, null, 2));
 const stats = (a) => {
   const s = [...a].sort((a, b) => a - b);
@@ -100,7 +102,30 @@ async function setup(spec) {
   );
   const page = await ctx.newPage();
   const errors = [];
-  page.on('pageerror', (e) => errors.push(e.message));
+  pageErrors.set(page, errors);
+  const captureError = (kind, message, location) => {
+    errors.push(`${kind}: ${message}`);
+    report.errors.push({
+      kind,
+      message,
+      location,
+      at: new Date().toISOString(),
+      scenario: {
+        ref: spec.ref,
+        path: spec.path,
+        quality: spec.quality,
+        dpr: spec.dpr ?? 1,
+        throttle: spec.throttle ?? spec.coldThrottle ?? 1,
+        backend: spec.backend,
+        learn: spec.learn,
+        replay: !!spec.replay,
+      },
+    });
+  };
+  page.on('pageerror', (error) => captureError('pageerror', error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'error') captureError('consoleerror', message.text(), message.location());
+  });
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Performance.enable');
   if (spec.coldThrottle) await cdp.send('Emulation.setCPUThrottlingRate', { rate: spec.coldThrottle });
@@ -123,6 +148,7 @@ async function setup(spec) {
 async function snapshot(page, cdp, gc = false) {
   if (gc) await cdp.send('HeapProfiler.collectGarbage');
   return {
+    errors: [...(pageErrors.get(page) ?? [])],
     metrics: Object.fromEntries(
       (await cdp.send('Performance.getMetrics')).metrics.map((x) => [x.name, x.value]),
     ),
@@ -196,6 +222,7 @@ async function record(page, cdp, seconds, drive = false, profile = false) {
   if (profile) cpuProfile = (await cdp.send('Profiler.stop')).profile;
   const taskMs = (after.metrics.TaskDuration - before.metrics.TaskDuration) * 1000;
   return {
+    errors: [...(pageErrors.get(page) ?? [])],
     elapsedMs,
     frame: stats(data.frames),
     engineCpuMs: stats(data.render),
@@ -484,4 +511,5 @@ try {
 } finally {
   save();
   await browser.close();
+  save();
 }

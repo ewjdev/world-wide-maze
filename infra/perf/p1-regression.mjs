@@ -30,6 +30,11 @@ const gpuIdentity = (report) => {
 export function compareEvidence(baseline, candidate, currentFingerprint) {
   const gates = [];
   const add = (id, status, details) => gates.push({ id, status, ...details });
+  // Include supplemental modes too: an error cannot disappear because a mode has no timing gate.
+  for (const [mode, report] of Object.entries(candidate)) {
+    if (report?.error || report?.errors?.length)
+      add(`runtime-report:${mode}`, 'fail', { error: report.error, errors: report.errors });
+  }
   const required = ['frames', 'gpu', 'replay', 'lifecycle'];
   for (const mode of required) {
     if (!baseline[mode] || !candidate[mode]) {
