@@ -30,6 +30,7 @@ import { type Availability, JevClient } from './client.ts';
 import { ReplaySession, Session } from './session.ts';
 import './jev.css';
 import { InputDisplay } from './InputDisplay.tsx';
+import { textureBlob } from './texture.ts';
 
 function time(ticks: number) {
   return `${(ticks / SIM_HZ).toFixed(1)}s`;
@@ -251,7 +252,7 @@ export default function JevPage({ admin = false }: { admin?: boolean }) {
     currentInput.current = null;
     jumpUntil.current = 0;
     if (f.textureDataUrl) {
-      const image = await createImageBitmap(await (await fetch(f.textureDataUrl)).blob());
+      const image = await createImageBitmap(textureBlob(f.textureDataUrl));
       await engine.current?.loadStage(f.stage, image);
       image.close();
     } else await engine.current?.loadStage(f.stage, texture(f));
