@@ -31,7 +31,6 @@ import { ReplaySession, Session } from './session.ts';
 import './jev.css';
 import { InputDisplay } from './InputDisplay.tsx';
 
-const api = new JevClient();
 function time(ticks: number) {
   return `${(ticks / SIM_HZ).toFixed(1)}s`;
 }
@@ -69,7 +68,8 @@ function encodeTexture(canvas: HTMLCanvasElement) {
   const webp = canvas.toDataURL('image/webp', 0.8);
   return webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85);
 }
-export default function JevPage() {
+export default function JevPage({ admin = false }: { admin?: boolean }) {
+  const [api] = useState(() => new JevClient(admin ? '/api/admin/jev' : '/api/jev'));
   const canvas = useRef<HTMLDivElement>(null);
   const engine = useRef<Engine | null>(null);
   const live = useRef<Session | null>(null);
@@ -122,16 +122,26 @@ export default function JevPage() {
     } catch (e) {
       setError(String(e));
     }
-  }, [query, offset]);
+  }, [query, offset, api]);
+  useEffect(() => {
+    if (!admin) return;
+    const timer = setInterval(() => {
+      void api
+        .connect()
+        .then(setAvailability)
+        .catch(() => setAvailability(null));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [admin, api]);
   useEffect(() => {
     void api
       .connect()
       .then(async (a) => {
         // Only this tab's owner capabilities trigger refresh recovery. History reads never do.
-        for (const key of Object.keys(sessionStorage).filter((k) => k.startsWith('jev-owner:'))) {
+        for (const key of Object.keys(sessionStorage).filter((k) => k.startsWith(api.ownerPrefix))) {
           const owner = sessionStorage.getItem(key);
           await api
-            .request(`runs/${key.slice(10)}/command`, {
+            .request(`runs/${key.slice(api.ownerPrefix.length)}/command`, {
               owner,
               documentId: crypto.randomUUID(),
               epoch: 0,
@@ -139,7 +149,7 @@ export default function JevPage() {
               data: {},
             })
             .catch(() => {});
-          const prior = await api.detail(key.slice(10)).catch(() => null);
+          const prior = await api.detail(key.slice(api.ownerPrefix.length)).catch(() => null);
           if (prior && ['finished', 'failed', 'stopped', 'interrupted'].includes(prior.summary.status))
             sessionStorage.removeItem(key);
           else
@@ -151,7 +161,7 @@ export default function JevPage() {
         if (a.available) setPolicy('jev');
       })
       .catch((e) => setError(e.message));
-  }, []);
+  }, [api]);
   useEffect(() => {
     let dead = false;
     let raf = 0;
@@ -218,7 +228,7 @@ export default function JevPage() {
   }, []);
   useEffect(() => {
     if (tab === 'history' && api.token) void reloadHistory();
-  }, [tab, reloadHistory]);
+  }, [tab, reloadHistory, api]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: Load the default only when the renderer first becomes ready.
   useEffect(() => {
     if (ready) void selectMaze('fixture-hn-front', 0);
@@ -236,7 +246,7 @@ export default function JevPage() {
     return () => {
       dead = true;
     };
-  }, [maze, availability, runStatus]);
+  }, [maze, availability, runStatus, api]);
   async function showStage(f: MazeFixture) {
     currentInput.current = null;
     jumpUntil.current = 0;
@@ -425,6 +435,7 @@ export default function JevPage() {
   return (
     <main className={`jev-page ${collapsed ? 'is-collapsed' : ''}`}>
       <header className="jev-header">
+        {admin && <a href="/admin">Admin controls</a>}
         <a className="jev-brand" href="/">
           World Wide Maze
         </a>
@@ -536,8 +547,8 @@ export default function JevPage() {
                 </button>
               </div>
               <p className="jev-muted">
-                Saved locally. Failed and interrupted runs stay here too.{' '}
-                {((availability?.archiveBytes ?? 0) / 1048576).toFixed(1)} / 512 MiB used.
+                {admin ? 'Saved in the private admin archive.' : 'Saved locally.'} Failed and interrupted runs
+                stay here too. {((availability?.archiveBytes ?? 0) / 1048576).toFixed(1)} / 512 MiB used.
               </p>
               <div className="jev-import-export">
                 <button type="button" onClick={() => void exportSummary().catch((e) => setError(e.message))}>
@@ -920,12 +931,18 @@ export default function JevPage() {
         </div>
         <p className="jev-provider">
           {availability?.available
-            ? `Jev connected · ${availability.attempts}/${availability.limit} provider attempts`
-            : 'Jev key not configured · baseline and replay work locally'}
+            ? admin
+              ? `Jev enabled · $${((availability.budget?.remainingMicros ?? 0) / 1e6).toFixed(4)} available today`
+              : `Jev connected · ${availability.attempts}/${availability.limit} provider attempts`
+            : admin
+              ? 'Jev unavailable · check the enable switch, daily budget and server key in Admin'
+              : 'Jev key not configured · baseline and replay work locally'}
           <span>
             {v?.runId
               ? `Run ${v.runId.slice(0, 8)} · saved through ${time(v.savedTick)}`
-              : 'All runs and observed decisions are saved on this computer.'}
+              : admin
+                ? 'Runs and observed decisions are saved in the private admin archive.'
+                : 'All runs and observed decisions are saved on this computer.'}
           </span>
         </p>
         {errors && (

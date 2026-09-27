@@ -103,7 +103,7 @@ export class Session {
     });
     this.view.runId = run.id;
     this.owner = run.owner;
-    sessionStorage.setItem(`jev-owner:${run.id}`, this.owner);
+    sessionStorage.setItem(`${this.api.ownerPrefix}${run.id}`, this.owner);
     await this.pilot.init();
     this.onBall(this.pilot.ball, [], null);
     this.heartbeat = window.setInterval(() => {
@@ -304,7 +304,7 @@ export class Session {
     this.view.status = status;
     this.view.phase = status;
     this.closed = true;
-    sessionStorage.removeItem(`jev-owner:${this.view.runId}`);
+    sessionStorage.removeItem(`${this.api.ownerPrefix}${this.view.runId}`);
     window.clearInterval(this.heartbeat);
     this.emit();
   }

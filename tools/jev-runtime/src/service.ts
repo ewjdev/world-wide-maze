@@ -9,7 +9,13 @@ import {
   type Receipt,
 } from '../../../packages/maze-agent/src/contracts.ts';
 import { baseline } from '../../../packages/maze-agent/src/exploration.ts';
-import { type Archive, hash } from './archive.ts';
+import type { Archive } from './archive.ts';
+import { hash } from './hash.ts';
+export type JevArchive = Pick<
+  Archive,
+  'create' | 'reserve' | 'bytes' | 'capacity' | 'events' | 'append' | 'summary' | 'reservations'
+>;
+
 import { ChunkSchema, Command, CreateSchema, DecideSchema, FrameSchema } from './validation.ts';
 
 interface Owner {
@@ -18,13 +24,14 @@ interface Owner {
   epoch: number;
   heartbeat: number;
 }
-export class JevService {
+export class JevService<A extends JevArchive = JevArchive> {
   owners = new Map<string, Owner>();
   busy = false;
   constructor(
-    readonly archive: Archive,
+    readonly archive: A,
     readonly key: string | undefined,
     readonly fetcher: typeof fetch = fetch,
+    readonly afterReceipt?: (runId: string, receipt: Receipt) => void,
   ) {}
   availability() {
     return {
@@ -302,6 +309,7 @@ export class JevService {
         });
         if (!response.ok) throw new Error(`TypeSafe returned HTTP ${response.status}`);
         receipt = { ...receipt, ...parseAnswer(JSON.parse(safe), f) };
+        this.afterReceipt?.(id, receipt);
       } else
         receipt.choice =
           source === 'scripted'

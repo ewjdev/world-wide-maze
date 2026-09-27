@@ -35,12 +35,12 @@ const send = (res: ServerResponse, status: number, data: unknown) => {
   });
   res.end(JSON.stringify(data));
 };
-const services = globalThis as typeof globalThis & { __jevServices?: Map<string, JevService> };
+const services = globalThis as typeof globalThis & { __jevServices?: Map<string, JevService<Archive>> };
 services.__jevServices ??= new Map();
 export function jevPlugin(root: string): Plugin {
   const privateDir = resolve(root, 'local/jev');
   const enabled = process.env.WWM_JEV_PILOT === '1';
-  let service: JevService | undefined;
+  let service: JevService<Archive> | undefined;
   function blocked(raw: string) {
     let decoded = raw;
     for (let i = 0; i < 3; i++) {
