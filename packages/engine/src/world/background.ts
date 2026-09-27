@@ -208,6 +208,9 @@ export function buildBackground(
   mm.opacityNode = float(1).sub(smoothstep(0.4, 0.5, d));
   mm.alphaTest = 0.5;
   const motes = new Sprite(mm);
+  // Sprite's default geometry is shared globally. Three releases TSL-only attributes through
+  // geometry disposal, so each stage needs its own geometry to own these two mote buffers.
+  motes.geometry = bin.add(motes.geometry.clone());
   motes.count = MOTES;
   motes.frustumCulled = false;
   motes.name = 'motes';

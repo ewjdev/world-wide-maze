@@ -76,6 +76,7 @@ import {
 import { Particles } from './world/particles.ts';
 import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
+import { makeStageImages } from './world/stage-images.ts';
 import {
   buildStageObjects,
   makeStageTextures,
@@ -493,23 +494,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     return Math.min(4096, lim as number, opts.maxTextureSize ?? 4096);
   }
 
-  async function makeTiles(img: StageImage, p: TilePlan): Promise<TexImageSource[]> {
-    const iw = (img as { width: number }).width;
-    if (p.tiles.length === 1 && p.downscale === 1) return [img as TexImageSource];
-    const out: TexImageSource[] = [];
-    for (const t of p.tiles) {
-      const sy = t.row0 / p.downscale;
-      const sh = (t.row1 - t.row0) / p.downscale;
-      out.push(
-        await createImageBitmap(img as ImageBitmapSource, 0, Math.round(sy), iw, Math.round(sh), {
-          resizeWidth: p.width,
-          resizeHeight: t.row1 - t.row0,
-        }),
-      );
-    }
-    return out;
-  }
-
   function clearStage() {
     for (const tw of tweens) tw.finish();
     tweens = [];
@@ -610,8 +594,19 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const ih = (image as { height: number }).height;
       const scale = iw / s.size.width; // trust the actual image over the metadata
       plan = planTiles(iw, ih, scale, maxTextureSize());
-      const tileImgs = await makeTiles(image, plan);
-      textures = makeStageTextures(tileImgs, opts.anisotropy ?? renderer.getMaxAnisotropy(), stageBin);
+      const loadingBin = stageBin;
+      const tileImages = await makeStageImages(image, plan);
+      if (disposed || stageBin !== loadingBin) {
+        tileImages.dispose();
+        throw new DOMException('Stage load cancelled', 'AbortError');
+      }
+      // Registered before GPU textures, so reverse disposal closes images after texture teardown.
+      stageBin.add(tileImages);
+      textures = makeStageTextures(
+        tileImages.images,
+        opts.anisotropy ?? renderer.getMaxAnisotropy(),
+        stageBin,
+      );
       textures.setPixelLook(false);
       objs = buildStageObjects(s, plan, textures, u, stageBin);
       stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);

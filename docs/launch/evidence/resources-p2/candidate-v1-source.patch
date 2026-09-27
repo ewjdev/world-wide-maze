@@ -1,0 +1,212 @@
+diff --git a/packages/engine/src/engine.ts b/packages/engine/src/engine.ts
+index 4ca8263..a5264ca 100644
+--- a/packages/engine/src/engine.ts
++++ b/packages/engine/src/engine.ts
+@@ -76,6 +76,7 @@ import {
+ import { Particles } from './world/particles.ts';
+ import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
+ import { createSharedUniforms, type N } from './world/shared.ts';
++import { makeStageImages } from './world/stage-images.ts';
+ import {
+   buildStageObjects,
+   makeStageTextures,
+@@ -493,23 +494,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+     return Math.min(4096, lim as number, opts.maxTextureSize ?? 4096);
+   }
+ 
+-  async function makeTiles(img: StageImage, p: TilePlan): Promise<TexImageSource[]> {
+-    const iw = (img as { width: number }).width;
+-    if (p.tiles.length === 1 && p.downscale === 1) return [img as TexImageSource];
+-    const out: TexImageSource[] = [];
+-    for (const t of p.tiles) {
+-      const sy = t.row0 / p.downscale;
+-      const sh = (t.row1 - t.row0) / p.downscale;
+-      out.push(
+-        await createImageBitmap(img as ImageBitmapSource, 0, Math.round(sy), iw, Math.round(sh), {
+-          resizeWidth: p.width,
+-          resizeHeight: t.row1 - t.row0,
+-        }),
+-      );
+-    }
+-    return out;
+-  }
+-
+   function clearStage() {
+     for (const tw of tweens) tw.finish();
+     tweens = [];
+@@ -610,8 +594,19 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       const ih = (image as { height: number }).height;
+       const scale = iw / s.size.width; // trust the actual image over the metadata
+       plan = planTiles(iw, ih, scale, maxTextureSize());
+-      const tileImgs = await makeTiles(image, plan);
+-      textures = makeStageTextures(tileImgs, opts.anisotropy ?? renderer.getMaxAnisotropy(), stageBin);
++      const loadingBin = stageBin;
++      const tileImages = await makeStageImages(image, plan);
++      if (disposed || stageBin !== loadingBin) {
++        tileImages.dispose();
++        throw new DOMException('Stage load cancelled', 'AbortError');
++      }
++      // Registered before GPU textures, so reverse disposal closes images after texture teardown.
++      stageBin.add(tileImages);
++      textures = makeStageTextures(
++        tileImages.images,
++        opts.anisotropy ?? renderer.getMaxAnisotropy(),
++        stageBin,
++      );
+       textures.setPixelLook(false);
+       objs = buildStageObjects(s, plan, textures, u, stageBin);
+       stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);
+diff --git a/packages/engine/src/world/background.ts b/packages/engine/src/world/background.ts
+index 303f04d..79ca582 100644
+--- a/packages/engine/src/world/background.ts
++++ b/packages/engine/src/world/background.ts
+@@ -208,6 +208,9 @@ export function buildBackground(
+   mm.opacityNode = float(1).sub(smoothstep(0.4, 0.5, d));
+   mm.alphaTest = 0.5;
+   const motes = new Sprite(mm);
++  // Sprite's default geometry is shared globally. Three releases TSL-only attributes through
++  // geometry disposal, so each stage needs its own geometry to own these two mote buffers.
++  motes.geometry = bin.add(motes.geometry.clone());
+   motes.count = MOTES;
+   motes.frustumCulled = false;
+   motes.name = 'motes';
+diff --git a/packages/engine/src/world/stage-images.ts b/packages/engine/src/world/stage-images.ts
+new file mode 100644
+index 0000000..4dc6f22
+--- /dev/null
++++ b/packages/engine/src/world/stage-images.ts
+@@ -0,0 +1,29 @@
++import type { TilePlan } from '../geom/tiling.ts';
++
++/** Own only the cropped/downscaled bitmaps; the caller retains its original source image. */
++export async function makeStageImages(img: TexImageSource, plan: TilePlan) {
++  if (plan.tiles.length === 1 && plan.downscale === 1) return { images: [img], dispose() {} };
++  const owned: ImageBitmap[] = [];
++  const dispose = () => {
++    for (const image of owned.splice(0)) image.close();
++  };
++  try {
++    const iw = (img as { width: number }).width;
++    for (const tile of plan.tiles) {
++      owned.push(
++        await createImageBitmap(
++          img as ImageBitmapSource,
++          0,
++          Math.round(tile.row0 / plan.downscale),
++          iw,
++          Math.round((tile.row1 - tile.row0) / plan.downscale),
++          { resizeWidth: plan.width, resizeHeight: tile.row1 - tile.row0 },
++        ),
++      );
++    }
++    return { images: [...owned] as TexImageSource[], dispose };
++  } catch (error) {
++    dispose();
++    throw error;
++  }
++}
+diff --git a/packages/engine/test/resources.test.ts b/packages/engine/test/resources.test.ts
+new file mode 100644
+index 0000000..04bc999
+--- /dev/null
++++ b/packages/engine/test/resources.test.ts
+@@ -0,0 +1,99 @@
++import { Sprite, Vector3 } from 'three/webgpu';
++import { afterEach, describe, expect, test, vi } from 'vitest';
++import { planTiles } from '../src/geom/tiling.ts';
++import { buildBackground } from '../src/world/background.ts';
++import { Bin } from '../src/world/bin.ts';
++import { createSharedUniforms } from '../src/world/shared.ts';
++import { makeStageImages } from '../src/world/stage-images.ts';
++import { makeStageTextures } from '../src/world/stage-world.ts';
++
++afterEach(() => vi.unstubAllGlobals());
++
++describe('stage-owned resources', () => {
++  test('mote geometry belongs to its stage and never disposes the global Sprite geometry', () => {
++    vi.stubGlobal(
++      'OffscreenCanvas',
++      class {
++        getContext() {
++          return { createRadialGradient: () => ({ addColorStop() {} }), beginPath() {}, arc() {}, fill() {} };
++        }
++      },
++    );
++    const shared = new Sprite().geometry;
++    const sharedDispose = vi.fn();
++    shared.addEventListener('dispose', sharedDispose);
++    const a = new Bin(),
++      b = new Bin();
++    const first = buildBackground(new Vector3(), -100, 0, createSharedUniforms(), a);
++    const second = buildBackground(new Vector3(), -100, 0, createSharedUniforms(), b);
++    expect(first.motes.geometry).not.toBe(shared);
++    expect(first.motes.geometry).not.toBe(second.motes.geometry);
++    const firstDispose = vi.fn(),
++      secondDispose = vi.fn();
++    first.motes.geometry.addEventListener('dispose', firstDispose);
++    second.motes.geometry.addEventListener('dispose', secondDispose);
++    a.disposeAll();
++    a.disposeAll();
++    expect(firstDispose).toHaveBeenCalledTimes(1);
++    expect(secondDispose).not.toHaveBeenCalled();
++    expect(sharedDispose).not.toHaveBeenCalled();
++    b.disposeAll();
++    shared.removeEventListener('dispose', sharedDispose);
++  });
++
++  test('borrows a single source image without creating or closing a bitmap', async () => {
++    const create = vi.fn();
++    vi.stubGlobal('createImageBitmap', create);
++    const source = { width: 128, height: 128, close: vi.fn() } as unknown as ImageBitmap;
++    const result = await makeStageImages(source, planTiles(128, 128, 1, 4096));
++    expect(result.images).toEqual([source]);
++    result.dispose();
++    expect(source.close).not.toHaveBeenCalled();
++    expect(create).not.toHaveBeenCalled();
++  });
++
++  test('owns all tiled bitmaps through repeated disposal but never closes the source', async () => {
++    const source = { width: 128, height: 10000, close: vi.fn() } as unknown as ImageBitmap;
++    const bitmaps = Array.from({ length: 3 }, () => ({ close: vi.fn() }));
++    const create = vi
++      .fn()
++      .mockResolvedValueOnce(bitmaps[0])
++      .mockResolvedValueOnce(bitmaps[1])
++      .mockResolvedValueOnce(bitmaps[2]);
++    vi.stubGlobal('createImageBitmap', create);
++    const result = await makeStageImages(source, planTiles(128, 10000, 1, 4096));
++    expect(result.images).toEqual(bitmaps);
++    for (const bitmap of bitmaps) expect(bitmap.close).not.toHaveBeenCalled();
++    result.dispose();
++    result.dispose();
++    for (const bitmap of bitmaps) expect(bitmap.close).toHaveBeenCalledTimes(1);
++    expect(source.close).not.toHaveBeenCalled();
++  });
++
++  test('downscaled bitmap closes after its GPU texture, and source remains caller-owned', async () => {
++    const events: string[] = [];
++    const scaled = { width: 4096, height: 1024, close: vi.fn(() => events.push('bitmap')) };
++    const source = { width: 8192, height: 2048, close: vi.fn() } as unknown as ImageBitmap;
++    const create = vi.fn().mockResolvedValue(scaled);
++    vi.stubGlobal('createImageBitmap', create);
++    const owner = await makeStageImages(source, planTiles(8192, 2048, 1, 4096));
++    expect(create).toHaveBeenCalledWith(source, 0, 0, 8192, 2048, { resizeWidth: 4096, resizeHeight: 1024 });
++    const bin = new Bin();
++    bin.add(owner);
++    const textures = makeStageTextures(owner.images, 1, bin);
++    textures.tiles[0]?.addEventListener('dispose', () => events.push('texture'));
++    bin.disposeAll();
++    expect(events).toEqual(['texture', 'bitmap']);
++    expect(source.close).not.toHaveBeenCalled();
++  });
++
++  test('closes previously created tiles when later cropping fails', async () => {
++    const first = { close: vi.fn() },
++      failure = new Error('bitmap decode failed');
++    vi.stubGlobal('createImageBitmap', vi.fn().mockResolvedValueOnce(first).mockRejectedValueOnce(failure));
++    const source = { width: 128, height: 10000, close: vi.fn() } as unknown as ImageBitmap;
++    await expect(makeStageImages(source, planTiles(128, 10000, 1, 4096))).rejects.toBe(failure);
++    expect(first.close).toHaveBeenCalledTimes(1);
++    expect(source.close).not.toHaveBeenCalled();
++  });
++});
