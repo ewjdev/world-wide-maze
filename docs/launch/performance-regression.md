@@ -41,7 +41,7 @@ Hard gates require the reference replay to finish with 5,429 ticks, score 1,484 
 
 Timing compares scenario-matched p95 values; a candidate beyond baseline × 1.2 + 2 ms calls for review. This tolerance is a triage threshold, not a product frame budget. Browser/host/headless/backend or native GPU identity changes also require review. Every successful baseline frame scenario must have positive candidate timing, at least 30 samples covering the measured window, at least 80% of its baseline duration, matching CSS viewport/DPR/workload, and backend metadata. Intended framebuffer-resolution changes remain measurable optimizations. Passing a high-end-machine test does not certify lower-tier desktop/mobile hardware, GPU utilization, battery life or thermal behavior. CPU throttling does not reproduce a weak GPU or worker CPU.
 
-Twenty controlled tooling tests inject wrong replay scores, extra render targets, retained bytes, missing evidence, timing regressions and a 44,800-byte-per-retry leak to prove failures cannot silently pass.
+Twenty-two controlled tooling tests inject wrong replay scores, extra render targets, retained bytes, missing evidence, timing regressions and a 44,800-byte-per-retry leak to prove failures cannot silently pass.
 
 ## Instrumentation cost
 

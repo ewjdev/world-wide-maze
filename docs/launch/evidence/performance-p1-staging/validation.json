@@ -1,0 +1,73 @@
+{
+  "runtimeCommit": "b03830af177f54301a67027c0e0c4838885d7a42",
+  "runtimeSHA256": "7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e",
+  "comparisonExit": 3,
+  "comparisonStatus": "known-p2-failure",
+  "knownFailure": "P2 #24: 44800 attribute bytes and two attributes per retry, unchanged from baseline",
+  "ghostPairs": [
+    {
+      "throttle": 1,
+      "repeat": 0,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 183.39999999999964,
+      "workerFrameMaxMs": 17.400000000000546,
+      "workerLongTasksMs": []
+    },
+    {
+      "throttle": 1,
+      "repeat": 1,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 166.59999999999945,
+      "workerFrameMaxMs": 18.600000000000364,
+      "workerLongTasksMs": []
+    },
+    {
+      "throttle": 1,
+      "repeat": 2,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 166.70000000000073,
+      "workerFrameMaxMs": 18.5,
+      "workerLongTasksMs": []
+    },
+    {
+      "throttle": 6,
+      "repeat": 0,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 1131.8999999999996,
+      "workerFrameMaxMs": 18.699999999999818,
+      "workerLongTasksMs": []
+    },
+    {
+      "throttle": 6,
+      "repeat": 1,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 1101.800000000001,
+      "workerFrameMaxMs": 18.5,
+      "workerLongTasksMs": []
+    },
+    {
+      "throttle": 6,
+      "repeat": 2,
+      "poseParity": true,
+      "frameGapImproved": true,
+      "heartbeatImproved": true,
+      "referenceFrameMaxMs": 1050,
+      "workerFrameMaxMs": 67.20000000000073,
+      "workerLongTasksMs": [79]
+    }
+  ],
+  "toolingTestsPassed": 22,
+  "combinedFullCheck": "See Performance staging GitHub Actions run for the published branch head",
+  "physicalDeviceAcceptance": false,
+  "productionDeployment": false
+}

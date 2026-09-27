@@ -248,6 +248,7 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
       'texturesSize',
       'renderTargets',
       'geometries',
+      'programs',
       'storageAttributes',
       'storageAttributesSize',
       'readbackBuffers',

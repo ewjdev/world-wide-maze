@@ -262,3 +262,18 @@ test('report-level page and GPU console errors fail every mode, including supple
     assert.equal(report.gates.find((gate) => gate.id === `runtime-report:${mode}`).status, 'fail');
   }
 });
+
+// Shader program counts must not grow even when render targets remain bounded.
+test('new shader-program retention fails independently of target counts', () => {
+  const baseline = fixture();
+  baseline.lifecycle.retries.forEach((r) => {
+    r.game.rendererMemory.programs = 61;
+  });
+  const candidate = structuredClone(baseline);
+  candidate.lifecycle.retries.forEach((r, i) => {
+    r.game.rendererMemory.programs += i;
+  });
+  const report = compareEvidence(baseline, candidate);
+  assert.equal(report.exitCode, 1);
+  assert.equal(report.gates.find((g) => g.id === 'memory:retry-programs').status, 'fail');
+});

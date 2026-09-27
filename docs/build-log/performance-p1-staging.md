@@ -18,4 +18,10 @@ Coordinator: Codex, with isolated rendering/timing, ghost, and cache/regression 
 
 ## Validation
 
-Combined measurements and final repository/CI validation are in progress. Final results are recorded in `docs/launch/performance-p1-staging.md` and its linked raw evidence before handoff. Individual logs preserve all failed attempts and scope limitations rather than relabeling them as passing checks.
+Qualified branches merged: ghost `ff7eaa3` as `737649c`; cache/tooling through `1cd13a4` as `4882a6f`; renderer `566d9d6` as `b03830a`. Integration preserved both ghost and stage cancellation in Game.dispose and regenerated the documentation corpus. Independent source reviews cleared cache/ghost lifecycle and renderer timing/compile ownership after merge.
+
+The final production runtime fingerprint is `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`, measured at `b03830af177f54301a67027c0e0c4838885d7a42`. Parent ran the source-bound build, native GPU, all 12 frame cases, replay at 1×/6×/20×, 15 retries plus seven fixture loads, artificial stall/recovery, three instrumentation pairs, two cache A/B tours, and six ghost reference/worker pairs. Raw results and distinctions are in `docs/launch/performance-p1-staging.md` and its evidence directory.
+
+Final comparator returns exit 3 solely for existing P2 #24: 44,800 bytes and two attributes per retry, identical to baseline. No P1 hard failure, missing evidence or timing-review gate remains. All six ghost pairs retain exact pose parity and improve frame/heartbeat gaps; one throttled worker trial retains a 79 ms long task, explicitly reported. Source/manifest/382-asset integrity and frame/GPU sampling were independently rechecked by the ghost agent.
+
+Renderer full check was green: 1,333 passed, 32 skipped. Ghost/cache component logs retain their earlier isolated full-suite failures and passing focused regressions. Combined full correctness is enforced by the published staging-only GitHub workflow before handoff; its run is linked from the staging report and epic update. The coordinator independently ran 22 controlled gate tests, documentation checks, lint and diff validation. No deployment or main merge, no physical-device/thermal/controller acceptance, and no P2 implementation. Every task-owned browser and preview was stopped after measurement.
