@@ -300,6 +300,7 @@ export class Game {
   #driverLoad: Promise<SimDriver> | null = null;
   #raf = 0;
   #lastFrame = 0;
+  #qualityWasActive = false;
   /** Game clock (seconds, advances only while not held). */
   #clock = 0;
   #timers: Timer[] = [];
@@ -511,6 +512,7 @@ export class Game {
     const onKey = (e: KeyboardEvent) => this.#onKeyDown(e);
     const onBlur = () => this.#autoPause();
     const onVis = () => {
+      this.#qualityWasActive = false;
       if (document.visibilityState === 'hidden') this.#autoPause();
     };
     const onResize = () => this.#resize();
@@ -2090,7 +2092,8 @@ export class Game {
     const d = this.#driver;
     if (!e) return;
     const scale = this.#opts.test?.timeScale ?? 1;
-    const dt = Math.min(0.1, Math.max(0, (now - this.#lastFrame) / 1000)) * scale;
+    const renderDt = Math.max(0, (now - this.#lastFrame) / 1000);
+    const dt = Math.min(0.1, renderDt) * scale;
     this.#lastFrame = now;
 
     const sample = this.#sample(now);
@@ -2174,7 +2177,11 @@ export class Game {
         ? sample
         : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
-    e.frame(gdt);
+    // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
+    // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
+    const qualityActive = stepping && document.visibilityState === 'visible';
+    e.frame(gdt, qualityActive && this.#qualityWasActive ? renderDt : null);
+    this.#qualityWasActive = qualityActive;
     this.#syncController(false);
   };
 

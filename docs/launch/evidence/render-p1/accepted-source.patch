@@ -1,0 +1,455 @@
+diff --git a/apps/web/src/game/game.ts b/apps/web/src/game/game.ts
+index 3289376..be4289a 100644
+--- a/apps/web/src/game/game.ts
++++ b/apps/web/src/game/game.ts
+@@ -300,6 +300,7 @@ export class Game {
+   #driverLoad: Promise<SimDriver> | null = null;
+   #raf = 0;
+   #lastFrame = 0;
++  #qualityWasActive = false;
+   /** Game clock (seconds, advances only while not held). */
+   #clock = 0;
+   #timers: Timer[] = [];
+@@ -511,6 +512,7 @@ export class Game {
+     const onKey = (e: KeyboardEvent) => this.#onKeyDown(e);
+     const onBlur = () => this.#autoPause();
+     const onVis = () => {
++      this.#qualityWasActive = false;
+       if (document.visibilityState === 'hidden') this.#autoPause();
+     };
+     const onResize = () => this.#resize();
+@@ -2090,7 +2092,8 @@ export class Game {
+     const d = this.#driver;
+     if (!e) return;
+     const scale = this.#opts.test?.timeScale ?? 1;
+-    const dt = Math.min(0.1, Math.max(0, (now - this.#lastFrame) / 1000)) * scale;
++    const renderDt = Math.max(0, (now - this.#lastFrame) / 1000);
++    const dt = Math.min(0.1, renderDt) * scale;
+     this.#lastFrame = now;
+ 
+     const sample = this.#sample(now);
+@@ -2174,7 +2177,11 @@ export class Game {
+         ? sample
+         : neutralSample(sample.frameYaw);
+     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
+-    e.frame(gdt);
++    // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
++    // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
++    const qualityActive = stepping && document.visibilityState === 'visible';
++    e.frame(gdt, qualityActive && this.#qualityWasActive ? renderDt : null);
++    this.#qualityWasActive = qualityActive;
+     this.#syncController(false);
+   };
+ 
+diff --git a/packages/engine/src/engine.ts b/packages/engine/src/engine.ts
+index 6959839..c5f5862 100644
+--- a/packages/engine/src/engine.ts
++++ b/packages/engine/src/engine.ts
+@@ -15,7 +15,7 @@ import {
+ } from '@wwm/schema';
+ import { bloom } from 'three/addons/tsl/display/BloomNode.js';
+ import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
+-import { emissive, float, mrt, output, pass, renderOutput, vec4 } from 'three/tsl';
++import { emissive, float, mrt, output, pass, renderOutput, rtt, vec4 } from 'three/tsl';
+ import {
+   Box3,
+   Color,
+@@ -56,7 +56,7 @@ import {
+   ITEM_SMALL,
+   WU,
+ } from './palette.ts';
+-import { MAX_TIER, QualityLadder, type QualitySetting, TIERS } from './quality.ts';
++import { MAX_TIER, QualityLadder, type QualitySetting, qualityPixelRatio, TIERS } from './quality.ts';
+ import { NodeFrameClock } from './three-private.ts';
+ import { type Background, buildBackground } from './world/background.ts';
+ import { type Ball, buildBall } from './world/ball.ts';
+@@ -111,7 +111,9 @@ export interface ControlState {
+ }
+ 
+ export interface EngineStats {
++  /** Rolling sampled gameplay FPS; zero while quality sampling is suspended. */
+   fps: number;
++  qualityStatus: QualityLadder['status'];
+   drawCalls: number;
+   triangles: number;
+   tier: number;
+@@ -175,7 +177,8 @@ export interface Engine {
+   /** Camera heading for `InputSample.frameYaw` (see README "Yaw convention"). */
+   cameraYaw(): number;
+   resize(w: number, h: number): void;
+-  frame(dtSec: number): void;
++  /** `renderDtSec` is real active-play time; null excludes pauses/loading/hidden gaps. */
++  frame(dtSec: number, renderDtSec?: number | null): void;
+   stats(): EngineStats;
+   setQuality(q: QualitySetting): void;
+   setPixelLook(on: boolean): void;
+@@ -275,27 +278,54 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+   const particles = new Particles(4096, u, globalBin, rng);
+   scene.add(particles.object);
+ 
+-  // ── post: MRT (colour + emissive), selective bloom on emissive only, screen-blended, FXAA ──
+-  const scenePass = pass(scene, camera);
+-  scenePass.setMRT(mrt({ output, emissive: vec4(emissive, float(1)) }));
+-  const colorTex: N = scenePass.getTextureNode('output');
+-  const emTex: N = scenePass.getTextureNode('emissive');
+-  const bloomNode: N = bloom(emTex, 1.15, 0.45, 0.0);
+-  const composite = colorTex.add(bloomNode.mul(float(1).sub(colorTex)));
+-  const outputs = {
+-    full: fxaa(renderOutput(composite)),
+-    noFxaa: renderOutput(composite),
+-    noGlow: renderOutput(colorTex),
+-  };
+-  let pipeline = new RenderPipeline(renderer);
+-  pipeline.outputColorTransform = false;
+-  let currentOutput: keyof typeof outputs | null = null;
+-  const setOutput = (k: keyof typeof outputs) => {
+-    if (k === currentOutput) return;
+-    pipeline.outputNode = outputs[k];
+-    pipeline.needsUpdate = true;
+-    currentOutput = k;
+-  };
++  // Each graph owns its pass, bloom targets and material. A low-tier graph never retains a
++  // dormant high-resolution bloom chain; recovery builds it again on demand.
++  function createPost(glow: boolean, useFxaa: boolean) {
++    const scenePass = pass(scene, camera);
++    // Keep a single colour attachment at low quality (no unused emissive MRT).
++    if (glow) scenePass.setMRT(mrt({ output, emissive: vec4(emissive, float(1)) }));
++    const colorTex: N = scenePass.getTextureNode('output');
++    const bloomNode = glow ? bloom(scenePass.getTextureNode('emissive'), 1.15, 0.45, 0.0) : null;
++    const composite: N = bloomNode ? colorTex.add(bloomNode.mul(float(1).sub(colorTex))) : colorTex;
++    const plain = renderOutput(composite);
++    // FXAA converts expressions to an implicit RTT. Own it explicitly so disposal releases it too.
++    const fxaaInput = useFxaa ? rtt(plain) : null;
++    const outputs = { full: fxaaInput ? fxaa(fxaaInput) : plain, plain };
++    const pipeline = new RenderPipeline(renderer);
++    pipeline.outputColorTransform = false;
++    return {
++      glow,
++      useFxaa,
++      scenePass,
++      bloomNode,
++      pipeline,
++      outputs,
++      dispose() {
++        pipeline.dispose();
++        bloomNode?.dispose();
++        fxaaInput?.dispose();
++        scenePass.dispose();
++      },
++    };
++  }
++  let post: ReturnType<typeof createPost> | null = null;
++
++  function compileScenePass(): Promise<void> {
++    if (!post) return Promise.resolve();
++    // Precompile the target/MRT we actually draw. Compiling the default sRGB canvas creates a
++    // separate full-size conversion framebuffer that RenderPipeline never uses or resizes.
++    const target = renderer.getRenderTarget();
++    const attachment = renderer.getMRT();
++    try {
++      renderer.setRenderTarget(post.scenePass.renderTarget);
++      renderer.setMRT(post.scenePass.getMRT());
++      return renderer.compileAsync(scene, camera);
++    } finally {
++      // Compilation yields between pipelines: restore before yielding so loading frames stay valid.
++      renderer.setRenderTarget(target);
++      renderer.setMRT(attachment);
++    }
++  }
+ 
+   const ladder = { value: new QualityLadder(opts.quality ?? 'auto') };
+   const reducedMotion = opts.reducedMotion ?? false;
+@@ -395,13 +425,13 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+   let sceneStart = 0;
+   let sceneTriStart = 0;
+   scene.onBeforeRender = () => {
+-    if (sceneDraws === -1 && renderer.getMRT() !== null) {
++    if (sceneDraws === -1 && renderer.getRenderTarget() === post?.scenePass.renderTarget) {
+       sceneStart = renderer.info.render.drawCalls;
+       sceneTriStart = renderer.info.render.triangles;
+     }
+   };
+   scene.onAfterRender = () => {
+-    if (sceneDraws === -1 && renderer.getMRT() !== null) {
++    if (sceneDraws === -1 && renderer.getRenderTarget() === post?.scenePass.renderTarget) {
+       sceneDraws = renderer.info.render.drawCalls - sceneStart;
+       last.triangles = renderer.info.render.triangles - sceneTriStart;
+     }
+@@ -523,8 +553,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+ 
+   function applyTier() {
+     const f = ladder.value.features;
+-    renderer.setPixelRatio(baseDpr() * f.renderScale);
+-    setOutput(!f.glow ? 'noGlow' : f.fxaa ? 'full' : 'noFxaa');
++    renderer.setPixelRatio(qualityPixelRatio(baseDpr(), size.w, size.h, f));
++    if (!post || post.glow !== f.glow || post.useFxaa !== f.fxaa) {
++      post?.dispose();
++      post = createPost(f.glow, f.fxaa);
++    }
++    post.bloomNode?.setResolutionScale(f.bloomScale);
++    const nextOutput = f.fxaa ? post.outputs.full : post.outputs.plain;
++    if (post.pipeline.outputNode !== nextOutput) {
++      post.pipeline.outputNode = nextOutput;
++      post.pipeline.needsUpdate = true;
++    }
+     if (bg) {
+       bg.rich.value = f.richBackground ? 1 : 0;
+       bg.motes.visible = f.richBackground;
+@@ -616,7 +655,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       view = 'chase';
+       // compile everything up front so the first frames don't hitch
+       if (recovery) await recovery;
+-      if (!deviceLost) await renderer.compileAsync(scene, camera);
++      if (!deviceLost) await compileScenePass();
+     },
+ 
+     unloadStage() {
+@@ -1029,15 +1068,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       size.w = w;
+       size.h = h;
+       renderer.setSize(w, h, false);
++      applyTier();
+       camera.aspect = w / Math.max(1, h);
+       camera.updateProjectionMatrix();
+     },
+ 
+-    frame(dt) {
++    frame(dt, renderDtSec = dt) {
+       const d = Math.min(Math.max(dt, 0), 0.1);
+       time += d;
+       u.time.value = time;
+-      if (ladder.value.sample(dt)) applyTier();
++      if (renderDtSec === null) ladder.value.suspend();
++      else if (ladder.value.sample(renderDtSec)) applyTier();
+ 
+       // tweens
+       tweens = tweens.filter((tw) => !tw.update(time));
+@@ -1129,7 +1170,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       }
+       const afterEnv = renderer.info.render.drawCalls;
+       sceneDraws = -1;
+-      pipeline.render();
++      post?.pipeline.render();
+       if (sceneDraws < 0) sceneDraws = 0;
+       last.env = afterEnv;
+       last.total = renderer.info.render.drawCalls;
+@@ -1141,6 +1182,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       const mem = renderer.info.memory as unknown as Record<string, number>;
+       return {
+         fps: ladder.value.fps,
++        qualityStatus: ladder.value.status,
+         drawCalls: last.total,
+         triangles: last.triangles,
+         tier: ladder.value.tier,
+@@ -1177,8 +1219,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       clearStage();
+       scene.clear();
+       globalBin.disposeAll();
+-      pipeline.dispose();
+-      scenePass.dispose();
++      post?.dispose();
+       renderer.dispose();
+       ownCanvas?.remove();
+     },
+@@ -1449,7 +1490,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+   function recoverOnWebGL2(): Promise<void> {
+     recovery ??= (async () => {
+       const old = renderer;
+-      const oldPipeline = pipeline;
++      const oldPost = post;
+       canvas = replaceCanvas(canvas);
+       ownCanvas = canvas;
+       let r: WebGPURenderer;
+@@ -1467,19 +1508,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
+       renderer = r;
+       backend = 'webgl2';
+       nodeClock = new NodeFrameClock(r);
+-      pipeline = new RenderPipeline(r);
+-      pipeline.outputColorTransform = false;
+-      currentOutput = null;
++      post = null;
+       applyTier();
+       envPrimed = false;
+       // The old renderer's GPU objects died with the device; drop its caches and listeners.
+       try {
+-        oldPipeline.dispose();
++        oldPost?.dispose();
+         void old.dispose().catch(() => {});
+       } catch {
+         // a lost device can throw anywhere in teardown; nothing left to free
+       }
+-      await r.compileAsync(scene, camera).catch(() => {});
++      await compileScenePass().catch(() => {});
+       deviceLost = false;
+     })();
+     return recovery;
+diff --git a/packages/engine/src/quality.ts b/packages/engine/src/quality.ts
+index 4b9b374..b593a3c 100644
+--- a/packages/engine/src/quality.ts
++++ b/packages/engine/src/quality.ts
+@@ -14,14 +14,56 @@ export interface TierFeatures {
+   fxaa: boolean;
+   glow: boolean;
+   richBackground: boolean;
++  bloomScale: number;
++  maxPixels: number;
+ }
+ 
+ export const TIERS: readonly TierFeatures[] = [
+-  { envMapUpdates: true, renderScale: 1, fxaa: true, glow: true, richBackground: true },
+-  { envMapUpdates: false, renderScale: 1, fxaa: true, glow: true, richBackground: true },
+-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: true, richBackground: true },
+-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: false, richBackground: true },
+-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: false, richBackground: false },
++  {
++    envMapUpdates: true,
++    renderScale: 1,
++    fxaa: true,
++    glow: true,
++    richBackground: true,
++    bloomScale: 0.5,
++    maxPixels: Number.POSITIVE_INFINITY,
++  },
++  {
++    envMapUpdates: false,
++    renderScale: 1,
++    fxaa: true,
++    glow: true,
++    richBackground: true,
++    bloomScale: 0.25,
++    maxPixels: 2560 * 1440,
++  },
++  {
++    envMapUpdates: false,
++    renderScale: 0.7,
++    fxaa: false,
++    glow: true,
++    richBackground: true,
++    bloomScale: 0.25,
++    maxPixels: 1920 * 1080,
++  },
++  {
++    envMapUpdates: false,
++    renderScale: 0.7,
++    fxaa: false,
++    glow: false,
++    richBackground: true,
++    bloomScale: 0,
++    maxPixels: 1920 * 1080,
++  },
++  {
++    envMapUpdates: false,
++    renderScale: 0.7,
++    fxaa: false,
++    glow: false,
++    richBackground: false,
++    bloomScale: 0,
++    maxPixels: 1280 * 1024,
++  },
+ ];
+ export const MAX_TIER = TIERS.length - 1;
+ 
+@@ -67,9 +109,26 @@ export class QualityLadder {
+     return this.sum > 0 ? this.samples.length / this.sum : 0;
+   }
+ 
+-  /** Feed one frame time. Returns true when the tier changed. */
++  /** Discard timing history across loading, intentional pauses and hidden-tab gaps. */
++  suspend(): void {
++    this.samples.length = 0;
++    this.sum = 0;
++    this.sinceChange = 0;
++    this.goodFor = 0;
++  }
++
++  /** A minimum-tier pressure signal is diagnostic only: gameplay fidelity never changes. */
++  get status(): 'fixed' | 'suspended' | 'steady' | 'minimum-tier' {
++    if (this.fixed) return 'fixed';
++    if (this.samples.length === 0) return 'suspended';
++    return this.tier === MAX_TIER && this.fps < (DOWN_FPS[MAX_TIER - 1] as number)
++      ? 'minimum-tier'
++      : 'steady';
++  }
++
++  /** Feed real active-play frame time, independent of simulation clamping. */
+   sample(dtSec: number): boolean {
+-    if (!(dtSec > 0) || dtSec > 1) return false; // tab switches, breakpoints
++    if (!(dtSec > 0) || !Number.isFinite(dtSec)) return false;
+     this.elapsed += dtSec;
+     this.samples.push(dtSec);
+     this.sum += dtSec;
+@@ -97,3 +156,13 @@ export class QualityLadder {
+     return true;
+   }
+ }
++
++/** Bound backing-store pixels as well as DPR; CSS size and gameplay coordinates stay unchanged. */
++export function qualityPixelRatio(
++  dpr: number,
++  width: number,
++  height: number,
++  features: TierFeatures,
++): number {
++  return Math.min(dpr * features.renderScale, Math.sqrt(features.maxPixels / Math.max(1, width * height)));
++}
+diff --git a/packages/engine/test/index.test.ts b/packages/engine/test/index.test.ts
+index fcdada2..f075910 100644
+--- a/packages/engine/test/index.test.ts
++++ b/packages/engine/test/index.test.ts
+@@ -22,7 +22,7 @@ import {
+ } from '../src/geom/structures.ts';
+ import { clipTriangleToBand, fan, planTiles, tileUv, triArea } from '../src/geom/tiling.ts';
+ import { ENGINE_NAME } from '../src/index.ts';
+-import { MAX_TIER, QualityLadder } from '../src/quality.ts';
++import { MAX_TIER, QualityLadder, qualityPixelRatio, TIERS } from '../src/quality.ts';
+ 
+ const stage = JSON.parse(
+   readFileSync(
+@@ -352,6 +352,47 @@ describe('quality ladder', () => {
+     expect(l.tier).toBe(t);
+   });
+ 
++  test('real 200 ms stalls shed all optional tiers in under eleven wall seconds', () => {
++    const real = new QualityLadder('auto');
++    const clamped = new QualityLadder('auto');
++    let seconds = 0;
++    while (real.tier < MAX_TIER && seconds < 20) {
++      real.sample(0.2);
++      clamped.sample(0.1);
++      seconds += 0.2;
++    }
++    expect(seconds).toBeLessThan(11);
++    expect(clamped.tier).toBeLessThan(MAX_TIER);
++    expect(real.fps).toBeCloseTo(5);
++    expect(real.status).toBe('minimum-tier');
++    expect(real.sample(Number.POSITIVE_INFINITY)).toBe(false);
++    expect(Number.isFinite(real.fps)).toBe(true);
++  });
++
++  test('active stalls over one second are measured; suspension clears stale pressure and recovery', () => {
++    const l = new QualityLadder('auto');
++    l.sample(2);
++    expect(l.fps).toBe(0.5);
++    run(l, 20, 12);
++    const tier = l.tier;
++    run(l, 60, 4);
++    l.suspend();
++    expect(l.fps).toBe(0);
++    expect(l.status).toBe('suspended');
++    run(l, 60, 5);
++    expect(l.tier).toBe(tier);
++    run(l, 60, 60);
++    expect(l.tier).toBe(0);
++  });
++
++  test('lower tiers bound high-DPR pixels without lowering a small mobile canvas further', () => {
++    const low = TIERS[3];
++    if (!low) throw new Error('missing low tier');
++    expect(qualityPixelRatio(2, 1440, 900, low) ** 2 * 1440 * 900).toBeCloseTo(1920 * 1080);
++    expect(qualityPixelRatio(2, 390, 844, low)).toBe(1.4);
++    expect(qualityPixelRatio(2, 3840, 2160, low) ** 2 * 3840 * 2160).toBeCloseTo(1920 * 1080);
++  });
++
+   test('fixed settings never change', () => {
+     const l = new QualityLadder('high');
+     run(l, 10, 10);
