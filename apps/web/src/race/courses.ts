@@ -42,10 +42,10 @@ export const RACE_COURSES: readonly RaceCourseSummary[] = [
   },
   {
     slug: 'island-leap',
-    courseId: '1aeacba92c35250d3e547a9d86af8e300b26bcb8e218cd6cda94baaeef47a690',
+    courseId: '26c62767177702939c8147f1f5915fc43a234511916c9bcc1c52e0afb7d0b83b',
     title: 'Island Leap',
-    description: 'Earn turbo, launch from the ramp, and clear an island. A safe route stays open.',
-    islands: 6,
+    description: 'Ground flow, short hops, or a long leap. Carry your speed through the exit turn.',
+    islands: 8,
     previewUrl: '/race/island-leap/texture.png',
     courseUrl: '/race/island-leap/course.json',
   },

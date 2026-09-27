@@ -155,31 +155,58 @@ run('Race stunt browser acceptance', () => {
           await page.getByTestId('race-ready').waitFor({ timeout: 30000 });
           await page.getByTestId('race-start').click();
           await page.getByTestId('race-boost').waitFor();
-          if (route === 'far') {
+          // Derive review moments from the same frozen physics report as the input fixture.
+          // This keeps changed jump counts/timing honest without baking the original course into tests.
+          const events = expected.events as {
+            tick: number;
+            mechanic: string | null;
+            events: { type: string }[];
+          }[];
+          const launches = events.filter((event) => event.mechanic === 'launch');
+          const moments: { tick: number; name: string }[] = [];
+          for (const [index, launch] of launches.entries()) {
+            const landing = events.find((event) => event.tick > launch.tick && event.mechanic === 'landing');
+            if (!landing) continue;
+            moments.push(
+              { tick: Math.max(1, launch.tick - 72), name: `jump-${index + 1}-approach` },
+              { tick: Math.floor((launch.tick + landing.tick) / 2), name: `jump-${index + 1}-airborne` },
+              {
+                tick: Math.min(expected.progress.finishTick - 1, landing.tick + 24),
+                name: `jump-${index + 1}-exit`,
+              },
+            );
+          }
+          if (!launches.length) {
+            const crossing = events.filter((event) => event.events.some((item) => item.type === 'island'))[1];
+            if (crossing) moments.push({ tick: crossing.tick, name: 'ground-turn' });
+          }
+          for (const moment of moments.sort((left, right) => left.tick - right.tick)) {
             await page.waitForFunction(
-              () => {
-                const state = window.__wwmRace?.debugState();
-                if (
-                  (state?.tick ?? 0) >= 980 &&
-                  state?.mechanics?.launches === 1 &&
-                  state.mechanics.landings === 0 &&
-                  window.__WWM_RACE_TEST__
-                ) {
+              (tick) => {
+                if ((window.__wwmRace?.debugState().tick ?? 0) >= tick && window.__WWM_RACE_TEST__) {
                   window.__WWM_RACE_TEST__.timeScale = 0.001;
                   return true;
                 }
                 return false;
               },
-              null,
-              { timeout: 30000 },
+              moment.tick,
+              { timeout: 60000 },
             );
+            const reviewState = await page.evaluate(() => window.__wwmRace?.debugState());
+            expect(reviewState?.phase).toBe('racing');
+            if (moment.name.endsWith('airborne')) {
+              expect(reviewState?.mechanics?.launches).toBeGreaterThan(reviewState?.mechanics?.landings ?? 0);
+            }
             if (SHOTS) {
               mkdirSync(SHOTS, { recursive: true });
-              await page.screenshot({ path: join(SHOTS, 'stunts-far-airborne.png') });
+              await page.screenshot({ path: join(SHOTS, `stunts-${route}-${moment.name}.png`) });
             }
-            await page.evaluate(() => {
-              if (window.__WWM_RACE_TEST__) window.__WWM_RACE_TEST__.timeScale = 4;
-            });
+            await page.evaluate(
+              (speed) => {
+                if (window.__WWM_RACE_TEST__) window.__WWM_RACE_TEST__.timeScale = speed;
+              },
+              moment.name.endsWith('approach') || moment.name.endsWith('airborne') ? 1 : 4,
+            );
           }
           await page.getByTestId('race-finished').waitFor({ timeout: 60000 });
           const first = await page.evaluate(() => window.__wwmRace?.debugState());
@@ -205,7 +232,10 @@ run('Race stunt browser acceptance', () => {
               for (let i = 0; i < recording.ticks; i++) if (view.getUint8(i * 25 + 24) & 4) turboCount++;
               return { format: recording.format, turboCount };
             });
-            expect(flags).toEqual({ format: 'wwm.race-input/2', turboCount: 1 });
+            expect(flags).toEqual({
+              format: 'wwm.race-input/2',
+              turboCount: fixture.inputs.filter((input) => input.turbo).length,
+            });
             await page.reload();
             await page.getByTestId('race-ready').waitFor({ timeout: 30000 });
             expect(await page.evaluate(() => window.__wwmRace?.debugState().best?.id)).toBe(
@@ -274,10 +304,18 @@ run('Race stunt browser acceptance', () => {
       await page.keyboard.press('KeyT');
       await page.waitForFunction(() => (window.__wwmRace?.debugState().mechanics?.turboTicks ?? 0) > 0);
       expect(await page.getByTestId('race-turbo').isDisabled()).toBe(true);
+      const beforeTurn = await page.evaluate(() => window.__wwmRace?.debugState().ball?.pos);
+      await page.keyboard.down('ArrowRight');
+      await page.waitForTimeout(300);
+      await page.keyboard.up('ArrowRight');
+      const afterTurn = await page.evaluate(() => window.__wwmRace?.debugState().ball?.pos);
+      expect(Math.abs((afterTurn?.[2] ?? 0) - (beforeTurn?.[2] ?? 0))).toBeGreaterThan(0.05);
+      if (SHOTS) await page.screenshot({ path: join(SHOTS, 'stunts-keyboard-steering.png') });
       await page.keyboard.up('ArrowUp');
       await page.keyboard.press('Escape');
       await page.getByTestId('race-paused').waitFor();
       expect(errors).toEqual([]);
+      await context.close();
       const mobile = await browser.newContext({
         viewport: { width: 390, height: 844 },
         isMobile: true,
@@ -286,6 +324,7 @@ run('Race stunt browser acceptance', () => {
       });
       try {
         const narrow = await mobile.newPage();
+        narrow.on('pageerror', (error) => errors.push(error.message));
         await narrow.goto(`${BASE}/race/island-leap`);
         await narrow.getByTestId('race-ready').waitFor({ timeout: 30000 });
         expect(await narrow.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
@@ -302,4 +341,88 @@ run('Race stunt browser acceptance', () => {
       await browser.close();
     }
   }, 60000);
+  test('a weak launch lands on the lower catch and returns via ramps without a reset', async () => {
+    const fixture = JSON.parse(
+      readFileSync(
+        new URL('../../../fixtures/race/island-leap/recovery-inputs.json', import.meta.url),
+        'utf8',
+      ),
+    ) as { inputs: RaceInputSample[] };
+    const expected = JSON.parse(
+      readFileSync(
+        new URL('../../../fixtures/race/island-leap/recovery-validation.json', import.meta.url),
+        'utf8',
+      ),
+    );
+    const events = expected.events as { tick: number; events: { type: string; islandId?: number }[] }[];
+    const catchTick = events.find((event) =>
+      event.events.some((item) => item.type === 'island' && item.islandId === 7),
+    )?.tick;
+    const groundTick = events.find((event) =>
+      event.events.some((item) => item.type === 'island' && item.islandId === 4),
+    )?.tick;
+    expect(catchTick).toBeDefined();
+    expect(groundTick).toBeGreaterThan(catchTick ?? 0);
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({
+      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    });
+    const context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, locale: 'en-US' });
+    try {
+      await context.addInitScript(
+        (inputs) =>
+          Object.assign(window, {
+            __WWM_RACE_TEST__: {
+              inputs,
+              countdownSec: 0.01,
+              timeScale: 4,
+              noAutoPause: true,
+              quality: 'low',
+            },
+          }),
+        fixture.inputs,
+      );
+      const page = await context.newPage();
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.goto(`${BASE}/race/island-leap`);
+      await page.getByTestId('race-ready').waitFor({ timeout: 30000 });
+      await page.getByTestId('race-start').click();
+      for (const moment of [
+        { tick: (catchTick ?? 0) + 48, name: 'catch' },
+        { tick: (groundTick ?? 0) - 100, name: 'return-ramp' },
+      ]) {
+        await page.waitForFunction(
+          (tick) => {
+            if ((window.__wwmRace?.debugState().tick ?? 0) >= tick && window.__WWM_RACE_TEST__) {
+              window.__WWM_RACE_TEST__.timeScale = 0.001;
+              return true;
+            }
+            return false;
+          },
+          moment.tick,
+          { timeout: 60000 },
+        );
+        expect(await page.evaluate(() => window.__wwmRace?.debugState().progress.reasons)).toEqual([]);
+        if (SHOTS) {
+          mkdirSync(SHOTS, { recursive: true });
+          await page.screenshot({ path: join(SHOTS, `stunts-recovery-${moment.name}.png`) });
+        }
+        await page.evaluate(() => {
+          if (window.__WWM_RACE_TEST__) window.__WWM_RACE_TEST__.timeScale = 4;
+        });
+      }
+      await page.getByTestId('race-finished').waitFor({ timeout: 60000 });
+      const finished = await page.evaluate(() => window.__wwmRace?.debugState());
+      expect(finished?.progress).toEqual(expected.progress);
+      expect(finished?.result?.recording.recoveries).toEqual([]);
+      expect(finished?.mechanics?.launches).toBe(expected.mechanics.launches);
+      expect(finished?.mechanics?.landings).toBe(expected.mechanics.landings);
+      expect(finished?.newBest).toBe(true);
+      expect(errors).toEqual([]);
+    } finally {
+      await context.close();
+      await browser.close();
+    }
+  }, 90000);
 });

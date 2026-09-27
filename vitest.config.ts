@@ -5,6 +5,9 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   test: {
     projects: ['apps/*', 'packages/*', 'tools/*'],
+    // Browser, WASM and SSR suites share this pool. Keep simultaneous cold imports
+    // bounded so the default five-second assertions remain meaningful on local runs.
+    maxWorkers: 4,
     passWithNoTests: true,
   },
 });

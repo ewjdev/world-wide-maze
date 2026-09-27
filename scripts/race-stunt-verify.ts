@@ -14,6 +14,8 @@ import {
 } from '../packages/race/src/index.ts';
 import { PX_PER_METER, pointInPolygon } from '../packages/schema/src/index.ts';
 
+import { createRoutePolicy } from './race-stunt-policy.ts';
+
 const dir = resolve(import.meta.dirname, '../fixtures/race/island-leap');
 const course: RaceCourse = JSON.parse(await readFile(resolve(dir, 'course.json'), 'utf8'));
 const reports = [];
@@ -25,53 +27,13 @@ for (const route of ['safe', 'near', 'far'] as const) {
   const inputs: RaceInputSample[] = [];
   const trace: number[][] = [];
   const events: unknown[] = [];
-  let sent = false;
-  let waypoint = 0;
+  const policy = createRoutePolicy(course, route);
   let clearance = Infinity;
   let clearanceSamples = 0;
-  const targets = [
-    [890, 260],
-    [890, 590],
-    [1460, 590],
-    [1460, 260],
-    [1700, 260],
-  ];
   try {
     for (let tick = 1; tick <= 12000; tick++) {
       const before = sim.getBallState();
-      const px = before.pos[0] * PX_PER_METER;
-      let input: RaceInputSample = {
-        tiltX: 0,
-        tiltZ: 0.436,
-        frameYaw: -Math.PI / 2,
-        power: true,
-        jump: false,
-      };
-      if (route === 'safe' && px > 680) {
-        let target = targets[waypoint];
-        let dx = target[0] / PX_PER_METER - before.pos[0],
-          dz = target[1] / PX_PER_METER - before.pos[2];
-        const dist = Math.hypot(dx, dz);
-        if (dist < 0.4 && waypoint < targets.length - 1) {
-          waypoint++;
-          target = targets[waypoint];
-          dx = target[0] / PX_PER_METER - before.pos[0];
-          dz = target[1] / PX_PER_METER - before.pos[2];
-        }
-        const distance = Math.hypot(dx, dz) || 1;
-        const speed = Math.min(5, distance * 2);
-        const vx = (dx / distance) * speed,
-          vz = (dz / distance) * speed;
-        const ax = 4 * (vx - before.vel[0]) + 1.2 * vx,
-          az = 4 * (vz - before.vel[2]) + 1.2 * vz;
-        const tilt = (a: number) =>
-          Math.asin(Math.max(-Math.sin(0.436), Math.min(Math.sin(0.436), a / ((46.3 * 5) / 7))));
-        input = { tiltX: tilt(ax), tiltZ: tilt(-az), frameYaw: 0, power: true, jump: false };
-      }
-      if (route === 'far' && !sent && px > 1135) {
-        input.turbo = true;
-        sent = true;
-      }
+      const input = policy({ tick, ball: before, mechanics: sim.getMechanics() });
       inputs.push(input);
       recorder.record(input);
       const step = sim.step(input);
@@ -99,14 +61,15 @@ for (const route of ['safe', 'near', 'far'] as const) {
       }
       if (progress.finishTick) break;
       if (progress.reasons.length)
-        throw new Error(`${route} fell tick${tick} at${step.ball.pos} waypoint${waypoint}`);
+        throw new Error(`${route} fell tick${tick} at${step.ball.pos} ${JSON.stringify(events)}`);
     }
     if (!progress.finishTick)
       throw new Error(
         `${route} did notfinish ${JSON.stringify(progress)} ${JSON.stringify(sim.getBallState())}`,
       );
     const mechanics = sim.getMechanics();
-    if (route !== 'safe' && (mechanics.launches !== 1 || mechanics.landings !== 1))
+    const expectedJumps = route === 'near' ? 2 : route === 'far' ? 1 : 0;
+    if (mechanics.launches !== expectedJumps || mechanics.landings !== expectedJumps)
       throw new Error(`${route} failed launch/landing ${JSON.stringify(mechanics)}`);
     if (route === 'far' && (!clearanceSamples || clearance <= 0.5))
       throw new Error(`Far route did not physically clear near island ${clearance}`);
@@ -135,6 +98,7 @@ for (const route of ['safe', 'near', 'far'] as const) {
       minClearanceM: route === 'far' ? clearance : null,
       clearanceSamples: route === 'far' ? clearanceSamples : 0,
       replayVerified: true,
+      controller: { targetSpeedMps: 10, turboSpeedHeadroomMps: 26, turboAllowed: true },
       method:
         'Real fixed-step Rapier player inputs; ordered Race gates; identical-pose second-simulation replay. Automated feasibility, not human difficulty acceptance.',
     };

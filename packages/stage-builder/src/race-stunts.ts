@@ -21,18 +21,20 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
   const shapes = author.sections.map((s) =>
     terrain.shapes.find((shape) => pointInPolygon(s.center, shape.contour, shape.holes)),
   );
-  if (shapes.some((s) => !s) || new Set(shapes).size !== 6 || terrain.shapes.length !== 6)
-    throw new Error('Island Leap requires all six distinct captured HTML islands');
+  if (shapes.some((s) => !s) || new Set(shapes).size !== 8 || terrain.shapes.length !== 8)
+    throw new Error('Island Leap requires all eight distinct captured HTML islands');
   for (const section of author.sections)
     if (!section.elementIds.some((id) => input.capture.elements.some((e) => e.id === id)))
       throw new Error(`Missing DOM provenance: ${section.id}`);
-  const levels = [10, 11.5, 10, 10, 10, 10];
+  const levels = [10, 11, 10, 10, 10, 10, 10.5, 9];
   const specs: [number, number, Vec2, Vec2, number][] = [
-    [0, 1, [960, 260], [1095, 260], 54],
-    [2, 3, [1320, 260], [1360, 260], 40],
-    [0, 4, [890, 340], [890, 520], 44],
-    [4, 5, [1000, 590], [1320, 590], 44],
-    [5, 3, [1460, 520], [1460, 370], 44],
+    [0, 1, [920, 260], [1010, 260], 70],
+    [2, 6, [1230, 330], [1230, 380], 56],
+    [6, 5, [1230, 420], [1230, 480], 56],
+    [0, 4, [870, 340], [870, 410], 78],
+    [4, 5, [1110, 475], [1190, 505], 78],
+    [3, 5, [1360, 300], [1360, 480], 62],
+    [7, 4, [1130, 340], [1080, 404], 56],
   ];
   const bridges: Bridge[] = specs.map(([from, to, a, b, width], id) => ({
     id,
@@ -49,7 +51,10 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     if (!shape) throw new Error('Missing shape');
     const mouths = bridges.filter((b) => b.from === id || b.to === id).map((b) => deckBox(b, 4));
     // Flight corridor is explicitly rail-free; safe route and outer edges retain protection.
-    if (id === 1 || id === 2 || id === 3) mouths.push({ x0: 1080, x1: 1755, y0: 175, y1: 345 });
+    if (id === 1 || id === 2 || id === 3) mouths.push({ x0: 1000, x1: 1550, y0: 120, y1: 380 });
+    if (id === 4) mouths.push({ x0: 1040, x1: 1210, y0: 330, y1: 530 });
+    if (id === 5) mouths.push({ x0: 1090, x1: 1220, y0: 440, y1: 550 });
+    if (id === 6 || id === 7) mouths.push({ x0: 1080, x1: 1290, y0: 160, y1: 440 });
     return {
       id,
       contour: shape.contour,
@@ -69,9 +74,9 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     kind,
   });
   const gates = [
-    gate('choose-your-line', 800, 400, 300),
-    gate('routes-merge', 1530, 260, 110),
-    gate('finish', 1650, 260, 110, 'finish'),
+    gate('choose-your-line', 800, 320, 180),
+    { ...gate('routes-merge', 1375, 550, 170), normal: [0, 1] as [number, number] },
+    { ...gate('finish', 1375, 700, 170, 'finish'), normal: [0, 1] as [number, number] },
   ];
   const stunts = {
     version: 1 as const,
@@ -83,10 +88,22 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     launchPads: [
       {
         id: 'leap',
-        gate: { ...gate('launch-lip', 1150, 260, 29), center: pageToWorld([1150, 260], 12), halfHeight: 1 },
-        upSpeed: 18,
+        gate: { ...gate('launch-lip', 1070, 260, 29), center: pageToWorld([1070, 260], 11.5), halfHeight: 1 },
+        upSpeed: 23,
         minSpeed: 6,
         landingIslandIds: [2, 3],
+      },
+      {
+        id: 'near-hop',
+        gate: {
+          ...gate('near-hop-lip', 1230, 415, 38),
+          center: pageToWorld([1230, 415], 11),
+          normal: [0, 1] as [number, number],
+          halfHeight: 1,
+        },
+        upSpeed: 12,
+        minSpeed: 6,
+        landingIslandIds: [5],
       },
     ],
   };
@@ -119,7 +136,7 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     items: [],
     portals: [],
     start: { pos: [100, 260], islandId: 0 },
-    goal: { pos: [1700, 260], islandId: 3, radius: 12 },
+    goal: { pos: [1375, 715], islandId: 5, radius: 12 },
     provenance: {
       keptElementIds: author.sections.flatMap((s) => s.elementIds),
       dropped: [],
@@ -148,6 +165,6 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     generatorVersion: '1.1.0',
     seed: input.seed,
     provenance: { sourceHash: author.sourceHash, textureHash: author.textureHash },
-    validation: { valid: true, extractedIslands: 6 },
+    validation: { valid: true, extractedIslands: 8 },
   };
 }

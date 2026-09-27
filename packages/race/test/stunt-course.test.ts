@@ -52,10 +52,10 @@ describe('Island Leap actual physics routes', () => {
         }
         expect(progress).toEqual(expected.progress);
         expect(progress.reasons).toEqual([]);
-        expect(sim.getMechanics().launches).toBe(route === 'safe' ? 0 : 1);
-        expect(sim.getMechanics().landings).toBe(route === 'safe' ? 0 : 1);
+        expect(sim.getMechanics().launches).toBe(route === 'safe' ? 0 : route === 'near' ? 2 : 1);
+        expect(sim.getMechanics().landings).toBe(route === 'safe' ? 0 : route === 'near' ? 2 : 1);
         expect(inputs.some((i) => i.jump)).toBe(false);
-        expect(inputs.filter((i) => i.turbo)).toHaveLength(route === 'far' ? 1 : 0);
+        expect(inputs.filter((i) => i.turbo)).toHaveLength(1);
         if (route === 'far') {
           expect(touched.has(2)).toBe(false);
           expect(touched.has(3)).toBe(true);

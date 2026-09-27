@@ -1,12 +1,12 @@
 {
   "schema": "wwm.race-authoring/1",
   "title": "Island Leap",
-  "description": "Charge on the runway. Take the safe ramps, land nearby, or spend turbo to clear an island.",
+  "description": "Choose a flowing ground line, link short hops, or aim a long leap. Carry your exit speed through the final turn.",
   "sections": [
     {
       "id": "runway",
       "center": [
-        510,
+        490,
         260
       ],
       "elementIds": [
@@ -16,7 +16,7 @@
     {
       "id": "launch",
       "center": [
-        1125,
+        1045,
         260
       ],
       "elementIds": [
@@ -26,8 +26,8 @@
     {
       "id": "near",
       "center": [
-        1270,
-        260
+        1230,
+        275
       ],
       "elementIds": [
         2
@@ -36,8 +36,8 @@
     {
       "id": "far",
       "center": [
-        1550,
-        260
+        1420,
+        215
       ],
       "elementIds": [
         3
@@ -46,26 +46,48 @@
     {
       "id": "safe-west",
       "center": [
-        890,
-        590
+        975,
+        475
       ],
       "elementIds": [
-        4
+        4,
+        5
       ]
     },
     {
       "id": "safe-east",
       "center": [
-        1530,
-        590
+        1375,
+        615
       ],
       "elementIds": [
-        5
+        6,
+        7
+      ]
+    },
+    {
+      "id": "near-ramp",
+      "center": [
+        1230,
+        400
+      ],
+      "elementIds": [
+        8
+      ]
+    },
+    {
+      "id": "recovery",
+      "center": [
+        1130,
+        265
+      ],
+      "elementIds": [
+        9
       ]
     }
   ],
-  "sourceHash": "63d004679cd2c2a7b52eecc91c08dd59539b5e13b49d7467e4ae8cbcc30255f4",
-  "textureHash": "313263352ec21b5b633c142e42295060b5098e69e77552b9a12a0fe8729fdc8f",
+  "sourceHash": "eda8fe436e06ebff981877a198966c460cff0184b7c759898a366c4cadb30861",
+  "textureHash": "2359145ead0e29a336bab473c2b925e1be2a283021aaa747c64bb45f369352fa",
   "textureUrl": "/race/island-leap/texture.png",
   "descentPerBridge": 0.35,
   "bridgeWidthPx": 84

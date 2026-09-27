@@ -15,3 +15,7 @@ Desktop and 390 × 844 browser screenshots were reviewed, then one corrective pa
 The fourth course adds an amber launch-lip stripe, landing rings and dashed airborne routes in the actual-geometry preview. Its gameplay HUD adds one compact Turbo control with a charge meter, keyboard T label and brief launch/landing feedback. Ready instructions explain earning charge and automatic ramps; results count launches and clean landings. Baseline courses retain their previous screens.
 
 The phone keeps POWER and JUMP, with a separate full-width Turbo control above them. A compact tilt indicator and spacing preserve touch access on shorter screens. Desktop airborne, finish, mobile ready and phone captures were inspected, including confirmation that a held POWER control still transmits its binary input while the stunt HUD is present. Independent review found no material visual defects; physical-phone feel remains a hands-on gate.
+
+## Competing routes
+
+The revised Island Leap has eight captured islands. The far target is offset, the near route has a second rising ramp, and a lower catch island reconnects to the ground route. All routes turn through a common exit before the finish. Floor labels face the incoming approach; amber launch stripes remain above their actual decks. The ready copy now introduces route choice and the exit turn, with unchanged control names and charge rules. The visual language and HUD remain incumbent WWM; route balance is judged separately through bounded input simulations and user playtests.

@@ -1,0 +1,180 @@
+{
+  "courseId": "26c62767177702939c8147f1f5915fc43a234511916c9bcc1c52e0afb7d0b83b",
+  "progress": {
+    "tick": 2621,
+    "nextGate": 3,
+    "sectorTicks": [
+      654,
+      2199
+    ],
+    "finishTick": 2621,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 360,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboTicks": 0,
+    "launches": 1,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "events": [
+    {
+      "tick": 1,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 0
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        7.407447338104248,
+        10.507990837097168,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 532,
+      "events": [],
+      "mechanic": "charged",
+      "pos": [
+        47.473541259765625,
+        10.495115280151367,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 892,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 1
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        74.45333099365234,
+        11.45285701751709,
+        18.9654541015625
+      ]
+    },
+    {
+      "tick": 993,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        79.30648803710938,
+        11.498540878295898,
+        19.122547149658203
+      ]
+    },
+    {
+      "tick": 1112,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 7
+        },
+        {
+          "type": "landed",
+          "impact": 18.87327766418457
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        84.02070617675781,
+        9.41659164428711,
+        19.26955223083496
+      ]
+    },
+    {
+      "tick": 1133,
+      "events": [
+        {
+          "type": "landed",
+          "impact": 3.0152766704559326
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        83.94319152832031,
+        9.499984741210938,
+        19.347700119018555
+      ]
+    },
+    {
+      "tick": 1490,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 4
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        81.71815490722656,
+        10.341552734375,
+        29.943687438964844
+      ]
+    },
+    {
+      "tick": 1513,
+      "events": [
+        {
+          "type": "bump",
+          "impact": 1.2894045776917449
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        81.70645904541016,
+        10.47839641571045,
+        30.29865264892578
+      ]
+    },
+    {
+      "tick": 1989,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 5
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        87.91578674316406,
+        10.50308895111084,
+        38.20033264160156
+      ]
+    },
+    {
+      "tick": 2615,
+      "events": [
+        {
+          "type": "goal"
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        101.89483642578125,
+        10.49920654296875,
+        51.64280700683594
+      ]
+    }
+  ],
+  "touchedIslandIds": [
+    0,
+    1,
+    7,
+    4,
+    5
+  ],
+  "approachSpeedMps": 6,
+  "brakeAtPx": 900,
+  "replayVerified": true,
+  "resets": 0,
+  "method": "Weak launch, physical lower catch and connecting ramp, ordinary adaptive player inputs, ordered legal finish. Exact float32 pose replay in a second simulation. No reset, teleport, recovery event or physics injection."
+}

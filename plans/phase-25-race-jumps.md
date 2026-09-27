@@ -2,6 +2,8 @@
 
 Status: implemented experiment; browser/regression review recorded in `docs/build-log/phase-25-race-jumps.md`. Builds on committed Race baseline `50a1fc4` in the same isolated branch. No deployment authorized or performed.
 
+This document records the initial six-island experiment at `9796295`. [Phase 26](phase-26-race-route-balance.md) supersedes its course layout and route-balance evidence with an eight-island revision; the input and replay rules below remain unchanged.
+
 ## Accepted direction
 
 The user wants more difficult Race courses with smaller ramps, exposed edges, speed rewards, and ramps that launch the ball far enough to clear whole islands. The chosen first experiment combines one stored player-triggered turbo with automatic designated-ramp launches and modest clean-landing bursts. This is a Race extension; Original, Education and baseline Race courses retain their handling and compatible history.
