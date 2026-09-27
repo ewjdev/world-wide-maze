@@ -328,10 +328,11 @@ export function readEvidence(directory) {
     return existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : undefined;
   };
   return {
-    frames: read('frames'),
-    gpu: read('gpu'),
-    replay: read('replay'),
-    lifecycle: read('lifecycle'),
+    ...Object.fromEntries(
+      ['frames', 'gpu', 'replay', 'lifecycle', 'stall', 'cold', 'idle', 'ghost', 'learning', 'overhead'].map(
+        (mode) => [mode, read(mode)],
+      ),
+    ),
     cache: read('worker-tour'),
   };
 }

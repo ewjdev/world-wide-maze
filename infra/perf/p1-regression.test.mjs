@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import test from 'node:test';
 import { assetManifest, verifyServedBuild } from './p1-build.mjs';
 import { runtimeFingerprint } from './p1-fingerprint.mjs';
-import { compareEvidence } from './p1-regression.mjs';
+import { compareEvidence, readEvidence } from './p1-regression.mjs';
 
 function fixture() {
   const meta = {
@@ -240,6 +240,16 @@ test('viewport key order is immaterial but DPR differs', () => {
 });
 
 test('report-level page and GPU console errors fail every mode, including supplemental modes', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'wwm-perf-errors-'));
+  try {
+    writeFileSync(
+      join(directory, 'stall.json'),
+      JSON.stringify({ errors: [{ kind: 'consoleerror', message: 'GPU validation error' }] }),
+    );
+    assert.equal(compareEvidence(fixture(), { ...fixture(), ...readEvidence(directory) }).exitCode, 1);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
   for (const mode of ['frames', 'gpu', 'replay', 'lifecycle', 'stall', 'cold', 'idle', 'ghost', 'learning']) {
     const candidate = fixture();
     candidate[mode] ??= { runs: [] };
