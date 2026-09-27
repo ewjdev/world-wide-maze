@@ -30,6 +30,7 @@
 import { DurableObject } from 'cloudflare:workers';
 import { RttTracker, StreamStats } from '@wwm/net';
 import { decodeInput, ROOM_CLOSE_CODES, type RoomRole } from '@wwm/schema';
+import { controlsOn, releaseCost, reserveCost } from './budget-client.ts';
 import { hashRoomToken, roomTokenMatches } from './room-tokens.ts';
 
 export const ROOM_IDLE_EXPIRY_MS = 30 * 60 * 1000;
@@ -66,6 +67,8 @@ interface Meta {
   code: string;
   createdAt: number;
   lastActive: number;
+  budgetId?: string;
+  fundedUntil?: number;
   /** SHA-256 (base64url) of the tokens issued by `POST /api/rooms` (v0.2.7). */
   hostHash?: string;
   pairHash?: string;
@@ -78,6 +81,9 @@ export interface RoomTokens {
 interface Attachment {
   role: RoomRole;
   connectedAt: number;
+  fundedUntil: number;
+  endsAt: number;
+  lastPong: number;
   /** How the socket was admitted (diagnostics): with a token, or a typed code (controller only). */
   auth?: 'token' | 'code';
 }
@@ -86,6 +92,7 @@ interface Attachment {
 interface Tunables {
   ROOM_IDLE_EXPIRY_MS?: string;
   ROOM_KEEPALIVE_MS?: string;
+  ROOM_HEARTBEAT_TIMEOUT_MS?: string;
 }
 
 const other = (r: RoomRole): RoomRole => (r === 'host' ? 'controller' : 'host');
@@ -108,12 +115,15 @@ export class Room extends DurableObject<Env> {
   #lastActive = 0;
   readonly #idleMs: number;
   readonly #keepaliveMs: number;
+  readonly #heartbeatMs: number;
 
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
     const t = env as unknown as Tunables;
     this.#idleMs = Number(t.ROOM_IDLE_EXPIRY_MS) || ROOM_IDLE_EXPIRY_MS;
     this.#keepaliveMs = Number(t.ROOM_KEEPALIVE_MS) || KEEPALIVE_MS;
+    this.#heartbeatMs =
+      env.WWM_ENV === 'development' ? Number(t.ROOM_HEARTBEAT_TIMEOUT_MS) || 20_000 : 20_000;
   }
 
   #note(line: string): void {
@@ -138,7 +148,10 @@ export class Room extends DurableObject<Env> {
   }
 
   #expired(meta: Meta, now: number): boolean {
-    return this.ctx.getWebSockets().length === 0 && now - meta.lastActive >= this.#idleMs;
+    return (
+      now - meta.createdAt >= 30 * 60_000 ||
+      (this.ctx.getWebSockets().length === 0 && now - meta.lastActive >= this.#idleMs)
+    );
   }
 
   /** RPC: allocate this room for `code` with its tokens. False if it's already allocated and not expired. */
@@ -146,11 +159,24 @@ export class Room extends DurableObject<Env> {
     const now = Date.now();
     const meta = await this.#meta();
     if (meta && !this.#expired(meta, now)) return false;
+    // Absolute expiry can leave sockets awaiting their next alarm/frame. They belong to the old tokens.
+    for (const socket of this.#sockets()) socket.close(CLOSE_ROOM_NOT_FOUND, 'room expired');
+    if (meta?.budgetId) await releaseCost(this.env, meta.budgetId);
     const [hostHash, pairHash] = await Promise.all([
       hashRoomToken(tokens.hostToken),
       hashRoomToken(tokens.pairToken),
     ]);
-    await this.ctx.storage.put<Meta>('meta', { code, createdAt: now, lastActive: now, hostHash, pairHash });
+    const admission = await reserveCost(this.env, 'room', `room:${hostHash}`, 10);
+    if (!admission.ok) return false;
+    await this.ctx.storage.put<Meta>('meta', {
+      code,
+      createdAt: now,
+      lastActive: now,
+      hostHash,
+      pairHash,
+      budgetId: admission.id,
+      fundedUntil: admission.expires,
+    });
     await this.ctx.storage.setAlarm(now + this.#idleMs);
     this.#code = code;
     this.#note('claimed');
@@ -187,9 +213,18 @@ export class Room extends DurableObject<Env> {
       return refuse(CLOSE_UNAUTHORIZED, auth.reason);
     }
 
+    if (controlsOn(this.env) && (!meta.fundedUntil || now >= meta.fundedUntil))
+      return refuse(CLOSE_ROOM_NOT_FOUND, 'room budget expired; use keyboard or pair again');
     const previous = this.#sockets(role);
     this.ctx.acceptWebSocket(server, [role]);
-    server.serializeAttachment({ role, connectedAt: now, auth } satisfies Attachment);
+    server.serializeAttachment({
+      role,
+      connectedAt: now,
+      auth,
+      lastPong: now,
+      fundedUntil: meta.fundedUntil ?? now + 600_000,
+      endsAt: meta.createdAt + 30 * 60_000,
+    } satisfies Attachment);
     this.#lastSeen.set(server, now);
     this.#counts.connects++;
     for (const old of previous) {
@@ -274,6 +309,11 @@ export class Room extends DurableObject<Env> {
     const role = this.#roleOf(ws);
     if (!role) return;
     const now = Date.now();
+    const a = ws.deserializeAttachment() as Attachment;
+    if (!a.endsAt || now >= a.endsAt || (controlsOn(this.env) && (!a.fundedUntil || now >= a.fundedUntil))) {
+      ws.close(CLOSE_ROOM_NOT_FOUND, 'room time is up; use keyboard or pair again');
+      return;
+    }
     this.#lastActive = now;
     this.#lastSeen.set(ws, now);
     if (!this.#admit(ws, role, message, now)) return;
@@ -283,6 +323,8 @@ export class Room extends DurableObject<Env> {
         try {
           const m = JSON.parse(message) as { t?: string; id?: number; ts?: number };
           if (m.t === 'pong' && typeof m.id === 'number' && m.id < 0 && typeof m.ts === 'number') {
+            a.lastPong = now;
+            ws.serializeAttachment(a);
             this.#rtt[role].add(now - m.ts);
             return;
           }
@@ -392,7 +434,43 @@ export class Room extends DurableObject<Env> {
     const now = Date.now();
     const meta = await this.#meta();
     if (!meta) return;
-    const sockets = this.ctx.getWebSockets();
+    let sockets = this.#sockets();
+    if (now - meta.createdAt >= 30 * 60_000) {
+      for (const ws of sockets) ws.close(CLOSE_ROOM_NOT_FOUND, 'room time is up; use keyboard or pair again');
+      if (meta.budgetId) await releaseCost(this.env, meta.budgetId);
+      await this.ctx.storage.deleteAll();
+      return;
+    }
+    for (const ws of sockets) {
+      const a = ws.deserializeAttachment() as Attachment;
+      if (now - Math.max(this.#lastSeen.get(ws) ?? 0, a.lastPong ?? a.connectedAt) > this.#heartbeatMs)
+        ws.close(CLOSE_ROOM_NOT_FOUND, 'controller connection timed out');
+    }
+    sockets = this.#sockets();
+    if (sockets.length > 0 && controlsOn(this.env) && now >= (meta.fundedUntil ?? 0) - this.#keepaliveMs) {
+      const admission = await reserveCost(
+        this.env,
+        'room',
+        `room:${meta.hostHash}:${Math.floor(now / 600_000)}`,
+        10,
+        meta.budgetId,
+      );
+      if (!admission.ok) {
+        for (const ws of sockets) ws.close(CLOSE_ROOM_NOT_FOUND, 'phone control is resting; use keyboard');
+        if (meta.budgetId) await releaseCost(this.env, meta.budgetId);
+        await this.ctx.storage.deleteAll();
+        return;
+      }
+      if (meta.budgetId) await releaseCost(this.env, meta.budgetId);
+      meta.budgetId = admission.id;
+      meta.fundedUntil = admission.expires;
+      await this.ctx.storage.put('meta', meta);
+      for (const ws of sockets) {
+        const a = ws.deserializeAttachment() as Attachment;
+        a.fundedUntil = admission.expires;
+        ws.serializeAttachment(a);
+      }
+    }
     if (sockets.length > 0) {
       const ping = JSON.stringify({ t: 'ping', id: -((now % 2_000_000_000) + 1), ts: now });
       for (const ws of sockets) {
@@ -406,13 +484,13 @@ export class Room extends DurableObject<Env> {
       // Phase 12: log the relay health once a minute per live room, not on every keepalive (log volume).
       if (this.#keepalives++ % Math.max(1, Math.round(60_000 / this.#keepaliveMs)) === 0)
         this.#note(`keepalive ${this.#rttLine()}; input ${s.ratePerSec}/s lost=${s.lost} bursts=${s.bursts}`);
-      await this.ctx.storage.put<Meta>('meta', { ...meta, lastActive: Math.max(meta.lastActive, now) });
       await this.ctx.storage.setAlarm(now + this.#keepaliveMs);
       return;
     }
     const lastActive = Math.max(meta.lastActive, this.#lastActive);
     if (now - lastActive >= this.#idleMs) {
       this.#note('expired');
+      if (meta.budgetId) await releaseCost(this.env, meta.budgetId);
       await this.ctx.storage.deleteAll();
       return;
     }

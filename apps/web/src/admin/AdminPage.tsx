@@ -4,6 +4,7 @@ import '../pages/about/showcase.css';
 import './admin.css';
 import { adminApi, errorMessage } from './api.ts';
 import { CaptureAttempts } from './CaptureAttempts.tsx';
+import { CostControls } from './CostControls.tsx';
 import { JevSettings } from './JevSettings.tsx';
 import { PolicyRules } from './PolicyRules.tsx';
 
@@ -154,6 +155,7 @@ export default function AdminPage() {
           <h1>Administration</h1>
           <p>Manage Jev, review saved mazes, and control what can be shared.</p>
         </header>
+        <CostControls />
         <JevSettings />
         {notice && (
           <p className="admin-notice" role="status">

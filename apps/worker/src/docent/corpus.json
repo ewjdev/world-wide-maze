@@ -1,9 +1,10 @@
 {
   "format": 2,
-  "hash": "bd9d74aae24e860b",
+  "hash": "9b805af484ee8022",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
+    "docs/build-log/cost-controls.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
     "docs/build-log/phase-03.md",
@@ -240,6 +241,32 @@
       "url": "/log#analytics",
       "kind": "build-log",
       "text": "## Release follow-up\nPR #8 CI found the generated docent corpus stale because this build log was added after the local full check. Regenerated the committed index and ran the corpus consistency tests before resubmitting the release. The check is also present locally; this was an ordering omission, not a CI-only requirement.\n\n## Remaining release boundary\nThe branch is locally implemented and provider-validated. Production collection still requires deployment and a real production visit/readback. No physical phone tilt or full stage completion was manually exercised; lifecycle unit tests and the repository's replay tests cover those deterministic game transitions. Return metrics describe the opt-in cohort, not all people or cross-device identity. Browser blocking, sudden process termination and network loss can leave gaps."
+    },
+    {
+      "id": "docs/build-log/cost-controls.md",
+      "title": "Cost controls — September 27, 2026 · Delivered for review",
+      "path": "docs/build-log/cost-controls.md",
+      "url": "/log#cost-controls",
+      "kind": "build-log",
+      "text": "Eric approved a $50/month operating target and requested implementation in an isolated worktree with a PR. Base: `433943d` on main. Branch: `codex/cost-controls`. The original checkout and unrelated lesson/planning changes were preserved.\n\n## Delivered for review\nA persistent Budget Durable Object atomically accounts for admission using integer USD microdollars, UTC hour/day/month quotas, per-feature pools and concurrency leases. Paid work fails closed on missing/unavailable state. Conservative reservations are never automatically refunded. A fresh month requires operator reconciliation; no silent fresh allowance. Room renewals atomically replace their slot even at capacity, old jobs cannot start after their lease expires, and AI concurrency is shared across providers.\n\nThe guards cover hosted builds (including automatic/admin refresh), uploads, docent, automatic moderation, Jev provider calls, telemetry forwarding, replay/score submission, dynamic card generation, public API reads and R2 writes. Configured build/docent limits are lowered, AI retries are off, model/input/output sizes are bounded, browser keep-alive is ten seconds, routine logs are sampled at 10%, and preview public APIs are disabled. CLI voice generation needs an explicit character allowance and has no paid retries.\n\nOperator controls are in the existing Access-protected admin page. They show reserved spend, threshold state and counters, accept upward spend reconciliation/measured storage, pause services/features and attest to PostHog's billing limit. `$25` is a dashboard/log warning, `$35` pauses optional work, and `$40` stops further positive-cost admission. These are not external email alerts or invoice caps.\n\nRooms have funded ten-minute leases, an absolute 30-minute lifetime and inactive-connection cleanup. SSE watchers/backpressure/lifetime are bounded. Home/log metadata is served as static HTML; static practice uses bundled assets and keyboard controls without API requests. Artifact caching rechecks current moderation policy before every hit. Existing reference-aware retention runs six times/day; card scan cursors persist across ticks. Storage credits are conservative and manual; no blanket or destructive orphan/history cleanup was introduced."
+    },
+    {
+      "id": "docs/build-log/cost-controls.md#validation",
+      "title": "Cost controls — September 27, 2026 › Validation",
+      "path": "docs/build-log/cost-controls.md",
+      "anchor": "validation",
+      "url": "/log#cost-controls",
+      "kind": "build-log",
+      "text": "## Validation\n- `pnpm check`: 112 test files passed, 3 skipped; 1,343 tests passed, 32 skipped. Typechecking passed. Biome reports existing warnings/informational diagnostics, no errors. Earlier failures identified the changed static-route expectation, a missing Budget export in the solver probe, and a test-environment assumption; all corrected. A first overloaded parallel run also hit timing-sensitive tests; the successful full run passed them.\n- New real-workerd/SQLite tests: concurrent admissions cannot exceed two build slots or the $40 boundary; duplicate IDs cannot replay/refund; AI callers share slots; twenty occupied room slots can renew without opening a twenty-first; initialization/Access boundaries fail closed. Pure policy tests cover invalid units, daily/hourly/monthly limits, storage ceilings, UTC rollovers and feature/provider switches.\n- Real WebSocket integration: abandoned sockets close while relay pings continue. Production keeps a 20-second inactivity threshold; the test uses a development-only five-second override. No phone input cadence changed.\n- Catalog integration: normalized cache hits can serve an authorized artifact without another R2 read; subsequent domain blocks and review withdrawal still deny direct artifact URLs.\n- Production web build succeeded. Chromium loaded `/play/practice?offline=1&backend=webgl`, reached phase `play`, accepted keyboard input, emitted zero `/api/` requests and reported zero page errors. Render inspected locally. This is browser evidence, not physical-phone acceptance.\n- Deployment config validation passed for production and previews. Worker deployment dry-run succeeded; no deployment performed. Docent corpus regenerated and checked after documentation updates."
+    },
+    {
+      "id": "docs/build-log/cost-controls.md#live-inspection-and-uncompleted-provider-gates",
+      "title": "Cost controls — September 27, 2026 › Live inspection and uncompleted provider gates",
+      "path": "docs/build-log/cost-controls.md",
+      "anchor": "live-inspection-and-uncompleted-provider-gates",
+      "url": "/log#cost-controls",
+      "kind": "build-log",
+      "text": "## Live inspection and uncompleted provider gates\nRead-only inspection found production version `94b7a0cd-42db-4ee9-84ac-b40dcd324abb` on the baseline main commit. `ewj.dev` is an active Free Website zone. The current Wrangler OAuth session can read zone/deployment metadata, but AI Gateway configuration and both rate-limit/custom WAF ruleset reads returned 403. The Worker preview-list API returned an empty list; no previews were deleted. Production secret names confirm a gateway token and Typesafe key but do not prove the gateway's billing mode. No secret values were printed or committed, no billing limits were changed and no paid inference was exercised.\n\n[Operator procedure](../launch/cost-controls.md) gives the initialization, monthly reconciliation, shutdown/restore and rollback steps. [Execution checklist](../../plans/cost-controls-execution.md) retains exact owner dashboard steps for Gateway, actual AI payer, PostHog, Cloudflare budget notifications, edge protection and ElevenLabs. Deployment will intentionally pause dynamic service until initial reconciliation. Provider/WAF settings, a preview-inventory recheck at rollout, live billing reconciliation, populated production D1 cost measurements and production acceptance remain explicit rollout gates. Theoretical cleanup capacity (1,200 runs/day) is not measured production throughput.\n\nApplication admission cannot cap denied-request flood charges or the whole shared Cloudflare account. Do not describe the site as fully protected until provider settings and the edge block/restore rehearsal are verified. Merge/deployment and any production acceptance are separate from this PR delivery."
     },
     {
       "id": "docs/build-log/phase-01.md",

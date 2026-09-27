@@ -2,13 +2,14 @@
  * Builds the injected services from the Worker environment. The only place that reads `env.*` vars, so
  * routes, the job DO and tests all agree on configuration.
  */
+import { releaseCost, reserveCost } from './budget-client.ts';
 import { DEFAULT_HOOKS, defaultStageBuilder, type StageBuilder } from './builder.ts';
 import { BrowserRunCapturer } from './capture/browser-run.ts';
 import { HttpCapturer } from './capture/http-capturer.ts';
 import type { Capturer } from './capture/types.ts';
 import { ServiceError } from './errors.ts';
 import { createLogger, type Logger } from './log.ts';
-import { createModerator } from './moderation.ts';
+import { createModerator, pendingDecision } from './moderation.ts';
 import type { BrowserGate, PipelineDeps } from './pipeline.ts';
 import { createDohResolver, type DnsResolver } from './policy/dns.ts';
 import { type CheckUrlDeps, parseAllowHosts } from './policy/url-policy.ts';
@@ -33,9 +34,9 @@ export interface Settings {
 export function settings(env: Env): Settings {
   return {
     buildLimitPerHour: num(env.BUILD_LIMIT_PER_HOUR, 10),
-    globalBuildLimitPerHour: num(env.GLOBAL_BUILD_LIMIT_PER_HOUR, 600),
-    browserMaxConcurrency: num(env.BROWSER_MAX_CONCURRENCY, 2),
-    captureBudgetMs: num(env.CAPTURE_BUDGET_MS, 20_000),
+    globalBuildLimitPerHour: Math.min(60, num(env.GLOBAL_BUILD_LIMIT_PER_HOUR, 60)),
+    browserMaxConcurrency: Math.min(2, Math.max(1, num(env.BROWSER_MAX_CONCURRENCY, 2))),
+    captureBudgetMs: Math.min(20_000, Math.max(1, num(env.CAPTURE_BUDGET_MS, 20_000))),
     slice0BudgetMs: num(env.SLICE0_BUDGET_MS, 30_000),
     cacheTtlDays: num(env.CACHE_TTL_DAYS, 7),
     retentionDays: num(env.RETENTION_DAYS, 30),
@@ -99,12 +100,24 @@ export function createServices(env: Env, ctx: { jobId?: string; requestId?: stri
     isUrlBlocked: (url) => store.catalog.isUrlBlocked(url),
   };
   const builder = defaultStageBuilder();
+  const moderator = createModerator(env);
   const pipeline: PipelineDeps = {
     get capturer() {
       return createCapturer(env, policy, log);
     },
     builder,
-    moderate: createModerator(env),
+    moderate: async (input) => {
+      if (env.MODERATION_MODE !== 'auto') return moderator(input);
+      if (!/^claude-haiku-4-5(?:-20251001)?$/.test(env.MODERATION_MODEL))
+        return pendingDecision('unbudgeted_model');
+      const r = await reserveCost(env, 'moderation');
+      if (!r.ok) return pendingDecision('budget_exhausted');
+      try {
+        return await moderator(input);
+      } finally {
+        await releaseCost(env, r.id);
+      }
+    },
     isUrlBlocked: policy.isUrlBlocked,
     ...(DEFAULT_HOOKS.validatePlayable ? { validatePlayable: DEFAULT_HOOKS.validatePlayable } : {}),
     store,

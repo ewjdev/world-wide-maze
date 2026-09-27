@@ -78,6 +78,16 @@ describe('catalog serving boundaries (real workerd + D1/R2/KV)', { timeout: 30_0
       expect(res.headers.get('cache-control')).toContain('no-store');
     }
   });
+  test('normalized internal artifact cache avoids R2 and still requires authorization', async () => {
+    const path = `/api/stages/${stage.stageId}`;
+    await request(path);
+    const hit = await request(`${path}?cache-bust=ignored`);
+    expect(hit.headers.get('x-artifact-cache')).toBe('hit');
+    expect(hit.headers.get('cache-control')).toContain('no-store');
+    await env.STAGES.delete(`stages/${stage.stageId}.json`);
+    expect((await request(path)).status).toBe(200);
+    await env.STAGES.put(`stages/${stage.stageId}.json`, JSON.stringify(stage));
+  });
   test('domain block overrides a warm KV entry and every direct-ID surface', async () => {
     await catalog.setRule('domain', 'example.org', true, 'Fixture block', 'operator@example.org');
     expect((await post()).status).toBe(400);

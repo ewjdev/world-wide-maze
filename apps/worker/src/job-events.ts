@@ -42,20 +42,31 @@ export class JobEventHub {
 
   /** An SSE response: replay, then live events until a terminal one (or the client goes away). */
   stream(opts: { keepAliveMs?: number } = {}): Response {
+    if (this.listeners.size >= 4)
+      return new Response('Too many watchers', { status: 429, headers: { 'retry-after': '30' } });
     const { readable, writable } = new TransformStream<Uint8Array, Uint8Array>();
     const writer = writable.getWriter();
     const enc = new TextEncoder();
     let closed = false;
+    let lifetime: ReturnType<typeof setTimeout> | undefined;
+    let pending = 0;
     let ping: ReturnType<typeof setInterval> | undefined;
     const close = () => {
       if (closed) return;
       closed = true;
       clearInterval(ping);
+      clearTimeout(lifetime);
       this.listeners.delete(onEvent);
       writer.close().catch(() => {});
     };
     const write = (s: string) => {
-      if (!closed) writer.write(enc.encode(s)).catch(close);
+      if (closed) return;
+      if (++pending > 256) {
+        void writer.abort().catch(() => {});
+        close();
+        return;
+      }
+      writer.write(enc.encode(s)).then(() => pending--, close);
     };
     const onEvent: Listener = (e) => {
       write(sseFrame(e));
@@ -65,6 +76,10 @@ export class JobEventHub {
     for (const e of this.events) onEvent(e);
     if (!closed) {
       this.listeners.add(onEvent);
+      lifetime = setTimeout(() => {
+        void writer.abort().catch(() => {});
+        close();
+      }, 300_000);
       ping = setInterval(() => write(': keep-alive\n\n'), opts.keepAliveMs ?? 15_000);
     }
     return new Response(readable, { headers: SSE_HEADERS });

@@ -1,6 +1,7 @@
 /** Bounded, explicit first-party events. No third-party browser SDK, replay, or DOM autocapture. */
 import type { TelemetryContext, TelemetryEvent, TelemetryRecord } from '@wwm/schema';
 import { ANALYTICS_VERSION } from '@wwm/schema/constants';
+import { serviceFetch, servicesResting } from '../service-mode.ts';
 import { pageContext } from './context.ts';
 import {
   type AnalyticsPreference,
@@ -78,7 +79,7 @@ export function beaconSink(
   opts: { intervalMs?: number; maxQueue?: number; win?: Window; fetcher?: typeof fetch } = {},
 ): TelemetrySink {
   const win = opts.win ?? window;
-  const fetcher = opts.fetcher ?? fetch;
+  const fetcher = opts.fetcher ?? serviceFetch;
   let queue: TelemetryRecord[] = [];
   let timer: ReturnType<typeof setTimeout> | undefined;
   let disposed = false;
@@ -110,6 +111,7 @@ export function beaconSink(
     queue = [];
     const body = JSON.stringify({ events });
     // Keep batches comfortably below the browser's shared 64 KiB keepalive budget.
+    if (servicesResting()) return;
     if (leaving && win.navigator.sendBeacon?.(url, new Blob([body], { type: 'application/json' }))) return;
     void post(events);
   };

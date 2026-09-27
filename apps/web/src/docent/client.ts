@@ -3,6 +3,7 @@
  * read from the fetch body stream (EventSource can only GET). Frames: `event: <type>` + `data: <json>`.
  */
 import type { DocentEvent, DocentRequest } from '@wwm/schema';
+import { serviceFetch } from '../service-mode.ts';
 
 export class DocentHttpError extends Error {
   constructor(
@@ -44,7 +45,7 @@ export interface StreamOptions {
 }
 
 export async function streamDocent(req: DocentRequest, opts: StreamOptions): Promise<void> {
-  const f = opts.fetch ?? fetch;
+  const f = opts.fetch ?? serviceFetch;
   const res = await f(opts.endpoint ?? '/api/docent', {
     method: 'POST',
     headers: { 'content-type': 'application/json', accept: 'text/event-stream' },

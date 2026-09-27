@@ -23,7 +23,7 @@ import { type CoreOptions, captureWithBrowser } from './core.ts';
 import type { CaptureOutput, CaptureRequest, Capturer } from './types.ts';
 
 export interface BrowserRunOptions extends CoreOptions {
-  /** Session idle keep-alive (10 000–600 000 ms). Default 120 000. */
+  /** Session idle keep-alive (10 000–600 000 ms). Default 10 000. */
   keepAliveMs?: number;
   log?: (msg: string, fields?: Record<string, unknown>) => void;
 }
@@ -59,7 +59,7 @@ export class BrowserRunCapturer implements Capturer {
       // sessions() unavailable: fall through to a fresh session.
       this.opts.log?.('browser sessions unavailable', { error: String(e) });
     }
-    const { sessionId } = await acquire(this.binding, { keep_alive: this.opts.keepAliveMs ?? 120_000 });
+    const { sessionId } = await acquire(this.binding, { keep_alive: this.opts.keepAliveMs ?? 10_000 });
     this.opts.log?.('browser session acquired', { sessionId });
     return connect(this.binding, persistentSession(sessionId));
   }
