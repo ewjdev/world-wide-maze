@@ -260,6 +260,9 @@ export function localCaptureBuilder(inner: StageBuilder): StageBuilder {
 
 /** Storage for uploads: like a hosted capture, but never cached by URL (uploads are unlisted). */
 function unlistedStore(s: StageStore): StageStore {
+  const recordAttempt = s.recordAttempt?.bind(s);
+  const recordModeration = s.recordModeration?.bind(s);
+  const canPublishRun = s.canPublishRun?.bind(s);
   return {
     putCapture: (b, p) => s.putCapture(b, p),
     putTexture: (c, t) => s.putTexture(c, t),
@@ -268,15 +271,38 @@ function unlistedStore(s: StageStore): StageStore {
     finishRun: (r, i) => s.finishRun(r, i),
     cacheRun: async () => {},
     clearInflightJob: async () => {},
+    ...(recordAttempt ? { recordAttempt } : {}),
+    ...(recordModeration
+      ? { recordModeration: (input) => recordModeration({ ...input, cacheKey: null }) }
+      : {}),
+    ...(canPublishRun ? { canPublishRun } : {}),
   };
 }
 
 /** The server-side capture id: content-derived, so it can't collide with (or overwrite) another run. */
-async function uploadCaptureId(bundle: CaptureBundle, png: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', png as Uint8Array<ArrayBuffer>);
-  const imageHash = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+export async function uploadCaptureId(
+  bundle: CaptureBundle,
+  png: Uint8Array,
+  textures: SliceTexture[],
+): Promise<string> {
+  const digest = async (bytes: Uint8Array) => {
+    const hash = await crypto.subtle.digest('SHA-256', bytes as Uint8Array<ArrayBuffer>);
+    return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+  const textureHashes = await Promise.all(
+    textures.map(async ({ bytes, ...metadata }) => ({ ...metadata, hash: await digest(bytes) })),
+  );
+  // The claimed id cannot select storage keys or prevent identical-content deduplication.
+  const { captureId: _claimedCaptureId, ...captureMetadata } = bundle;
+  // Every input that can change rendered content participates in the identity.
   return sha256Hex(
-    `upload|${CONTRACT_VERSION.split('.')[0]}|${bundle.url}|${bundle.capturedAt}|${imageHash}`,
+    JSON.stringify([
+      'upload-v2',
+      CONTRACT_VERSION.split('.')[0],
+      captureMetadata,
+      await digest(png),
+      textureHashes,
+    ]),
   );
 }
 
@@ -309,6 +335,8 @@ uploadRoutes.post('/upload', async (c) => {
     throw e;
   }
 
+  if (await services.store.catalog.isUrlBlocked(up.bundle.url))
+    return errorResponse(new ServiceError('URL_FORBIDDEN', 'this page is unavailable'));
   const host = new URL(up.bundle.url).hostname;
   if (services.policy.isOptedOut && (await services.policy.isOptedOut(host)))
     return errorResponse(new ServiceError('URL_FORBIDDEN', 'this site has opted out of World Wide Maze'));
@@ -330,7 +358,7 @@ uploadRoutes.post('/upload', async (c) => {
       new ServiceError('RATE_LIMITED', 'the maze factory is busy; try again later', grl.retryAfterSec),
     );
 
-  const captureId = await uploadCaptureId(up.bundle, up.png);
+  const captureId = await uploadCaptureId(up.bundle, up.png, up.textures);
   const bundle: CaptureBundle = {
     ...up.bundle,
     captureId,
@@ -341,6 +369,7 @@ uploadRoutes.post('/upload', async (c) => {
     capturer: uploadCapturer({ ...up, bundle }),
     builder: localCaptureBuilder(pipeline.builder),
     moderate: pipeline.moderate,
+    ...(pipeline.isUrlBlocked ? { isUrlBlocked: pipeline.isUrlBlocked } : {}),
     ...(pipeline.validatePlayable ? { validatePlayable: pipeline.validatePlayable } : {}),
     store: unlistedStore(pipeline.store),
     log,

@@ -67,7 +67,9 @@ describe('POST /api/stages/upload (workerd)', { timeout: 30_000 }, () => {
   });
 
   beforeAll(async () => {
-    await server.update({ workers: [{ configPath, vars: { BUILD_LIMIT_PER_HOUR: '3' } }] });
+    await server.update({
+      workers: [{ configPath, vars: { BUILD_LIMIT_PER_HOUR: '3', MODERATION_MODE: 'test-allow' } }],
+    });
     await server.listen();
     await server.getWorker().applyD1Migrations('DB');
   }, 120_000);

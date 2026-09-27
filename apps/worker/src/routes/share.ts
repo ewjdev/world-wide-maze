@@ -75,7 +75,7 @@ const notFoundPage = () =>
     headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'public, max-age=60' },
   });
 
-const PAGE_CACHE = { 'cache-control': 'public, max-age=300' };
+const PAGE_CACHE = { 'cache-control': 'private, no-store' };
 const CARD_ALT_SUFFIX = 'World Wide Maze share card';
 
 // ── /s/:stageId (Phase 10) ─────────────────────────────────────────────────────────────────────────
@@ -174,14 +174,10 @@ async function spaWithMeta(c: { env: Env; req: { raw: Request } }, m: PageMeta):
   const headers = new Headers(res.headers);
   headers.delete('content-length');
   headers.delete('etag');
-  headers.set('cache-control', 'public, max-age=0, must-revalidate');
+  headers.set('cache-control', 'private, no-store');
   // Worker responses don't get `_headers`: the app's own policy (security.ts mirrors apps/web/public/_headers).
   for (const [k, v] of Object.entries(SPA_SECURITY_HEADERS)) headers.set(k, v);
   return new Response(html, { status: 200, headers });
-}
-
-async function passThrough(c: { env: Env; req: { raw: Request } }): Promise<Response | null> {
-  return c.env.ASSETS ? c.env.ASSETS.fetch(c.req.raw) : null;
 }
 
 shareRoutes.get('/j/:trail', async (c) => {
@@ -189,7 +185,7 @@ shareRoutes.get('/j/:trail', async (c) => {
   const origin = new URL(c.req.url).origin;
   const { success } = await c.env.READ_LIMITER.limit({ key: `read:${c.get('ip')}` });
   const src = success ? await loadJourneyCard(c.env, trail) : null;
-  if (!src) return (await passThrough(c)) ?? notFoundPage(); // the app shows its own "invalid link" state
+  if (!src) return notFoundPage(); // the app shows its own "invalid link" state
   const j = src.meta as { chain: string; stops: number; total: number | null; name: string | null };
   const m: PageMeta = {
     title: `${j.name ? `${j.name}’s` : 'A'} web journey: ${j.stops} sites turned into mazes`,
@@ -261,7 +257,7 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
   const url = new URL(c.req.url);
   const site = url.host;
   const { key, version } = await cardKey(src.data, site);
-  const cache = url.searchParams.get('v') === version ? IMMUTABLE : 'public, max-age=600';
+  const cache = kind === 'site' && url.searchParams.get('v') === version ? IMMUTABLE : 'private, no-store';
   const hit = await c.env.STAGES.get(key);
   if (hit)
     return new Response(hit.body, {
@@ -310,13 +306,17 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
 // (Phase 10) the curated hero shot, else the stage texture.
 shareRoutes.get('/api/share/:stageId/card', async (c) => {
   const stageId = c.req.param('stageId');
-  if (!HEX64.test(stageId)) return Response.json({ error: 'card not found' }, { status: 404 });
+  if (!HEX64.test(stageId) || !(await c.get('services').store.catalog.canServeStage(stageId)))
+    return Response.json(
+      { error: 'card not found' },
+      { status: 404, headers: { 'cache-control': 'no-store' } },
+    );
   const card = await c.env.STAGES.get(heroKey(stageId));
   if (card)
     return new Response(card.body, {
       headers: {
         'content-type': card.httpMetadata?.contentType ?? 'image/png',
-        'cache-control': 'public, max-age=86400',
+        'cache-control': 'private, no-store',
         etag: card.httpEtag,
       },
     });

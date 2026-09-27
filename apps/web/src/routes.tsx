@@ -90,6 +90,10 @@ const pageRoutes: RouteObject[] = [
     ? [{ path: '/dev/jev', lazy: async () => ({ Component: (await import('./jev/JevPage.tsx')).default }) }]
     : []),
   {
+    path: '/admin',
+    lazy: async () => ({ Component: (await import('./admin/AdminPage.tsx')).default }),
+  },
+  {
     path: '/privacy/analytics',
     lazy: async () => ({ Component: (await import('./pages/privacy/AnalyticsPrivacy.tsx')).default }),
   },

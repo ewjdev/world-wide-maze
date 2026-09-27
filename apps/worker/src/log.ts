@@ -9,6 +9,20 @@ export interface Logger {
   child(fields: Record<string, unknown>): Logger;
 }
 
+/** Captured URLs can carry credentials in query/path fields; never send them to Workers logs. */
+function redact(value: unknown): unknown {
+  if (typeof value === 'string') return value.replace(/https?:\/\/[^\s<>"']+/gi, '[redacted-url]');
+  if (Array.isArray(value)) return value.map(redact);
+  if (value && typeof value === 'object')
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        /^(text|title|prompt|body|content)$/i.test(key) ? '[redacted-content]' : redact(item),
+      ]),
+    );
+  return value;
+}
+
 export function createLogger(
   base: Record<string, unknown> = {},
   sink: (line: string, level: LogLevel) => void = (line, level) => {
@@ -18,7 +32,7 @@ export function createLogger(
   },
 ): Logger {
   const write = (level: LogLevel, msg: string, fields?: Record<string, unknown>) =>
-    sink(JSON.stringify({ level, msg, ...base, ...fields, t: new Date().toISOString() }), level);
+    sink(JSON.stringify(redact({ level, msg, ...base, ...fields, t: new Date().toISOString() })), level);
   return {
     debug: (m, f) => write('debug', m, f),
     info: (m, f) => write('info', m, f),

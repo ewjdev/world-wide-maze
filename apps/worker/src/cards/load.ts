@@ -5,6 +5,7 @@
  * Nothing here reads request parameters other than ids; every number on a card comes from D1.
  */
 import { parseStage, type StageData } from '@wwm/schema';
+import { Catalog } from '../catalog.ts';
 import { SHARE_ID_RE } from '../routes/scores.ts';
 import { stageArt } from './art.ts';
 import type { CardData, StageInfo } from './data.ts';
@@ -31,10 +32,10 @@ export interface CardSource {
 
 const noArt = async (): Promise<CardArt> => ({});
 
-type Db = Pick<Env, 'DB' | 'STAGES'>;
+type Db = Pick<Env, 'DB' | 'STAGES' | 'CACHE'>;
 
 async function loadStage(env: Db, stageId: string): Promise<StageData | null> {
-  if (!HEX64.test(stageId)) return null;
+  if (!HEX64.test(stageId) || !(await new Catalog(env).canServeStage(stageId))) return null;
   const obj = await env.STAGES.get(`stages/${stageId}.json`);
   return obj ? parseStage(await obj.json()) : null;
 }
@@ -198,6 +199,8 @@ export async function loadRunCard(env: Db, scoreId: string): Promise<CardSource 
     ids = [];
   }
   ids = ids.slice(0, 64);
+  if (!ids.length || !(await Promise.all(ids.map((id) => new Catalog(env).canServeStage(id)))).every(Boolean))
+    return null;
   const urls = new Map<string, string>();
   if (ids.length) {
     const { results } = await env.DB.prepare(
@@ -254,6 +257,11 @@ export async function loadJourneyCard(env: Db, trail: string): Promise<CardSourc
       const h = s.stageId ? real.get(s.stageId) : undefined;
       if (h) s.host = h;
     }
+  }
+  const policy = new Catalog(env);
+  for (const stop of t.stops) {
+    if (stop.stageId && !(await policy.canServeStage(stop.stageId))) return null;
+    if (await policy.isUrlBlocked(`https://${stop.host}/`)) return null;
   }
   const all = t.stops.map((s) => s.host);
   const { hosts, more } = drawnHosts(all);

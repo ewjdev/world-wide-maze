@@ -8,6 +8,7 @@ import '../ui/game.css';
 import './local.css';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
+import extensionPackage from '../../../extension/package.json';
 import { Icon } from '../ui/parts.tsx';
 import { bookmarkletHref } from './bookmarklet.ts';
 import { localStrings } from './strings.ts';
@@ -44,12 +45,27 @@ export default function MazifyPage() {
               <span className="wwm-way__tag">{s.extTag}</span>
             </div>
             <p className="wwm-way__body">{s.extBody}</p>
+            <div className="wwm-way__download">
+              <a
+                className="wwm-btn wwm-btn--hero"
+                href={`/downloads/wwm-maze-this-page-${extensionPackage.version}.zip`}
+                download
+                data-testid="extension-download"
+                aria-describedby="extension-install-note"
+              >
+                {s.extDownload}
+              </a>
+              <p className="wwm-way__note" id="extension-install-note">
+                v{extensionPackage.version} · {s.extInstallNote}
+              </p>
+            </div>
             <ol className="wwm-way__steps">
               {s.extSteps.map((step) => (
                 <li key={step}>{step}</li>
               ))}
             </ol>
             <p className="wwm-way__note">{s.extNote}</p>
+            <p className="wwm-way__note">{s.extUpdate}</p>
           </section>
 
           <section className="wwm-way wwm-way--bm" aria-labelledby="way-bm">
