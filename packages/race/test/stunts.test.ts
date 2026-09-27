@@ -184,10 +184,12 @@ test('real physics launches once, rewards distinct island landing, and replays e
     expect(track.progress).toEqual(progress);
     for (let i = 0; i < poses.length; i++)
       expect(Array.from(track.pos.slice(i * 3, i * 3 + 3))).toEqual(poses[i].map(Math.fround));
+    const savedCharges = sim.getMechanics().turboCharges;
     sim.reset();
     expect(sim.getMechanics()).toMatchObject({
       chargeTicks: 0,
-      ready: false,
+      turboCharges: savedCharges,
+      ready: savedCharges > 0,
       turboTicks: 0,
       launches: 1,
       landings: 1,
@@ -218,7 +220,7 @@ test('velocity delta changes velocity only and rejects nonfinite or excessive im
     sim.dispose();
   }
 });
-test('held turbo is edge triggered, recovery cancels charge, and retracing ground cannot farm momentum', async () => {
+test('held turbo is edge triggered and recovery retains the remaining stack', async () => {
   const c = course();
   c.stunts.launchPads = [];
   c.stage.islands[0].contour = [pt(0, 0), pt(400, 0), pt(400, 12), pt(0, 12)];
@@ -243,12 +245,15 @@ test('held turbo is edge triggered, recovery cancels charge, and retracing groun
       if (sim.getMechanics().lastEvent === 'turbo') turbos++;
     }
     expect(turbos).toBe(0); // no second trigger, even after recharging
-    const beforeRecoveryX = sim.getBallState().pos[0];
+    const before = sim.getMechanics();
+    sim.penalizeRecovery();
     sim.reset();
-    expect(sim.getMechanics()).toMatchObject({ ready: false, chargeTicks: 0, turboTicks: 0 });
-    for (let i = 0; i < 100; i++) sim.step(forward);
-    expect(sim.getBallState().pos[0]).toBeLessThan(beforeRecoveryX);
-    expect(sim.getMechanics().chargeTicks).toBe(0);
+    expect(sim.getMechanics()).toMatchObject({
+      turboCharges: before.turboCharges - 1,
+      lives: 2,
+      chargeTicks: 0,
+      turboTicks: 0,
+    });
   } finally {
     sim.dispose();
   }
@@ -273,7 +278,7 @@ test('landing on the launch island never awards a boost and a consumed pad canno
     sim.dispose();
   }
 });
-test('turbo preserves a banked charge when stopped or already above its speed cap', async () => {
+test('turbo preserves a banked charge above its cap and can be used from standstill', async () => {
   const c = course();
   c.stunts.launchPads = [];
   c.stunts.chargeTicks = 10;
@@ -291,8 +296,10 @@ test('turbo preserves a banked charge when stopped or already above its speed ca
     const neutral = { ...forward, tiltX: 0, power: false, turbo: false };
     for (let i = 0; i < 1200; i++) sim.step(neutral);
     expect(Math.hypot(sim.getBallState().vel[0], sim.getBallState().vel[2])).toBeLessThan(0.1);
+    const stored = sim.getMechanics().turboCharges;
     sim.step({ ...neutral, turbo: true });
-    expect(sim.getMechanics()).toMatchObject({ ready: true, turboTicks: 0 });
+    expect(sim.getMechanics()).toMatchObject({ turboCharges: stored - 1, turboTicks: 120 });
+    expect(sim.getBallState().vel[2]).toBeLessThan(-1);
   } finally {
     sim.dispose();
   }

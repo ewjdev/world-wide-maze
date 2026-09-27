@@ -48,6 +48,10 @@ run('Race browser acceptance (synthetic inputs)', () => {
         },
       });
     }, inputs);
+    await context.routeWebSocket(
+      (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+      () => {},
+    );
     page = await context.newPage();
     watch(page);
   });
@@ -59,7 +63,7 @@ run('Race browser acceptance (synthetic inputs)', () => {
   test('catalog, real finish, persistent personal best after reload, and non-colliding replay', async () => {
     await page.goto(`${BASE}/race`);
     await page.getByRole('heading', { name: 'Race your own shadow.' }).waitFor();
-    expect(await page.getByRole('button', { pressed: true }).textContent()).toContain('Flow Sprint');
+    await page.getByRole('button', { name: /Flow Sprint/ }).click();
     await page.getByRole('img', { name: 'Course map' }).waitFor();
     await shot(page, '01-catalog-desktop');
     await page.getByRole('link', { name: 'Race this course' }).click();
@@ -78,7 +82,9 @@ run('Race browser acceptance (synthetic inputs)', () => {
     expect(first?.newBest).toBe(true);
     expect(first?.comparisonBest).toBeNull();
     expect(await page.locator('.race-splits small').count()).toBe(0);
-    expect(await page.getByTestId('race-result-time').textContent()).toBe('0:47.241');
+    expect(await page.getByTestId('race-result-time').textContent()).toBe(
+      `${Math.floor(expected.finishTick / 7200)}:${String(Math.floor(expected.finishTick / 120) % 60).padStart(2, '0')}.${String(Math.floor((expected.finishTick * 1000) / 120) % 1000).padStart(3, '0')}`,
+    );
     await expect.poll(async () => (await debug())?.recent.length, { timeout: 10000 }).toBe(1);
     const firstId = first?.result?.id;
     expect(firstId).toBeTruthy();

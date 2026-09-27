@@ -1,0 +1,45 @@
+{
+  "courseId": "3bdc270a029d088a09d5aadf268396a2d906771be7788b9d0bb6d4d8115bcc1a",
+  "route": "solver",
+  "url": "http://127.0.0.1:5214/race/switchback",
+  "progress": {
+    "tick": 3922,
+    "nextGate": 9,
+    "sectorTicks": [
+      354,
+      815,
+      1254,
+      1711,
+      2157,
+      2614,
+      3250,
+      3671
+    ],
+    "finishTick": 3922,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "ready": false,
+    "turboCharges": 0,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/solver-ready.png",
+    "screenshots/solver-midrun.png",
+    "screenshots/solver-feature.png",
+    "screenshots/solver-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "low"
+}

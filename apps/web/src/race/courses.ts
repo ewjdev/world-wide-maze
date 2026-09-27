@@ -1,5 +1,6 @@
 import { type RaceCourse, validateGates, validateStunts } from '@wwm/race';
 import { parseStage, validateStage } from '@wwm/schema';
+import { MAZE_COURSES } from './maze-catalog.ts';
 
 export interface RaceCourseSummary {
   slug: string;
@@ -13,9 +14,10 @@ export interface RaceCourseSummary {
 
 /** Immutable build outputs; a retry never recaptures the HTML or chooses another seed. */
 export const RACE_COURSES: readonly RaceCourseSummary[] = [
+  ...MAZE_COURSES,
   {
     slug: 'flow-sprint',
-    courseId: 'f46a6d44a8bb4ebb1339bed466646c529a013d1a211d34cc41b3e6e05cffa888',
+    courseId: '43b1aaf3c6436c208d0d671bf11c7d0f0a429a8efa73d938101c0880c29a7db6',
     title: 'Flow Sprint',
     description: 'Broad turns and a gentle descent. Find your rhythm.',
     islands: 9,
@@ -24,7 +26,7 @@ export const RACE_COURSES: readonly RaceCourseSummary[] = [
   },
   {
     slug: 'switchback',
-    courseId: 'd1a4aed6fcfa065f5c0ca97f6753246f409d0b3b0fb9c876831fd981be8d6aff',
+    courseId: '3bdc270a029d088a09d5aadf268396a2d906771be7788b9d0bb6d4d8115bcc1a',
     title: 'Switchback',
     description: 'An alternating rhythm of descents and measured turns.',
     islands: 9,
@@ -33,16 +35,16 @@ export const RACE_COURSES: readonly RaceCourseSummary[] = [
   },
   {
     slug: 'longline',
-    courseId: '80ba08d1baee2f289fd2c24fcbd7f7f2ba7ccd97f54c91e17441e9d1bc2108dd',
+    courseId: '801c9a633b58af0e42e75c1f06326393cddd157959a1a106186c0d70c6c45e2f',
     title: 'Longline',
-    description: 'Long approaches, open islands, and a precise return.',
+    description: 'Linked turns, one open straight, and a precise return.',
     islands: 8,
     previewUrl: '/race/longline/texture.png',
     courseUrl: '/race/longline/course.json',
   },
   {
     slug: 'island-leap',
-    courseId: '26c62767177702939c8147f1f5915fc43a234511916c9bcc1c52e0afb7d0b83b',
+    courseId: 'bbe4412705eb67bfeb76825f1942811f477575e92a9fdf0adde077d247453634',
     title: 'Island Leap',
     description: 'Ground flow, short hops, or a long leap. Carry your speed through the exit turn.',
     islands: 8,

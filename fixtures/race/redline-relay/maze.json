@@ -1,0 +1,384 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "redline-relay",
+  "number": 10,
+  "name": "Redline Relay",
+  "tier": "10 \u00b7 Mastery combination",
+  "width": "2.6\u20134 ball widths; broad release zones",
+  "skill": "Charge planning + aimed hops + precision exits",
+  "tech": "Current straight-ramp motion; new authoring and rail policy; \u226534px connectors",
+  "beats": [
+    12,
+    18,
+    16,
+    14
+  ],
+  "phase": [
+    "Earn and preserve",
+    "Aim the first transfer",
+    "Commit or recover",
+    "Precision final sequence"
+  ],
+  "nodes": {
+    "S": [
+      40,
+      100
+    ],
+    "A": [
+      52,
+      100
+    ],
+    "G1": [
+      105,
+      85
+    ],
+    "B": [
+      119,
+      70
+    ],
+    "C": [
+      119,
+      51
+    ],
+    "G2": [
+      105,
+      37
+    ],
+    "D": [
+      83,
+      34
+    ],
+    "E": [
+      62,
+      33
+    ],
+    "G3": [
+      52,
+      15
+    ],
+    "H": [
+      88,
+      15
+    ],
+    "F": [
+      130,
+      15
+    ],
+    "T": [
+      110,
+      60
+    ],
+    "J": [
+      75,
+      26
+    ],
+    "K": [
+      110,
+      26
+    ],
+    "R": [
+      55,
+      51
+    ],
+    "U": [
+      99,
+      5
+    ],
+    "V": [
+      119,
+      5
+    ],
+    "P": [
+      60,
+      85
+    ],
+    "JL1": [
+      109.75515948670747,
+      78.67727311578435
+    ],
+    "JT1": [
+      112.24560565704022,
+      66.22506544594118
+    ],
+    "JL2": [
+      105.34726087968403,
+      54.721332942519716
+    ],
+    "JT2": [
+      102.6515166010393,
+      42.32096026075752
+    ],
+    "JL3": [
+      95.82146697092605,
+      29.681686814130018
+    ],
+    "JT3": [
+      84.82535774055697,
+      25.64978936905465
+    ],
+    "JL4": [
+      66.72605825154962,
+      26.132003578126664
+    ],
+    "JT4": [
+      56.09638279416254,
+      21.048253813922123
+    ],
+    "JL5": [
+      93.03747557593474,
+      21.63795300623683
+    ],
+    "JT5": [
+      103.58944533615642,
+      26.913949477257
+    ],
+    "JL6": [
+      114.00327166823344,
+      19.605566124662218
+    ],
+    "JT6": [
+      124.37050482746764,
+      13.903604114355387
+    ],
+    "W2_1": [
+      75,
+      85
+    ],
+    "W2_2": [
+      90,
+      85
+    ],
+    "W9_1": [
+      70.0,
+      15.0
+    ]
+  },
+  "routes": [
+    [
+      "Ground start / ground middle / ledge finish",
+      "S A P W2_1 W2_2 G1 B C G2 D E G3 W9_1 H U V F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Ground start / ground middle / final hops",
+      "S A P W2_1 W2_2 G1 B C G2 D E G3 W9_1 H JL5 JT5 K JL6 JT6 F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Ground start / late hop / ledge finish",
+      "S A P W2_1 W2_2 G1 B C G2 JL3 JT3 J JL4 JT4 G3 W9_1 H U V F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Ground start / late hop / final hops",
+      "S A P W2_1 W2_2 G1 B C G2 JL3 JT3 J JL4 JT4 G3 W9_1 H JL5 JT5 K JL6 JT6 F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Early hop / ground middle / ledge finish",
+      "S A P W2_1 W2_2 G1 JL1 JT1 T JL2 JT2 G2 D E G3 W9_1 H U V F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Early hop / ground middle / final hops",
+      "S A P W2_1 W2_2 G1 JL1 JT1 T JL2 JT2 G2 D E G3 W9_1 H JL5 JT5 K JL6 JT6 F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Early hop / late hop / ledge finish",
+      "S A P W2_1 W2_2 G1 JL1 JT1 T JL2 JT2 G2 JL3 JT3 J JL4 JT4 G3 W9_1 H U V F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ],
+    [
+      "Early hop / late hop / final hops",
+      "S A P W2_1 W2_2 G1 JL1 JT1 T JL2 JT2 G2 JL3 JT3 J JL4 JT4 G3 W9_1 H JL5 JT5 K JL6 JT6 F",
+      "Independent route choices; stored charge and exit speed must be compared across the entire run."
+    ]
+  ],
+  "tight": [
+    "A G1"
+  ],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2",
+    "JL3 JT3",
+    "JL4 JT4",
+    "JL5 JT5",
+    "JL6 JT6"
+  ],
+  "catch": [
+    "J R",
+    "R E"
+  ],
+  "danger": "Six optional aimed launches compete with narrow ground transfers. All eight choices need ordered gates; clean controlled runs are approximately one minute.",
+  "largePads": [
+    "T",
+    "J",
+    "G3",
+    "K"
+  ],
+  "gateNormals": {
+    "G1": [
+      1,
+      0
+    ],
+    "G2": [
+      -0.7071,
+      -0.7071
+    ],
+    "G3": [
+      -0.7071,
+      -0.7071
+    ],
+    "F": [
+      1,
+      0
+    ]
+  },
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "C": 10,
+    "G2": 10,
+    "D": 10,
+    "E": 10,
+    "G3": 10,
+    "H": 10,
+    "F": 10,
+    "T": 10,
+    "J": 10,
+    "K": 10,
+    "R": 8,
+    "U": 10,
+    "V": 10,
+    "P": 10,
+    "JL1": 10,
+    "JT1": 10,
+    "JL2": 10,
+    "JT2": 10,
+    "JL3": 10,
+    "JT3": 10,
+    "JL4": 10,
+    "JT4": 10,
+    "JL5": 10,
+    "JT5": 10,
+    "JL6": 10,
+    "JT6": 10,
+    "W2_1": 10.0,
+    "W2_2": 10.0,
+    "W9_1": 10.0
+  },
+  "reviewStatus": "Playable 3D; eight exact physics replays passed; browser verification in progress",
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 37,
+  "targetSpeed": 9,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "JL1": 42,
+    "JT1": 60,
+    "JL2": 42,
+    "JT2": 60,
+    "JL3": 42,
+    "JT3": 60,
+    "JL4": 42,
+    "JT4": 60,
+    "JL5": 42,
+    "JT5": 60,
+    "JL6": 42,
+    "JT6": 60,
+    "W2_1": 55,
+    "W2_2": 55,
+    "W9_1": 55
+  },
+  "edgeControls": {
+    "S A": [
+      46,
+      104
+    ],
+    "A P": [
+      61,
+      96
+    ],
+    "P W2_1": [
+      67.5,
+      90
+    ],
+    "W2_1 W2_2": [
+      82.5,
+      80
+    ],
+    "G1 B": [
+      116.22727,
+      82.274
+    ],
+    "B C": [
+      124.35455,
+      60.5
+    ],
+    "C G2": [
+      115.94545,
+      39.226
+    ],
+    "G2 D": [
+      93.21711,
+      42.44682
+    ],
+    "D E": [
+      72.22478,
+      40.493449999999996
+    ],
+    "E G3": [
+      51.92727,
+      27.41
+    ],
+    "G3 W9_1": [
+      61.0,
+      8.861999999999998
+    ],
+    "W9_1 H": [
+      79.0,
+      8.862
+    ],
+    "H U": [
+      96.31818,
+      13.751
+    ],
+    "U V": [
+      109.0,
+      11.82
+    ],
+    "V F": [
+      127.31818,
+      6.2490000000000006
+    ],
+    "G2 JL3": [
+      98,
+      37
+    ],
+    "JT3 J": [
+      79,
+      22
+    ],
+    "W2_2 G1": [
+      97.5,
+      80
+    ],
+    "R E": [
+      50,
+      38
+    ]
+  },
+  "longStraightEdges": [
+    "P G1"
+  ],
+  "upSpeed": 14
+}

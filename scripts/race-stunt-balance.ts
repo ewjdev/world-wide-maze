@@ -382,6 +382,9 @@ export function createCatchPolicy(
     [1130, 325],
     [1080, 450],
     [1060, 470],
+    [1100, 475],
+    [1140, 518],
+    [1195, 510],
     [1250, 535],
     [1375, 595],
     [1375, 730],
@@ -551,7 +554,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   // Policy module is authored alongside course verification so all routes share the same controller.
   const { createRoutePolicy } = await import('./race-stunt-policy.ts');
   const report = await runBalanceMatrix(course, (route, turbo) => {
-    const policy = createRoutePolicy(course, route, { targetSpeed: 10, turbo });
+    const policy = createRoutePolicy(course, route, { targetSpeed: 11, turbo });
     return (tick, ball, mechanics) => policy({ tick, ball, mechanics });
   });
   const speedProfiles = [];
@@ -583,7 +586,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         replayVerified: recoveryProof.replayVerified,
       },
     },
-    baselineTargetSpeedMps: 10,
+    baselineTargetSpeedMps: 11,
     profileInterpretation:
       'Target speed is the closed-loop controller setting after its initial full-input cruise; it is not a clamped physical speed or a guaranteed launch entry speed. Each route uses the same setting and permits the same 26m/s turbo headroom. Baseline and alternate profiles use identical geometry.',
     sourceHashes: {

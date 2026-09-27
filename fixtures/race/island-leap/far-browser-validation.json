@@ -1,0 +1,39 @@
+{
+  "courseId": "bbe4412705eb67bfeb76825f1942811f477575e92a9fdf0adde077d247453634",
+  "route": "far",
+  "url": "http://127.0.0.1:5214/race/island-leap",
+  "progress": {
+    "tick": 1548,
+    "nextGate": 3,
+    "sectorTicks": [
+      654,
+      1404
+    ],
+    "finishTick": 1548,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 33,
+    "chargeRequired": 360,
+    "ready": false,
+    "turboCharges": 0,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 1,
+    "landings": 1,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/far-ready.png",
+    "screenshots/far-midrun.png",
+    "screenshots/far-feature.png",
+    "screenshots/far-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "low"
+}

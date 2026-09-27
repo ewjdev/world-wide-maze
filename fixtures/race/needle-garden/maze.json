@@ -1,0 +1,297 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "needle-garden",
+  "number": 9,
+  "name": "Needle Garden",
+  "tier": "9 \u00b7 Precision sequence",
+  "width": "2.6\u20133.5 ball diameters; broad braking / landing decks",
+  "skill": "Slow precision + fast transfer + accurate landing",
+  "tech": "Use \u226534px authored connectors; 2.6D planning minimum",
+  "beats": [
+    12,
+    18,
+    16,
+    14
+  ],
+  "phase": [
+    "Settle the ball",
+    "Precision islands",
+    "Single transfer",
+    "Brake, narrow exit"
+  ],
+  "nodes": {
+    "S": [
+      8,
+      142
+    ],
+    "A": [
+      28,
+      100
+    ],
+    "G1": [
+      49,
+      76
+    ],
+    "B": [
+      67,
+      71
+    ],
+    "C": [
+      75,
+      59
+    ],
+    "G2": [
+      69,
+      50
+    ],
+    "D": [
+      55,
+      44
+    ],
+    "E": [
+      49,
+      32
+    ],
+    "G3": [
+      55,
+      20
+    ],
+    "H": [
+      79,
+      31
+    ],
+    "F": [
+      130,
+      4
+    ],
+    "P": [
+      59,
+      63
+    ],
+    "R": [
+      62,
+      35
+    ],
+    "U": [
+      8,
+      115
+    ],
+    "V": [
+      29,
+      120
+    ],
+    "JL1": [
+      67.31622704583977,
+      38.18043851478218
+    ],
+    "JT1": [
+      62.02291429453525,
+      26.837622164584428
+    ],
+    "W0_1": [
+      8,
+      128.5
+    ],
+    "W3_1": [
+      38.5,
+      88.0
+    ],
+    "W10_1": [
+      67.0,
+      25.5
+    ],
+    "W11_1": [
+      96,
+      22
+    ],
+    "W11_2": [
+      113,
+      13
+    ]
+  },
+  "routes": [
+    [
+      "Outer precision",
+      "S W0_1 U V A W3_1 G1 B C G2 D E G3 W10_1 H W11_1 W11_2 F",
+      "Wider approach to precision islands; brake before entering."
+    ],
+    [
+      "Needle cut",
+      "S W0_1 U V A W3_1 G1 P G2 D E G3 W10_1 H W11_1 W11_2 F",
+      "Short connector with little lateral correction room."
+    ],
+    [
+      "Transfer jump",
+      "S W0_1 U V A W3_1 G1 B C G2 JL1 JT1 G3 W10_1 H W11_1 W11_2 F",
+      "One angled transfer; brake on broad G3 before entering the narrow final ground section."
+    ],
+    [
+      "Needle + transfer",
+      "S W0_1 U V A W3_1 G1 P G2 JL1 JT1 G3 W10_1 H W11_1 W11_2 F",
+      "Combine the narrow needle cut with the aligned transfer. Stored turbo is optional; the launch does not require a boost."
+    ]
+  ],
+  "tight": [],
+  "jumps": [
+    "JL1 JT1"
+  ],
+  "catch": [
+    "G2 R",
+    "R E"
+  ],
+  "danger": "Direct transfer replaces the reversing hop pair. Narrow sections start after the broad G3 braking area.",
+  "largePads": [
+    "G2",
+    "G3"
+  ],
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "C": 10,
+    "G2": 10,
+    "D": 10,
+    "E": 10,
+    "G3": 10,
+    "H": 10,
+    "F": 10,
+    "P": 10,
+    "R": 8,
+    "U": 10,
+    "V": 10,
+    "JL1": 10,
+    "JT1": 10,
+    "W0_1": 10.0,
+    "W3_1": 10.0,
+    "W10_1": 10.0,
+    "W11_1": 10.0,
+    "W11_2": 10.0
+  },
+  "reviewStatus": "Playable; controlled routes and browser replay verified; human balance pending",
+  "gateNormals": {
+    "G1": [
+      0.9615239476408232,
+      -0.27472112789737807
+    ],
+    "G2": [
+      -0.18954257397021398,
+      -0.9818725032572945
+    ],
+    "G3": [
+      0,
+      -1
+    ],
+    "F": [
+      0.91481,
+      -0.40387
+    ]
+  },
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 42,
+  "targetSpeed": 9,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "R": 45,
+    "JL1": 42,
+    "JT1": 60,
+    "W0_1": 55,
+    "W3_1": 55,
+    "W10_1": 55,
+    "W11_1": 55,
+    "W11_2": 55
+  },
+  "edgeControls": {
+    "S W0_1": [
+      12,
+      135.25
+    ],
+    "W0_1 U": [
+      4,
+      121.75
+    ],
+    "U V": [
+      17.15376,
+      124.34157
+    ],
+    "V A": [
+      34.13636,
+      109.659
+    ],
+    "A W3_1": [
+      36.63182,
+      97.5805
+    ],
+    "W3_1 G1": [
+      40.36818,
+      78.4195
+    ],
+    "G1 B": [
+      59.40909,
+      79.638
+    ],
+    "B C": [
+      74.38182,
+      67.728
+    ],
+    "G2 D": [
+      63.69091,
+      42.226
+    ],
+    "D E": [
+      55.38182,
+      35.954
+    ],
+    "E G3": [
+      55.38182,
+      28.046
+    ],
+    "G3 W10_1": [
+      62.55,
+      18.658
+    ],
+    "W10_1 H": [
+      74.55,
+      24.158
+    ],
+    "H W11_1": [
+      89,
+      31
+    ],
+    "W11_1 W11_2": [
+      102,
+      12
+    ],
+    "G1 P": [
+      57.66364,
+      72.91
+    ],
+    "P G2": [
+      67.66364,
+      59.91
+    ],
+    "C G2": [
+      78,
+      49
+    ],
+    "G2 JL1": [
+      74,
+      45
+    ],
+    "JT1 G3": [
+      55,
+      30
+    ]
+  },
+  "longStraightEdges": [
+    "H F"
+  ],
+  "upSpeed": 14
+}

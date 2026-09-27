@@ -1,0 +1,385 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "twin-canyons",
+  "number": 4,
+  "name": "Twin Canyons",
+  "tier": "4 \u00b7 Spend or save",
+  "width": "3.5\u20135 ball widths",
+  "skill": "Two consecutive boost decisions",
+  "tech": "Current rules allow both hops; spend/save trade-off is unproven",
+  "beats": [
+    12,
+    16,
+    16,
+    16
+  ],
+  "phase": [
+    "Build charge",
+    "First canyon",
+    "Second canyon",
+    "Merge and finish"
+  ],
+  "nodes": {
+    "S": [
+      50,
+      93
+    ],
+    "A": [
+      50,
+      82
+    ],
+    "G1": [
+      50,
+      70
+    ],
+    "L": [
+      45,
+      68
+    ],
+    "M": [
+      45,
+      45
+    ],
+    "G2": [
+      50,
+      44
+    ],
+    "N": [
+      55,
+      44
+    ],
+    "O": [
+      55,
+      24
+    ],
+    "G3": [
+      50,
+      17
+    ],
+    "F": [
+      88,
+      9
+    ],
+    "J": [
+      53,
+      58
+    ],
+    "K": [
+      47,
+      30
+    ],
+    "R": [
+      46,
+      49
+    ],
+    "JL1": [
+      51.08009,
+      65.67963
+    ],
+    "JT1": [
+      51.91991,
+      62.32037
+    ],
+    "JL2": [
+      51.86064,
+      52.68297
+    ],
+    "JT2": [
+      51.13936,
+      49.31703
+    ],
+    "JL3": [
+      48.86064,
+      38.68297
+    ],
+    "JT3": [
+      48.13936,
+      35.31703
+    ],
+    "JL4": [
+      48.11196,
+      25.18149
+    ],
+    "JT4": [
+      48.88804,
+      21.81851
+    ],
+    "W0_1": [
+      50.0,
+      87.5
+    ],
+    "W1_1": [
+      50.0,
+      76.0
+    ],
+    "W3_1": [
+      45.0,
+      60.33333
+    ],
+    "W3_2": [
+      45.0,
+      52.66667
+    ],
+    "W11_1": [
+      62.66667,
+      14.33333
+    ],
+    "W11_2": [
+      75.33333,
+      11.66667
+    ],
+    "W19_1": [
+      55.0,
+      37.33333
+    ],
+    "W19_2": [
+      55.0,
+      30.66667
+    ],
+    "RC1": [
+      40,
+      53
+    ],
+    "RC2": [
+      36,
+      58
+    ],
+    "RC3": [
+      40,
+      64
+    ]
+  },
+  "routes": [
+    [
+      "Save for canyon two",
+      "S W0_1 A W1_1 G1 L W3_1 W3_2 M G2 JL3 JT3 K JL4 JT4 G3 W11_1 W11_2 F",
+      "Use the first ground branch to preserve charge."
+    ],
+    [
+      "Spend at canyon one",
+      "S W0_1 A W1_1 G1 JL1 JT1 J JL2 JT2 G2 N W19_1 W19_2 O G3 W11_1 W11_2 F",
+      "Commit early, then take the grounded second branch."
+    ],
+    [
+      "Ground both",
+      "S W0_1 A W1_1 G1 L W3_1 W3_2 M G2 N W19_1 W19_2 O G3 W11_1 W11_2 F",
+      "Recover from a poor approach without forcing either leap."
+    ],
+    [
+      "Both canyon hops",
+      "S W0_1 A W1_1 G1 JL1 JT1 J JL2 JT2 G2 JL3 JT3 K JL4 JT4 G3 W11_1 W11_2 F",
+      "Legal fourth combination. Residual speed and landing rewards may make both skips possible."
+    ]
+  ],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2",
+    "JL3 JT3",
+    "JL4 JT4"
+  ],
+  "tight": [
+    "M G2"
+  ],
+  "catch": [
+    "J R",
+    "R RC1",
+    "RC1 RC2",
+    "RC2 RC3",
+    "RC3 L"
+  ],
+  "danger": "Both skips remain legal. Tune their approaches and exits; the game has no spend-once-per-canyon rule.",
+  "largePads": [
+    "G2",
+    "G3"
+  ],
+  "gateNormals": {
+    "G1": [
+      0,
+      -1
+    ],
+    "G2": [
+      0.4,
+      -0.9165
+    ],
+    "G3": [
+      -0.3,
+      -0.9539
+    ],
+    "F": [
+      1,
+      0
+    ]
+  },
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "L": 10,
+    "M": 10,
+    "G2": 10,
+    "N": 10,
+    "O": 10,
+    "G3": 10,
+    "F": 10,
+    "J": 10,
+    "K": 10,
+    "R": 6,
+    "JL1": 10,
+    "JT1": 10,
+    "JL2": 10,
+    "JT2": 10,
+    "JL3": 10,
+    "JT3": 10,
+    "JL4": 10,
+    "JT4": 10,
+    "W0_1": 10.0,
+    "W1_1": 10.0,
+    "W3_1": 10.0,
+    "W3_2": 10.0,
+    "W11_1": 10.0,
+    "W11_2": 10.0,
+    "W19_1": 10.0,
+    "W19_2": 10.0,
+    "RC1": 6.5,
+    "RC2": 7,
+    "RC3": 8
+  },
+  "reviewStatus": "Implementation tuning; no exclusive boost restriction",
+  "scale": [
+    30.4,
+    61.75
+  ],
+  "margin": 160,
+  "islandRadius": 85.5,
+  "wideRadius": 118.75,
+  "deckWidth": 67,
+  "targetSpeed": 9.839999999999998,
+  "launchSpeed": 9,
+  "jumpGap": 57.0,
+  "radiusOverrides": {
+    "JL1": 39.9,
+    "JT1": 49.4,
+    "JL2": 39.9,
+    "JT2": 49.4,
+    "JL3": 39.9,
+    "JT3": 49.4,
+    "JL4": 39.9,
+    "JT4": 49.4,
+    "W0_1": 52.25,
+    "W1_1": 52.25,
+    "W3_1": 52.25,
+    "W3_2": 52.25,
+    "W11_1": 52.25,
+    "W11_2": 52.25,
+    "W19_1": 52.25,
+    "W19_2": 52.25,
+    "RC1": 45,
+    "RC2": 45,
+    "RC3": 45
+  },
+  "edgeControls": {
+    "S W0_1": [
+      53.46328,
+      90.25
+    ],
+    "W0_1 A": [
+      46.53672,
+      84.75
+    ],
+    "A W1_1": [
+      53.77813,
+      79.0
+    ],
+    "W1_1 G1": [
+      46.22187,
+      73.0
+    ],
+    "L W3_1": [
+      49.375,
+      64.16667
+    ],
+    "W3_1 W3_2": [
+      40.625,
+      56.5
+    ],
+    "W3_2 M": [
+      49.375,
+      48.83334
+    ],
+    "G2 JL3": [
+      52.77839,
+      41.1676
+    ],
+    "JT3 K": [
+      50.91775,
+      32.48463
+    ],
+    "K JL4": [
+      50.59014,
+      27.76045
+    ],
+    "JT4 G3": [
+      52.47818,
+      19.57896
+    ],
+    "G3 W11_1": [
+      58.0125,
+      17.59979
+    ],
+    "W11_1 W11_2": [
+      67.32083,
+      11.06687
+    ],
+    "G1 JL1": [
+      53.26053,
+      68.00465
+    ],
+    "JT1 J": [
+      55.18044,
+      60.32502
+    ],
+    "J JL2": [
+      55.77839,
+      55.1676
+    ],
+    "JT2 G2": [
+      53.91775,
+      46.48463
+    ],
+    "N W19_1": [
+      59.19792,
+      40.66666
+    ],
+    "W19_1 W19_2": [
+      50.80208,
+      34.0
+    ],
+    "W19_2 O": [
+      59.19792,
+      27.33334
+    ],
+    "O G3": [
+      56.62725,
+      19.78549
+    ],
+    "R RC1": [
+      40,
+      48
+    ],
+    "RC1 RC2": [
+      42,
+      59
+    ],
+    "RC2 RC3": [
+      34,
+      63
+    ],
+    "RC3 L": [
+      46,
+      63
+    ]
+  },
+  "longStraightEdges": [
+    "G3 F"
+  ]
+}

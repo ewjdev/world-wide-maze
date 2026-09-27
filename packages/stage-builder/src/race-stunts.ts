@@ -32,7 +32,7 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     [2, 6, [1230, 330], [1230, 380], 56],
     [6, 5, [1230, 420], [1230, 480], 56],
     [0, 4, [870, 340], [870, 410], 78],
-    [4, 5, [1110, 475], [1190, 505], 78],
+    [4, 5, [1110, 475], [1190, 505], 56],
     [3, 5, [1360, 300], [1360, 480], 62],
     [7, 4, [1130, 340], [1080, 404], 56],
   ];
@@ -43,6 +43,7 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     a,
     b,
     width,
+    ...(id === 4 ? { control: [1140, 555] as Vec2 } : {}),
     levelA: levels[from],
     levelB: levels[to],
     type: levels[from] === levels[to] ? 'flat' : 'ramp',
@@ -111,7 +112,7 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
   const stage: StageData = {
     schema: 'wwm.stage/2',
     stageId: '0'.repeat(64),
-    builderVersion: '1.1.0',
+    builderVersion: '1.2.0',
     seed: input.seed,
     difficulty: 'normal',
     source: {
@@ -162,7 +163,7 @@ export function buildIslandLeap(input: BuildInput, author: RaceAuthoring) {
     textureUrl: author.textureUrl,
     gates,
     stunts,
-    generatorVersion: '1.1.0',
+    generatorVersion: '1.2.0',
     seed: input.seed,
     provenance: { sourceHash: author.sourceHash, textureHash: author.textureHash },
     validation: { valid: true, extractedIslands: 8 },

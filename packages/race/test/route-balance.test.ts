@@ -10,7 +10,7 @@ const courseBytes = readFileSync(fixture('course.json'), 'utf8');
 const course: RaceCourse = JSON.parse(courseBytes);
 const policyBytes = readFileSync(new URL('../../../scripts/race-stunt-policy.ts', import.meta.url), 'utf8');
 const policy: BalancePolicyFactory = (route, turbo) => {
-  const driver = createRoutePolicy(course, route, { targetSpeed: 10, turbo });
+  const driver = createRoutePolicy(course, route, { targetSpeed: 11, turbo });
   return (tick, ball, mechanics) => driver({ tick, ball, mechanics });
 };
 const clean = { id: 'clean', description: 'Unmodified adaptive route policy.' };

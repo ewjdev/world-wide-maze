@@ -153,7 +153,8 @@ function HostHud({ view }: { view: ControllerView }) {
     return (
       <section className="wwmc-hud wwmc-hud-race" data-testid="race-host-hud" aria-label="Race status">
         <span>
-          {race.practice ? 'Practice' : 'Race'} <b>{race.phase}</b>
+          {race.practice ? 'Practice' : 'Race'}{' '}
+          <b>{race.phase === 'exhausted' ? 'Out of lives' : race.phase}</b>
         </span>
         <span>
           {t.time} <b>{seconds.toFixed(2)}s</b>
@@ -164,6 +165,14 @@ function HostHud({ view }: { view: ControllerView }) {
             {Math.min(race.sector + 1, race.totalSectors)}/{race.totalSectors}
           </b>
         </span>
+        {race.lives !== undefined && (
+          <span>
+            Lives{' '}
+            <b>
+              {race.lives} / {race.maxLives ?? 3}
+            </b>
+          </span>
+        )}
         {split !== undefined && (
           <span>
             Split{' '}
@@ -282,7 +291,7 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           </p>
           <p className="wwmc-hint">
             {view.host?.race?.boost
-              ? 'Hold POWER and tilt to roll. Keep speed for 3 seconds to earn turbo; tap Turbo to launch farther.'
+              ? 'Hold POWER and tilt to roll. Every 3 seconds at full speed earns another turbo. Store them and tap Turbo any time. Falling costs 1 life and 1 turbo.'
               : t.powerHint}
           </p>
           <button type="button" className="wwmc-link" onClick={() => session?.retryCalibration()}>
@@ -307,8 +316,11 @@ function TurboButton({ session, view }: { session: ControllerSession | null; vie
       disabled={!ready}
       onClick={() => session?.turbo()}
     >
-      <strong>Turbo</strong>
-      <span>{boost.turboTicks > 0 ? 'Active' : boost.ready ? 'Ready · tap' : `${charge}% charged`}</span>
+      <strong>Turbo × {boost.turboCharges ?? (boost.ready ? 1 : 0)}</strong>
+      <span>
+        {boost.ready ? 'Ready · tap · ' : ''}
+        {charge}% next
+      </span>
     </button>
   );
 }

@@ -251,3 +251,38 @@ test('a completed real-physics attempt reproduces exact finish and sector ticks'
   expect(track.progress).toEqual(progress);
   expect(track.ticks).toBe(progress.finishTick);
 });
+
+test('replay enforces recovery life costs and rejects fabricated free fall resets', async () => {
+  const stage: StageData = JSON.parse(
+    readFileSync(new URL('../../../fixtures/stages/handmade-simple.json', import.meta.url), 'utf8'),
+  );
+  const course: RaceCourse = {
+    schema: 'wwm.race-course/1',
+    courseId: 'course',
+    title: '',
+    description: '',
+    stage,
+    textureUrl: '',
+    gates: [gate(10000, 'finish')],
+    generatorVersion: 'test',
+    seed: 1,
+  };
+  const a = attempt(5);
+  a.outcome = 'abandoned';
+  a.progress = { tick: 5, nextGate: 0, sectorTicks: [], finishTick: null, reasons: ['recovery'] };
+  a.recording.recoveries = [2, 3].map((beforeTick) => ({
+    beforeTick,
+    destination: stage.start.pos,
+    reason: 'recovery',
+  }));
+  expect((await replayRace(course, a)).ticks).toBe(5);
+  a.recording.recoveries.push({ beforeTick: 4, destination: stage.start.pos, reason: 'recovery' });
+  await expect(replayRace(course, a)).rejects.toThrow('no lives');
+  a.recording.recoveries = [{ beforeTick: 2, destination: stage.start.pos, reason: 'fall' }];
+  a.progress.reasons = ['fall'];
+  await expect(replayRace(course, a)).rejects.toThrow('no preceding fall');
+  a.recording.recoveries = [];
+  a.compatibility.rulesVersion = 'wwm.race-rules/1';
+  expect(validateAttempt(a)).toBe(true);
+  await expect(replayRace(course, a)).rejects.toThrow('Incompatible');
+});

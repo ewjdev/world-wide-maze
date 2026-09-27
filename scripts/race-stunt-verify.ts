@@ -98,7 +98,7 @@ for (const route of ['safe', 'near', 'far'] as const) {
       minClearanceM: route === 'far' ? clearance : null,
       clearanceSamples: route === 'far' ? clearanceSamples : 0,
       replayVerified: true,
-      controller: { targetSpeedMps: 10, turboSpeedHeadroomMps: 26, turboAllowed: true },
+      controller: { targetSpeedMps: 11, turboSpeedHeadroomMps: 26, turboAllowed: true },
       method:
         'Real fixed-step Rapier player inputs; ordered Race gates; identical-pose second-simulation replay. Automated feasibility, not human difficulty acceptance.',
     };

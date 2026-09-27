@@ -1,0 +1,40 @@
+{
+  "courseId": "a7bf3be33bc80b1257edcdbdd9c78cfcdba74fa62c728d258a46af655caa8f9e",
+  "route": "route-0",
+  "url": "http://127.0.0.1:5214/race/cliff-ribbon",
+  "progress": {
+    "tick": 7715,
+    "nextGate": 4,
+    "sectorTicks": [
+      2185,
+      4874,
+      6510
+    ],
+    "finishTick": 7715,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 8,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-0-ready.png",
+    "screenshots/route-0-midrun.png",
+    "screenshots/route-0-feature.png",
+    "screenshots/route-0-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "high"
+}

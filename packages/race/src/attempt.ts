@@ -3,8 +3,8 @@ import { SIM_HZ } from '@wwm/schema';
 import { validateRecording } from './recording.ts';
 import type { RaceAttempt, RaceCompatibility } from './types.ts';
 
-export const RACE_RULES_VERSION = 'wwm.race-rules/1';
-export const RACE_STUNT_RULES_VERSION = 'wwm.race-rules/2';
+export const RACE_RULES_VERSION = 'wwm.race-rules/3';
+export const RACE_STUNT_RULES_VERSION = 'wwm.race-rules/4';
 export function makeCompatibility(courseId: string, stuntsEnabled = false): RaceCompatibility {
   return {
     courseId,
@@ -65,8 +65,8 @@ export function validateAttempt(value: unknown): value is RaceAttempt {
     c.hz !== SIM_HZ
   )
     return false;
-  if ((c.rulesVersion === RACE_STUNT_RULES_VERSION) !== (a.recording.format === 'wwm.race-input/2'))
-    return false;
+  const turboRules = [RACE_STUNT_RULES_VERSION, 'wwm.race-rules/2'].includes(c.rulesVersion);
+  if (turboRules !== (a.recording.format === 'wwm.race-input/2')) return false;
   if (
     !Number.isSafeInteger(p.tick) ||
     p.tick < a.recording.ticks ||

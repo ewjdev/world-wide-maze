@@ -11,12 +11,15 @@ export function createRoutePolicy(
 ) {
   let waypoint = 0;
   let spent = false;
-  const targetSpeed = options.targetSpeed ?? 10;
+  const targetSpeed = options.targetSpeed ?? 11;
   const targets =
     route === 'safe'
       ? [
           [870, 290],
           [870, 465],
+          [1100, 475],
+          [1140, 518],
+          [1195, 510],
           [1250, 525],
           [1375, 580],
           [1375, 730],

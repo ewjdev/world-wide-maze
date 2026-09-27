@@ -77,6 +77,7 @@ try {
           sourceHash: hash(await readFile(resolve(dir, 'index.html'))),
           textureHash: hash(r.png),
           textureUrl: `/race/${slug}/texture.png`,
+          enableTurbo: true,
           descentPerBridge: slug === 'longline' ? 0.2 : 0.35,
           bridgeWidthPx: slug === 'switchback' ? 72 : 84,
         };

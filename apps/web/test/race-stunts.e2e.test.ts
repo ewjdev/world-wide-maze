@@ -11,6 +11,68 @@ const SHOTS = process.env.WWM_RACE_SHOTS;
 const run = BASE ? describe : describe.skip;
 
 run('Race stunt browser acceptance', () => {
+  test('three real falls stop the race and retry restores lives with an empty stack', async () => {
+    const { chromium } = await import('playwright');
+    const browser = await chromium.launch({
+      args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+    });
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, locale: 'en-US' });
+    try {
+      await context.addInitScript(() =>
+        Object.assign(window, {
+          __WWM_RACE_TEST__: {
+            inputs: Array.from({ length: 36000 }, () => ({
+              tiltX: 0.43,
+              tiltZ: 0.43,
+              frameYaw: 0,
+              power: true,
+              jump: false,
+            })),
+            countdownSec: 0.01,
+            timeScale: 4,
+            noAutoPause: true,
+            quality: 'low',
+          },
+        }),
+      );
+      const page = await context.newPage();
+      // Course rebuilds must not reload an in-progress acceptance run.
+      await page.routeWebSocket(
+        (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+        () => {},
+      );
+      const errors: string[] = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      await page.goto(`${BASE}/race/needle-garden`);
+      await page.getByTestId('race-start').click({ timeout: 30000 });
+      await page.getByTestId('race-lives').waitFor();
+      expect(await page.getByTestId('race-lives').textContent()).toContain('3 / 3');
+      if (SHOTS) {
+        mkdirSync(SHOTS, { recursive: true });
+        await page.screenshot({ path: join(SHOTS, 'stacked-turbo-lives-mobile.png') });
+      }
+      await page.getByTestId('race-exhausted').waitFor({ timeout: 90000 });
+      const ended = await page.evaluate(() => window.__wwmRace?.debugState());
+      expect(ended?.mechanics).toMatchObject({ lives: 0, turboCharges: 0, exhausted: true });
+      expect(ended?.progress.reasons).toContain('fall');
+      await page.waitForTimeout(250);
+      expect((await page.evaluate(() => window.__wwmRace?.debugState()))?.tick).toBe(ended?.tick);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      if (SHOTS) await page.screenshot({ path: join(SHOTS, 'stacked-turbo-out-of-lives.png') });
+      await page.evaluate(() => {
+        if (window.__WWM_RACE_TEST__) window.__WWM_RACE_TEST__.countdownSec = 1000;
+      });
+      await page.getByTestId('race-retry').click();
+      await page.waitForFunction(() => window.__wwmRace?.debugState().phase === 'countdown');
+      const retry = await page.evaluate(() => window.__wwmRace?.debugState());
+      expect(retry?.mechanics).toMatchObject({ lives: 3, turboCharges: 0, exhausted: false });
+      expect(retry?.tick).toBe(0);
+      expect(errors).toEqual([]);
+    } finally {
+      await context.close();
+      await browser.close();
+    }
+  }, 120000);
   test('simulated phone displays charge, sends turbo on tap, disables while paused, and retains legacy Power', async () => {
     const { chromium, devices } = await import('playwright');
     const browser = await chromium.launch();
@@ -29,6 +91,11 @@ run('Race stunt browser acceptance', () => {
         }, 16);
       });
       const page = await context.newPage();
+      // Course rebuilds must not reload an in-progress acceptance run.
+      await page.routeWebSocket(
+        (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+        () => {},
+      );
       page.on('pageerror', (error) => errors.push(error.message));
       await page.routeWebSocket(/\/api\/rooms\/123456\//, (ws) => {
         socket = ws;
@@ -80,11 +147,16 @@ run('Race stunt browser acceptance', () => {
       const turbo = page.getByTestId('btn-turbo');
       await turbo.waitFor();
       expect(await turbo.isDisabled()).toBe(true);
-      expect(await turbo.textContent()).toContain('50% charged');
-      race.boost = { ready: true, chargeTicks: 360, chargeRequired: 360, turboTicks: 0 };
+      expect(await turbo.textContent()).toContain('50% next');
+      race.boost = { ready: true, chargeTicks: 90, chargeRequired: 360, turboTicks: 0, turboCharges: 2 };
+      race.lives = 2;
+      race.maxLives = 3;
       send(state);
       await expect.poll(() => turbo.isEnabled()).toBe(true);
       expect(await turbo.textContent()).toContain('Ready');
+      expect(await turbo.textContent()).toContain('Turbo × 2');
+      expect(await turbo.textContent()).toContain('25% next');
+      expect(await page.getByTestId('race-host-hud').textContent()).toContain('Lives 2 / 3');
       const power = page.getByTestId('btn-power');
       await power.dispatchEvent('pointerdown', { pointerId: 7, isPrimary: true, pointerType: 'touch' });
       await expect.poll(() => poweredFrames).toBeGreaterThan(0);
@@ -149,6 +221,11 @@ run('Race stunt browser acceptance', () => {
             });
           }, fixture.inputs);
           const page = await context.newPage();
+          // Course rebuilds must not reload an in-progress acceptance run.
+          await page.routeWebSocket(
+            (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+            () => {},
+          );
           const errors: string[] = [];
           page.on('pageerror', (error) => errors.push(error.message));
           await page.goto(`${BASE}/race/island-leap`);
@@ -287,6 +364,11 @@ run('Race stunt browser acceptance', () => {
         }),
       );
       const page = await context.newPage();
+      // Course rebuilds must not reload an in-progress acceptance run.
+      await page.routeWebSocket(
+        (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+        () => {},
+      );
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(`${BASE}/race/island-leap`);
@@ -383,6 +465,11 @@ run('Race stunt browser acceptance', () => {
         fixture.inputs,
       );
       const page = await context.newPage();
+      // Course rebuilds must not reload an in-progress acceptance run.
+      await page.routeWebSocket(
+        (url) => url.host === new URL(BASE ?? 'http://localhost').host && url.pathname === '/',
+        () => {},
+      );
       const errors: string[] = [];
       page.on('pageerror', (error) => errors.push(error.message));
       await page.goto(`${BASE}/race/island-leap`);

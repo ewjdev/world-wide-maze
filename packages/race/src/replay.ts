@@ -31,22 +31,29 @@ export async function replayRace(
     quat.set(previous.quat);
     let progress = createProgress();
     let recoveryIndex = 0;
+    let pendingFall = false;
     for (let tick = 1; tick < count; tick++) {
       if (options.signal?.aborted) throw new DOMException('Ghost preparation cancelled', 'AbortError');
+      if (sim.getMechanics().exhausted) throw new Error('Recording continues after Race lives exhausted');
       const recovery = attempt.recording.recoveries[recoveryIndex];
       if (recovery?.beforeTick === tick) {
+        if (recovery.reason === 'fall' && !pendingFall)
+          throw new Error('Fall recovery has no preceding fall');
+        if (recovery.reason === 'recovery') sim.penalizeRecovery();
         sim.reset(recovery.destination);
         previous = sim.getBallState();
         progress = markPractice(progress, recovery.reason);
         discontinuities[tick] = 1;
         recoveryIndex++;
+        pendingFall = false;
       }
       const result = sim.step(inputAt(attempt.recording, tick - 1));
+      pendingFall ||= result.events.some((e) => e.type === 'fell' || e.type === 'lost');
       progress = advanceProgress(progress, course.gates, {
         tick,
         previous: previous.pos,
         current: result.ball.pos,
-        fell: result.events.some((e) => e.type === 'fell'),
+        fell: result.events.some((e) => e.type === 'fell' || e.type === 'lost'),
       });
       pos.set(result.ball.pos, tick * 3);
       quat.set(result.ball.quat, tick * 4);

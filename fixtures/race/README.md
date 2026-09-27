@@ -24,10 +24,46 @@ The Race builder extracts screenshot/DOM terrain before selecting topology. It v
 
 | Course | Islands | Solver finish | Race gate finish | Falls / jumps |
 | --- | ---: | ---: | ---: | ---: |
-| Flow Sprint | 9 | 47.45 s | 5669 ticks / 47.242 s | 0 / 0 |
-| Switchback | 9 | 47.75 s | 5705 ticks / 47.542 s | 0 / 0 |
-| Longline | 8 | 36.733 s | 4383 ticks / 36.525 s | 0 / 0 |
+| Flow Sprint | 9 | 31.892 s | 3802 ticks / 31.683 s | 0 / 0 |
+| Switchback | 9 | 32.900 s | 3922 ticks / 32.683 s | 0 / 0 |
+| Longline | 8 | 28.483 s | 3403 ticks / 28.358 s | 0 / 0 |
 
 Solver completion uses the ordinary goal sensor just beyond Race's independent finish plane, explaining the small time difference. For a Race replay, stop input consumption at the Race finish tick. `race-verify.ts` does exactly this and proves all sector/finish ticks again through `replayRace` in a second physics simulation.
 
-Automated traversal is useful geometry/replay evidence; it does not establish human flow, race-speed comfort or physical-phone acceptance. Longline is deliberately shorter than the provisional 45–90 second target and remains a short-course option pending human tuning. No curves, overpasses, banking or required jumps are included.
+Automated traversal is useful geometry/replay evidence; it does not establish human flow, race-speed comfort or physical-phone acceptance. These three earlier courses remain shorter introductory options after their straightaways were replaced with turns. They include ground bridges and turbo, with no required jumps. Island Leap is the separate short stunt course with three routes and a curved ground connector.
+
+## Ten authored race mazes
+
+Flow Delta through Redline Relay use the reviewed branching 2D graphs in each `maze.json`. Their builder is separate from the three original HTML-extraction fixtures above: it authors explicit island contours, directed flight links, ground connectors, gate planes and physical jump approach ramps, then captures its owned SVG/HTML as a texture. Source/spec/texture hashes are recorded in provenance. No arbitrary-webpage extraction guarantee is implied.
+
+```sh
+node scripts/race-maze-build.ts --slug flow-delta
+node scripts/race-maze-verify.ts --slug flow-delta
+node scripts/race-maze-catalog.ts
+node scripts/race-maze-browser.ts --slug flow-delta --route route-0 --base-url http://127.0.0.1:5214
+node scripts/race-maze-browser.ts --slug flow-delta --route route-2 --base-url http://127.0.0.1:5214
+node scripts/race-maze-report.ts
+```
+
+Each maze owns `review.md`, per-route ordinary inputs and traces, exact-replay reports, and screenshots. `review.html` is the consolidated screenshot gallery; `maze-verification.json` is its identity-checked summary. The browser verifier compares final pose and complete checkpoint progress to the independent physics run and rejects stale course identities. It suppresses Vite HMR during a run so another course rebuild cannot reset the test.
+
+Rail-free bridges are explicit. Curved/banked meshes share geometry with colliders; Sky Weave adds a verified crossing with four metres between deck tops. Physical ramp lips retain the existing automatic upward assist. Turbo now stacks without an inventory cap: each uninterrupted 360 ticks at the course cruise speed earns one charge, including turning and airborne travel. A fresh press spends one charge for an impulse; at the speed cap the charge is retained. These baseline maze runs bank charges but do not spend them. Timing is a scripted feasibility baseline, not a claim of optimal routes or practiced human times. Catch recovery, human difficulty and progressive risk require further playtesting as noted in each review.
+
+## Straightaways, turbo stacks and lives
+
+All fourteen courses are audited by `node scripts/race-maze-straights.ts`. A long straight exceeds three seconds at the course cruise speed (24m for the mazes and the three ground courses; 30m for Island Leap) before accumulating 20 degrees of heading change. The audit measures island approaches, real curved bridge sections, full jump spans, and authored catch returns. Shared spans are counted once. This is an authored-route check, not an exhaustive search for every possible player shortcut.
+
+Each attempt starts with three lives and no turbos. A fall removes one stored turbo, floored at zero, and one life; recovery preserves the remaining stock. The fall/lost event pair charges the penalty once. Manual recovery uses the same penalty. At zero lives the attempt stops. Retry starts fresh; slowing down only clears progress toward the next charge, not existing inventory. Rules versions partition prior ghosts from the changed mechanics.
+
+The HUD and phone controller show stored turbos, next-charge progress and lives. Use T / the Turbo button to spend a charge. Held buttons consume once per press. Reproduction:
+
+```sh
+node scripts/race-verify.ts
+node scripts/race-stunt-verify.ts
+node scripts/race-stunt-balance.ts
+node scripts/race-maze-straights.ts
+node scripts/race-maze-resets.ts
+node scripts/race-maze-browser.ts --slug flow-sprint --base-url http://127.0.0.1:5214
+```
+
+Browser replays require the development server; production intentionally disables injected test inputs. `--quality low` is available for software-rendered test runs. Browser evidence compares full mechanics as well as progress and final pose; incomplete screenshots are never published as a passing run.

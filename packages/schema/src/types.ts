@@ -94,6 +94,8 @@ export interface StageData {
   timeLimitSec: number; // default TIME_LIMIT_SEC_DEFAULT
   islands: Island[];
   bridges: Bridge[];
+  /** Directed authored flight connections; reachability metadata only, never solid geometry. */
+  flightLinks?: { from: number; to: number }[];
   elevators: Elevator[];
   items: Item[];
   portals?: Portal[]; // contracts §10.1 (optional; missing = [])
@@ -120,6 +122,12 @@ export interface Bridge {
   a: Vec2;
   b: Vec2; // centerline endpoints on each island edge (2013: cardinal directions)
   width: number; // ≥ MIN_BRIDGE_WIDTH_PX
+  /** Optional quadratic horizontal centerline control point, in page pixels. */
+  control?: Vec2;
+  /** Peak crossfall in radians (±0.35); smoothly tapers to zero at both mouths. */
+  bank?: number;
+  /** Side rails default to enabled; race bridges may explicitly omit them. */
+  rails?: boolean;
   type: BridgeType; // 'ramp' iff levelA ≠ levelB
   levelA: number; // = island levels; |Δlevel·LEVEL_HEIGHT_M| / (|b−a| / PX_PER_METER) ≤ MAX_RAMP_SLOPE
   levelB: number;
@@ -340,14 +348,22 @@ export interface StateMessage {
 /** Race clocks are authoritative on the host; older controllers ignore this optional extension. */
 export interface RaceState {
   version: 1;
-  phase: 'loading' | 'ready' | 'countdown' | 'racing' | 'paused' | 'finished';
+  phase: 'loading' | 'ready' | 'countdown' | 'racing' | 'paused' | 'finished' | 'exhausted';
   elapsedTicks: number;
   simHz: number;
   sector: number;
   totalSectors: number;
   practice: boolean;
   splitDeltaTicks?: number;
-  boost?: { ready: boolean; chargeTicks: number; chargeRequired: number; turboTicks: number };
+  boost?: {
+    ready: boolean;
+    chargeTicks: number;
+    chargeRequired: number;
+    turboTicks: number;
+    turboCharges?: number;
+  };
+  lives?: number;
+  maxLives?: number;
 }
 export interface CapabilityRequestMessage {
   t: 'capabilities-request';

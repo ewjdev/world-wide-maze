@@ -100,7 +100,12 @@ export interface RaceMechanics {
   enabled: boolean;
   chargeTicks: number;
   chargeRequired: number;
+  /** Derived convenience flag: at least one stored turbo. */
   ready: boolean;
+  turboCharges: number;
+  lives: number;
+  maxLives: number;
+  exhausted: boolean;
   turboTicks: number;
   launches: number;
   landings: number;

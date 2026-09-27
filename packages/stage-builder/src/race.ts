@@ -26,7 +26,7 @@ import { sha256HexSync } from './sha256.ts';
 import { sliceElements } from './slice-elements.ts';
 import { analyzeWalkable, onMain } from './walkable.ts';
 
-export const RACE_BUILDER_VERSION = '1.0.0';
+export const RACE_BUILDER_VERSION = '1.1.0';
 /** Content-authoring hints are verified against extracted polygons, never substituted for them. */
 export interface RaceAuthoring {
   schema: 'wwm.race-authoring/1';
@@ -41,6 +41,7 @@ export interface RaceAuthoring {
   routeStrategy?: 'authored' | 'search';
   descentPerBridge?: number;
   bridgeWidthPx?: number;
+  enableTurbo?: boolean;
 }
 
 export interface RaceTerrain {
@@ -324,6 +325,17 @@ export function buildRaceCourse(input: BuildInput, hints: RaceAuthoring) {
     authoring: author.sections,
     ...(routeSearch ? { routeWeights: RACE_ROUTE_WEIGHTS, searchBudget: 4096 } : {}),
   };
+  const stunts = author.enableTurbo
+    ? {
+        version: 1 as const,
+        cruiseSpeed: 8,
+        chargeTicks: 360,
+        turboDeltaV: 8,
+        turboMaxSpeed: 24,
+        landingDeltaV: 1,
+        launchPads: [],
+      }
+    : undefined;
   const courseId = sha256HexSync(
     JSON.stringify({
       sourceHash: author.sourceHash,
@@ -334,11 +346,13 @@ export function buildRaceCourse(input: BuildInput, hints: RaceAuthoring) {
       gates,
       start: stage.start,
       goal: stage.goal,
+      ...(stunts ? { stunts } : {}),
     }),
   );
   stage.stageId = courseId;
   return {
     schema: 'wwm.race-course/1' as const,
+    ...(stunts ? { stunts } : {}),
     courseId,
     title: author.title,
     description: author.description,

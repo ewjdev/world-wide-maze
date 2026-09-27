@@ -24,7 +24,15 @@ import { GhostClient } from './ghost-client.ts';
 import { RaceHistory } from './storage.ts';
 import { courseMarkers, raceGhost } from './visuals.ts';
 
-export type RacePhase = 'loading' | 'ready' | 'countdown' | 'racing' | 'paused' | 'finished' | 'error';
+export type RacePhase =
+  | 'loading'
+  | 'ready'
+  | 'countdown'
+  | 'racing'
+  | 'paused'
+  | 'finished'
+  | 'exhausted'
+  | 'error';
 export interface RaceView {
   phase: RacePhase;
   countdown: number;
@@ -163,7 +171,8 @@ export class RaceSession {
         this.turbo();
         event.preventDefault();
       }
-      if (event.code === 'KeyR' && !(event.target instanceof HTMLInputElement)) void this.start();
+      if (event.code === 'KeyR' && !event.repeat && !(event.target instanceof HTMLInputElement))
+        void this.start();
     };
     window.addEventListener('resize', resize);
     window.addEventListener('blur', blur);
@@ -389,6 +398,7 @@ export class RaceSession {
         progress: this.#progress,
         countdown: Math.ceil(this.#countdown),
         ghostCount: this.#ghosts.length,
+        mechanics: this.#sim?.getMechanics() ?? null,
       });
       if (this.#view.input === 'phone' && !this.#phone?.canStart) this.pause('controller-disconnect');
       if (this.#focusLost) this.pause('focus-loss');
@@ -420,8 +430,21 @@ export class RaceSession {
     else this.pause();
   }
   recover() {
-    if (this.#view.phase !== 'racing') return;
+    if (this.#view.phase !== 'racing' || this.#falling || this.#recovery) return;
     this.#recovery = { at: this.course.stage.start.pos, reason: 'recovery' };
+  }
+  #endExhausted() {
+    const mechanics = this.#sim?.getMechanics();
+    if (!mechanics?.exhausted) return false;
+    this.#driver?.setPaused(true);
+    this.#recovery = null;
+    this.#turboRequested = false;
+    this.#phone?.discardTurboRequest();
+    this.audio.setRoll(0, false);
+    this.#set({ phase: 'exhausted', progress: this.#progress, mechanics, stuntEvent: null });
+    this.#save('abandoned');
+    this.#syncPhone();
+    return true;
   }
   #save(outcome: RaceAttempt['outcome']) {
     if (this.#saved || !this.#recorder.ticks) return;
@@ -481,6 +504,7 @@ export class RaceSession {
         this.#engine?.handleEvent(event);
       if (event.type === 'bump') this.audio.impact('bump', event.impact);
     }
+    if (this.#endExhausted()) return true;
     if (before !== this.#progress.nextGate) {
       this.#markers?.update(this.#progress.nextGate);
       this.audio.play('click');
@@ -513,6 +537,9 @@ export class RaceSession {
       sector: this.#progress.sectorTicks.length,
       totalSectors: this.course.gates.filter((gate) => gate.kind === 'sector').length,
       practice: this.#progress.reasons.length > 0,
+      ...(this.#sim
+        ? { lives: this.#sim.getMechanics().lives, maxLives: this.#sim.getMechanics().maxLives }
+        : {}),
       ...(this.course.stunts && this.#sim ? { boost: this.#sim.getMechanics() } : {}),
       ...(this.#view.split === null ? {} : { splitDeltaTicks: this.#view.split }),
     });
@@ -559,6 +586,8 @@ export class RaceSession {
           this.#progress = markPractice(this.#progress, 'recording-limit');
         this.#turboRequested = false;
         this.#phone?.discardTurboRequest();
+        if (recovery.reason === 'recovery') this.#sim?.penalizeRecovery();
+        if (this.#endExhausted()) return;
         this.#driver.reset(recovery.at);
         this.#falling = false;
         void this.#engine?.spawnBall(recovery.at, { durationSec: 0.01 });

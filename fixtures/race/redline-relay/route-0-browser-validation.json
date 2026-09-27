@@ -1,0 +1,40 @@
+{
+  "courseId": "b90e96c4018b581d771c5541497fac4c2a241c5c18ba468e22eda30e2f423b69",
+  "route": "route-0",
+  "url": "http://127.0.0.1:5214/race/redline-relay",
+  "progress": {
+    "tick": 7678,
+    "nextGate": 4,
+    "sectorTicks": [
+      2117,
+      3616,
+      5229
+    ],
+    "finishTick": 7678,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 158,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 5,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-0-ready.png",
+    "screenshots/route-0-midrun.png",
+    "screenshots/route-0-feature.png",
+    "screenshots/route-0-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "high"
+}

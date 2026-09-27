@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "e19d09e1e783bbb9",
+  "hash": "5c3537f03a972104",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -36,6 +36,8 @@
     "docs/build-log/phase-24-race-mode.md",
     "docs/build-log/phase-25-race-jumps.md",
     "docs/build-log/phase-26-race-route-balance.md",
+    "docs/build-log/phase-27-race-mazes.md",
+    "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
     "docs/build-log/race-review/ghost-performance-native.json",
@@ -2730,6 +2732,58 @@
       "url": "/log#phase-26-race-route-balance",
       "kind": "build-log",
       "text": "## Final check\n`pnpm check` passed with the bounded worker pool: typecheck, lint, **101 test files and 1,265 tests passed; 41 tests skipped**. Test phase: 175.88 seconds. All four dedicated browser checks passed separately. Both Race-enabled and Race-disabled production builds succeeded. No deployment was performed.\n\nThe isolated production smoke at `http://127.0.0.1:5200` passed catalog → Island Leap → ready on the frozen eight-island identity. Actual ArrowUp earned the 360-tick charge, T consumed it, ArrowRight steered, and Escape paused. No injected movement hooks or JavaScript exceptions. The only failed network requests were `/api/t` telemetry returning 502 because the local preview has no telemetry backend; course assets loaded successfully. Browsers were closed and the local preview remains available.\n\nThe generated documentation corpus is refreshed after this final record; its freshness and build-story checks are rerun before commit."
+    },
+    {
+      "id": "docs/build-log/phase-27-race-mazes.md",
+      "title": "Phase 27 — ten authored race mazes",
+      "path": "docs/build-log/phase-27-race-mazes.md",
+      "url": "/log#phase-27-race-mazes",
+      "kind": "build-log",
+      "text": "Implemented the ten reviewed 2D layouts as selectable Race courses, each assigned to a separate maze agent. Original, Education and the four existing Race courses remain available. Layout changes were made where the 2D proposals produced invalid slopes, overlapping approaches, poor gate directions or excessive shortcut savings.\n\nThe authoring script writes explicit multi-route island geometry from `maze.json`, captures an owned HTML/SVG texture, hashes its frozen course identity, validates stage/gates/stunts, and copies identical public artifacts. Generated catalog entries use those identities. This is an authored course pipeline, not automatic arbitrary-page reconstruction.\n\nShared geometry now supports optional rail-free bridges and quadratic curved/banked decks. Physics and render meshes consume the same tessellation, with endpoint aprons. Directed flight links express reachable jump destinations without invisible walkable bridges. Actual inclined launch ramps lead to raised takeoff islands; the existing automatic vertical assist remains in use.\n\nThe chase-camera heightfield follows curved decks and retains lower slabs at overpasses. Sky Weave uses a dedicated descent before its flat lower crossing; all restart locations were checked to avoid selecting an upper layer. A rendering review found missing bank-deck UVs, which made the entire curve look like its white edge; corrected and regression-tested."
+    },
+    {
+      "id": "docs/build-log/phase-27-race-mazes.md#verification",
+      "title": "Phase 27 — ten authored race mazes › Verification",
+      "path": "docs/build-log/phase-27-race-mazes.md",
+      "anchor": "verification",
+      "url": "/log#phase-27-race-mazes",
+      "kind": "build-log",
+      "text": "## Verification\nEvery authored route is driven through real 120 Hz Rapier with ordinary bounded tilt/power samples, no teleportation or injected velocity. Runs require ordered gates, no falls, expected launches and clean landings. A second independent simulation must reproduce each recorded position/rotation and finish progress exactly. Each course then runs ground and feature routes through the playable browser, compares final pose and progress, checks page errors, and captures ready/traversal/feature/finish screenshots. Bankshot and Sky Weave have additional bank/underpass evidence.\n\nThe generated [maze evidence](../../fixtures/race/maze-verification.json), [screenshot gallery](../../fixtures/race/review.html), and per-course reviews contain final identities and measured times. Most main routes target 55–65 seconds; intentional bailout routes may take longer. Bankshot and Needle Garden additionally prove controlled recovery-island-to-finish traversals. All authored restart points select their intended layers. These are local scripted runs, not human acceptance or deployment.\n\nLocal validation: 390 existing/shared tests passed, followed by 10 course artifact/evidence checks and focused renderer/camera rechecks; affected package typechecks and scoped lint pass. Web production build succeeds with `VITE_RACE_ENABLED=true` (the existing production default disables Race). The catalog was checked at desktop and 390px mobile widths, including selecting the last new course. The Race-enabled production build also passed a real-keyboard smoke test (ArrowUp, 120 simulation ticks, 3.60m movement, no page errors); full recorded-input replays use the development-only hooks."
+    },
+    {
+      "id": "docs/build-log/phase-27-race-mazes.md#limits",
+      "title": "Phase 27 — ten authored race mazes › Limits",
+      "path": "docs/build-log/phase-27-race-mazes.md",
+      "anchor": "limits",
+      "url": "/log#phase-27-race-mazes",
+      "kind": "build-log",
+      "text": "## Limits\n- Exponential human difficulty and approximately one-minute practiced human times are not established by the controller.\n- Shortcut risk/reward and optimal turbo strategy still need perturbed-input and human trials. Turbo is available but unused in the reference runs; no artificial turbo requirement was added.\n- Most lower catches were not deliberately hit by a missed jump. Their existence does not prove reliable interception.\n- Sky Weave is physically layered and camera-clear, but its overhead level cue is faint in the existing fog/lighting.\n- General bridge-to-bridge clearance is not automatically validated by StageData; authored Sky Weave crossing clearance is separately measured.\n- Desktop Chromium evidence does not certify phone controls or broad-device performance.\n\nReproduce using `scripts/race-maze-build.ts`, `race-maze-verify.ts`, `race-maze-catalog.ts`, `race-maze-browser.ts`, and `race-maze-report.ts`; see `fixtures/race/README.md`."
+    },
+    {
+      "id": "docs/build-log/phase-28-race-bends-turbo-lives.md",
+      "title": "Phase 28 — fewer straights, stacked turbos and lives",
+      "path": "docs/build-log/phase-28-race-bends-turbo-lives.md",
+      "url": "/log#phase-28-race-bends-turbo-lives",
+      "kind": "build-log",
+      "text": "The straightaway limit applies to all fourteen Race courses. The ten maze layouts now use more curved connectors, compact launch and landing platforms, offset approaches, and bending catch-return paths. The three earlier ground courses were recaptured from revised HTML; Island Leap gained a curved ground-return connector. Each course retains at most one long authored straight.\n\nThe repeatable audit defines a long straight as more than three seconds at the course cruise speed before accumulating 20 degrees of heading change. It measures actual curved bridge sections, island-centre approaches, full jump spans and authored catch returns. Shared spans count once. The threshold is 24m for thirteen courses and 30m for Island Leap. This checks authored routes, not all conceivable player shortcuts.\n\nRace now banks one turbo for every uninterrupted 360 ticks at qualifying speed, including turns and flight. Inventory has no cap and survives slowing down. A fresh press spends one charge, including while airborne or stationary; holding the button consumes only once. A boost at the velocity cap preserves the charge. The progress meter restarts after each earned charge and resets when speed drops below the threshold.\n\nAttempts start with three lives and no turbos. A fall removes one turbo, floored at zero, and one life. A fall followed by the physics lost event is one penalty. Manual recovery takes the same penalty. Recovery retains the remaining inventory and lives; retry creates a fresh attempt. Zero lives stops the attempt, saves it as abandoned, and presents retry/course navigation. Replay rules apply matching penalties, reject fabricated fall-recovery events, and use new compatibility versions to isolate older ghosts.\n\nThe desktop HUD and phone controller show inventory, next-charge progress and lives. Instructions distinguish the three ground courses from jump courses. Original and Education gameplay remain separate."
+    },
+    {
+      "id": "docs/build-log/phase-28-race-bends-turbo-lives.md#verification",
+      "title": "Phase 28 — fewer straights, stacked turbos and lives › Verification",
+      "path": "docs/build-log/phase-28-race-bends-turbo-lives.md",
+      "anchor": "verification",
+      "url": "/log#phase-28-race-bends-turbo-lives",
+      "kind": "build-log",
+      "text": "## Verification\n- The 421-test affected regression suite passed, followed by fourteen final course artifact/audit checks; six affected packages typecheck successfully. Race-enabled production build succeeds.\n- All 50 authored routes have real 120 Hz Rapier traversal and an independent replay. The 25 course browser runs produced 105 screenshots, with visual review of every course. The screenshot gallery checks final course identities before accepting browser evidence. Browser runs compare full mechanics, checkpoint progress and final pose, not merely a finish screen.\n- All nine browser acceptance tests pass, covering turbo controls, falls/exhaustion, retry, stored personal shadows, pause, and desktop/narrow layout. The phone check simulates transport/sensors; it is not physical-device acceptance.\n- Screenshot review found overlapping branch connectors in Flow Delta and Hairpin Terraces. Their local approach geometry was corrected and the resulting courses reverified.\n- Software-rendered browser concurrency caused capture timeouts. Final runs use bounded longer waits and fewer simultaneous renderers; partial screenshots are withheld from passing evidence.\n- An independent code review found no actionable defects in turbo charging/spending, fall deductions, recovery, exhaustion, or replay parity.\n\nSee the identity-checked [course evidence](../../fixtures/race/maze-verification.json), [screenshot gallery](../../fixtures/race/review.html), and individual course reviews. `fixtures/race/README.md` contains reproduction commands. This work is local; no deployment is implied."
+    },
+    {
+      "id": "docs/build-log/phase-28-race-bends-turbo-lives.md#remaining-tuning-limits",
+      "title": "Phase 28 — fewer straights, stacked turbos and lives › Remaining tuning limits",
+      "path": "docs/build-log/phase-28-race-bends-turbo-lives.md",
+      "anchor": "remaining-tuning-limits",
+      "url": "/log#phase-28-race-bends-turbo-lives",
+      "kind": "build-log",
+      "text": "## Remaining tuning limits\nThe ten new mazes generally run around a minute with the reference controller, but Sky Weave remains 76–79 seconds. The three introductory ground courses run about 28–33 seconds, and Island Leap about 13–14 seconds. These are scripted feasibility times, not measured practiced human times. Turbo strategy, route balance under aggressive boosts, and most missed-jump catches still need human playtesting. Ground alternatives often bank more turbos than jump-heavy paths; that creates a useful route tradeoff but does not prove balanced fastest times."
     },
     {
       "id": "docs/build-log/race-review/course-review.json",

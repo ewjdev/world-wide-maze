@@ -39,7 +39,9 @@
  * | `goal-outside-island`     | goal position inside its island |
  */
 import type { z } from 'zod';
+import { bridgeArcLength, bridgeSectionPoint, bridgeSections } from './bridge-surface.ts';
 import {
+  BALL_RADIUS_M,
   BALL_RADIUS_PX,
   ENDPOINT_TOLERANCE_PX,
   ITEM_EDGE_CLEARANCE_PX,
@@ -49,6 +51,7 @@ import {
   MAX_RAMP_SLOPE,
   MIN_BRIDGE_WIDTH_PX,
   PX_PER_METER,
+  SLAB_THICKNESS_M,
 } from './constants.ts';
 import {
   bridgeRect,
@@ -61,7 +64,7 @@ import {
   segmentIntersectsPolyline,
   signedArea,
 } from './geometry.ts';
-import type { CaptureBundle, ControlMessage, Island, StageData, Vec2 } from './types.ts';
+import type { Bridge, CaptureBundle, ControlMessage, Island, StageData, Vec2 } from './types.ts';
 import { CaptureBundleSchema, ControlMessageSchema, StageDataSchema } from './zod.ts';
 
 export interface StageValidationError {
@@ -190,7 +193,18 @@ export function validateStage(input: unknown): StageValidationResult {
       bounds(g, `island ${isl.id} guardrail ${j}`, `${p}.guardrails[${j}]`);
     bounds(isl.restartPoints, `island ${isl.id} restart points`, `${p}.restartPoints`);
   }
-  for (const [i, br] of stage.bridges.entries()) bounds([br.a, br.b], `bridge ${br.id}`, `bridges[${i}]`);
+  for (const [i, br] of stage.bridges.entries()) {
+    bounds(br.control ? [br.a, br.b, br.control] : [br.a, br.b], `bridge ${br.id}`, `bridges[${i}]`);
+    if (br.control || br.bank) {
+      const edges = bridgeSections(br).flatMap((section) =>
+        [-1, 1].map((side): Vec2 => {
+          const p = bridgeSectionPoint(section, (side * br.width) / PX_PER_METER / 2);
+          return [p[0] * PX_PER_METER, p[2] * PX_PER_METER];
+        }),
+      );
+      bounds(edges, `bridge ${br.id} deck`, `bridges[${i}]`);
+    }
+  }
   for (const [i, el] of stage.elevators.entries())
     bounds([el.a, el.b], `elevator ${el.id}`, `elevators[${i}]`);
   for (const [i, it] of stage.items.entries()) bounds([it.pos], `item ${it.id}`, `items[${i}].pos`);
@@ -236,22 +250,60 @@ export function validateStage(input: unknown): StageValidationResult {
     ends: (Island | undefined)[],
     path: string,
   ) => {
-    const rect = bridgeRect(span.a, span.b, span.width);
-    if (rect.length === 0) return;
+    const sections = kind === 'bridge' ? bridgeSections(span as Bridge) : null;
+    const parts = sections
+      ? sections.slice(1).map((section, i) => {
+          const previous = sections[i] as (typeof sections)[number];
+          const points = [previous, section].flatMap((s) =>
+            [-1, 1].map((side) => bridgeSectionPoint(s, (side * span.width) / PX_PER_METER / 2)),
+          );
+          const ring = [points[0], points[2], points[3], points[1]].map(
+            (p): Vec2 => [(p?.[0] ?? 0) * PX_PER_METER, (p?.[2] ?? 0) * PX_PER_METER],
+          );
+          return {
+            a: previous.pos,
+            b: section.pos,
+            ring,
+            minY: Math.min(...points.map((p) => p[1])),
+            maxY: Math.max(...points.map((p) => p[1])),
+          };
+        })
+      : [
+          {
+            a: span.a,
+            b: span.b,
+            ring: bridgeRect(span.a, span.b, span.width),
+            minY: -Infinity,
+            maxY: Infinity,
+          },
+        ];
     const connected = new Set(ends.filter((x): x is Island => !!x).map((x) => x.id));
     for (const other of stage.islands) {
       if (connected.has(other.id) || other.contour.length < 3) continue;
-      if (ringsOverlap(rect, other.contour))
+      const otherTop = other.level * LEVEL_HEIGHT_M;
+      const clearance = BALL_RADIUS_M * 2 + 0.15;
+      const blocked = parts.some((part) => {
+        if (part.ring.length === 0 || !ringsOverlap(part.ring, other.contour)) return false;
+        // Conservative full-section clearance: the lower route must fit a ball below the upper slab.
+        return !(
+          part.minY - SLAB_THICKNESS_M >= otherTop + clearance ||
+          otherTop - SLAB_THICKNESS_M >= part.maxY + clearance
+        );
+      });
+      if (blocked)
         err(
           `${kind}-crosses-island`,
-          `${kind} ${span.id} crosses island ${other.id} which it doesn't connect`,
+          `${kind} ${span.id} crosses island ${other.id} without safe vertical clearance`,
           path,
         );
     }
-    // Walkable lanes: the centerline and two lines one ball radius inside the edges.
-    const lanes: [Vec2, Vec2][] = [[span.a, span.b]];
-    const side = span.width / 2 - BALL_RADIUS_PX;
-    if (side > 0) lanes.push(offsetSegment(span.a, span.b, side), offsetSegment(span.a, span.b, -side));
+    // Follow the actual curve for rail-mouth checks rather than its endpoint chord.
+    const lanes: [Vec2, Vec2][] = [];
+    for (const part of parts) {
+      lanes.push([part.a, part.b]);
+      const side = span.width / 2 - BALL_RADIUS_PX;
+      if (side > 0) lanes.push(offsetSegment(part.a, part.b, side), offsetSegment(part.a, part.b, -side));
+    }
     for (const isl of ends) {
       if (!isl) continue;
       const blocked = isl.guardrails.some((g) => lanes.some(([s, e]) => segmentIntersectsPolyline(s, e, g)));
@@ -282,7 +334,9 @@ export function validateStage(input: unknown): StageValidationResult {
         `flat bridge ${br.id} joins different levels (${br.levelA} → ${br.levelB})`,
         `${p}.type`,
       );
-    const slope = rampSlope(br.a, br.b, br.levelA, br.levelB);
+    const slope = br.control
+      ? Math.abs((br.levelB - br.levelA) * LEVEL_HEIGHT_M) / (bridgeArcLength(br) / PX_PER_METER || 1e-12)
+      : rampSlope(br.a, br.b, br.levelA, br.levelB);
     if (slope > MAX_RAMP_SLOPE + EPS)
       err(
         'ramp-too-steep',
@@ -412,6 +466,13 @@ export function validateStage(input: unknown): StageValidationResult {
   if (goalIsl && !pointInPolygon(stage.goal.pos, goalIsl.contour, goalIsl.holes))
     err('goal-outside-island', `goal is not inside island ${goalIsl.id}`, 'goal.pos');
 
+  for (const [i, flight] of (stage.flightLinks ?? []).entries()) {
+    ref(flight.from, `flightLinks[${i}].from`);
+    ref(flight.to, `flightLinks[${i}].to`);
+    if (flight.from === flight.to)
+      err('flight-self-loop', 'flight link must connect different islands', `flightLinks[${i}]`);
+  }
+
   // --- start / goal / reachability ----------------------------------------------------------------
   if (stage.islands.length > 1 && stage.goal.islandId === stage.start.islandId)
     err('goal-on-start-island', 'goal must be on a different island from the start', 'goal.islandId');
@@ -425,6 +486,10 @@ export function validateStage(input: unknown): StageValidationResult {
     };
     for (const br of stage.bridges) link(br.from, br.to);
     for (const el of stage.elevators) link(el.islandFrom, el.islandTo);
+    for (const flight of stage.flightLinks ?? []) {
+      if (islandById.has(flight.from) && islandById.has(flight.to))
+        adj.set(flight.from, [...(adj.get(flight.from) ?? []), flight.to]);
+    }
     const seen = new Set([startIsl.id]);
     const queue = [startIsl.id];
     while (queue.length > 0) {

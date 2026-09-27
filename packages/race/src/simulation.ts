@@ -73,12 +73,18 @@ export interface RaceSimulation extends LockableSimulation {
   step(input: RaceInputSample): SimStepResult;
   getBallState(): BallState;
   getMechanics(): RaceMechanics;
+  /** Charge the same penalty as falling; reset itself never charges twice. */
+  penalizeRecovery(): void;
 }
 const empty = (s?: RaceStunts): RaceMechanics => ({
   enabled: !!s,
   chargeTicks: 0,
   chargeRequired: s?.chargeTicks ?? 0,
   ready: false,
+  turboCharges: 0,
+  lives: 3,
+  maxLives: 3,
+  exhausted: false,
   turboTicks: 0,
   launches: 0,
   landings: 0,
@@ -90,8 +96,7 @@ class StuntSimulation implements RaceSimulation {
   private progress: RaceProgress = createProgress();
   private used = new Set<string>();
   private previousTurbo = false;
-  private highWater = -Infinity;
-  private highWaterGate = 0;
+  private fallPenalized = false;
   private flight: {
     pad: RaceStunts['launchPads'][number];
     origin: number | undefined;
@@ -113,16 +118,30 @@ class StuntSimulation implements RaceSimulation {
     this.progress = createProgress();
     this.used.clear();
     this.previousTurbo = false;
-    this.highWater = -Infinity;
-    this.highWaterGate = 0;
+    this.fallPenalized = false;
     this.flight = null;
   }
   reset(to?: Vec2): void {
+    if (this.mechanics.exhausted) throw new Error('Race has no lives remaining');
     this.sim.reset(to);
-    this.mechanics = { ...this.mechanics, chargeTicks: 0, ready: false, turboTicks: 0, lastEvent: null };
+    this.mechanics = { ...this.mechanics, chargeTicks: 0, turboTicks: 0, lastEvent: null };
+    this.fallPenalized = false;
     this.flight = null;
-    // Retain launch consumption and course high-water mark: recovery is not a new run.
+    // Retain earned turbos, lives, and launch consumption: recovery is not a new run.
     this.previousTurbo = false;
+  }
+  penalizeRecovery(): void {
+    if (this.fallPenalized || this.mechanics.exhausted) return;
+    this.fallPenalized = true;
+    const m = this.mechanics;
+    m.turboCharges = Math.max(0, m.turboCharges - 1);
+    m.lives = Math.max(0, m.lives - 1);
+    m.exhausted = m.lives === 0;
+    m.chargeTicks = 0;
+    m.ready = m.turboCharges > 0;
+    m.turboTicks = 0;
+    m.lastEvent = m.exhausted ? 'out-of-lives' : 'fall';
+    this.flight = null;
   }
   setLock(id: number, open: boolean): void {
     this.sim.setLock(id, open);
@@ -144,29 +163,34 @@ class StuntSimulation implements RaceSimulation {
         pointInPolygon(p, i.contour, i.holes),
     )?.id;
   }
-  private boost(amount: number, max: number): boolean {
+  private boost(amount: number, max: number, heading?: number): boolean {
     const b = this.sim.getBallState();
     const speed = Math.hypot(b.vel[0], b.vel[2]);
-    if (speed < 0.1 || speed >= max) return false;
+    if (speed >= max || (speed < 0.1 && heading === undefined)) return false;
     const dv = Math.min(amount, max - speed);
-    this.sim.applyVelocityDelta([(b.vel[0] / speed) * dv, 0, (b.vel[2] / speed) * dv]);
+    const direction =
+      speed >= 0.1
+        ? [b.vel[0] / speed, b.vel[2] / speed]
+        : [-Math.sin(heading ?? 0), -Math.cos(heading ?? 0)];
+    this.sim.applyVelocityDelta([direction[0] * dv, 0, direction[1] * dv]);
     return true;
   }
   step(input: RaceInputSample): SimStepResult {
     const s = this.course.stunts;
-    if (!s) return this.sim.step(input);
     const m = this.mechanics;
+    if (m.exhausted) return { ball: this.sim.getBallState(), events: [], elevators: [] };
     m.lastEvent = null;
     if (m.turboTicks > 0) m.turboTicks--;
     if (
+      s &&
+      !this.fallPenalized &&
       input.turbo &&
       !this.previousTurbo &&
-      m.ready &&
-      m.turboTicks === 0 &&
-      this.boost(s.turboDeltaV, s.turboMaxSpeed)
+      m.turboCharges > 0 &&
+      this.boost(s.turboDeltaV, s.turboMaxSpeed, input.frameYaw)
     ) {
-      m.ready = false;
-      m.chargeTicks = 0;
+      m.turboCharges--;
+      m.ready = m.turboCharges > 0;
       m.turboTicks = SIM_HZ;
       m.lastEvent = 'turbo';
     }
@@ -175,36 +199,27 @@ class StuntSimulation implements RaceSimulation {
     const result = this.sim.step(input);
     const b = result.ball;
     const speed = Math.hypot(b.vel[0], b.vel[2]);
-    const gate = this.course.gates[this.progress.nextGate];
     const fell = result.events.some((e) => e.type === 'fell' || e.type === 'lost');
     const bump = result.events.some((e) => e.type === 'bump' && e.impact >= 3);
     if (fell) {
+      this.penalizeRecovery();
       m.chargeTicks = 0;
-      m.ready = false;
+      m.ready = m.turboCharges > 0;
       m.turboTicks = 0;
+      m.lastEvent = m.exhausted ? 'out-of-lives' : 'fall';
       this.flight = null;
     }
-    if (gate && !fell) {
-      const projection =
-        (b.pos[0] - gate.center[0]) * gate.normal[0] + (b.pos[2] - gate.center[2]) * gate.normal[1];
-      const lastProjection =
-        (previous.pos[0] - gate.center[0]) * gate.normal[0] +
-        (previous.pos[2] - gate.center[2]) * gate.normal[1];
-      if (this.highWaterGate !== this.progress.nextGate) {
-        this.highWaterGate = this.progress.nextGate;
-        this.highWater = lastProjection;
-      }
-      if (this.highWater === -Infinity) this.highWater = lastProjection;
-      const forward = projection > this.highWater + 0.0001;
-      this.highWater = Math.max(this.highWater, projection);
-      if (!m.ready && m.turboTicks === 0) {
-        if (bump || (b.grounded && (speed < s.cruiseSpeed * 0.9 || !forward))) m.chargeTicks = 0;
-        else if (b.grounded && forward) {
-          m.chargeTicks = Math.min(s.chargeTicks, m.chargeTicks + 1);
-          if (m.chargeTicks === s.chargeTicks) {
-            m.ready = true;
-            m.lastEvent = 'charged';
-          }
+    // Full-speed flow can continue through corners. Each uninterrupted three-second
+    // segment earns another stored turbo, including fast airborne travel.
+    if (s && !this.fallPenalized) {
+      if (speed + 0.00001 < s.cruiseSpeed) m.chargeTicks = 0;
+      else {
+        m.chargeTicks++;
+        if (m.chargeTicks >= s.chargeTicks) {
+          m.chargeTicks -= s.chargeTicks;
+          m.turboCharges++;
+          m.ready = true;
+          m.lastEvent = 'charged';
         }
       }
     }
@@ -214,7 +229,8 @@ class StuntSimulation implements RaceSimulation {
       current: b.pos,
       fell,
     });
-    if (this.flight && !fell) {
+    if (!s) return result;
+    if (this.flight && !this.fallPenalized) {
       const flight = this.flight;
       if (!b.grounded) flight.airTicks++;
       else if (flight.airTicks > 0) {
@@ -243,7 +259,7 @@ class StuntSimulation implements RaceSimulation {
         this.flight = null;
       }
     }
-    if (!fell && !this.flight && (previous.grounded || b.grounded)) {
+    if (!this.fallPenalized && !this.flight && (previous.grounded || b.grounded)) {
       for (const pad of s.launchPads) {
         if (this.used.has(pad.id) || speed < pad.minSpeed || !crosses(pad.gate, previous.pos, b.pos))
           continue;

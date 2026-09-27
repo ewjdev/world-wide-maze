@@ -1,0 +1,40 @@
+{
+  "courseId": "6e285653ecdc66b6e274ab9a757a4538942f8d1ad6daa662615fe2e898d39cba",
+  "route": "route-0",
+  "url": "http://127.0.0.1:5214/race/sky-weave",
+  "progress": {
+    "tick": 9312,
+    "nextGate": 4,
+    "sectorTicks": [
+      1388,
+      4198,
+      6147
+    ],
+    "finishTick": 9312,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 6,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-0-ready.png",
+    "screenshots/route-0-midrun.png",
+    "screenshots/route-0-feature.png",
+    "screenshots/route-0-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "low"
+}

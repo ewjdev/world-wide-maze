@@ -1,0 +1,342 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "sky-weave",
+  "number": 8,
+  "name": "Sky Weave",
+  "tier": "8 \u00b7 Elevation reading",
+  "width": "2.75\u20134 ball widths",
+  "skill": "Speed + level awareness + jump alignment",
+  "tech": "Layer-aware clearance, camera/spawn and recovery work required",
+  "beats": [
+    12,
+    16,
+    18,
+    14
+  ],
+  "phase": [
+    "Lower approach",
+    "Upper crossing",
+    "Reversal and leap",
+    "Lower crossing exit"
+  ],
+  "nodes": {
+    "S": [
+      42,
+      95
+    ],
+    "A": [
+      50,
+      85
+    ],
+    "G1": [
+      73,
+      82
+    ],
+    "B": [
+      89,
+      64
+    ],
+    "X1": [
+      52,
+      51
+    ],
+    "G2": [
+      22,
+      24
+    ],
+    "C": [
+      49,
+      13
+    ],
+    "G3": [
+      81,
+      24
+    ],
+    "X2": [
+      52,
+      51
+    ],
+    "D": [
+      35,
+      65
+    ],
+    "F": [
+      24,
+      43
+    ],
+    "T": [
+      62,
+      73
+    ],
+    "J": [
+      54,
+      30
+    ],
+    "R": [
+      67.5,
+      27
+    ],
+    "M": [
+      72,
+      55
+    ],
+    "N": [
+      103,
+      37
+    ],
+    "JL1": [
+      32.49825750944489,
+      29.772511505714952
+    ],
+    "JT1": [
+      42.356077509444894,
+      31.620851505714953
+    ],
+    "JL2": [
+      61.92394183154951,
+      24.413367572787052
+    ],
+    "JT2": [
+      71.72592183154951,
+      22.23514757278705
+    ],
+    "W1_1": [
+      61.5,
+      83.5
+    ],
+    "W4_1": [
+      55.33333,
+      44.66667
+    ],
+    "W4_2": [
+      38.66667,
+      34.33333
+    ],
+    "W5_1": [
+      35.5,
+      18.5
+    ],
+    "W6_1": [
+      65.0,
+      18.5
+    ],
+    "W8_1": [
+      82,
+      44
+    ],
+    "W8_2": [
+      61,
+      51
+    ],
+    "W8_3": [
+      46,
+      58
+    ]
+  },
+  "routes": [
+    [
+      "Full weave",
+      "S A W1_1 G1 B M W4_1 W4_2 G2 W5_1 C W6_1 G3 N W8_1 W8_2 W8_3 D F",
+      "Cross above once, then return underneath; no junction at X."
+    ],
+    [
+      "Upper inside",
+      "S A W1_1 G1 T M W4_1 W4_2 G2 W5_1 C W6_1 G3 N W8_1 W8_2 W8_3 D F",
+      "Merge on M before the upper crossing; X1 and X2 are height-separated references, not islands."
+    ],
+    [
+      "Upper hop",
+      "S A W1_1 G1 B M W4_1 W4_2 G2 JL1 JT1 J JL2 JT2 G3 N W8_1 W8_2 W8_3 D F",
+      "Jump across the upper loop without bypassing any gate."
+    ]
+  ],
+  "tight": [
+    "G3 X2"
+  ],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2"
+  ],
+  "catch": [
+    "J R",
+    "R C"
+  ],
+  "cross": [
+    52,
+    51
+  ],
+  "danger": "Upper deck is 4 m above the flat lower crossing; descend fully on G3\u2013N before the underpass.",
+  "largePads": [
+    "J",
+    "G3",
+    "M"
+  ],
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 14,
+    "X1": 14,
+    "G2": 14,
+    "C": 14,
+    "G3": 14,
+    "X2": 10,
+    "D": 10,
+    "F": 10,
+    "T": 11.2,
+    "J": 14,
+    "R": 12,
+    "M": 14,
+    "N": 10,
+    "JL1": 14,
+    "JT1": 14,
+    "JL2": 14,
+    "JT2": 14,
+    "W1_1": 10.0,
+    "W4_1": 14.0,
+    "W4_2": 14.0,
+    "W5_1": 14.0,
+    "W6_1": 14.0,
+    "W8_1": 10.0,
+    "W8_2": 10.0,
+    "W8_3": 10.0
+  },
+  "reviewStatus": "Layer-separated crossing authored; physics and browser validation pending",
+  "gateNormals": {
+    "G1": [
+      0.9997166737441362,
+      -0.023802777946288958
+    ],
+    "G2": [
+      -0.7432941462471663,
+      -0.6689647316224497
+    ],
+    "G3": [
+      0.9984204335452731,
+      0.05618396460974464
+    ],
+    "F": [
+      -0.4472135954999579,
+      -0.8944271909999159
+    ]
+  },
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 47,
+  "targetSpeed": 9.6,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "JL1": 42,
+    "JT1": 52,
+    "JL2": 42,
+    "JT2": 52,
+    "W1_1": 55,
+    "W4_1": 55,
+    "W4_2": 55,
+    "W5_1": 55,
+    "W6_1": 55,
+    "W8_1": 55,
+    "W8_2": 55,
+    "W8_3": 55
+  },
+  "edgeControls": {
+    "S A": [
+      43,
+      87
+    ],
+    "A W1_1": [
+      53.5,
+      90
+    ],
+    "W1_1 G1": [
+      67,
+      88
+    ],
+    "G1 B": [
+      84.41253,
+      76.670365
+    ],
+    "B M": [
+      82.40227,
+      55.15225
+    ],
+    "M W4_1": [
+      65.85075875,
+      45.57083375
+    ],
+    "W4_1 W4_2": [
+      44.81591,
+      43.762497499999995
+    ],
+    "W4_2 G2": [
+      28.149241250000003,
+      33.429166249999994
+    ],
+    "G2 W5_1": [
+      27.5875,
+      17.797375
+    ],
+    "W5_1 C": [
+      41.087500000000006,
+      12.297374999999999
+    ],
+    "C W6_1": [
+      55.837500000000006,
+      19.842
+    ],
+    "W6_1 G3": [
+      74.1625,
+      17.158
+    ],
+    "G3 N": [
+      89.7413975,
+      35.1249275
+    ],
+    "N W8_1": [
+      94,
+      53
+    ],
+    "W8_1 W8_2": [
+      70,
+      40
+    ],
+    "W8_2 W8_3": [
+      50,
+      49
+    ],
+    "D F": [
+      35,
+      51
+    ],
+    "G1 T": [
+      69.40227,
+      74.68674999999999
+    ],
+    "T M": [
+      70.80454750000001,
+      66.5575
+    ],
+    "G2 JL1": [
+      24,
+      33
+    ],
+    "JT1 J": [
+      48,
+      36
+    ],
+    "R C": [
+      73,
+      3
+    ]
+  },
+  "longStraightEdges": [
+    "N D"
+  ],
+  "curveSamples": 9
+}

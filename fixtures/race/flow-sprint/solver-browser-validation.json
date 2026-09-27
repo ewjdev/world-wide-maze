@@ -1,0 +1,45 @@
+{
+  "courseId": "43b1aaf3c6436c208d0d671bf11c7d0f0a429a8efa73d938101c0880c29a7db6",
+  "route": "solver",
+  "url": "http://127.0.0.1:5214/race/flow-sprint",
+  "progress": {
+    "tick": 3802,
+    "nextGate": 9,
+    "sectorTicks": [
+      356,
+      808,
+      1248,
+      1651,
+      2074,
+      2484,
+      3119,
+      3551
+    ],
+    "finishTick": 3802,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "ready": false,
+    "turboCharges": 0,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/solver-ready.png",
+    "screenshots/solver-midrun.png",
+    "screenshots/solver-feature.png",
+    "screenshots/solver-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "low"
+}

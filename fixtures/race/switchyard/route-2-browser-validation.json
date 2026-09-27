@@ -1,0 +1,40 @@
+{
+  "courseId": "6d7015dd4bd7534c98d72dff3026f25cfc0e48a767faef277854659a84f44397",
+  "route": "route-2",
+  "url": "http://127.0.0.1:5214/race/switchyard",
+  "progress": {
+    "tick": 7418,
+    "nextGate": 4,
+    "sectorTicks": [
+      1348,
+      3226,
+      4735
+    ],
+    "finishTick": 7418,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 301,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 5,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 2,
+    "landings": 2,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-2-ready.png",
+    "screenshots/route-2-midrun.png",
+    "screenshots/route-2-feature.png",
+    "screenshots/route-2-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "high"
+}

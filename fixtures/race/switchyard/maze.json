@@ -1,0 +1,354 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "switchyard",
+  "number": 7,
+  "name": "Switchyard",
+  "tier": "7 \u00b7 Read under speed",
+  "width": "3\u20134 ball widths",
+  "skill": "Consecutive route decisions + alignment",
+  "tech": "Current branching rules; new course authoring and explicit rail policy",
+  "beats": [
+    10,
+    18,
+    18,
+    14
+  ],
+  "phase": [
+    "Choose approach",
+    "Three-way fork",
+    "Second decision",
+    "Converging exits"
+  ],
+  "nodes": {
+    "S": [
+      8,
+      106
+    ],
+    "A": [
+      27,
+      106
+    ],
+    "G1": [
+      38,
+      70
+    ],
+    "B": [
+      60,
+      86
+    ],
+    "C": [
+      72,
+      60
+    ],
+    "G2": [
+      65,
+      45
+    ],
+    "D": [
+      35,
+      45
+    ],
+    "G3": [
+      18,
+      23
+    ],
+    "E": [
+      54,
+      17
+    ],
+    "F": [
+      121,
+      17
+    ],
+    "P": [
+      48,
+      52
+    ],
+    "Q": [
+      43,
+      31
+    ],
+    "J": [
+      55,
+      65
+    ],
+    "R": [
+      70,
+      67
+    ],
+    "JL1": [
+      42.55026617808579,
+      65.04341753664087
+    ],
+    "JT1": [
+      52.21090617808579,
+      62.202057536640865
+    ],
+    "JL2": [
+      57.78909382191421,
+      60.29794246335913
+    ],
+    "JT2": [
+      67.44973382191421,
+      57.45658246335913
+    ],
+    "W1_1": [
+      32.5,
+      88.0
+    ],
+    "W2_1": [
+      49.0,
+      78.0
+    ],
+    "W3_1": [
+      66.0,
+      73.0
+    ],
+    "W5_1": [
+      50.0,
+      45.0
+    ],
+    "W6_1": [
+      26.5,
+      34.0
+    ],
+    "W7_1": [
+      36.0,
+      20.0
+    ],
+    "W8_1": [
+      78.33333,
+      17.0
+    ],
+    "W8_2": [
+      102.66667,
+      17.0
+    ],
+    "W11_1": [
+      54.0,
+      38.0
+    ],
+    "W12_1": [
+      30.5,
+      27.0
+    ]
+  },
+  "routes": [
+    [
+      "Outside / outside",
+      "S A W1_1 G1 W2_1 B W3_1 C G2 W5_1 D W6_1 G3 W7_1 E W8_1 W8_2 F",
+      "Readable ground route after a badly aligned approach."
+    ],
+    [
+      "Inside / inside",
+      "S A W1_1 G1 P G2 W11_1 Q W12_1 G3 W7_1 E W8_1 W8_2 F",
+      "Two precise turns; each exit sets up the next decision."
+    ],
+    [
+      "Jump / outside",
+      "S A W1_1 G1 JL1 JT1 J JL2 JT2 C G2 W5_1 D W6_1 G3 W7_1 E W8_1 W8_2 F",
+      "Two aligned hops end at a broad C braking apron before the reverse approach to G2."
+    ],
+    [
+      "Outside / inside",
+      "S A W1_1 G1 W2_1 B W3_1 C G2 W11_1 Q W12_1 G3 W7_1 E W8_1 W8_2 F",
+      "Ground first, precise second fork."
+    ],
+    [
+      "Inside / outside",
+      "S A W1_1 G1 P G2 W5_1 D W6_1 G3 W7_1 E W8_1 W8_2 F",
+      "Precise first fork, longer second fork."
+    ],
+    [
+      "Jump / inside",
+      "S A W1_1 G1 JL1 JT1 J JL2 JT2 C G2 W11_1 Q W12_1 G3 W7_1 E W8_1 W8_2 F",
+      "Jump, brake on C, then take the precise second fork."
+    ]
+  ],
+  "tight": [],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2"
+  ],
+  "catch": [
+    "J R",
+    "R B"
+  ],
+  "danger": "Six choices share the same gates. Narrow inside links trade steering tolerance for distance; two hops require alignment and braking on C and do not beat the inside route in the controlled runs.",
+  "largePads": [
+    "C"
+  ],
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "C": 10,
+    "G2": 10,
+    "D": 10,
+    "G3": 10,
+    "E": 10,
+    "F": 10,
+    "P": 10,
+    "Q": 10,
+    "J": 10,
+    "R": 8,
+    "JL1": 10,
+    "JT1": 10,
+    "JL2": 10,
+    "JT2": 10,
+    "W1_1": 10.0,
+    "W2_1": 10.0,
+    "W3_1": 10.0,
+    "W5_1": 10.0,
+    "W6_1": 10.0,
+    "W7_1": 10.0,
+    "W8_1": 10.0,
+    "W8_2": 10.0,
+    "W11_1": 10.0,
+    "W12_1": 10.0
+  },
+  "reviewStatus": "Playable; six clean ordinary-input routes verified with exact replay",
+  "gateNormals": {
+    "G1": [
+      0.5913636636275175,
+      -0.8064049958557057
+    ],
+    "G2": [
+      0,
+      -1
+    ],
+    "G3": [
+      -0.8188995369163508,
+      -0.5739368854135324
+    ],
+    "F": [
+      1,
+      0
+    ]
+  },
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 52,
+  "targetSpeed": 9.4,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "JL1": 42,
+    "JT1": 52,
+    "JL2": 42,
+    "JT2": 52,
+    "W1_1": 55,
+    "W2_1": 55,
+    "W3_1": 55,
+    "W5_1": 55,
+    "W6_1": 55,
+    "W7_1": 55,
+    "W8_1": 55,
+    "W8_2": 55,
+    "W11_1": 55,
+    "W12_1": 55
+  },
+  "edgeControls": {
+    "S A": [
+      17.5,
+      112.479
+    ],
+    "A W1_1": [
+      34.82273,
+      98.8755
+    ],
+    "W1_1 G1": [
+      30.17727,
+      77.1245
+    ],
+    "G1 W2_1": [
+      41,
+      80
+    ],
+    "W2_1 B": [
+      56.75455,
+      78.249
+    ],
+    "B W3_1": [
+      66.66364,
+      81.546
+    ],
+    "W3_1 C": [
+      72.66364,
+      68.546
+    ],
+    "C G2": [
+      72.72727,
+      50.113
+    ],
+    "G2 W5_1": [
+      57.5,
+      39.885
+    ],
+    "W5_1 D": [
+      42.5,
+      50.115
+    ],
+    "D W6_1": [
+      33.85,
+      36.6015
+    ],
+    "W6_1 G3": [
+      19.15,
+      31.3985
+    ],
+    "G3 W7_1": [
+      26.15455,
+      15.361999999999998
+    ],
+    "W7_1 E": [
+      44.15455,
+      12.362
+    ],
+    "E W8_1": [
+      66.16667,
+      24.0
+    ],
+    "W8_1 W8_2": [
+      90.5,
+      10.0
+    ],
+    "G1 P": [
+      37.92727,
+      57.59
+    ],
+    "P G2": [
+      58.47273,
+      54.297
+    ],
+    "G2 W11_1": [
+      61.47273,
+      37.749
+    ],
+    "W11_1 Q": [
+      46.52727,
+      38.251
+    ],
+    "Q W12_1": [
+      37.87727,
+      24.7375
+    ],
+    "W12_1 G3": [
+      23.12273,
+      29.2625
+    ],
+    "R B": [
+      74,
+      84
+    ]
+  },
+  "longStraightEdges": [
+    "E F"
+  ]
+}

@@ -33,6 +33,7 @@ const LEGACY_PHASE: Record<RaceState['phase'], GamePhase> = {
   racing: 'play',
   paused: 'paused',
   finished: 'result',
+  exhausted: 'result',
 };
 
 /** Version negotiation happens before input can start a Race. The relay stays protocol agnostic. */

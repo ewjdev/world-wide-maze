@@ -1,0 +1,362 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "skipping-stones",
+  "number": 3,
+  "name": "Skipping Stones",
+  "tier": "3 \u00b7 Landing rhythm",
+  "width": "4\u20135.5 ball widths",
+  "skill": "Three landings + momentum retention",
+  "tech": "Current landing impulse and one-use pads; no landing-based turbo refill",
+  "beats": [
+    12,
+    18,
+    16,
+    14
+  ],
+  "phase": [
+    "Approach fork",
+    "Three short hops",
+    "Ground or transfer",
+    "Landing into finish"
+  ],
+  "nodes": {
+    "S": [
+      7,
+      119
+    ],
+    "A": [
+      18,
+      101
+    ],
+    "G1": [
+      28,
+      72
+    ],
+    "B": [
+      43,
+      62
+    ],
+    "C": [
+      58,
+      52
+    ],
+    "G2": [
+      72,
+      42
+    ],
+    "D": [
+      51,
+      23
+    ],
+    "G3": [
+      75,
+      9
+    ],
+    "F": [
+      129,
+      9
+    ],
+    "T": [
+      43,
+      75
+    ],
+    "U": [
+      70,
+      60
+    ],
+    "V": [
+      83,
+      42
+    ],
+    "J": [
+      88,
+      24
+    ],
+    "R": [
+      51,
+      58
+    ],
+    "JL1": [
+      32.78460459788169,
+      72.04967707834508
+    ],
+    "JT1": [
+      40.78787117123196,
+      66.71417451429456
+    ],
+    "JL2": [
+      45.212128828768044,
+      57.28582548570543
+    ],
+    "JT2": [
+      53.21539540211832,
+      51.95032292165493
+    ],
+    "JL3": [
+      59.722606163997575,
+      47.46732704829957
+    ],
+    "JT3": [
+      67.57360215774334,
+      41.859461857962195
+    ],
+    "JL4": [
+      81.73492650061759,
+      37.13535756837842
+    ],
+    "JT4": [
+      84.4874544924882,
+      27.226231343092106
+    ],
+    "JL5": [
+      86.53779315020164,
+      18.30821586962262
+    ],
+    "JT5": [
+      80.06381109680832,
+      10.83822287095152
+    ],
+    "W0_1": [
+      12.5,
+      110.0
+    ],
+    "W1_1": [
+      23.0,
+      86.5
+    ],
+    "W11_1": [
+      61.5,
+      32.5
+    ],
+    "W12_1": [
+      63.0,
+      16.0
+    ],
+    "W13_1": [
+      93.0,
+      9.0
+    ],
+    "W13_2": [
+      111.0,
+      9.0
+    ],
+    "W15_1": [
+      56.5,
+      67.5
+    ]
+  },
+  "routes": [
+    [
+      "Hop chain",
+      "S W0_1 A W1_1 G1 JL1 JT1 B JL2 JT2 C JL3 JT3 G2 W11_1 D W12_1 G3 W13_1 W13_2 F",
+      "Aligned first three hops; each reward follows the arrival heading, not the next target."
+    ],
+    [
+      "Ground bypass",
+      "S W0_1 A W1_1 G1 T W15_1 U G2 W11_1 D W12_1 G3 W13_1 W13_2 F",
+      "Longer continuous ground route; also serves the two bailout links."
+    ],
+    [
+      "Chain + late transfer",
+      "S W0_1 A W1_1 G1 JL1 JT1 B JL2 JT2 C JL3 JT3 G2 V JL4 JT4 J JL5 JT5 G3 W13_1 W13_2 F",
+      "G2\u2013V is a settling runway before the final hop pair."
+    ],
+    [
+      "Ground + late transfer",
+      "S W0_1 A W1_1 G1 T W15_1 U G2 V JL4 JT4 J JL5 JT5 G3 W13_1 W13_2 F",
+      "Preserve turbo on the ground route, then choose the late transfer."
+    ],
+    [
+      "First-stone bailout",
+      "S W0_1 A W1_1 G1 JL1 JT1 B T W15_1 U G2 W11_1 D W12_1 G3 W13_1 W13_2 F",
+      "Brake at B and exit on the grounded link; no need to reuse its launch."
+    ],
+    [
+      "Second-stone bailout",
+      "S W0_1 A W1_1 G1 JL1 JT1 B JL2 JT2 C U G2 W11_1 D W12_1 G3 W13_1 W13_2 F",
+      "Brake at C and use the long grounded return through U."
+    ]
+  ],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2",
+    "JL3 JT3",
+    "JL4 JT4",
+    "JL5 JT5"
+  ],
+  "tight": [],
+  "catch": [
+    "B R",
+    "R T"
+  ],
+  "danger": "B and C now have grounded bailouts; the late transfer has a settling runway. Direct airborne cuts still need testing.",
+  "largePads": [
+    "G2",
+    "V",
+    "G3"
+  ],
+  "gateNormals": {
+    "G1": [
+      0,
+      -1
+    ],
+    "G2": [
+      0,
+      -1
+    ],
+    "G3": [
+      0,
+      -1
+    ],
+    "F": [
+      1,
+      0
+    ]
+  },
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "C": 10,
+    "G2": 10,
+    "D": 10,
+    "G3": 10,
+    "F": 10,
+    "T": 10,
+    "U": 10,
+    "V": 10,
+    "J": 10,
+    "R": 8,
+    "JL1": 10,
+    "JT1": 10,
+    "JL2": 10,
+    "JT2": 10,
+    "JL3": 10,
+    "JT3": 10,
+    "JL4": 10,
+    "JT4": 10,
+    "JL5": 10,
+    "JT5": 10,
+    "W0_1": 10.0,
+    "W1_1": 10.0,
+    "W11_1": 10.0,
+    "W12_1": 10.0,
+    "W13_1": 10.0,
+    "W13_2": 10.0,
+    "W15_1": 10.0
+  },
+  "reviewStatus": "All six routes real-physics and exact replay verified; browser review pending",
+  "scale": [
+    30,
+    27
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 72,
+  "targetSpeed": 9.6,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "J": 145,
+    "JL1": 42,
+    "JT1": 75,
+    "JL2": 42,
+    "JT2": 75,
+    "JL3": 42,
+    "JT3": 52,
+    "JL4": 42,
+    "JT4": 75,
+    "JL5": 42,
+    "JT5": 75,
+    "W0_1": 55,
+    "W1_1": 55,
+    "W11_1": 55,
+    "W12_1": 55,
+    "W13_1": 55,
+    "W13_2": 55,
+    "W15_1": 55
+  },
+  "edgeControls": {
+    "S W0_1": [
+      12.261,
+      116.39444
+    ],
+    "W0_1 A": [
+      12.739,
+      103.60556
+    ],
+    "A W1_1": [
+      24.5455,
+      95.47222
+    ],
+    "W1_1 G1": [
+      21.4545,
+      77.52778
+    ],
+    "G2 W11_1": [
+      69.4005,
+      33.63333
+    ],
+    "W11_1 D": [
+      53.5995,
+      31.36667
+    ],
+    "D W12_1": [
+      58.953,
+      23.63333
+    ],
+    "W12_1 G3": [
+      67.047,
+      10.296296296296296
+    ],
+    "G3 W13_1": [
+      84.0,
+      3.8148099999999996
+    ],
+    "W13_1 W13_2": [
+      102.0,
+      3.81481
+    ],
+    "G1 T": [
+      34.67329,
+      78.60317
+    ],
+    "T W15_1": [
+      51.837,
+      75.88777
+    ],
+    "W15_1 U": [
+      61.163,
+      59.11223
+    ],
+    "U G2": [
+      66.3685,
+      50.36468
+    ],
+    "G2 V": [
+      77.5,
+      45.78889
+    ],
+    "B T": [
+      46.627,
+      68.5
+    ],
+    "C U": [
+      61.768,
+      60.13333
+    ],
+    "JT3 G2": [
+      74,
+      47
+    ],
+    "R T": [
+      52,
+      72
+    ]
+  },
+  "longStraightEdges": [
+    "G3 F"
+  ]
+}

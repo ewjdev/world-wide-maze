@@ -74,12 +74,14 @@ function CourseMap({ course }: { course: RaceCourse }) {
       className="race-course-map"
     >
       {course.stage.bridges.map((bridge) => (
-        <line
+        <path
           key={`b${bridge.id}`}
-          x1={bridge.a[0]}
-          y1={bridge.a[1]}
-          x2={bridge.b[0]}
-          y2={bridge.b[1]}
+          d={
+            bridge.control
+              ? `M ${bridge.a.join(' ')} Q ${bridge.control.join(' ')} ${bridge.b.join(' ')}`
+              : `M ${bridge.a.join(' ')} L ${bridge.b.join(' ')}`
+          }
+          fill="none"
           stroke="#3f9a4c"
           strokeWidth={bridge.width}
         />
@@ -237,9 +239,10 @@ function RaceScreens({ session }: { session: RaceSession }) {
   const [clearing, setClearing] = useState(false);
   const action = useRef<HTMLButtonElement>(null);
   useEffect(() => {
-    if (['ready', 'paused', 'finished', 'error'].includes(v.phase)) action.current?.focus();
+    if (['ready', 'paused', 'finished', 'exhausted', 'error'].includes(v.phase)) action.current?.focus();
   }, [v.phase]);
   const racing = v.phase === 'racing';
+  const hasJumps = (session.course.stunts?.launchPads.length ?? 0) > 0;
   const sectors = session.course.gates.filter((gate) => gate.kind === 'sector').length;
   const eligible = v.result && isEligible(v.result);
   const resultTitle = !eligible ? 'race.practiceFinish' : v.newBest ? 'race.newBest' : 'race.finish';
@@ -271,6 +274,15 @@ function RaceScreens({ session }: { session: RaceSession }) {
               <span>{t('race.elapsed')}</span>
               <strong data-testid="race-time">{raceTime(v.progress.tick)}</strong>
             </div>
+            {v.mechanics && (
+              <div className="race-lives" role="status" data-testid="race-lives">
+                <span>{t('race.lives')}</span>
+                <strong>
+                  {v.mechanics.lives}
+                  <small> / {v.mechanics.maxLives}</small>
+                </strong>
+              </div>
+            )}
             <div className="race-gates">
               <span>{t('race.sector')}</span>
               <strong>
@@ -298,20 +310,14 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 onClick={() => session.turbo()}
               >
                 <span>
-                  {t(
-                    v.mechanics.turboTicks > 0
-                      ? 'race.turboActive'
-                      : v.mechanics.ready
-                        ? 'race.turboReady'
-                        : 'race.turbo',
-                  )}
+                  {t('race.turbo')} × <b data-testid="race-turbo-count">{v.mechanics.turboCharges}</b>
                 </span>
                 <kbd>T</kbd>
               </button>
               <progress
                 aria-label={t('race.turboCharging')}
                 max={v.mechanics.chargeRequired}
-                value={v.mechanics.ready ? v.mechanics.chargeRequired : v.mechanics.chargeTicks}
+                value={v.mechanics.chargeTicks}
               />
               <small role="status" data-testid="race-stunt-event">
                 {t(
@@ -321,9 +327,7 @@ function RaceScreens({ session }: { session: RaceSession }) {
                       ? 'race.launched'
                       : v.mechanics.turboTicks > 0
                         ? 'race.turboActive'
-                        : v.mechanics.ready
-                          ? 'race.turboReady'
-                          : 'race.turboCharging',
+                        : 'race.turboCharging',
                 )}
               </small>
             </div>
@@ -373,8 +377,16 @@ function RaceScreens({ session }: { session: RaceSession }) {
             )}
             {v.phase === 'ready' && (
               <>
-                <h1>{t(session.course.stunts ? 'race.stuntReady' : 'race.ready')}</h1>
-                <p>{t(session.course.stunts ? 'race.stuntHint' : 'race.readyHint')}</p>
+                <h1>{t(hasJumps ? 'race.stuntReady' : 'race.ready')}</h1>
+                <p>
+                  {t(
+                    hasJumps
+                      ? 'race.stuntHint'
+                      : session.course.stunts
+                        ? 'race.groundBoostHint'
+                        : 'race.readyHint',
+                  )}
+                </p>
                 <p className="race-best-line">
                   {v.best ? (
                     <>
@@ -433,6 +445,26 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 >
                   {t('race.keyboard')}
                 </button>
+              </>
+            )}
+            {v.phase === 'exhausted' && (
+              <>
+                <h1>{t('race.outOfLives')}</h1>
+                <p>{t('race.outOfLivesHint')}</p>
+                <strong className="race-result-time">{raceTime(v.progress.tick)}</strong>
+                <button
+                  ref={action}
+                  type="button"
+                  className="wwm-btn wwm-btn--primary"
+                  data-testid="race-retry"
+                  onClick={() => void session.start()}
+                >
+                  {t('race.retry')}
+                  <Icon name="retry" />
+                </button>
+                <Link className="wwm-btn wwm-btn--ghost" to="/race">
+                  {t('race.back')}
+                </Link>
               </>
             )}
             {v.phase === 'finished' && (

@@ -1,11 +1,16 @@
 export const raceEn = {
   stuntReady: 'Choose your line',
+  groundBoostHint:
+    'Follow the green gates and carry speed through the turns. Every 3 seconds at full speed earns another turbo. Store them and press T or tap Turbo to use one at any time. You have 3 lives; falling costs 1 life and 1 stored turbo.',
   stuntHint:
-    'Follow the green gates. Take the ground route or jump between islands, then line up for the exit turn. Hold a fast, clean line for 3 seconds to earn turbo; press T or tap Turbo to spend it. Ramps launch automatically. Clean landings give a small boost.',
+    'Follow the green gates. Take the ground route or jump between islands, then line up for the exit turn. Every 3 seconds at full speed earns another turbo. Store them and press T or tap Turbo to use one at any time. You have 3 lives; falling costs 1 life and 1 stored turbo. Ramps launch automatically. Clean landings give a small boost.',
   stuntControls: 'Arrows / WASD to roll · T for turbo · Space to jump · R to retry',
   turbo: 'Turbo',
   turboReady: 'Turbo ready',
-  turboCharging: 'Build speed to charge',
+  turboCharging: 'Next turbo · 3 seconds at full speed',
+  lives: 'Lives',
+  outOfLives: 'Out of lives.',
+  outOfLivesHint: 'No lives remain in this attempt. Start a new race with 3 lives and an empty turbo stack.',
   turboActive: 'Turbo active',
   cleanLanding: 'Clean landing',
   launched: 'Airborne',
@@ -23,7 +28,8 @@ export const raceEn = {
   retry: 'Race again',
   back: 'All courses',
   ready: 'Find your rhythm',
-  readyHint: 'Pass every green gate in order. Your fastest uninterrupted finish becomes your personal best.',
+  readyHint:
+    'Pass every green gate in order. Your fastest uninterrupted finish becomes your personal best. You have 3 lives; falling costs 1 life.',
   controls: 'Arrow keys or WASD to roll · Space to jump · Esc to pause · R to retry',
   phone: 'Use your phone',
   keyboard: 'Use keyboard',
@@ -84,12 +90,18 @@ export const raceEn = {
 };
 export const raceJa: Record<keyof typeof raceEn, string> = {
   stuntReady: '走るラインを選ぼう',
+  groundBoostHint:
+    '緑のゲートを順番に通過し、カーブでも速度を保とう。最高速度を3秒保つたびにターボが1つたまります。ストックして、Tキーまたはターボボタンでいつでも1つ使用できます。ライフは3つ。落下するとライフとターボを1つずつ失います。',
   stuntHint:
-    '緑のゲートを順番に通過。地上ルートか島を渡るジャンプを選び、出口のカーブに備えよう。速く滑らかな走りを3秒続けるとターボがたまります。Tキーまたはターボボタンで使用。ランプでは自動でジャンプし、きれいな着地で小さく加速します。',
+    '緑のゲートを順番に通過。地上ルートか島を渡るジャンプを選び、出口のカーブに備えよう。最高速度を3秒保つたびにターボが1つたまります。ストックして、Tキーまたはターボボタンでいつでも1つ使用できます。ライフは3つ。落下するとライフとターボを1つずつ失います。ランプでは自動でジャンプし、きれいな着地で小さく加速します。',
   stuntControls: '矢印 / WASDで移動 · Tでターボ · Spaceでジャンプ · Rで再挑戦',
   turbo: 'ターボ',
   turboReady: 'ターボ準備完了',
-  turboCharging: 'スピードを上げてチャージ',
+  turboCharging: '次のターボ · 最高速度で3秒',
+  lives: 'ライフ',
+  outOfLives: 'ライフがなくなりました。',
+  outOfLivesHint:
+    'ライフがなくなったため、この走行は終了しました。ライフ3つ、ターボ0個で新しいレースを始めましょう。',
   turboActive: 'ターボ発動中',
   cleanLanding: 'きれいな着地',
   launched: 'ジャンプ中',
@@ -107,7 +119,8 @@ export const raceJa: Record<keyof typeof raceEn, string> = {
   retry: 'もう一度レース',
   back: 'コース一覧',
   ready: 'リズムをつかもう',
-  readyHint: '緑のゲートを順番に通過。中断なしの最速タイムが自己ベストになります。',
+  readyHint:
+    '緑のゲートを順番に通過。中断なしの最速タイムが自己ベストになります。ライフは3つ。落下すると1つ失います。',
   controls: '矢印キー・WASDで移動 · Spaceでジャンプ · Escで一時停止 · Rで再挑戦',
   phone: 'スマートフォンを使う',
   keyboard: 'キーボードを使う',

@@ -1,0 +1,40 @@
+{
+  "courseId": "10c24640f869462867352ffc2d3ecd79e9d7feebecae6e7fa4233f545743ee2a",
+  "route": "route-3",
+  "url": "http://127.0.0.1:5214/race/twin-canyons",
+  "progress": {
+    "tick": 8025,
+    "nextGate": 4,
+    "sectorTicks": [
+      1565,
+      3975,
+      6637
+    ],
+    "finishTick": 8025,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 4,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 4,
+    "landings": 4,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-3-ready.png",
+    "screenshots/route-3-midrun.png",
+    "screenshots/route-3-feature.png",
+    "screenshots/route-3-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting.",
+  "renderingQuality": "low"
+}

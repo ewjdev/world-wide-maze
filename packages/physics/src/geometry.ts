@@ -9,6 +9,8 @@
  */
 import {
   type Bridge,
+  bridgeSections,
+  bridgeSurfaceMesh,
   type Elevator,
   type Island,
   pointInPolygon,
@@ -237,7 +239,46 @@ export function bridgeSpecs(
   bridge: Bridge,
   islands: ReadonlyMap<number, Island>,
   p: PhysicsParams,
-): BoxSpec[] {
+): StaticSpec[] {
+  if (bridge.control || bridge.bank) {
+    const role: ColliderRole = { type: 'bridge', bridgeId: bridge.id };
+    const out: StaticSpec[] = [{ shape: 'trimesh', ...bridgeSurfaceMesh(bridge, p.slabThickness), role }];
+    if (bridge.rails !== false)
+      for (const side of [-1, 1]) {
+        out.push({
+          shape: 'trimesh',
+          ...bridgeSurfaceMesh(bridge, p.railHeight, side, p.railThickness),
+          role: { type: 'bridge-rail', bridgeId: bridge.id },
+        });
+      }
+    const sections = bridgeSections(bridge);
+    for (const [section, islandId, direction] of [
+      [sections[0], bridge.from, -1],
+      [sections.at(-1), bridge.to, 1],
+    ] as const) {
+      if (!section) continue;
+      const [ux, uz] = section.tangent;
+      const point = section.pos;
+      const length =
+        pxToMeters(gapIntoIsland(point, [direction * ux, direction * uz], islands.get(islandId), 24)) +
+        p.bridgeOverlap;
+      out.push(
+        flatDeck(
+          pxToMeters(point[0]),
+          pxToMeters(point[1]),
+          ux,
+          uz,
+          direction < 0 ? -length : 0,
+          direction < 0 ? 0 : length,
+          pxToMeters(bridge.width) / 2,
+          section.y,
+          p.slabThickness,
+          role,
+        ),
+      );
+    }
+    return out;
+  }
   const { ux, uz } = horizontalAxis(bridge.a, bridge.b);
   const A = pageToWorld(bridge.a, bridge.levelA);
   const B = pageToWorld(bridge.b, bridge.levelB);
@@ -265,7 +306,7 @@ export function bridgeSpecs(
     });
     const rh = p.railHeight;
     const rt = p.railThickness;
-    for (const side of [-1, 1]) {
+    for (const side of bridge.rails === false ? [] : [-1, 1]) {
       out.push({
         shape: 'box',
         // outside the deck edge, so the whole deck width is walkable (2013: a ribbon at the edge)

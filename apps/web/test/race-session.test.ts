@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { createSimulation } from '@wwm/physics';
 import type { RaceAttempt, RaceCourse } from '@wwm/race';
-import type { StageData } from '@wwm/schema';
+import type { SimEvent, StageData } from '@wwm/schema';
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 
 const state = vi.hoisted(() => ({
@@ -13,6 +13,8 @@ const state = vi.hoisted(() => ({
   frame: null as FrameRequestCallback | null,
   engineDispose: vi.fn(),
   clearFails: false,
+  events: [] as SimEvent[],
+  resetCount: 0,
 }));
 vi.mock('@wwm/engine', () => ({
   createEngine: async () => ({
@@ -43,6 +45,7 @@ vi.mock('@wwm/physics', async (importOriginal) => ({
         x = 0;
       },
       reset: () => {
+        state.resetCount++;
         x = 0;
       },
       dispose() {},
@@ -50,7 +53,7 @@ vi.mock('@wwm/physics', async (importOriginal) => ({
       getBallState: ball,
       step: () => {
         x += 0.01;
-        return { ball: ball(), events: [], elevators: [] };
+        return { ball: ball(), events: state.events.splice(0), elevators: [] };
       },
     };
   },
@@ -146,6 +149,8 @@ beforeEach(async () => {
   state.spawnWait = null;
   state.phoneReady = true;
   state.clearFails = false;
+  state.events = [];
+  state.resetCount = 0;
   state.prepare.mockClear();
   state.engineDispose.mockClear();
   vi.stubGlobal('window', new EventTarget());
@@ -326,4 +331,56 @@ test('returning focus before asynchronous setup finishes clears the latch', asyn
   await starting;
   expect(game.getView().phase).toBe('countdown');
   expect(game.getView().progress.reasons).toEqual([]);
+});
+
+test('third fall ends the attempt immediately; recovery cannot double-charge or continue an exhausted race', async () => {
+  course.gates[0].center[0] = 1000;
+  const game = await mounted();
+  await game.start();
+  frame();
+  expect(game.getView().mechanics?.lives).toBe(3);
+  for (let lives = 2; lives >= 0; lives--) {
+    state.events.push({ type: 'fell', restartAt: course.stage.start.pos });
+    frame();
+    expect(game.debugState().mechanics?.lives).toBe(lives);
+    if (lives > 0) {
+      game.recover(); // An in-progress fall cannot request another penalty.
+      state.events.push({ type: 'lost' });
+      frame();
+      frame();
+      expect(game.debugState().mechanics?.lives).toBe(lives);
+      expect(game.getView().phase).toBe('racing');
+    }
+  }
+  expect(game.getView().phase).toBe('exhausted');
+  expect(state.resetCount).toBe(2);
+  const tick = game.debugState().tick;
+  game.recover();
+  game.resume();
+  frame();
+  expect(game.debugState().tick).toBe(tick);
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(state.durable.at(-1)?.outcome).toBe('abandoned');
+  expect(state.durable.at(-1)?.progress.reasons).toContain('fall');
+  await game.start();
+  expect(game.getView().phase).toBe('countdown');
+  expect(game.getView().mechanics).toMatchObject({ lives: 3, turboCharges: 0, exhausted: false });
+  expect(game.debugState().tick).toBe(0);
+});
+
+test('manual recovery costs one life, debounces pending requests, and stops before resetting the last life', async () => {
+  course.gates[0].center[0] = 1000;
+  const game = await mounted();
+  await game.start();
+  frame();
+  for (let lives = 2; lives >= 0; lives--) {
+    game.recover();
+    game.recover();
+    frame();
+    expect(game.getView().mechanics?.lives).toBe(lives);
+  }
+  expect(game.getView().phase).toBe('exhausted');
+  expect(state.resetCount).toBe(2);
+  expect(game.getView().progress.reasons).toContain('recovery');
 });

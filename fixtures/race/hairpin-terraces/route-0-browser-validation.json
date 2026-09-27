@@ -1,0 +1,40 @@
+{
+  "courseId": "81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693",
+  "route": "route-0",
+  "renderingQuality": "low",
+  "url": "http://127.0.0.1:5214/race/hairpin-terraces",
+  "progress": {
+    "tick": 7442,
+    "nextGate": 4,
+    "sectorTicks": [
+      2060,
+      3888,
+      5967
+    ],
+    "finishTick": 7442,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 329,
+    "chargeRequired": 360,
+    "ready": true,
+    "turboCharges": 4,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "maxPoseError": 0,
+  "pageErrors": [],
+  "screenshots": [
+    "screenshots/route-0-ready.png",
+    "screenshots/route-0-midrun.png",
+    "screenshots/route-0-feature.png",
+    "screenshots/route-0-finish.png"
+  ],
+  "evidence": "Same recorded ordinary inputs in the playable browser; finish progress and final physics pose compared to the Node Rapier run. Screenshots are evidence of rendering, not independent human playtesting."
+}

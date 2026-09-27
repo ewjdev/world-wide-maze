@@ -55,6 +55,9 @@
   font-weight: 650;
 }
 .race-course-list {
+  max-height: clamp(230px, 36dvh, 380px);
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   border-top: 1px solid var(--line);
 }
 .race-course-list button {
@@ -103,7 +106,7 @@
 }
 .race-map-panel {
   margin: 0;
-  align-self: stretch;
+  align-self: start;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -570,4 +573,11 @@
   .race-root--stunts .race-ghost-key {
     bottom: 238px;
   }
+}
+
+.race-lives {
+  font-variant-numeric: tabular-nums;
+}
+.race-lives small {
+  font-size: 0.55em;
 }
