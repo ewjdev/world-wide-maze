@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "a121f0463c0f2bfd",
+  "hash": "0fd9f6ae484318cd",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -332,7 +332,7 @@
       "path": "docs/build-log/performance-ghost-ci-repair.md",
       "url": "/log#performance-ghost-ci-repair",
       "kind": "build-log",
-      "text": "- `CI=true pnpm exec vitest run --project @wwm/web apps/web/test/ghost.e2e.test.ts apps/web/test/ghost-client.test.ts`: all 14 tests passed in 39.47 s, including real worker/reference parity and stale same-stage response rejection.\n- `pnpm --filter @wwm/web typecheck`, focused Biome and `git diff --check` passed.\n- The runtime content fingerprint remains `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`; existing source-bound native measurements remain applicable.\n\nLocal diagnostic logs are `/tmp/wwm-ghost-ci-before.log`, `/tmp/wwm-ghost-ci-delayed-negative.log`, and `/tmp/wwm-ghost-ci-after.log`. The hosted failure was preserved at `/tmp/wwm-p1-ci-failed.log`. Focused checks establish this repair; the complete hosted staging check must still pass before final handoff. The browser and test server closed, and the shared heavy-work slot was released."
+      "text": "- `CI=true pnpm exec vitest run --project @wwm/web apps/web/test/ghost.e2e.test.ts apps/web/test/ghost-client.test.ts`: all 14 tests passed in 39.47 s, including real worker/reference parity and stale same-stage response rejection.\n- `pnpm --filter @wwm/web typecheck`, focused Biome and `git diff --check` passed.\n- The runtime content fingerprint remains `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`; existing source-bound native measurements remain applicable.\n\nLocal diagnostic logs are `/tmp/wwm-ghost-ci-before.log`, `/tmp/wwm-ghost-ci-delayed-negative.log`, and `/tmp/wwm-ghost-ci-after.log`. The hosted failure was preserved at `/tmp/wwm-p1-ci-failed.log`. Focused checks establish this repair; the complete hosted staging check must still pass before final handoff. The browser and test server closed, and the shared heavy-work slot was released.\n\nParent review also refreshed the device-matrix reproduction command to use the integrated #28 build wrapper, which emits the required source/asset evidence manifest. A plain production build remains valid for playing the game but cannot supply a source-bound audit."
     },
     {
       "id": "docs/build-log/performance-ghost-p1.md",

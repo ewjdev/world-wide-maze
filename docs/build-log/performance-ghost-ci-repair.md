@@ -15,3 +15,5 @@ Validation:
 - The runtime content fingerprint remains `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`; existing source-bound native measurements remain applicable.
 
 Local diagnostic logs are `/tmp/wwm-ghost-ci-before.log`, `/tmp/wwm-ghost-ci-delayed-negative.log`, and `/tmp/wwm-ghost-ci-after.log`. The hosted failure was preserved at `/tmp/wwm-p1-ci-failed.log`. Focused checks establish this repair; the complete hosted staging check must still pass before final handoff. The browser and test server closed, and the shared heavy-work slot was released.
+
+Parent review also refreshed the device-matrix reproduction command to use the integrated #28 build wrapper, which emits the required source/asset evidence manifest. A plain production build remains valid for playing the game but cannot supply a source-bound audit.

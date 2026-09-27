@@ -45,14 +45,14 @@ Existing diagnostic entry points (run from repository root):
 
 ```sh
 pnpm install --frozen-lockfile
-pnpm --filter @wwm/web build
+node infra/perf/p1-build.mjs
 pnpm --filter @wwm/web preview --host 127.0.0.1 --port 4318
 AUDIT_OUT=/tmp/wwm-staging-audit AUDIT_BASE=http://127.0.0.1:4318 node infra/perf/audit-2026-09.mjs frames
 AUDIT_OUT=/tmp/wwm-staging-audit AUDIT_BASE=http://127.0.0.1:4318 node infra/perf/audit-2026-09.mjs lifecycle
 AUDIT_OUT=/tmp/wwm-staging-audit AUDIT_BASE=http://127.0.0.1:4318 node infra/perf/audit-2026-09.mjs replay
 ```
 
-The staging harness supports `AUDIT_OUT`; always set a fresh output directory so the published baseline is not overwritten. This override was integrated by the parallel P1 instrumentation work. Its launch flags assume macOS Chromium/Metal and must be adapted and documented for other hosts; they do not establish Safari acceptance. New automated baseline/candidate infrastructure is tracked in #28. The #22 targeted paired probe has its own output directory and build mode:
+The staging harness supports `AUDIT_OUT`; always set a fresh output directory so the published baseline is not overwritten. This override was integrated by the parallel P1 instrumentation work. Its launch flags assume macOS Chromium/Metal and must be adapted and documented for other hosts; they do not establish Safari acceptance. The #28 build wrapper records the runtime and served-asset manifest required by the collectors; a plain production build does not produce this evidence manifest. See [performance regression checks](performance-regression.md) for comparison gates. The #22 targeted paired probe has its own output directory and build mode:
 
 ```sh
 node infra/perf/ghost-p1.mjs build
