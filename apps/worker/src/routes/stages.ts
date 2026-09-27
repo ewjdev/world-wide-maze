@@ -14,11 +14,12 @@ import { errorResponse, ServiceError } from '../errors.ts';
 import { defaultSeed, runCacheKey } from '../ids.ts';
 import type { JobParams } from '../pipeline.ts';
 import { checkUrl, checkUrlStatic } from '../policy/url-policy.ts';
+import { scheduleRefresh } from '../refresh.ts';
 import { BodyTooLargeError, MAX_STAGE_REQUEST_BYTES, readJsonCapped, tooLarge } from '../security.ts';
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-const IMMUTABLE = 'public, max-age=31536000, immutable';
+const REVOCABLE = 'private, no-store';
 
 /** 100 reads / minute / IP via the Rate Limiting binding (task 7). */
 export const readLimit: MiddlewareHandler<AppEnv> = async (c, next) => {
@@ -55,18 +56,44 @@ stagesRoutes.post('/stages', async (c) => {
   // Phase 12: an opt-out applies at once, also to runs already in the cache (security review #12).
   if (policy.isOptedOut && (await policy.isOptedOut(stat.host)))
     return errorResponse(new ServiceError('URL_FORBIDDEN', 'this site has opted out of World Wide Maze'));
+  if (await store.catalog.isUrlBlocked(url)) {
+    await store.recordAttempt({
+      jobId: crypto.randomUUID(),
+      url,
+      status: 'refused',
+      reason: 'content policy rule',
+    });
+    return errorResponse(new ServiceError('URL_FORBIDDEN', 'this page is unavailable'));
+  }
   const difficulty = body.data.difficulty ?? 'normal';
   const seed = body.data.seed ?? defaultSeed(url);
-  const cacheKey = runCacheKey(url, difficulty, builder.version, body.data.seed);
+  const cacheKey = await runCacheKey(url, difficulty, builder.version, body.data.seed);
 
-  const cachedRunId = await store.cachedRunId(cacheKey);
+  const cachedRunId = await store.cachedRunId(cacheKey, {
+    url,
+    difficulty,
+    seed,
+    builderVersion: builder.version,
+  });
   if (cachedRunId) {
     const run = await store.getRun(cachedRunId);
     if (run && run.stageIds.length > 0) {
       log.info('cache hit', { url, runId: run.runId, ms: Date.now() - t0 });
+      c.executionCtx.waitUntil(
+        scheduleRefresh(c.env, c.get('services'), {
+          cacheKey,
+          runId: run.runId,
+          url,
+          difficulty,
+          seed,
+          ip: c.get('ip'),
+        }),
+      );
       return c.json<CreateStageResponse>({ runId: run.runId, stageIds: run.stageIds }, 200);
     }
   }
+  if (await store.catalog.pendingVariant(cacheKey))
+    return errorResponse(new ServiceError('CAPTURE_BLOCKED', 'this page is awaiting content review'));
   const inflight = await store.inflightJob(cacheKey);
   if (inflight) return c.json<CreateStageResponse>({ jobId: inflight }, 202);
 
@@ -103,10 +130,17 @@ stagesRoutes.post('/stages', async (c) => {
     );
   }
 
-  const jobId = crypto.randomUUID();
+  const candidateId = crypto.randomUUID();
+  const jobId = await store.catalog.claimBuild(cacheKey, candidateId);
+  if (jobId !== candidateId) return c.json<CreateStageResponse>({ jobId }, 202);
   const params: JobParams = { jobId, url, difficulty, seed, cacheKey };
-  await c.env.BUILD_JOB.get(c.env.BUILD_JOB.idFromName(jobId)).start(params);
-  await store.setInflightJob(cacheKey, jobId);
+  try {
+    await store.setInflightJob(cacheKey, jobId);
+    await c.env.BUILD_JOB.get(c.env.BUILD_JOB.idFromName(jobId)).start(params);
+  } catch (error) {
+    await store.clearInflightJob(cacheKey, jobId);
+    throw error;
+  }
   log.info('job queued', { jobId, url, difficulty, seed, ms: Date.now() - t0 });
   return c.json<CreateStageResponse>({ jobId }, 202);
 });
@@ -123,7 +157,7 @@ stagesRoutes.get('/stages/:stageId', async (c) => {
   const obj = await c.get('services').store.getStage(id);
   if (!obj) return notFound('stage');
   return new Response(obj.body, {
-    headers: { 'content-type': 'application/json', 'cache-control': IMMUTABLE, etag: obj.httpEtag },
+    headers: { 'content-type': 'application/json', 'cache-control': REVOCABLE, etag: obj.httpEtag },
   });
 });
 
@@ -135,7 +169,7 @@ stagesRoutes.get('/stages/:stageId/texture', async (c) => {
   return new Response(obj.body, {
     headers: {
       'content-type': obj.httpMetadata?.contentType ?? 'image/webp',
-      'cache-control': IMMUTABLE,
+      'cache-control': REVOCABLE,
       etag: obj.httpEtag,
     },
   });
@@ -147,11 +181,10 @@ stagesRoutes.get('/runs/:runId', async (c) => {
   const run = await c.get('services').store.getRun(id);
   if (!run || run.stageIds.length === 0) return notFound('run');
   const body: RunResponse = { runId: run.runId, url: run.url, title: run.title, stageIds: run.stageIds };
-  const done = run.status !== 'building';
-  return c.json(body, 200, { 'cache-control': done ? 'public, max-age=300' : 'no-store' });
+  return c.json(body, 200, { 'cache-control': 'private, no-store' });
 });
 
 stagesRoutes.get('/curated', async (c) => {
   const runs = await c.get('services').store.curated();
-  return c.json<CuratedResponse>({ runs }, 200, { 'cache-control': 'public, max-age=300' });
+  return c.json<CuratedResponse>({ runs }, 200, { 'cache-control': 'private, no-store' });
 });

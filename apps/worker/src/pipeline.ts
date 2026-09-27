@@ -19,6 +19,7 @@ import { ServiceError, toServiceError } from './errors.ts';
 import { computeRunId } from './ids.ts';
 import { decodePng } from './image/png.ts';
 import type { Logger } from './log.ts';
+import { type ModerationDecision, normalizeModerationDecision, pendingDecision } from './moderation.ts';
 
 export interface JobParams {
   jobId: string;
@@ -43,6 +44,25 @@ export interface RunRecord {
 
 /** Storage used by the job (R2 + D1 + KV in production, memory in unit tests). */
 export interface StageStore {
+  recordAttempt?(attempt: {
+    jobId: string;
+    url: string;
+    status: string;
+    reason?: string;
+    runId?: string;
+  }): Promise<void>;
+  /** Persist a private review case before any stage becomes externally addressable. */
+  recordModeration?(
+    record: ModerationDecision & {
+      runId: string;
+      url: string;
+      submittedUrl: string;
+      cacheKey: string | null;
+      captureId: string;
+    },
+  ): Promise<void>;
+  /** Authoritative primary policy recheck; production stores must provide this. */
+  canPublishRun?(runId: string): Promise<boolean>;
   putCapture(bundle: CaptureBundle, screenshotPng: Uint8Array): Promise<void>;
   /** Returns the storage key of the texture. */
   putTexture(captureId: string, texture: SliceTexture): Promise<string>;
@@ -72,6 +92,8 @@ export interface PipelineDeps {
   capturer: Capturer;
   builder: StageBuilder;
   moderate: ModerateFn;
+  /** Recheck both submitted and final URL before sending capture content to a provider. */
+  isUrlBlocked?: (url: string) => Promise<boolean>;
   validatePlayable?: ValidatePlayableFn;
   /** Seeds tried per slice when `validatePlayable` rejects: seed, seed+1, … (default 4, Phase 09's proposal). */
   playableSeeds?: number;
@@ -129,12 +151,15 @@ export async function runBuildJob(
   let captureDeadline = Number.POSITIVE_INFINITY;
   let slice0Deadline = Number.POSITIVE_INFINITY;
   const progress = (step: keyof typeof PROGRESS) => emit({ type: 'progress', step, pct: PROGRESS[step] });
-  const log = deps.log.child({ jobId: params.jobId, url: params.url });
+  const log = deps.log.child({ jobId: params.jobId });
+  let terminalEmitted = false;
+  let moderation: ModerationDecision | undefined;
 
   let out: CaptureOutput;
-  let runId: string;
+  let runId: string | undefined;
   const stageIds: string[] = [];
   try {
+    await deps.store.recordAttempt?.({ jobId: params.jobId, url: params.url, status: 'started' });
     // Wait for a browser slot first (the job stays `queued`; the gate throws RATE_LIMITED if the wait is too
     // long), and only then start the capture and slice-0 clocks.
     const tQueue = Date.now();
@@ -166,28 +191,72 @@ export async function runBuildJob(
     });
 
     const shot = out.bundle.screenshot;
-    if (
-      (await deps.moderate({
-        png: out.screenshotPng,
-        width: shot.width,
-        height: shot.height,
-        url: out.bundle.url,
-      })) === 'block'
-    )
-      throw new ServiceError('CAPTURE_BLOCKED', 'this page was blocked by the content filter');
-
-    await progress('building');
+    const tModerate = Date.now();
+    let policyBlocked = false;
+    let policyUnavailable = false;
+    try {
+      policyBlocked = deps.isUrlBlocked
+        ? (await deps.isUrlBlocked(params.url)) || (await deps.isUrlBlocked(out.bundle.url))
+        : false;
+    } catch {
+      policyUnavailable = true;
+    }
+    if (policyBlocked) {
+      moderation = { ...pendingDecision('url_policy', 'policy'), status: 'blocked' };
+    } else if (policyUnavailable) {
+      moderation = pendingDecision('policy_unavailable', 'policy');
+    } else {
+      try {
+        moderation = normalizeModerationDecision(
+          await deps.moderate({
+            png: out.screenshotPng,
+            width: shot.width,
+            height: shot.height,
+            url: out.bundle.url,
+            title: out.bundle.title,
+            text: out.bundle.elements.flatMap((e) => (e.text ? [e.text] : [])).join('\n'),
+            textures: out.textures,
+          }),
+        );
+      } catch {
+        moderation = pendingDecision('provider_error');
+      }
+    }
+    timings.moderation = since(tModerate);
+    // Moderation has its own bounded budget; keep the existing capture/build budget intact.
+    slice0Deadline += timings.moderation;
     const bundle = out.bundle;
     const count = sliceCount(bundle);
     const builderVersion = deps.builder.version;
     runId = await computeRunId(bundle.captureId, params.seed, builderVersion, params.difficulty);
-
-    // Uploads run while the (synchronous) builder works.
-    const uploads = Promise.all([
-      deps.store.putCapture(bundle, out.screenshotPng),
-      ...out.textures.map((t) => deps.store.putTexture(bundle.captureId, t)),
-    ]);
-    uploads.catch(() => {}); // awaited below; avoid an unhandled rejection while building
+    await deps.store.putRun({
+      runId,
+      url: bundle.url,
+      title: bundle.title,
+      captureId: bundle.captureId,
+      sliceCount: count,
+      difficulty: params.difficulty,
+      seed: params.seed,
+      builderVersion,
+      createdAt: (deps.now?.() ?? new Date()).toISOString(),
+    });
+    await deps.store.recordModeration?.({
+      ...moderation,
+      runId,
+      url: bundle.url,
+      submittedUrl: params.url,
+      cacheKey: params.cacheKey || null,
+      captureId: bundle.captureId,
+    });
+    // R2 is private. Evidence is retained even when a classifier blocks this capture.
+    await deps.store.putCapture(bundle, out.screenshotPng);
+    const textureKeys = await Promise.all(
+      out.textures.map((t) => deps.store.putTexture(bundle.captureId, t)),
+    );
+    if (moderation.status === 'blocked') {
+      throw new ServiceError('CAPTURE_BLOCKED', 'This page is unavailable for sharing.');
+    }
+    await progress('building');
     const tDec = Date.now();
     const image = await decodePng(out.screenshotPng);
     timings.decode = since(tDec);
@@ -264,32 +333,30 @@ export async function runBuildJob(
 
     await progress('storing');
     const tS = Date.now();
-    const textureKeys = await uploads;
-    await deps.store.putRun({
-      runId,
-      url: bundle.url,
-      title: bundle.title,
-      captureId: bundle.captureId,
-      sliceCount: count,
-      difficulty: params.difficulty,
-      seed: params.seed,
-      builderVersion,
-      createdAt: (deps.now?.() ?? new Date()).toISOString(),
-    });
-    await deps.store.putStage(stage0, { runId, textureKey: textureKeys[1] as string });
-    await deps.store.cacheRun(params.cacheKey, runId);
+    await deps.store.putStage(stage0, { runId, textureKey: textureKeys[0] as string });
+    await deps.store.finishRun(runId, { status: 'partial', timingsMs: timings });
+    let publish = moderation.status === 'approved';
+    if (publish && deps.store.canPublishRun) publish = await deps.store.canPublishRun(runId);
+    if (publish) {
+      await deps.store.cacheRun(params.cacheKey, runId);
+      // A takedown during the KV write must not release a new shared ID.
+      if (deps.store.canPublishRun) publish = await deps.store.canPublishRun(runId);
+    }
     timings.store = since(tS);
     timings.slice0 = since(t0); // includes the queue wait (timings.queue), i.e. what the player waited
     stageIds.push(stage0.stageId);
     log.info('slice 0 ready', { runId, stageId: stage0.stageId, slices: count, timings });
-    await emit({ type: 'done', runId, stageIds: [...stageIds] });
+    if (publish) {
+      await emit({ type: 'done', runId, stageIds: [...stageIds] });
+      terminalEmitted = true;
+    }
 
     // Background slices (G0): the run grows as they become ready.
     let status: 'complete' | 'partial' = 'complete';
     for (let i = 1; i < count; i++) {
       try {
         const st = await buildSlice(i);
-        await deps.store.putStage(st, { runId, textureKey: textureKeys[i + 1] as string });
+        await deps.store.putStage(st, { runId, textureKey: textureKeys[i] as string });
         stageIds.push(st.stageId);
       } catch (e) {
         status = 'partial';
@@ -304,19 +371,51 @@ export async function runBuildJob(
     timings.total = since(t0);
     await deps.store.finishRun(runId, { status, timingsMs: timings });
     log.info('run finished', { runId, status, stages: stageIds.length, timings });
+    if (deps.store.canPublishRun && !(await deps.store.canPublishRun(runId))) publish = false;
+    await deps.store.recordAttempt?.({
+      jobId: params.jobId,
+      url: params.url,
+      runId,
+      status: publish ? 'approved' : moderation.status,
+    });
+    if (!publish)
+      throw new ServiceError(
+        'CAPTURE_BLOCKED',
+        moderation.status === 'pending_review'
+          ? 'This page is awaiting content review before it can be shared.'
+          : 'This page is unavailable for sharing.',
+      );
     return { runId, stageIds, timingsMs: timings };
   } catch (e) {
     const err = toServiceError(e);
-    if (stageIds.length > 0) {
-      log.error('job failed after done', { error: err.message });
+    await deps.store
+      .recordAttempt?.({
+        jobId: params.jobId,
+        url: params.url,
+        status:
+          err.code === 'CAPTURE_BLOCKED'
+            ? moderation?.status === 'pending_review'
+              ? 'pending_review'
+              : 'blocked'
+            : 'failed',
+        reason: err.code === 'CAPTURE_BLOCKED' ? moderation?.reason || err.code : err.code,
+        ...(runId ? { runId } : {}),
+      })
+      .catch(() => log.warn('could not record attempt outcome'));
+    if (terminalEmitted) {
+      log.error('job failed after done', { code: err.code });
       return null;
     }
-    log.warn('job failed', { code: err.code, error: err.message, ms: since(t0), queueMs: timings.queue });
+    log.warn('job failed', { code: err.code, ms: since(t0), queueMs: timings.queue });
     // Phase 12b: a retry must start a fresh job, not get this failed job's id back from the dedupe entry.
-    await deps.store.clearInflightJob(params.cacheKey, params.jobId).catch((ce: unknown) => {
-      log.warn('could not clear the in-flight entry', { error: String(ce) });
+    await deps.store.clearInflightJob(params.cacheKey, params.jobId).catch(() => {
+      log.warn('could not clear the in-flight entry');
     });
     await emit({ type: 'error', code: err.code, message: err.message });
     return null;
+  } finally {
+    await deps.store
+      .clearInflightJob(params.cacheKey, params.jobId)
+      .catch(() => log.warn('could not release build claim'));
   }
 }

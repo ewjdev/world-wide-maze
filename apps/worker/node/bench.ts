@@ -47,7 +47,7 @@ for (const slug of slugs) {
       url: policy.url,
       difficulty: 'normal',
       seed: defaultSeed(policy.url),
-      cacheKey: runCacheKey(policy.url, 'normal', builder.version),
+      cacheKey: await runCacheKey(policy.url, 'normal', builder.version),
     },
     { capturer, builder, moderate: async () => 'ok', store, log: silentLogger },
     (e) => {

@@ -136,7 +136,11 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
   beforeAll(async () => {
     const { createTestHarness } = await import('wrangler');
     harness = createTestHarness();
-    await harness.update({ workers: [{ configPath: WORKER_CONFIG }] });
+    await harness.update({
+      workers: [
+        { configPath: WORKER_CONFIG, vars: { WWM_ENV: 'development', MODERATION_MODE: 'test-allow' } },
+      ],
+    });
     const { url } = await harness.listen();
     await harness.getWorker().applyD1Migrations('DB' as never);
     process.env.WWM_API_URL = url.toString().replace(/\/$/, '');

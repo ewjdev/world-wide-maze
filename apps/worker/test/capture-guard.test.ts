@@ -113,6 +113,30 @@ describe.skipIf(!HAS_CHROMIUM)('local Chromium capture + SSRF guard', { timeout:
     expect(internal.hits.length).toBe(before);
   });
 
+  test('exact URL rule blocks a same-host redirect before its target is fetched', async () => {
+    const filtered = new LocalChromiumCapturer({
+      guard: {
+        resolver: createStaticResolver({}),
+        allowHosts: [site.host],
+        isUrlBlocked: async (url) => url === `${site.origin}/long`,
+      },
+    });
+    const before = site.hits.length;
+    try {
+      expect(
+        await codeOf(
+          filtered.capture({
+            url: `${site.origin}/redirect?to=${encodeURIComponent(`${site.origin}/long`)}`,
+            deadline: Date.now() + 20_000,
+          }),
+        ),
+      ).toBe('URL_FORBIDDEN');
+      expect(site.hits.slice(before)).not.toContain('/long');
+    } finally {
+      await filtered.close();
+    }
+  });
+
   test('bot walls and error statuses → CAPTURE_BLOCKED', async () => {
     expect(await codeOf(capture('/status403'))).toBe('CAPTURE_BLOCKED');
     expect(await codeOf(capture('/challenge'))).toBe('CAPTURE_BLOCKED');

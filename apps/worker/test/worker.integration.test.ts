@@ -20,6 +20,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from 'vitest';
 import { createTestHarness } from 'wrangler';
 import { LocalChromiumCapturer } from '../node/local-chromium.ts';
 import { type SidecarHandle, startCaptureSidecar } from '../node/sidecar.ts';
+import { Catalog } from '../src/catalog.ts';
 import { webpSize } from '../src/image/webp.ts';
 import { parseSse } from '../src/job-events.ts';
 import { createStaticResolver } from '../src/policy/dns.ts';
@@ -92,6 +93,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
           configPath,
           vars: {
             CAPTURE_BACKEND: 'sidecar',
+            MODERATION_MODE: 'test-allow',
             CAPTURE_SIDECAR_URL: sidecar.url,
             DEV_ALLOWED_HOSTS: site.host,
             DOH_URL: doh.url,
@@ -102,7 +104,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
       ],
     });
     await server.listen();
-    await server.getWorker().applyD1Migrations('DB');
+    await server.getWorker<Env>().applyD1Migrations('DB');
   }, 120_000);
 
   afterAll(async () => {
@@ -137,7 +139,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
 
     const sr = await api(`/api/stages/${done.stageIds[0]}`, ip);
     expect(sr.status).toBe(200);
-    expect(sr.headers.get('cache-control')).toContain('immutable');
+    expect(sr.headers.get('cache-control')).toContain('no-store');
     const stage = parseStage(await sr.json());
     expect(validateStage(stage)).toEqual({ ok: true, errors: [] });
     expect(stage.source.url).toBe(`${site.origin}/sparse`);
@@ -290,7 +292,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
   test('curated list reads Phase 10’s `curated` table (empty until it exists); 404s for unknown ids', async () => {
     const ip = newIp();
     expect(await (await api('/api/curated', ip)).json()).toEqual({ runs: [] });
-    const env = await server.getWorker().getEnv();
+    const env = await server.getWorker<Env>().getEnv();
     await env.DB.exec(
       'CREATE TABLE IF NOT EXISTS curated (run_id TEXT PRIMARY KEY, title TEXT, url TEXT, thumb TEXT, stars INTEGER, position INTEGER)',
     );
@@ -298,7 +300,7 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
       .bind('r1', 'Example', 'https://example.com/', '/t.webp', 4, 1)
       .run();
     expect(await (await api('/api/curated', ip)).json()).toEqual({
-      runs: [{ runId: 'r1', title: 'Example', url: 'https://example.com/', thumb: '/t.webp', stars: 4 }],
+      runs: [], // A curated row alone never confers approval on an unknown run.
     });
     expect((await api(`/api/stages/${'0'.repeat(64)}`, ip)).status).toBe(404);
     expect((await api(`/api/runs/${'0'.repeat(64)}`, ip)).status).toBe(404);
@@ -306,8 +308,8 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
     expect((await api('/api/stages/nope', ip)).status).toBe(404);
   });
 
-  test('retention cron deletes non-curated runs older than RETENTION_DAYS and keeps curated/new ones', async () => {
-    const worker = server.getWorker();
+  test('retention expires artifacts while preserving catalog history and curated/new runs', async () => {
+    const worker = server.getWorker<Env>();
     const env = await worker.getEnv();
     const old = new Date(Date.now() - 40 * 86400_000).toISOString();
     const insertRun = (id: string, cap: string, at: string) =>
@@ -319,6 +321,21 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
         .run();
     await insertRun('old-run', 'old-cap', old);
     await insertRun('old-curated', 'cur-cap', old);
+    for (const [runId, captureId] of [
+      ['old-run', 'old-cap'],
+      ['old-curated', 'cur-cap'],
+    ] as const) {
+      await new Catalog(env).recordRun({
+        runId,
+        url: 'https://example.com/',
+        captureId,
+        cacheKey: null,
+        status: 'approved',
+        reason: 'Fixture',
+        provider: 'human',
+        policyVersion: 'test',
+      });
+    }
     await env.DB.prepare('INSERT OR REPLACE INTO curated VALUES (?1, ?2, ?3, ?4, ?5, ?6)')
       .bind('old-curated', 'c', 'u', 't', 3, 2)
       .run();
@@ -344,7 +361,12 @@ describe.skipIf(!HAS_CHROMIUM)('Worker integration (workerd + local bindings + l
     const left = await env.DB.prepare(
       "SELECT run_id FROM runs WHERE run_id IN ('old-run', 'old-curated')",
     ).all();
-    expect(left.results).toEqual([{ run_id: 'old-curated' }]);
+    expect(left.results.map((r) => r.run_id).sort()).toEqual(['old-curated', 'old-run']);
+    expect(
+      await env.DB.prepare('SELECT artifacts_available FROM moderation_cases WHERE run_id=?')
+        .bind('old-run')
+        .first(),
+    ).toMatchObject({ artifacts_available: 0 });
     // Fresh runs from the other tests survive.
     const fresh = (await env.DB.prepare(
       "SELECT COUNT(*) AS n FROM runs WHERE run_id NOT LIKE 'old-%'",

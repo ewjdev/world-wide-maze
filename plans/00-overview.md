@@ -264,3 +264,7 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
 |---|---|---|---|
 | 19 | PR #9 | feat/education-phase-19 | standalone learning pages, `wwm-learning/0.1`, parent AI draft review |
 | 20 | built, PR open | feat/guided-lessons-phase-20 | `wwm-learning/0.2` (rounds, theme, voice); Pip voice: 97 clips via AI Gateway → ElevenLabs `eleven_v3`, in R2 `wwm-learning-audio` (learning-audio.ewj.dev); Pip gates in the game; issue #10 (voice for personalized intros) deferred |
+
+### Phase 21 — URL catalog and content review
+
+Implementation in PR #13 on `codex/url-catalog-moderation`. See [plan](phase-21-url-catalog-and-content-review.md), [build log](../docs/build-log/phase-21.md) and [validation rubric / rollout](../docs/launch/url-catalog-validation.md). Additive migration 0005, durable D1 catalog, R2 evidence, revocable reads, Access admin console and guarded automatic moderation. Production activation and provider calibration remain explicit rollout gates.

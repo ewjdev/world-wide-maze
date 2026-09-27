@@ -2,6 +2,11 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.3 (2026-09-26, URL catalog and review)
+- CCR-21-1: additive private admin catalog, attempts, evidence, decision, rule and audit types in `src/admin.ts`.
+- Public stage/job response shapes unchanged; pending review uses existing `CAPTURE_BLOCKED`.
+- Shared uploads derive capture identity from capture content and every texture; claimed client IDs cannot overwrite retained evidence.
+
 ## 0.3.2 (2026-09-26, analytics)
 - Added the shared versioned telemetry event/context/envelope schemas with closed categories and bounded numeric fields.
 - Visit and optional consented browser identity, attempt correlation, active-time deltas and provider deduplication IDs.
