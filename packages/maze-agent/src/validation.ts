@@ -12,7 +12,10 @@ const candidate = z
   .object({
     id,
     direction: z.string().max(16),
-    kind: z.enum(['flat', 'ramp', 'goal']),
+    kind: z.enum(['flat', 'ramp', 'goal', 'gem']),
+    points: finite.nonnegative().optional(),
+    gems: z.number().int().nonnegative().optional(),
+    travelSeconds: finite.nonnegative().optional(),
     destination: id.nullable(),
     traversals: z.number().int().min(0).max(256),
   })
@@ -25,6 +28,21 @@ export const FrameSchema = z
     candidates: z.array(candidate).min(1).max(8),
     observation: z
       .object({
+        score: z
+          .object({
+            small: z.number().int().nonnegative(),
+            large: z.number().int().nonnegative(),
+            gems: z.number().int().nonnegative(),
+            gemScore: finite.nonnegative(),
+            timeRemaining: finite.nonnegative(),
+            bonus: finite.nonnegative(),
+            score: finite.nonnegative(),
+            totalGems: z.number().int().nonnegative(),
+            objective: z.string().max(1000),
+            mode: z.literal('high-score'),
+          })
+          .strict()
+          .optional(),
         current: id,
         goalVisible: z.boolean(),
         nodes: z.array(z.object({ id, visits: z.number().int().min(0).max(256) }).strict()).max(32),
@@ -61,6 +79,21 @@ export const ChunkSchema = z
           .object({
             tick: z.number().int().min(1).max(LIMITS.ticks),
             event: z.discriminatedUnion('type', [
+              z
+                .object({
+                  type: z.literal('item'),
+                  itemId: z.number().int().nonnegative(),
+                  kind: z.enum(['small', 'large']),
+                })
+                .strict(),
+              z
+                .object({
+                  type: z.literal('elevator'),
+                  elevatorId: z.number().int().nonnegative(),
+                  phase: z.enum(['start', 'end']),
+                })
+                .strict(),
+              z.object({ type: z.literal('portal'), portalId: z.number().int().nonnegative() }).strict(),
               z.object({ type: z.literal('goal') }).strict(),
               z.object({ type: z.literal('fell'), restartAt: z.tuple([finite, finite]) }).strict(),
               z.object({ type: z.literal('island'), islandId: z.number().int().nonnegative() }).strict(),

@@ -7,19 +7,25 @@
  */
 import { createEngine, type Engine } from '@wwm/engine';
 import {
+  digest,
   FIXTURES,
   type Frame,
   fixture,
   LIMITS,
+  type MazeFixture,
+  mazeFromStage,
   type Policy,
   type Receipt,
   type RunDetail,
   type RunSummary,
+  scoreAt,
 } from '@wwm/maze-agent';
 import { type BallState, type InputSample, SIM_HZ, type SimEvent } from '@wwm/schema';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
+import { CATALOG, catalogEntry } from '../game/catalog.ts';
+import { FixtureRun, PracticeRun, StageBuilderPool } from '../game/stages.ts';
 import { type Availability, JevClient } from './client.ts';
 import { ReplaySession, Session } from './session.ts';
 import './jev.css';
@@ -37,8 +43,8 @@ function download(name: string, value: unknown, mime = 'application/json') {
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
-function texture(id: string) {
-  const f = fixture(id);
+function texture(maze: string | MazeFixture) {
+  const f = typeof maze === 'string' ? fixture(maze) : maze;
   const canvas = document.createElement('canvas');
   canvas.width = f.stage.size.width;
   canvas.height = f.stage.size.height;
@@ -63,7 +69,12 @@ export default function JevPage() {
   const live = useRef<Session | null>(null);
   const replay = useRef<ReplaySession | null>(null);
   const [, render] = useState(0);
-  const [fixtureId, setFixture] = useState('first-fork');
+  const [fixtureId, setFixture] = useState('fixture-hn-front');
+  const [maze, setMaze] = useState<MazeFixture>(fixture('first-fork'));
+  const [slice, setSlice] = useState(0);
+  const [sliceCount, setSliceCount] = useState(1);
+  const [best, setBest] = useState<RunSummary | null>(null);
+  const pool = useRef(new StageBuilderPool());
   const [policy, setPolicy] = useState<Policy>('baseline');
   const [availability, setAvailability] = useState<Availability | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +91,13 @@ export default function JevPage() {
   const [collapsed, setCollapsed] = useState(false);
   const [camera, setCamera] = useState<'map' | 'chase'>('map');
   const refresh = useCallback(() => render((n) => n + 1), []);
-  const ball = (b: BallState, events: SimEvent[], input: InputSample | null) => {
+  const ball = (
+    b: BallState,
+    events: SimEvent[],
+    input: InputSample | null,
+    elevators: { id: number; y: number }[] = [],
+  ) => {
+    engine.current?.setElevators(elevators);
     engine.current?.setBall(b);
     if (input) engine.current?.setControl(input);
     for (const e of events) engine.current?.handleEvent(e);
@@ -183,6 +200,7 @@ export default function JevPage() {
       void live.current?.dispose();
       replay.current?.dispose();
       owned?.dispose();
+      pool.current.dispose();
       element.remove();
       engine.current = null;
     };
@@ -190,9 +208,70 @@ export default function JevPage() {
   useEffect(() => {
     if (tab === 'history' && api.token) void reloadHistory();
   }, [tab, reloadHistory]);
-  async function showStage(id: string) {
-    await engine.current?.loadStage(fixture(id).stage, texture(id));
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load the default only when the renderer first becomes ready.
+  useEffect(() => {
+    if (ready) void selectMaze('fixture-hn-front', 0);
+  }, [ready]);
+  const runStatus = live.current?.view.status;
+  useEffect(() => {
+    let dead = false;
+    if (availability && (!runStatus || runStatus !== 'running'))
+      void digest(maze.stage)
+        .then((hash) => api.request<{ best: RunSummary | null }>(`best?hash=${hash}`))
+        .then((r) => {
+          if (!dead) setBest(r.best);
+        })
+        .catch(() => {});
+    return () => {
+      dead = true;
+    };
+  }, [maze, availability, runStatus]);
+  async function showStage(f: MazeFixture) {
+    if (f.textureDataUrl) {
+      const image = await createImageBitmap(await (await fetch(f.textureDataUrl)).blob());
+      await engine.current?.loadStage(f.stage, image);
+      image.close();
+    } else await engine.current?.loadStage(f.stage, texture(f));
     engine.current?.setView(camera);
+  }
+  async function selectMaze(id: string, index = 0) {
+    setBusy(true);
+    setError(null);
+    try {
+      await live.current?.dispose();
+      live.current = null;
+      replay.current?.dispose();
+      replay.current = null;
+      setDetail(null);
+      const entry = catalogEntry(id);
+      let f: MazeFixture;
+      if (entry) {
+        const source = entry.id === 'practice' ? new PracticeRun() : new FixtureRun(entry, pool.current);
+        const loaded = await source.loadSlice(index, () => {});
+        const bitmap = document.createElement('canvas');
+        bitmap.width = loaded.image.width;
+        bitmap.height = loaded.image.height;
+        bitmap.getContext('2d')!.drawImage(loaded.image, 0, 0);
+        loaded.image.close();
+        f = mazeFromStage(loaded.stage, bitmap.toDataURL('image/webp', 0.8));
+        f.title = `${entry.title}${source.sliceCount() > 1 ? ` · section ${index + 1}` : ''}`;
+        setSliceCount(source.sliceCount());
+      } else {
+        f = fixture(id);
+        setSliceCount(1);
+      }
+      await showStage(f);
+      setMaze(f);
+      setFixture(id);
+      setSlice(index);
+      setSelected(0);
+      setFollow(true);
+    } catch (e) {
+      setError(String(e));
+    } finally {
+      setBusy(false);
+      refresh();
+    }
   }
   async function start() {
     setBusy(true);
@@ -206,8 +285,12 @@ export default function JevPage() {
       setDetail(null);
       setSelected(0);
       setFollow(true);
-      await showStage(fixtureId);
-      const s = new Session(api, fixtureId, policy, 0);
+      await showStage(maze);
+      const playing = mazeFromStage(
+        maze.stage,
+        maze.textureDataUrl ?? texture(maze).toDataURL('image/webp', 0.8),
+      );
+      const s = new Session(api, playing.id, policy, 0, playing, true);
       live.current = s;
       s.onChange = refresh;
       s.onBall = ball;
@@ -233,8 +316,18 @@ export default function JevPage() {
       const r = new ReplaySession(d);
       setDetail(d);
       setSelected(0);
-      setFixture(d.summary.fixture);
-      await showStage(d.summary.fixture);
+      setMaze(r.maze);
+      const source = CATALOG.find((c) => c.url === r.maze.stage.source.url);
+      if (source) {
+        setFixture(source.id);
+        setSlice(r.maze.stage.source.slice.index);
+        setSliceCount(r.maze.stage.source.slice.count);
+      } else if (FIXTURES.some((f) => f.stage.stageId === r.maze.stage.stageId)) {
+        setFixture(FIXTURES.find((f) => f.stage.stageId === r.maze.stage.stageId)!.id);
+        setSliceCount(1);
+      }
+      await showStage(r.maze);
+      r.onReset = () => showStage(r.maze);
       r.onBall = ball;
       r.onChange = refresh;
       replay.current = r;
@@ -267,6 +360,9 @@ export default function JevPage() {
       'decisions',
       'attempts',
       'reason',
+      'score',
+      'gems',
+      'title',
     ] as const;
     const cell = (value: unknown) => {
       const t = String(value ?? '');
@@ -294,7 +390,8 @@ export default function JevPage() {
   const elapsed = replay.current?.tick ?? v?.tick ?? 0;
   const phase = replay.current ? 'recorded run' : (v?.phase ?? 'ready');
   const errors = error ?? v?.error ?? replay.current?.error;
-  const f = fixture(fixtureId);
+  const f = maze;
+  const score = replay.current?.score ?? live.current?.pilot.score ?? scoreAt(maze.stage, new Set(), 0);
   return (
     <main className={`jev-page ${collapsed ? 'is-collapsed' : ''}`}>
       <header className="jev-header">
@@ -324,6 +421,27 @@ export default function JevPage() {
                 : `${policy === 'jev' ? 'Jev chooses' : policy === 'scripted' ? 'Scripted demo chooses' : 'Baseline explorer chooses'} · physics controller steers`}
             </p>
           </div>
+          <section className="jev-score" aria-label="Run score">
+            <div>
+              <strong>{score.score.toLocaleString()}</strong>
+              <span>points{score.bonus ? ` · +${score.bonus} finish bonus` : ''}</span>
+            </div>
+            <div>
+              <strong>
+                {score.gems}
+                <small> / {maze.stage.items.length}</small>
+              </strong>
+              <span>gems · {score.large} large</span>
+            </div>
+            <div>
+              <strong>{score.timeRemaining}s</strong>
+              <span>remaining</span>
+            </div>
+            <div>
+              <strong>{best?.score?.toLocaleString() ?? '—'}</strong>
+              <span>Jev best · this maze</span>
+            </div>
+          </section>
           <div className="jev-view">
             <button
               type="button"
@@ -424,7 +542,9 @@ export default function JevPage() {
                 {history.map((r) => (
                   <button className="jev-run" type="button" key={r.id} onClick={() => void openRun(r.id)}>
                     <span>
-                      <strong>{fixture(r.fixture).title}</strong>
+                      <strong>
+                        {r.title ?? FIXTURES.find((f) => f.id === r.fixture)?.title ?? r.fixture}
+                      </strong>
                       <em>{r.status}</em>
                     </span>
                     <span>
@@ -434,6 +554,7 @@ export default function JevPage() {
                           ? 'Scripted demo'
                           : 'Baseline explorer'}{' '}
                       · {time(r.tick)} · {r.decisions} decisions
+                      {r.scoreMode ? ` · ${r.score ?? 0} pts · ${r.gems ?? 0} gems` : ''}
                     </span>
                     <small>{new Date(r.createdAt).toLocaleString()}</small>
                     <code>{r.id.slice(0, 8)}</code>
@@ -461,7 +582,10 @@ export default function JevPage() {
                 <h2>{detail ? 'Run notebook' : 'Decision notebook'}</h2>
                 <span className="jev-count">{frames.length}</span>
               </div>
-              <p className="jev-muted">What was known. What was chosen. What happened.</p>
+              <p className="jev-muted">
+                Large gems: 100 points · small gems: 1 · finish bonus: 5 per second left. One ball per run.
+                The clock pauses while Jev decides.
+              </p>
               {!frames.length ? (
                 <div className="jev-empty">
                   <svg width="56" height="56" viewBox="0 0 56 56" fill="none" aria-hidden="true">
@@ -470,8 +594,8 @@ export default function JevPage() {
                   </svg>
                   <h3>A maze, one choice at a time.</h3>
                   <p>
-                    Watch the explorer discover branches. Each choice is saved here with the options it could
-                    see.
+                    Jev weighs gem targets against the clock. Watch it collect points and head for the goal.
+                    Every choice and pickup is saved.
                   </p>
                 </div>
               ) : (
@@ -493,13 +617,17 @@ export default function JevPage() {
                     </select>
                   </label>
                   <div className="jev-knowledge">
-                    <span>Known islands</span>
-                    <strong>{frame?.observation.nodes.length}</strong>
+                    <span>{frame?.observation.score ? 'Visible islands' : 'Known islands'}</span>
+                    <strong>
+                      {frame?.observation.score ? maze.stage.islands.length : frame?.observation.nodes.length}
+                    </strong>
                     <span>Current position</span>
                     <strong>{frame?.observation.current}</strong>
                   </div>
-                  {frame && <DiscoveredGraph frame={frame} choice={latest?.choice} />}
-                  <h3>Available paths</h3>
+                  {frame && !frame.observation.score && (
+                    <DiscoveredGraph frame={frame} choice={latest?.choice} />
+                  )}
+                  <h3>{frame?.observation.score ? 'Targets Jev considered' : 'Available paths'}</h3>
                   <div className="jev-options">
                     {frame?.candidates.map((c) => (
                       <div key={c.id} className={`jev-option ${latest?.choice === c.id ? 'is-chosen' : ''}`}>
@@ -515,7 +643,13 @@ export default function JevPage() {
                                 ? 'Chosen'
                                 : '—'}
                           </strong>
-                          <small>{c.traversals ? `${c.traversals} crossings` : 'Untraversed'}</small>
+                          <small>
+                            {c.travelSeconds !== undefined
+                              ? `${c.points ? `${c.points} pts · ` : ''}~${c.travelSeconds}s`
+                              : c.traversals
+                                ? `${c.traversals} crossings`
+                                : 'Untraversed'}
+                          </small>
                         </div>
                       </div>
                     ))}
@@ -616,15 +750,19 @@ export default function JevPage() {
       <footer className="jev-controls">
         <div className="jev-setup">
           <label>
-            Maze
+            Website / maze
             <select
               value={fixtureId}
-              disabled={busy || (!!live.current && !live.current.closed)}
-              onChange={(e) => {
-                setFixture(e.target.value);
-                void showStage(e.target.value);
-              }}
+              disabled={!ready || busy || (!!live.current && !live.current.closed)}
+              onChange={(e) => void selectMaze(e.target.value, 0)}
             >
+              <optgroup label="Website maze library">
+                {CATALOG.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.title} {'★'.repeat(c.stars)}
+                  </option>
+                ))}
+              </optgroup>
               {FIXTURES.filter((f) => f.id !== 'confirmation').map((f) => (
                 <option key={f.id} value={f.id}>
                   {f.title}
@@ -632,12 +770,29 @@ export default function JevPage() {
               ))}
             </select>
           </label>
+          {sliceCount > 1 && (
+            <label>
+              Section
+              <select
+                aria-label="Section"
+                value={slice}
+                disabled={!ready || busy || (!!live.current && !live.current.closed)}
+                onChange={(e) => void selectMaze(fixtureId, Number(e.target.value))}
+              >
+                {Array.from({ length: sliceCount }, (_, i) => i).map((i) => (
+                  <option key={i} value={i}>
+                    {i + 1} / {sliceCount}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label>
             Explorer
             <select
               aria-label="Explorer"
               value={policy}
-              disabled={busy || (!!live.current && !live.current.closed)}
+              disabled={!ready || busy || (!!live.current && !live.current.closed)}
               onChange={(e) => setPolicy(e.target.value as Policy)}
             >
               <option value="jev">Jev {availability?.available ? '— live' : '— key needed'}</option>
@@ -690,7 +845,7 @@ export default function JevPage() {
               className="jev-primary"
               type="button"
               onClick={() => void start()}
-              disabled={!ready || !availability || busy}
+              disabled={!ready || !availability || busy || (policy === 'jev' && !availability.available)}
             >
               {busy ? 'Preparing…' : live.current ? 'Run again' : 'Start watching'}
             </button>

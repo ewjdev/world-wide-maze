@@ -72,3 +72,64 @@ it('pause and single-step preserve exact inputs across render rates, and importe
     rmSync(dir, { recursive: true, force: true });
   }
 }, 30000);
+
+it('archives website gem scores and exactly replays their stage, pickups, and finish bonus', async () => {
+  vi.stubGlobal('window', globalThis);
+  vi.stubGlobal('sessionStorage', { setItem: () => {}, removeItem: () => {} });
+  const { buildStage } = await import('../../../packages/stage-builder/src/index.ts');
+  const { loadCapture } = await import('../../../packages/stage-builder/src/node/index.ts');
+  const { mazeFromStage } = await import('../../../packages/maze-agent/src/score.ts');
+  const { capture, image } = loadCapture('hn-front');
+  const { stage } = buildStage({ capture, image, sliceIndex: 0, seed: 1, difficulty: 'normal' });
+  const maze = mazeFromStage(stage);
+  const dir = mkdtempSync(join(tmpdir(), 'jev-website-'));
+  const archive = new Archive(dir);
+  const service = new JevService(archive, undefined);
+  const api = {
+    request: async (path: string, data: unknown) => {
+      if (path === 'runs') return service.create(data);
+      const [, id, op] = path.split('/');
+      return op === 'decide' ? service.decide(id, data) : service.command(id, data);
+    },
+  } as unknown as JevClient;
+  const s = new Session(api, maze.id, 'baseline', 0, maze, true);
+  try {
+    await s.create();
+    await s.resume();
+    for (let n = 0; n < 40000 && !s.closed && !s.view.error; n++) {
+      s.advance(0.1);
+      if (s.busyPromise) await s.busyPromise;
+      if (s.working) await new Promise(setImmediate);
+    }
+    expect(s.view.error).toBeNull();
+    expect(s.view.status).toBe('finished');
+    const d = archive.detail(s.view.runId!);
+    expect(d.summary.score).toBe(s.pilot.score.score);
+    expect(d.summary.gems).toBeGreaterThan(0);
+    const replay = await new ReplaySession(d).init();
+    await replay.seek(d.summary.tick);
+    expect(replay.score).toEqual(s.pilot.score);
+    expect(await digest(replay.ball)).toBe(await digest(s.pilot.ball));
+    await replay.seek(0);
+    expect(replay.score.gems).toBe(0);
+    expect(replay.score.bonus).toBe(0);
+    replay.dispose();
+    expect(() =>
+      service.create({
+        fixture: 'arbitrary',
+        maze: { stage },
+        scoreMode: true,
+        documentId: 'doc',
+        orderSeed: 0,
+        policy: 'baseline',
+      }),
+    ).toThrow('identity');
+    const changed = structuredClone(d);
+    (changed.events[0].data.maze as { stage: typeof stage }).stage.seed++;
+    await expect(new ReplaySession(changed).init()).rejects.toThrow('Incompatible');
+  } finally {
+    await s.dispose();
+    archive.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+}, 30000);

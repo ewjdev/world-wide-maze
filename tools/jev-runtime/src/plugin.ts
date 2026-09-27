@@ -6,11 +6,11 @@ import type { Plugin } from 'vite';
 import { Archive } from './archive.ts';
 import { JevService } from './service.ts';
 
-async function body(req: IncomingMessage) {
+async function body(req: IncomingMessage, limit = 65536) {
   let text = '';
   for await (const chunk of req) {
     text += chunk;
-    if (Buffer.byteLength(text) > 65536) throw new Error('Request too large');
+    if (Buffer.byteLength(text) > limit) throw new Error('Request too large');
   }
   return JSON.parse(text);
 }
@@ -151,7 +151,20 @@ export function jevPlugin(root: string): Plugin {
         }
         try {
           if (path === '/api/jev/runs' && req.method === 'POST') {
-            send(res, 201, service.create(await body(req)));
+            send(res, 201, service.create(await body(req, 4 * 1024 * 1024)));
+            return;
+          }
+          if (path === '/api/jev/best' && req.method === 'GET') {
+            const hash = new URL(url, origin).searchParams.get('hash');
+            const best =
+              [...service.archive.runs.keys()]
+                .map((id) => service!.archive.summary(id))
+                .filter(
+                  (r) =>
+                    r.fixtureHash === hash && r.scoreMode && r.policy === 'jev' && r.status === 'finished',
+                )
+                .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))[0] ?? null;
+            send(res, 200, { best });
             return;
           }
           if (path === '/api/jev/runs' && req.method === 'GET') {
@@ -161,7 +174,7 @@ export function jevPlugin(root: string): Plugin {
             const all = [...service.archive.runs.keys()]
               .map((id) => service!.archive.summary(id))
               .filter((r) =>
-                [r.id, r.fixture, r.policy, r.model, r.status, r.createdAt]
+                [r.id, r.fixture, r.title, r.url, r.policy, r.model, r.status, r.createdAt]
                   .join(' ')
                   .toLowerCase()
                   .includes(search),

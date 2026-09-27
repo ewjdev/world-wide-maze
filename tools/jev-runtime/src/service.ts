@@ -45,6 +45,8 @@ export class JevService {
       v.orderSeed,
       v.parentRunId ?? null,
       v.policy === 'jev' ? MODEL : null,
+      v.maze,
+      v.scoreMode ?? false,
     );
     const owner = randomBytes(24).toString('hex');
     this.owners.set(id, { token: hash(owner), documentId: v.documentId, epoch: 0, heartbeat: Date.now() });

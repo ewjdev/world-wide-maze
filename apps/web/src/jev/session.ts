@@ -6,17 +6,20 @@ import {
   FrameSchema,
   fixture,
   LIMITS,
+  type MazeFixture,
   MazePilot,
+  mazeFromStage,
   PHYSICS_VERSION,
   type Policy,
   type Receipt,
   ReceiptSchema,
   type RunDetail,
+  scoreAt,
   type TickedEvent,
   VERSION,
 } from '@wwm/maze-agent';
 import { createSimulation, type RapierSimulation } from '@wwm/physics';
-import { type BallState, type InputSample, SIM_HZ, type SimEvent } from '@wwm/schema';
+import { type BallState, type InputSample, SIM_HZ, type SimEvent, StageDataSchema } from '@wwm/schema';
 import type { JevClient } from './client.ts';
 export interface SessionView {
   phase: string;
@@ -67,14 +70,21 @@ export class Session {
   busyPromise: Promise<void> | null = null;
   flushPromise: Promise<void> | null = null;
   onChange = () => {};
-  onBall = (_ball: BallState, _events: SimEvent[], _input: InputSample | null) => {};
+  onBall = (
+    _ball: BallState,
+    _events: SimEvent[],
+    _input: InputSample | null,
+    _elevators: { id: number; y: number }[] = [],
+  ) => {};
   constructor(
     readonly api: JevClient,
     readonly fixtureId: string,
     readonly policy: Policy,
     readonly seed = 0,
+    readonly maze: MazeFixture = fixture(fixtureId),
+    readonly scoreMode = false,
   ) {
-    this.pilot = new MazePilot(fixture(fixtureId), seed);
+    this.pilot = new MazePilot(maze, seed, scoreMode);
   }
   emit() {
     this.onChange();
@@ -86,6 +96,10 @@ export class Session {
       orderSeed: this.seed,
       documentId: this.documentId,
       parentRunId,
+      scoreMode: this.scoreMode,
+      ...(this.scoreMode
+        ? { maze: { stage: this.maze.stage, textureDataUrl: this.maze.textureDataUrl } }
+        : {}),
     });
     this.view.runId = run.id;
     this.owner = run.owner;
@@ -208,7 +222,7 @@ export class Session {
       this.inputs.push(r.input);
       this.events.push(...r.result.events.map((event) => ({ tick: this.pilot.tick, event })));
       this.view.tick = this.pilot.tick;
-      this.onBall(r.result.ball, r.result.events, r.input);
+      this.onBall(r.result.ball, r.result.events, r.input, r.result.elevators);
       if (r.outcome || this.inputs.length >= SIM_HZ) {
         this.flushing = true;
         const outcome = r.outcome;
@@ -308,6 +322,16 @@ export class Session {
   }
 }
 export class ReplaySession {
+  maze!: MazeFixture;
+  get score() {
+    const events = this.events.filter((e) => e.tick <= this.tick).map((e) => e.event);
+    return scoreAt(
+      this.maze.stage,
+      new Set(events.flatMap((e) => (e.type === 'item' ? [e.itemId] : []))),
+      this.tick,
+      events.some((e) => e.type === 'goal'),
+    );
+  }
   speed = 1;
   sim!: RapierSimulation;
   inputs: InputSample[] = [];
@@ -320,7 +344,12 @@ export class ReplaySession {
   error: string | null = null;
   acc = 0;
   checking = false;
-  onBall = (_ball: BallState, _events: SimEvent[], _input: InputSample | null) => {};
+  onBall = (
+    _ball: BallState,
+    _events: SimEvent[],
+    _input: InputSample | null,
+    _elevators: { id: number; y: number }[] = [],
+  ) => {};
   onChange = () => {};
   constructor(readonly detail: RunDetail) {
     if (
@@ -331,6 +360,16 @@ export class ReplaySession {
       JSON.stringify(detail).length > LIMITS.runBytes
     )
       throw new Error('Invalid or oversized recording');
+    const snapshot = detail.events[0]?.data.maze as { stage: unknown; textureDataUrl?: string } | undefined;
+    if (
+      snapshot?.textureDataUrl &&
+      (!/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(snapshot.textureDataUrl) ||
+        snapshot.textureDataUrl.length > 3 * 1024 * 1024)
+    )
+      throw new Error('Invalid recording texture');
+    this.maze = snapshot
+      ? mazeFromStage(StageDataSchema.parse(snapshot.stage), snapshot.textureDataUrl)
+      : fixture(detail.summary.fixture);
     let sequence = 0;
     let recordingBytes = 0;
     for (const [index, e] of detail.events.entries()) {
@@ -359,28 +398,32 @@ export class ReplaySession {
     if (
       this.detail.events[0]?.data.version !== VERSION ||
       this.detail.events[0]?.data.physics !== PHYSICS_VERSION ||
-      (await digest(fixture(this.detail.summary.fixture).stage)) !== this.detail.summary.fixtureHash
+      (await digest(this.maze.stage)) !== this.detail.summary.fixtureHash
     )
       throw new Error('Incompatible recording version or fixture');
     this.sim = await createSimulation();
-    await this.sim.load(fixture(this.detail.summary.fixture).stage);
+    await this.sim.load(this.maze.stage);
     this.ball = this.sim.getBallState();
     if (this.checkpoints.has(0) && (await digest(this.ball)) !== this.checkpoints.get(0))
       throw new Error('Replay mismatch at tick 0');
     this.onBall(this.ball, [], null);
     return this;
   }
+  onReset = async () => {};
   async seek(target: number) {
     this.paused = true;
-    await this.sim.load(fixture(this.detail.summary.fixture).stage);
+    await this.sim.load(this.maze.stage);
     this.tick = 0;
     this.ball = this.sim.getBallState();
     this.error = null;
+    await this.onReset();
+    let elevators: { id: number; y: number }[] = [];
     const events: TickedEvent[] = [];
     while (this.tick < Math.min(target, this.inputs.length)) {
       const r = this.sim.step(this.inputs[this.tick]);
       this.tick++;
       this.ball = r.ball;
+      elevators = r.elevators;
       events.push(...r.events.map((event) => ({ tick: this.tick, event })));
       if (this.checkpoints.has(this.tick) && (await digest(this.ball)) !== this.checkpoints.get(this.tick))
         throw new Error(`Replay mismatch at tick ${this.tick}`);
@@ -391,6 +434,7 @@ export class ReplaySession {
       this.ball,
       events.map((e) => e.event),
       null,
+      elevators,
     );
     this.onChange();
   }
@@ -403,7 +447,7 @@ export class ReplaySession {
       this.tick++;
       this.ball = r.ball;
       this.acc -= 1 / SIM_HZ;
-      this.onBall(r.ball, r.events, input);
+      this.onBall(r.ball, r.events, input, r.elevators);
       if (
         JSON.stringify(r.events) !==
         JSON.stringify(this.events.filter((e) => e.tick === this.tick).map((e) => e.event))

@@ -5,6 +5,7 @@ export interface MazeFixture {
   description: string;
   stage: StageData;
   centers: Record<number, Vec2>;
+  textureDataUrl?: string;
 }
 const DEFINITIONS = [
   {

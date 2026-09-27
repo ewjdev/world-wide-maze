@@ -13,7 +13,9 @@ import {
   writeSync,
 } from 'node:fs';
 import { dirname, join } from 'node:path';
+import type { StageData } from '@wwm/schema';
 import type {
+  Chunk,
   JournalEvent,
   Policy,
   RunDetail,
@@ -21,6 +23,7 @@ import type {
 } from '../../../packages/maze-agent/src/contracts.ts';
 import { canonical, LIMITS, PHYSICS_VERSION, VERSION } from '../../../packages/maze-agent/src/contracts.ts';
 import { fixture } from '../../../packages/maze-agent/src/fixtures.ts';
+import { mazeFromStage, scoreAt } from '../../../packages/maze-agent/src/score.ts';
 export const hash = (v: unknown) => createHash('sha256').update(canonical(v)).digest('hex');
 export class Archive {
   runs = new Map<string, JournalEvent[]>();
@@ -136,9 +139,14 @@ export class Archive {
     orderSeed: number,
     parentRunId: string | null,
     model: string | null,
+    maze?: { stage: StageData; textureDataUrl?: string },
+    scoreMode = false,
   ) {
     this.capacity();
-    const f = fixture(fixtureId);
+    const f = maze ? mazeFromStage(maze.stage, maze.textureDataUrl) : fixture(fixtureId);
+    if (maze && (!scoreMode || f.id !== fixtureId))
+      throw new Error('Website maze requires score mode and matching identity');
+    this.capacity(undefined, JSON.stringify(maze ?? {}).length + 1024 * 1024);
     const id = randomUUID();
     const pending = join(this.dir, 'runs', `.creating-${id}`);
     mkdirSync(pending);
@@ -159,13 +167,19 @@ export class Archive {
       attempts: 0,
       actions: 0,
       saved: true,
+      title: f.title,
+      url: f.stage.source.url,
+      scoreMode,
+      score: 0,
+      gems: 0,
     };
     const data = {
       summary,
       version: VERSION,
       physics: PHYSICS_VERSION,
-      controller: 'local-steering/1',
-      observation: 'island-local/1',
+      controller: scoreMode ? 'score-steering/1' : 'local-steering/1',
+      observation: scoreMode ? 'visible-score-targets/1' : 'island-local/1',
+      ...(maze ? { maze } : {}),
       limits: LIMITS,
     };
     const first = { seq: 1, at: new Date().toISOString(), type: 'created', data };
@@ -219,6 +233,20 @@ export class Archive {
       if (e.type === 'frame') s.decisions++;
       if (e.type === 'reservation') s.attempts++;
       if (e.type === 'action') s.actions++;
+    }
+    if (s.scoreMode) {
+      const stage = (ev[0].data.maze as { stage: StageData } | undefined)?.stage ?? fixture(s.fixture).stage;
+      const collected = new Set<number>();
+      let cleared = false;
+      for (const e of ev)
+        if (e.type === 'chunk')
+          for (const { event } of (e.data.chunk as Chunk).events) {
+            if (event.type === 'item') collected.add(event.itemId);
+            if (event.type === 'goal') cleared = true;
+          }
+      const score = scoreAt(stage, collected, s.tick, cleared);
+      s.score = score.score;
+      s.gems = score.gems;
     }
     return s;
   }

@@ -18,11 +18,26 @@ export type Status = 'ready' | 'running' | 'paused' | 'finished' | 'failed' | 's
 export interface Candidate {
   id: string;
   direction: string;
-  kind: 'flat' | 'ramp' | 'goal';
+  kind: 'flat' | 'ramp' | 'goal' | 'gem';
+  points?: number;
+  gems?: number;
+  travelSeconds?: number;
   destination: string | null;
   traversals: number;
 }
 export interface Observation {
+  score?: {
+    small: number;
+    large: number;
+    gems: number;
+    gemScore: number;
+    timeRemaining: number;
+    bonus: number;
+    score: number;
+    totalGems: number;
+    objective: string;
+    mode: 'high-score';
+  };
   current: string;
   goalVisible: boolean;
   nodes: { id: string; visits: number }[];
@@ -84,6 +99,11 @@ export interface RunSummary {
   attempts: number;
   actions: number;
   saved: boolean;
+  title?: string;
+  url?: string;
+  scoreMode?: boolean;
+  score?: number;
+  gems?: number;
 }
 export interface RunDetail {
   summary: RunSummary;
@@ -110,8 +130,9 @@ export function modelPayload(frame: Frame) {
     questions: {
       move: {
         type: 'choice',
-        instructions:
-          'Explore the maze to find its goal. Choose one adjacent connection. Prefer unexplored branches, remember dead ends, and backtrack when needed. Only the discovered graph is known. Select a supplied option.',
+        instructions: frame.observation.score
+          ? 'Play the visible maze for the highest score. Choose one supplied gem target or finish at the goal. Compare gem value against travel time and the lost time bonus (5 points/second). Prefer valuable nearby large gems, avoid small-gem detours costing more than they earn, and leave enough time to reach the goal. The local controller follows your target; it does not choose your strategy. Estimates may be optimistic. Select finish when collecting more is not worth the risk.'
+          : 'Explore the maze to find its goal. Choose one adjacent connection. Prefer unexplored branches, remember dead ends, and backtrack when needed. Only the discovered graph is known. Select a supplied option.',
         criteria: Object.fromEntries(frame.candidates.map((c) => [c.id, c])),
       },
     },

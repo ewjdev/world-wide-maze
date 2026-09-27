@@ -11,7 +11,7 @@ export class Exploration {
     readonly maze: MazeFixture,
     readonly orderSeed = 0,
   ) {
-    this.arrive(0, null);
+    this.arrive(maze.stage.start.islandId, null);
   }
   private node(id: number) {
     let alias = this.nodes.get(id);
@@ -98,6 +98,20 @@ export class Exploration {
 }
 export function baseline(frame: Pick<Frame, 'observation' | 'candidates'>): string {
   const { observation: o, candidates: c } = frame;
+  if (o.score) {
+    const goal = c.find((x) => x.kind === 'goal');
+    const gem = [...c]
+      .filter(
+        (x) =>
+          x.kind === 'gem' &&
+          (x.travelSeconds ?? 0) + (goal?.travelSeconds ?? 0) + 10 < o.score!.timeRemaining,
+      )
+      .sort(
+        (a, b) =>
+          (b.points ?? 0) - 5 * (b.travelSeconds ?? 0) - ((a.points ?? 0) - 5 * (a.travelSeconds ?? 0)),
+      )[0];
+    return gem && (gem.points ?? 0) > 5 * (gem.travelSeconds ?? 0) ? gem.id : (goal ?? gem ?? c[0]).id;
+  }
   if (c.length === 1) return c[0].id;
   const stack: string[] = [];
   let cycleEdge: string | null = null;
