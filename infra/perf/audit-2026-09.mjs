@@ -22,6 +22,13 @@ const report = {
   mode,
   browser: browser.version(),
   headless: false,
+  viewport: { width: 1440, height: 900 },
+  instrumentation: {
+    optIn: true,
+    phaseSamplesEveryMs: 1000,
+    maximumRunSeconds: 60,
+    gpuTimestampQueries: mode === 'gpu',
+  },
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   hardware: execFileSync('sysctl', ['-n', 'machdep.cpu.brand_string', 'hw.memsize'], {
     encoding: 'utf8',

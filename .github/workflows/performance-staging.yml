@@ -1,0 +1,59 @@
+# Staging validation only. No deployment jobs, cloud credentials, or production workflow changes.
+name: Performance staging
+on:
+  push:
+    branches: [codex/performance-p1-staging]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: performance-staging-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    if: github.ref == 'refs/heads/codex/performance-p1-staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @wwm/fixture-capture exec playwright install --with-deps chromium
+      # Browser correctness uses existing browser-env.ts: headless WebGL2 software fallback, no GPU timing claim.
+      - run: pnpm check
+      - run: pnpm docent:index --check
+      - run: node --test infra/perf/p1-regression.test.mjs
+      - name: Compare native evidence committed with staging
+        shell: bash
+        run: |
+          set +e
+          node infra/perf/p1-regression.mjs docs/launch/evidence/audit-2026-09-27 docs/launch/evidence/performance-p1-staging /tmp/performance-comparison.json
+          gate_status=$?
+          set -e
+          if [ "$gate_status" -eq 3 ]; then
+            echo '::warning::P1 gates completed but known P2 #24 retry attribute retention is still failing. This is not memory acceptance or production approval.'
+            echo 'Known P2 #24 retention failure remains open; see performance-comparison artifact.' >> "$GITHUB_STEP_SUMMARY"
+          elif [ "$gate_status" -ne 0 ]; then
+            exit "$gate_status"
+          fi
+      - name: Preserve comparison and native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-staging-${{ github.sha }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            /tmp/performance-comparison.json
+            docs/launch/evidence/performance-p1-staging/
+            docs/launch/evidence/render-p1/
+            docs/launch/evidence/ghost-p1/
+            docs/launch/evidence/performance-cache-p1/
