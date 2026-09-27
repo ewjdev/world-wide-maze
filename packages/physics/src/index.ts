@@ -16,9 +16,18 @@ export {
   type StaticSpec,
   staticSpecs,
 } from './geometry.ts';
+export {
+  type BarrierPose,
+  barrierPose,
+  LOCK_GATE_THICKNESS_M,
+  LOCK_HEIGHT_M,
+  lockBoxes,
+  lockMatchesStage,
+} from './locks.ts';
 export { DEFAULT_PARAMS, FEEL_CHECKS, PARAM_LABELS, type PhysicsParams, resolveParams } from './params.ts';
 export { type LoadRapierOptions, loadRapier, type RapierBuild } from './rapier.ts';
 export {
+  type LockChange,
   type ReplayOptions,
   type ReplayResult,
   record,
@@ -26,7 +35,13 @@ export {
   runInputs,
   type TickedEvent,
 } from './replay.ts';
-export { createSimulation, RapierSimulation, type SimStats, type SimulationOptions } from './simulation.ts';
+export {
+  createSimulation,
+  type LockableSimulation,
+  RapierSimulation,
+  type SimStats,
+  type SimulationOptions,
+} from './simulation.ts';
 export {
   createWorkerSimulation,
   type WorkerSimulation,

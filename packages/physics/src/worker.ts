@@ -103,7 +103,7 @@ async function handle(m: ToWorker): Promise<void> {
     case 'load': {
       const s = sim ?? (await simP);
       if (!s) throw new Error('worker: init first');
-      await s.load(m.stage);
+      await s.load(m.stage, m.options);
       loaded = true;
       epoch++;
       pendingEvents = [];
@@ -128,6 +128,9 @@ async function handle(m: ToWorker): Promise<void> {
       epoch++;
       pendingJumps = 0;
       postState();
+      return;
+    case 'lock':
+      if (sim && loaded) sim.setLock(m.lockId, m.open);
       return;
     case 'pause':
       paused = m.paused;
