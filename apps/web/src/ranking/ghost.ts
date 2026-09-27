@@ -7,46 +7,12 @@
  * the escape hatch for Phase 10). Follow-up for Phase 04: an `engine.addGhost()` with a proper glow material.
  */
 import type { Engine } from '@wwm/engine';
-import type { InputSample, StageData } from '@wwm/schema';
-import { BALL_RADIUS_M, SIM_HZ } from '@wwm/schema';
+import { BALL_RADIUS_M } from '@wwm/schema';
 import { IcosahedronGeometry, Mesh, MeshBasicMaterial, SphereGeometry } from 'three/webgpu';
 
-export interface GhostTrack {
-  hz: number;
-  /** xyz per tick, world metres. */
-  pos: Float32Array;
-  /** xyzw per tick. */
-  quat: Float32Array;
-  ticks: number;
-  /** Tick of the goal event, or -1. */
-  goalTick: number;
-}
+import type { GhostTrack } from './ghost-track.ts';
 
-/** Re-simulate `inputs` on `stage` and keep the ball pose of every tick (≈ 20 µs per tick). */
-export async function recordGhostTrack(
-  stage: StageData,
-  inputs: readonly InputSample[],
-): Promise<GhostTrack> {
-  const { replay } = await import('@wwm/physics');
-  const pos = new Float32Array(inputs.length * 3);
-  const quat = new Float32Array(inputs.length * 4);
-  const r = await replay(stage, inputs, {
-    stopAtGoal: true,
-    onStep: (tick, s) => {
-      const i = tick - 1;
-      pos.set(s.ball.pos, i * 3);
-      quat.set(s.ball.quat, i * 4);
-      return undefined;
-    },
-  });
-  return {
-    hz: SIM_HZ,
-    pos: pos.subarray(0, r.ticks * 3),
-    quat: quat.subarray(0, r.ticks * 4),
-    ticks: r.ticks,
-    goalTick: r.goalTick,
-  };
-}
+export { type GhostTrack, recordGhostTrack } from './ghost-track.ts';
 
 /** Interpolated pose at `tSec` (clamped to the track). */
 export function sampleTrack(track: GhostTrack, tSec: number, out = { pos: [0, 0, 0], quat: [0, 0, 0, 1] }) {
