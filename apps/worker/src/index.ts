@@ -3,11 +3,13 @@
  */
 import { createServices } from './config.ts';
 import { createApp } from './router.ts';
+import { serveAdminPage } from './routes/admin-page.ts';
 import { handleRooms } from './routes/rooms.ts';
 import { sweepCards } from './routes/share.ts';
 import { withSecurityHeaders } from './security.ts';
 
 export { BuildJob } from './build-job.ts';
+export { JevControl } from './jev/control.ts';
 export { Limiter } from './limiter.ts';
 export { Room } from './room.ts';
 
@@ -18,6 +20,7 @@ export default {
     let res: Response;
     try {
       res =
+        (await serveAdminPage(request, env)) ??
         (await handleRooms(request, env)) ?? // Phase 06: /api/rooms/*
         (await app.fetch(request, env, ctx));
     } catch (err) {

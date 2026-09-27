@@ -2,6 +2,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import react from '@vitejs/plugin-react';
 import { defineConfig, type Plugin } from 'vite';
+import { jevPlugin } from '../../tools/jev-runtime/src/plugin.ts';
 
 const RAPIER_PKG = '@dimforge/rapier3d-deterministic-compat';
 const RAPIER_ENTRY = /[\\/]@dimforge[\\/]rapier3d-deterministic-compat[\\/]dist[\\/]rapier\.mjs$/;
@@ -42,7 +43,7 @@ function rapierWasmAsset(): Plugin {
 
 // `pnpm dev` runs this alongside `wrangler dev` (apps/worker, port 8787); /api is proxied there.
 export default defineConfig({
-  plugins: [react(), rapierWasmAsset()],
+  plugins: [jevPlugin(fileURLToPath(new URL('../../', import.meta.url))), react(), rapierWasmAsset()],
   resolve: {
     alias: {
       // Phase 12: `@wwm/physics` `loadRapier('standard')` (non-deterministic Rapier) exists only for the

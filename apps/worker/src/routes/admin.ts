@@ -6,8 +6,9 @@ import { Catalog, CatalogInputError } from '../catalog.ts';
 import { runCacheKey } from '../ids.ts';
 import { checkUrl } from '../policy/url-policy.ts';
 import { BodyTooLargeError, readJsonCapped } from '../security.ts';
+import { jevAdminRoutes } from './admin-jev.ts';
 
-type AdminEnv = {
+export type AdminEnv = {
   Bindings: AppEnv['Bindings'] & AdminAuthConfig;
   Variables: AppEnv['Variables'] & { adminEmail: string };
 };
@@ -196,3 +197,5 @@ adminRoutes.post('/runs/:runId/refresh', async (c) => {
     throw err;
   }
 });
+
+adminRoutes.route('/jev', jevAdminRoutes);

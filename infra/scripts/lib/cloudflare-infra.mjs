@@ -407,8 +407,8 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
     problems.push(`${where}: R2 STAGES is ${r2.bucket_name}, config says ${c.r2}`);
   if (obj.browser?.binding !== 'BROWSER') problems.push(`${where}: no browser binding BROWSER`);
   const doNames = (obj.durable_objects?.bindings ?? []).map((b) => b.name).sort();
-  if (doNames.join() !== 'BUILD_JOB,LIMITER,ROOM')
-    problems.push(`${where}: DO bindings must be ROOM, BUILD_JOB, LIMITER`);
+  if (doNames.join() !== 'BUILD_JOB,JEV_CONTROL,LIMITER,ROOM')
+    problems.push(`${where}: DO bindings must be ROOM, BUILD_JOB, LIMITER, JEV_CONTROL`);
   for (const rl of RATE_LIMITERS) {
     const b = (obj.ratelimits ?? []).find((x) => x.name === rl);
     if (!b) problems.push(`${where}: no rate limit binding ${rl}`);

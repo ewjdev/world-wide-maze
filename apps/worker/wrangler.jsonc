@@ -112,12 +112,14 @@
       // One per build job: runs capture → build → store and serves the SSE progress stream.
       { "name": "BUILD_JOB", "class_name": "BuildJob" },
       // Sliding-window counters (per-IP build limit) and the global browser-session semaphore.
-      { "name": "LIMITER", "class_name": "Limiter" }
+      { "name": "LIMITER", "class_name": "Limiter" },
+      { "name": "JEV_CONTROL", "class_name": "JevControl" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
-    { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] }
+    { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
+    { "tag": "v3", "new_sqlite_classes": ["JevControl"] }
   ],
   // Retention sweep (task 9): daily at 03:17 UTC.
   "triggers": { "crons": ["17 3 * * *"] },
@@ -143,7 +145,7 @@
         "not_found_handling": "single-page-application",
         // Phase 18: `/`, `/log` and `/j/*` get their own link-preview tags (the Worker serves the app shell with
         // them), `/r/*` are score permalinks. Everything else stays asset-first.
-        "run_worker_first": ["/api/*", "/s/*", "/r/*", "/j/*", "/", "/log"]
+        "run_worker_first": ["/api/*", "/s/*", "/r/*", "/j/*", "/", "/log", "/admin", "/admin/*"]
       },
       "vars": {
         "CAPTURE_BACKEND": "browser-run",
@@ -204,12 +206,14 @@
         "bindings": [
           { "name": "ROOM", "class_name": "Room" },
           { "name": "BUILD_JOB", "class_name": "BuildJob" },
-          { "name": "LIMITER", "class_name": "Limiter" }
+          { "name": "LIMITER", "class_name": "Limiter" },
+          { "name": "JEV_CONTROL", "class_name": "JevControl" }
         ]
       },
       "migrations": [
         { "tag": "v1", "new_sqlite_classes": ["Room"] },
-        { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] }
+        { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
+        { "tag": "v3", "new_sqlite_classes": ["JevControl"] }
       ],
       // Cron Triggers only run on production (never on Previews).
       "triggers": { "crons": ["17 3 * * *"] },
@@ -280,7 +284,8 @@
           "bindings": [
             { "name": "ROOM", "class_name": "Room" },
             { "name": "BUILD_JOB", "class_name": "BuildJob" },
-            { "name": "LIMITER", "class_name": "Limiter" }
+            { "name": "LIMITER", "class_name": "Limiter" },
+            { "name": "JEV_CONTROL", "class_name": "JevControl" }
           ]
         }
       }

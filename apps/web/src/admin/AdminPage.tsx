@@ -4,6 +4,7 @@ import '../pages/about/showcase.css';
 import './admin.css';
 import { adminApi, errorMessage } from './api.ts';
 import { CaptureAttempts } from './CaptureAttempts.tsx';
+import { JevSettings } from './JevSettings.tsx';
 import { PolicyRules } from './PolicyRules.tsx';
 
 const statusNames: Record<ModerationStatus, string> = {
@@ -150,9 +151,10 @@ export default function AdminPage() {
       </header>
       <main id="admin-main" className="admin-main">
         <header className="admin-heading">
-          <h1>Content review</h1>
-          <p>Find saved mazes, inspect capture evidence, and manage what can be shared.</p>
+          <h1>Administration</h1>
+          <p>Manage Jev, review saved mazes, and control what can be shared.</p>
         </header>
+        <JevSettings />
         {notice && (
           <p className="admin-notice" role="status">
             {notice}

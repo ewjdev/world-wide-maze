@@ -17,6 +17,9 @@ importers:
       fast-check:
         specifier: ^4.10.2
         version: 4.10.2
+      tsx:
+        specifier: ^4.23.15
+        version: 4.23.15
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -100,6 +103,9 @@ importers:
       '@wwm/learning':
         specifier: workspace:*
         version: link:../../packages/learning
+      '@wwm/maze-agent':
+        specifier: workspace:*
+        version: link:../../packages/maze-agent
       '@wwm/net':
         specifier: workspace:*
         version: link:../../packages/net
@@ -255,6 +261,21 @@ importers:
         specifier: ^4.6.5
         version: 4.6.5
 
+  packages/maze-agent:
+    dependencies:
+      '@wwm/physics':
+        specifier: workspace:*
+        version: link:../physics
+      '@wwm/schema':
+        specifier: workspace:*
+        version: link:../schema
+      '@wwm/solver':
+        specifier: workspace:*
+        version: link:../solver
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
+
   packages/net:
     dependencies:
       '@wwm/schema':
@@ -362,6 +383,21 @@ importers:
       tsx:
         specifier: ^4.23.15
         version: 4.23.15
+
+  tools/jev-runtime:
+    dependencies:
+      '@wwm/maze-agent':
+        specifier: workspace:*
+        version: link:../../packages/maze-agent
+      '@wwm/schema':
+        specifier: workspace:*
+        version: link:../../packages/schema
+      vite:
+        specifier: ^8.3.1
+        version: 8.3.1(@types/node@26.6.2)(esbuild@0.28.2)(tsx@4.23.15)
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   tools/learning-voice:
     dependencies:
