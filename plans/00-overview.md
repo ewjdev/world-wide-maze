@@ -90,6 +90,7 @@ Education is an additive product track authorized September 26, 2026. [Phase 20]
 | 16 | [phase-16-build-story.md](phase-16-build-story.md) | Build clock + AI-found-bugs gallery for the LinkedIn series | 10 | 5 |
 | 12 | [phase-12-launch.md](phase-12-launch.md) | Perf and device matrix, load and abuse testing, deploy, observability | 08, 09, 10 | 4 |
 | 21 | [phase-21-url-catalog-and-content-review.md](phase-21-url-catalog-and-content-review.md) | Durable URL catalog, approved-run reuse, content review, and operator controls (proposal) | 07, 10, 14 | pending policy decisions |
+| 24 | [phase-24-race-mode.md](phase-24-race-mode.md) | Race as a third gameplay mode: authored flowing courses, local personal ghosts, Race-specific route generation, and curved-ramp validation (execution plan; not implemented) | 03, 04, 05, 06, 08, 09, 10 | planned |
 
 ### Execution waves
 ```
