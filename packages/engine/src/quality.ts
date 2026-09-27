@@ -14,14 +14,56 @@ export interface TierFeatures {
   fxaa: boolean;
   glow: boolean;
   richBackground: boolean;
+  bloomScale: number;
+  maxPixels: number;
 }
 
 export const TIERS: readonly TierFeatures[] = [
-  { envMapUpdates: true, renderScale: 1, fxaa: true, glow: true, richBackground: true },
-  { envMapUpdates: false, renderScale: 1, fxaa: true, glow: true, richBackground: true },
-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: true, richBackground: true },
-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: false, richBackground: true },
-  { envMapUpdates: false, renderScale: 0.7, fxaa: false, glow: false, richBackground: false },
+  {
+    envMapUpdates: true,
+    renderScale: 1,
+    fxaa: true,
+    glow: true,
+    richBackground: true,
+    bloomScale: 0.5,
+    maxPixels: Number.POSITIVE_INFINITY,
+  },
+  {
+    envMapUpdates: false,
+    renderScale: 1,
+    fxaa: true,
+    glow: true,
+    richBackground: true,
+    bloomScale: 0.25,
+    maxPixels: 2560 * 1440,
+  },
+  {
+    envMapUpdates: false,
+    renderScale: 0.7,
+    fxaa: false,
+    glow: true,
+    richBackground: true,
+    bloomScale: 0.25,
+    maxPixels: 1920 * 1080,
+  },
+  {
+    envMapUpdates: false,
+    renderScale: 0.7,
+    fxaa: false,
+    glow: false,
+    richBackground: true,
+    bloomScale: 0,
+    maxPixels: 1920 * 1080,
+  },
+  {
+    envMapUpdates: false,
+    renderScale: 0.7,
+    fxaa: false,
+    glow: false,
+    richBackground: false,
+    bloomScale: 0,
+    maxPixels: 1280 * 1024,
+  },
 ];
 export const MAX_TIER = TIERS.length - 1;
 
@@ -67,9 +109,26 @@ export class QualityLadder {
     return this.sum > 0 ? this.samples.length / this.sum : 0;
   }
 
-  /** Feed one frame time. Returns true when the tier changed. */
+  /** Discard timing history across loading, intentional pauses and hidden-tab gaps. */
+  suspend(): void {
+    this.samples.length = 0;
+    this.sum = 0;
+    this.sinceChange = 0;
+    this.goodFor = 0;
+  }
+
+  /** A minimum-tier pressure signal is diagnostic only: gameplay fidelity never changes. */
+  get status(): 'fixed' | 'suspended' | 'steady' | 'minimum-tier' {
+    if (this.fixed) return 'fixed';
+    if (this.samples.length === 0) return 'suspended';
+    return this.tier === MAX_TIER && this.fps < (DOWN_FPS[MAX_TIER - 1] as number)
+      ? 'minimum-tier'
+      : 'steady';
+  }
+
+  /** Feed real active-play frame time, independent of simulation clamping. */
   sample(dtSec: number): boolean {
-    if (!(dtSec > 0) || dtSec > 1) return false; // tab switches, breakpoints
+    if (!(dtSec > 0) || !Number.isFinite(dtSec)) return false;
     this.elapsed += dtSec;
     this.samples.push(dtSec);
     this.sum += dtSec;
@@ -96,4 +155,14 @@ export class QualityLadder {
     this.goodFor = 0;
     return true;
   }
+}
+
+/** Bound backing-store pixels as well as DPR; CSS size and gameplay coordinates stay unchanged. */
+export function qualityPixelRatio(
+  dpr: number,
+  width: number,
+  height: number,
+  features: TierFeatures,
+): number {
+  return Math.min(dpr * features.renderScale, Math.sqrt(features.maxPixels / Math.max(1, width * height)));
 }

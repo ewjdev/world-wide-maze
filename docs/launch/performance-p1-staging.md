@@ -19,6 +19,15 @@ An improvement can be reduced GPU memory, shorter main-thread stalls or earlier 
 
 ## Status
 
-Implementation and isolated measurements are in progress. Ghost preparation #22 passed its component improvement/correctness gate and was merged from `ff7eaa3`; #27 device-matrix documentation accompanies it. Renderer/cache candidates and combined staging verification remain pending. Final measurements, commits, tests and unresolved acceptance will replace this status before handoff.
+Ghost preparation #22 was admitted from `ff7eaa3`; #27 device-matrix documentation accompanies it. Cache #23 (`02e1e1c`) and reviewed regression tooling #28 (`1cd13a4`) were merged as `4882a6f`. The dispose conflict preserves both ghost and stage-build cancellation; the generated documentation corpus was rebuilt. Independent source review found no semantic conflict. Renderer qualification and combined staging verification remain in progress.
 
 P2 issues #24–#26 and #29–#30 are deferred. In particular, the known per-retry attribute leak (#24) must stay visible in regression output; documenting or detecting it does not mean it is fixed.
+
+## Qualified component evidence
+
+| Change | Paired measured benefit | Tradeoff / limitation |
+|---|---|---|
+| Ghost worker, #22 | Native 36,000-tick preparation: 198–212 ms main-thread long task becomes no observed long task; maximum frame gap 183–200 → 17.5–17.6 ms | Total preparation rises from 198.5–212.1 to 256.6–263.8 ms because a new worker starts. Identical pose hashes, physics version and goal tick. Page CPU throttling does not throttle worker CPU. |
+| Bounded screenshot cache, #23 | Two real-worker tours: 113,843,200 → 30,720,000 retained decoded bytes (−73.0%); worker backing storage 117,253,017 → 34,140,257 bytes | Evicted pages decode again. 32 MiB is the retained RGBA limit; one active oversized decode can temporarily exceed it. All 44 stage hashes match. |
+
+These are isolated component results. Fresh combined-branch results will be recorded separately; component measurements do not certify the integrated build or physical lower-tier hardware.

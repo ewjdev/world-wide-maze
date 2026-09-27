@@ -1,0 +1,59 @@
+{
+  "description": "Deterministic timing simulation, not a hardware measurement. Baseline actual caller clamps to100ms; candidate passes real active-play time.",
+  "rows": [
+    {
+      "label": "before",
+      "realFrameMs": 200,
+      "secondsToMinimum": 18.799999999999965,
+      "transitions": [
+        {
+          "atWallSec": 6.800000000000003,
+          "tier": 1,
+          "fps": 9.999999999999998
+        },
+        {
+          "atWallSec": 10.799999999999994,
+          "tier": 2,
+          "fps": 9.999999999999998
+        },
+        {
+          "atWallSec": 14.79999999999998,
+          "tier": 3,
+          "fps": 9.999999999999998
+        },
+        {
+          "atWallSec": 18.799999999999965,
+          "tier": 4,
+          "fps": 9.999999999999998
+        }
+      ]
+    },
+    {
+      "label": "after",
+      "realFrameMs": 200,
+      "secondsToMinimum": 10.199999999999996,
+      "transitions": [
+        {
+          "atWallSec": 3.600000000000001,
+          "tier": 1,
+          "fps": 5.000000000000001
+        },
+        {
+          "atWallSec": 5.8000000000000025,
+          "tier": 2,
+          "fps": 5.000000000000001
+        },
+        {
+          "atWallSec": 8.000000000000004,
+          "tier": 3,
+          "fps": 5.000000000000001
+        },
+        {
+          "atWallSec": 10.199999999999996,
+          "tier": 4,
+          "fps": 5.000000000000001
+        }
+      ]
+    }
+  ]
+}

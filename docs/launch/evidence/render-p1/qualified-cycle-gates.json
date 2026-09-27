@@ -1,0 +1,113 @@
+{
+  "source": "qualified-webgpu/transitions.json and qualified-webgl2/transitions.json",
+  "exactPlateau": {
+    "webgpu": [
+      {
+        "mobile": false,
+        "quality": "low",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 63,
+          "renderTargets": 2,
+          "textures": 7,
+          "programs": 74,
+          "uniformBuffers": 110,
+          "total": 39225566
+        }
+      },
+      {
+        "mobile": false,
+        "quality": "high",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 63,
+          "renderTargets": 14,
+          "textures": 21,
+          "programs": 85,
+          "uniformBuffers": 120,
+          "total": 218259365
+        }
+      },
+      {
+        "mobile": true,
+        "quality": "low",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 77,
+          "renderTargets": 2,
+          "textures": 9,
+          "programs": 85,
+          "uniformBuffers": 124,
+          "total": 36196619
+        }
+      },
+      {
+        "mobile": true,
+        "quality": "high",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 77,
+          "renderTargets": 14,
+          "textures": 23,
+          "programs": 96,
+          "uniformBuffers": 134,
+          "total": 80261922
+        }
+      }
+    ],
+    "webgl2": [
+      {
+        "mobile": false,
+        "quality": "low",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 63,
+          "renderTargets": 2,
+          "textures": 7,
+          "programs": 74,
+          "uniformBuffers": 111,
+          "total": 39169708
+        }
+      },
+      {
+        "mobile": false,
+        "quality": "high",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 63,
+          "renderTargets": 14,
+          "textures": 21,
+          "programs": 86,
+          "uniformBuffers": 121,
+          "total": 218214471
+        }
+      },
+      {
+        "mobile": true,
+        "quality": "low",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 77,
+          "renderTargets": 2,
+          "textures": 9,
+          "programs": 85,
+          "uniformBuffers": 125,
+          "total": 36135672
+        }
+      },
+      {
+        "mobile": true,
+        "quality": "high",
+        "cycles": 3,
+        "plateau": {
+          "attributes": 77,
+          "renderTargets": 14,
+          "textures": 23,
+          "programs": 97,
+          "uniformBuffers": 135,
+          "total": 80211939
+        }
+      }
+    ]
+  }
+}
