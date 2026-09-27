@@ -1,0 +1,443 @@
+$ pnpm typecheck && pnpm lint && pnpm test
+$ pnpm -r --workspace-concurrency=4 typecheck
+Scope: 22 of 23 workspace projects
+packages/learning typecheck$ tsc -p tsconfig.json
+packages/schema typecheck$ tsc -p tsconfig.json
+tools/build-story typecheck$ tsc -p tsconfig.json
+tools/build-story typecheck: Done
+packages/schema typecheck: Done
+packages/learning typecheck: Done
+packages/capture-script typecheck$ tsc -p tsconfig.json
+apps/education typecheck$ tsc -p tsconfig.json
+packages/net typecheck$ tsc -p tsconfig.json
+packages/ai typecheck$ tsc -p tsconfig.json
+packages/ai typecheck: Done
+packages/stage-builder typecheck$ tsc -p tsconfig.json
+packages/net typecheck: Done
+tools/docent-index typecheck$ tsc -p tsconfig.json
+packages/capture-script typecheck: Done
+tools/learning-voice typecheck$ tsc -p tsconfig.json
+apps/education typecheck: Done
+tools/ref-fetch typecheck$ tsc -p tsconfig.json --noEmit
+packages/stage-builder typecheck: Done
+tools/docent-index typecheck: Done
+tools/learning-voice typecheck: Done
+tools/ref-fetch typecheck: Done
+tools/fixture-capture typecheck$ tsc -p tsconfig.json
+tools/stage-debugger typecheck$ tsc -p tsconfig.json
+packages/physics typecheck$ tsc -p tsconfig.json
+apps/extension typecheck$ tsc -p tsconfig.json
+tools/stage-debugger typecheck: Done
+packages/physics typecheck: Done
+tools/fixture-capture typecheck: Done
+apps/extension typecheck: Done
+packages/engine typecheck$ tsc -p tsconfig.json
+packages/solver typecheck$ tsc -p tsconfig.json
+packages/solver typecheck: Done
+packages/engine typecheck: Done
+packages/maze-agent typecheck$ tsc -p tsconfig.json
+apps/worker typecheck$ tsc -p tsconfig.json && tsc -p tsconfig.node.json
+tools/batch-eval typecheck$ tsc -p tsconfig.json
+packages/maze-agent typecheck: Done
+tools/batch-eval typecheck: Done
+apps/worker typecheck: Done
+tools/jev-runtime typecheck$ tsc -p tsconfig.json
+apps/web typecheck$ tsc -p tsconfig.json
+tools/jev-runtime typecheck: Done
+apps/web typecheck: Done
+$ biome check .
+apps/web/src/jev/JevPage.tsx:389:14 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+
+    387 │     const cell = (value: unknown) => {
+    388 │       const t = String(value ?? '');
+  > 389 │       return '"' + (/^[=+@\-\t\r]/.test(t) ? "'" : '') + t.replaceAll('"', '""') + '"';
+        │              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    390 │     };
+    391 │     download(
+
+  i Unsafe fix: Use a template literal.
+
+     387  387 │       const cell = (value: unknown) => {
+     388  388 │         const t = String(value ?? '');
+     389      │ - ······return·'"'·+·(/^[=+@\-\t\r]/.test(t)·?·"'"·:·'')·+·t.replaceAll('"',·'""')·+·'"';
+          389 │ + ······return·`"${/^[=+@\-\t\r]/.test(t)·?·"'"·:·''}${t.replaceAll('"',·'""')}"`;
+     390  390 │       };
+     391  391 │       download(
+
+
+apps/web/src/jev/JevPage.tsx:51:13 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    49 │   canvas.width = f.stage.size.width;
+    50 │   canvas.height = f.stage.size.height;
+  > 51 │   const c = canvas.getContext('2d')!;
+       │             ^^^^^^^^^^^^^^^^^^^^^^^^
+    52 │   c.fillStyle = '#eef3f3';
+    53 │   c.fillRect(0, 0, canvas.width, canvas.height);
+
+
+apps/web/src/jev/JevPage.tsx:277:9 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    275 │         bitmap.width = loaded.image.width;
+    276 │         bitmap.height = loaded.image.height;
+  > 277 │         bitmap.getContext('2d')!.drawImage(loaded.image, 0, 0);
+        │         ^^^^^^^^^^^^^^^^^^^^^^^^
+    278 │         loaded.image.close();
+    279 │         f = mazeFromStage(loaded.stage, encodeTexture(bitmap));
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     275  275 │           bitmap.width = loaded.image.width;
+     276  276 │           bitmap.height = loaded.image.height;
+     277      │ - ········bitmap.getContext('2d')!.drawImage(loaded.image,·0,·0);
+          277 │ + ········bitmap.getContext('2d')?.drawImage(loaded.image,·0,·0);
+     278  278 │           loaded.image.close();
+     279  279 │           f = mazeFromStage(loaded.stage, encodeTexture(bitmap));
+
+
+apps/web/src/jev/JevPage.tsx:346:20 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    344 │         setSliceCount(r.maze.stage.source.slice.count);
+    345 │       } else if (FIXTURES.some((f) => f.stage.stageId === r.maze.stage.stageId)) {
+  > 346 │         setFixture(FIXTURES.find((f) => f.stage.stageId === r.maze.stage.stageId)!.id);
+        │                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    347 │         setSliceCount(1);
+    348 │       }
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+     344  344 │           setSliceCount(r.maze.stage.source.slice.count);
+     345  345 │         } else if (FIXTURES.some((f) => f.stage.stageId === r.maze.stage.stageId)) {
+     346      │ - ········setFixture(FIXTURES.find((f)·=>·f.stage.stageId·===·r.maze.stage.stageId)!.id);
+          346 │ + ········setFixture(FIXTURES.find((f)·=>·f.stage.stageId·===·r.maze.stage.stageId)?.id);
+     347  347 │           setSliceCount(1);
+     348  348 │         }
+
+
+apps/web/src/jev/JevPage.tsx:775:67 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    773 │               )}
+    774 │               {!detail && v?.paused && v.runId && (
+  > 775 │                 <button type="button" onClick={() => void openRun(v.runId!)}>
+        │                                                                   ^^^^^^^^
+    776 │                   End & inspect saved evidence
+    777 │                 </button>
+
+
+apps/web/src/jev/JevPage.tsx:860:29 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    858 │                 className="jev-primary"
+    859 │                 onClick={() => {
+  > 860 │                   const r = replay.current!;
+        │                             ^^^^^^^^^^^^^^^
+    861 │                   if (r.tick === r.inputs.length)
+    862 │                     void r.seek(0).then(() => {
+
+
+apps/web/src/jev/JevPage.tsx:977:25 lint/style/noNonNullAssertion ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    975 │           .map((e) => {
+    976 │             const a = point(e.from),
+  > 977 │               b = point(e.to!);
+        │                         ^^^^^
+    978 │             return (
+    979 │               <line
+
+
+apps/web/src/jev/jev.css:299:13 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    297 │   width: 100%;
+    298 │   text-align: left;
+  > 299 │   border: 0 !important;
+        │             ^^^^^^^^^^
+    300 │   border-bottom: 1px solid var(--j-line) !important;
+    301 │   padding: 15px 0 !important;
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    299 │ ··border:·0·!important;
+        │            -----------
+
+apps/web/src/jev/jev.css:300:42 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    298 │   text-align: left;
+    299 │   border: 0 !important;
+  > 300 │   border-bottom: 1px solid var(--j-line) !important;
+        │                                          ^^^^^^^^^^
+    301 │   padding: 15px 0 !important;
+    302 │ }
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    300 │ ··border-bottom:·1px·solid·var(--j-line)·!important;
+        │                                         -----------
+
+apps/web/src/jev/jev.css:301:19 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    299 │   border: 0 !important;
+    300 │   border-bottom: 1px solid var(--j-line) !important;
+  > 301 │   padding: 15px 0 !important;
+        │                   ^^^^^^^^^^
+    302 │ }
+    303 │ .jev-run > span {
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    301 │ ··padding:·15px·0·!important;
+        │                  -----------
+
+apps/web/src/jev/jev.css:442:21 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    440 │   }
+    441 │   .jev-history-button {
+  > 442 │     font-size: 12px !important;
+        │                     ^^^^^^^^^^
+    443 │     padding: 7px 9px !important;
+    444 │   }
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    442 │ ····font-size:·12px·!important;
+        │                    -----------
+
+apps/web/src/jev/jev.css:443:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    441 │   .jev-history-button {
+    442 │     font-size: 12px !important;
+  > 443 │     padding: 7px 9px !important;
+        │                      ^^^^^^^^^^
+    444 │   }
+    445 │   .jev-workspace {
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    443 │ ····padding:·7px·9px·!important;
+        │                     -----------
+
+apps/web/src/jev/jev.css:529:19 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    527 │     flex: 1;
+    528 │     font-size: 12px;
+  > 529 │     padding: 10px !important;
+        │                   ^^^^^^^^^^
+    530 │   }
+    531 │   .jev-provider {
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    529 │ ····padding:·10px·!important;
+        │                  -----------
+
+apps/web/src/jev/jev.css:548:22 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    546 │ @media (prefers-reduced-motion: reduce) {
+    547 │   .jev-page * {
+  > 548 │     transition: none !important;
+        │                      ^^^^^^^^^^
+    549 │     animation: none !important;
+    550 │   }
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    548 │ ····transition:·none·!important;
+        │                     -----------
+
+apps/web/src/jev/jev.css:549:21 lint/complexity/noImportantStyles  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Avoid the use of the !important style.
+
+    547 │   .jev-page * {
+    548 │     transition: none !important;
+  > 549 │     animation: none !important;
+        │                     ^^^^^^^^^^
+    550 │   }
+    551 │ }
+
+  i This style reverses the cascade logic, and precedence is reversed. This could lead to having styles with higher specificity being overridden by styles with lower specificity.
+
+  i Unsafe fix: Remove the style.
+
+    549 │ ····animation:·none·!important;
+        │                    -----------
+
+apps/web/src/jev/jev.css:309:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    307 │   gap: 8px;
+    308 │ }
+  > 309 │ .jev-run strong {
+        │ ^^^^^^^^^^^^^^^
+    310 │   font-size: 14px;
+    311 │ }
+
+  i This selector specificity is (0, 2, 1)
+
+    254 │   background: #e7f4f3;
+    255 │ }
+  > 256 │ .jev-option.is-chosen strong {
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    257 │   color: #16626b;
+    258 │ }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+apps/web/src/jev/jev.css:401:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    399 │   margin-left: auto;
+    400 │ }
+  > 401 │ .jev-error strong {
+        │ ^^^^^^^^^^^^^^^^^
+    402 │   white-space: nowrap;
+    403 │ }
+
+  i This selector specificity is (0, 2, 1)
+
+    254 │   background: #e7f4f3;
+    255 │ }
+  > 256 │ .jev-option.is-chosen strong {
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    257 │   color: #16626b;
+    258 │ }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+apps/web/src/jev/jev.css:624:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    622 │   flex-direction: column;
+    623 │ }
+  > 624 │ .jev-score strong {
+        │ ^^^^^^^^^^^^^^^^^
+    625 │   font-size: 24px;
+    626 │   font-variant-numeric: tabular-nums;
+
+  i This selector specificity is (0, 2, 1)
+
+    254 │   background: #e7f4f3;
+    255 │ }
+  > 256 │ .jev-option.is-chosen strong {
+        │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    257 │   color: #16626b;
+    258 │ }
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+apps/web/src/jev/session.ts:268:22 lint/style/noNonNullAssertion  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Forbidden non-null assertion.
+
+    266 │       if (outcome) {
+    267 │         await this.command('outcome', {
+  > 268 │           attemptId: this.view.active!.attemptId,
+        │                      ^^^^^^^^^^^^^^^^^
+    269 │           outcome,
+    270 │           tick: this.pilot.tick,
+
+  i Unsafe fix: Replace with optional chain operator ?. This operator includes runtime checks, so it is safer than the compile-only non-null assertion operator
+
+    266 266 │         if (outcome) {
+    267 267 │           await this.command('outcome', {
+    268     │ - ··········attemptId:·this.view.active!.attemptId,
+        268 │ + ··········attemptId:·this.view.active?.attemptId,
+    269 269 │             outcome,
+    270 270 │             tick: this.pilot.tick,
+
+
+apps/web/src/pages/log/story.css:1154:1 lint/style/noDescendingSpecificity ━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! Descending specificity selector found. This selector specificity is (0, 1, 1)
+
+    1152 │   color: var(--ink-2);
+    1153 │ }
+  > 1154 │ .cd-later strong {
+         │ ^^^^^^^^^^^^^^^^
+    1155 │   color: var(--ink);
+    1156 │   font-weight: 600;
+
+  i This selector specificity is (0, 1, 2)
+
+    751 │   white-space: nowrap;
+    752 │ }
+  > 753 │ .bg-batch td strong {
+        │ ^^^^^^^^^^^^^^^^^^^
+    754 │   font-weight: 500;
+    755 │   color: var(--green);
+
+  i Descending specificity selector may not be applied. Consider rearranging the order of the selectors. See MDN web docs for more details.
+
+
+The number of diagnostics exceeds the limit allowed. Use --max-diagnostics to increase it.
+Diagnostics not shown: 16.
+Checked 714 files in 136ms. No fixes applied.
+Found 32 warnings.
+Found 4 infos.
+$ vitest run
+
+ RUN  v5.0.1 /Users/ewj/.codex/worktrees/game-performance-audit/wwm
+
+(node:48649) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48415) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48174) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:48969) ExperimentalWarning: localStorage is not available because --localstorage-file was not provided.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[phase-10] verified a 5429-tick replay in workerd, request took 322 ms
+
+[phase-18] card render ms in workerd: {"stage":650,"stage-fixture":339,"score":355,"score-unverified":406,"run":232,"journey":152,"site":493}
+[phase-18] first request (load + art + render + R2 read) ms: {"stage":749,"stage-fixture":366,"score":424,"score-unverified":498,"run":262,"journey":184,"site":557}
+
+ Test Files  108 passed | 3 skipped (111)
+      Tests  1328 passed | 32 skipped (1360)
+   Start at  12:32:37
+   Duration  148.15s (tests 93%, transform 5%, import 3%)
