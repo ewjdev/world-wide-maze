@@ -1,5 +1,7 @@
 # Performance P1 staging review
 
+This document records the historical P1 checkpoint. See [P2 staging](performance-p2-staging.md) for subsequent work and the stricter resource gate.
+
 ## Scope and integration gate
 
 Eric authorized sub-agents to implement epic #19's P1 issues, test each change, and merge only work with demonstrated performance improvement into a staging branch before starting P2. The branch is `codex/performance-p1-staging`; production and main are outside this integration step.

@@ -10,13 +10,13 @@ Build the candidate with the audit wrapper, serve that production dist, then col
 node infra/perf/p1-build.mjs
 pnpm --filter @wwm/web preview --host 127.0.0.1 --port 4318
 # Run collectors in another terminal while that preview remains running.
-AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p1-staging node infra/perf/audit-2026-09.mjs frames
-AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p1-staging node infra/perf/audit-2026-09.mjs gpu
-AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p1-staging node infra/perf/audit-2026-09.mjs replay
-AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p1-staging node infra/perf/audit-2026-09.mjs lifecycle
-node infra/perf/p1-regression.mjs docs/launch/evidence/audit-2026-09-27 docs/launch/evidence/performance-p1-staging /tmp/performance-comparison.json
+AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p2-staging node infra/perf/audit-2026-09.mjs frames
+AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p2-staging node infra/perf/audit-2026-09.mjs gpu
+AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p2-staging node infra/perf/audit-2026-09.mjs replay
+AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p2-staging node infra/perf/audit-2026-09.mjs lifecycle
+node infra/perf/p1-regression.mjs docs/launch/evidence/performance-p1-staging docs/launch/evidence/performance-p2-staging /tmp/performance-comparison.json --strict-resource-plateau
 node --test infra/perf/p1-regression.test.mjs
-AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p1-staging node infra/perf/p1-overhead.mjs
+AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT=docs/launch/evidence/performance-p2-staging node infra/perf/p1-overhead.mjs
 ```
 
 Use one native browser workload at a time. Preserve raw files; `AUDIT_OUT` accepts absolute or cwd-relative directories. Wrappers forward every frame argument, including separate simulation and wall-time deltas. Never replace original audit evidence with new runs.
@@ -34,14 +34,14 @@ The September 27 audit is a historical reference, useful for resource/correctnes
 | 0 | Complete supplied evidence passes these checks | Review paired gains and remaining device gates before any merge decision |
 | 1 | Hard correctness or resource failure | Fix before staging acceptance |
 | 2 | Missing evidence/metadata | Collect the missing cases; never treat absent metrics as zero |
-| 3 | Known P2 #24 attribute retention still fails | Keep issue open; staging CI explicitly warns, and memory acceptance remains incomplete (new/worse growth still fails) |
+| 3 | Historical P1 mode only: known #24 attribute retention still fails | Current P2 CI uses strict mode and accepts no leak waiver |
 | 4 | Timing/environment review required | Repeat controlled paired trials and resolve before claiming a gain |
 
-Hard gates require the reference replay to finish with 5,429 ticks, score 1,484 and one saved replay at normal/6×/20× CPU stress. High→low must retain no extra render targets compared with fresh low; a small byte allowance (larger of 8 MiB or 10%) accommodates non-target shader/geometry state. Optional cache evidence must preserve stage hashes and remain at or below 32 MiB in at least two nine-stage tours. Post-warmup retry attribute growth is reported as unresolved P2 issue #24 only within the known baseline slope of 44,800 bytes and two attributes per retry. New or worse attribute growth and growth in another allocation class are hard failures. P2 is not ignored or fixed in P1.
+Hard gates require the reference replay to finish with 5,429 ticks, score 1,484 and one saved replay at normal/6×/20× CPU stress. High→low must retain no extra render targets compared with fresh low; a small byte allowance (larger of 8 MiB or 10%) accommodates non-target shader/geometry state. Optional cache evidence must preserve stage hashes and remain at or below 32 MiB in at least two nine-stage tours. Current P2 staging uses `--strict-resource-plateau`: every post-warmup checkpoint must stay at or below the warm retained set for attributes and all other tracked allocation counters. Any growth, including an intermediate peak that later recovers, fails; a missing checkpoint is incomplete evidence. The historical P1 default retains its explicitly unresolved 44,800-byte/two-attribute waiver solely for reproducing the older checkpoint. It is not used by current staging CI.
 
 Timing compares scenario-matched p95 values; a candidate beyond baseline × 1.2 + 2 ms calls for review. This tolerance is a triage threshold, not a product frame budget. Browser/host/headless/backend or native GPU identity changes also require review. Every successful baseline frame scenario must have positive candidate timing, at least 30 samples covering the measured window, at least 80% of its baseline duration, matching CSS viewport/DPR/workload, and backend metadata. Intended framebuffer-resolution changes remain measurable optimizations. Passing a high-end-machine test does not certify lower-tier desktop/mobile hardware, GPU utilization, battery life or thermal behavior. CPU throttling does not reproduce a weak GPU or worker CPU.
 
-Twenty-two controlled tooling tests inject wrong replay scores, extra render targets, retained bytes, missing evidence, timing regressions and a 44,800-byte-per-retry leak to prove failures cannot silently pass.
+Twenty-five controlled tooling tests inject wrong replay scores, extra render targets, retained bytes, missing evidence, timing regressions a 44,800-byte-per-retry leak, smaller leaks, recovered intermediate peaks and missing resource checkpoints to prove failures cannot silently pass.
 
 ## Instrumentation cost
 
@@ -53,4 +53,4 @@ A passing comparator covers the supplied historical frame/resource/reference-rep
 
 ## Staging CI
 
-`.github/workflows/performance-staging.yml` runs only on `codex/performance-p1-staging` pushes or manual dispatch on that branch. Node 24, frozen dependencies, Chromium and `pnpm check` mirror repository correctness checks. Linux browser tests use the existing headless WebGL2 software fallback and make no native GPU timing claim. CI requires source-bound served-build proof and verifies candidate native evidence matches a SHA-256 fingerprint of current runtime source bytes, then compares it. Runtime code, shaders, entry HTML, public assets, build-plugin dependencies, extension build inputs, compiler/workspace configuration, fixtures, package manifests and the lockfile are included; docs/evidence-only commits are excluded. It does not remeasure native GPU performance on the hosted runner. CI publishes a 14-day artifact, and explicitly warns on the known P2 retention failure. Other failures or missing evidence block the workflow. There are no deployment steps or production credentials.
+`.github/workflows/performance-staging.yml` runs only on `codex/performance-p1-staging` pushes or manual dispatch on that branch. Node 24, frozen dependencies, Chromium and `pnpm check` mirror repository correctness checks. Linux browser tests use the existing headless WebGL2 software fallback and make no native GPU timing claim. CI requires source-bound served-build proof and verifies candidate native evidence matches a SHA-256 fingerprint of current runtime source bytes, then compares it. Runtime code, shaders, entry HTML, public assets, build-plugin dependencies, extension build inputs, compiler/workspace configuration, fixtures, package manifests and the lockfile are included; docs/evidence-only commits are excluded. It does not remeasure native GPU performance on the hosted runner. CI publishes a 14-day artifact. Every nonzero comparison result blocks the workflow; the former P1 resource-leak warning path is removed. It also runs the exact packed-recording research tests without changing the production recorder. There are no deployment steps or production credentials.
