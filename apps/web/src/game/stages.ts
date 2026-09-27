@@ -8,7 +8,6 @@
  *   slice 0; later slices appear on `GET /api/runs/:id`. Textures resolve relative to the stage URL.
  */
 import {
-  type ApiErrorCode,
   type CaptureBundle,
   type CreateStageResponse,
   computeRunId,
@@ -20,20 +19,13 @@ import {
 import { applyLinkTargets, type LinkTargets } from '@wwm/stage-builder/links';
 import handmadeJson from '../../../../fixtures/stages/handmade-simple.json';
 import handmadePng from '../../../../fixtures/stages/handmade-simple.png?url';
-import type { BuildReply, BuildRequest } from './builder.worker.ts';
+import type { StageBuilderPool } from './builder-pool.ts';
+import { StageLoadError } from './stage-errors.ts';
+
+export { StageBuilderPool } from './builder-pool.ts';
+export { type LoadErrorCode, StageLoadError } from './stage-errors.ts';
+
 import { type CatalogEntry, catalogEntry, PRACTICE } from './catalog.ts';
-
-export type LoadErrorCode = ApiErrorCode | 'NETWORK' | 'NOT_FOUND';
-
-export class StageLoadError extends Error {
-  constructor(
-    readonly code: LoadErrorCode,
-    message: string,
-  ) {
-    super(message);
-    this.name = 'StageLoadError';
-  }
-}
 
 /** A progress step; `step` is a key of `building.step` in the i18n tables. */
 export interface LoadProgress {
@@ -61,11 +53,21 @@ export interface RunSource {
 async function bitmapFrom(
   url: string,
   crop?: { x: number; y: number; w: number; h: number },
+  signal?: AbortSignal,
 ): Promise<ImageBitmap> {
-  const r = await fetch(url);
+  signal?.throwIfAborted();
+  const r = await fetch(url, { signal });
   if (!r.ok) throw new StageLoadError(r.status === 404 ? 'NOT_FOUND' : 'NETWORK', `texture ${r.status}`);
   const blob = await r.blob();
-  return crop ? createImageBitmap(blob, crop.x, crop.y, crop.w, crop.h) : createImageBitmap(blob);
+  signal?.throwIfAborted();
+  const image = await (crop
+    ? createImageBitmap(blob, crop.x, crop.y, crop.w, crop.h)
+    : createImageBitmap(blob));
+  if (signal?.aborted) {
+    image.close();
+    signal.throwIfAborted();
+  }
+  return image;
 }
 
 // ── practice ────────────────────────────────────────────────────────────────────────────────────────────
@@ -78,10 +80,14 @@ export class PracticeRun implements RunSource {
   sliceCount() {
     return 1;
   }
-  async loadSlice(_i: number, onProgress: (p: LoadProgress) => void): Promise<LoadedStage> {
+  async loadSlice(
+    _i: number,
+    onProgress: (p: LoadProgress) => void,
+    signal?: AbortSignal,
+  ): Promise<LoadedStage> {
     onProgress({ step: 'texture', pct: 60 });
     const stage = handmadeJson as unknown as StageData;
-    return { stage, image: await bitmapFrom(handmadePng), ref: this.id };
+    return { stage, image: await bitmapFrom(handmadePng, undefined, signal), ref: this.id };
   }
 }
 
@@ -98,40 +104,6 @@ const screenshotUrl = import.meta.glob<string>('../../../../fixtures/captures/*/
 // Phase 13: link targets recovered for the legacy fixtures (captured before `DomElement.href`), so their links
 // become portals too (fixtures/builder/links/<slug>.json, see @wwm/stage-builder `applyLinkTargets`).
 const linkTargets = import.meta.glob<{ default: LinkTargets }>('../../../../fixtures/builder/links/*.json');
-
-/** One lazily created builder worker per `StageBuilderPool` (owned by the Game). */
-export class StageBuilderPool {
-  #worker: Worker | null = null;
-  #next = 1;
-  #waiting = new Map<number, (r: BuildReply) => void>();
-
-  build(req: Omit<BuildRequest, 'id'>): Promise<StageData> {
-    if (!this.#worker) {
-      this.#worker = new Worker(new URL('./builder.worker.ts', import.meta.url), {
-        type: 'module',
-        name: 'wwm-builder',
-      });
-      this.#worker.onmessage = (e: MessageEvent<BuildReply>) => {
-        const w = this.#waiting.get(e.data.id);
-        this.#waiting.delete(e.data.id);
-        w?.(e.data);
-      };
-    }
-    const id = this.#next++;
-    return new Promise((resolve, reject) => {
-      this.#waiting.set(id, (r) =>
-        r.ok ? resolve(r.stage) : reject(new StageLoadError('BUILD_FAILED', r.error)),
-      );
-      this.#worker?.postMessage({ ...req, id } satisfies BuildRequest);
-    });
-  }
-
-  dispose(): void {
-    this.#worker?.terminate();
-    this.#worker = null;
-    this.#waiting.clear();
-  }
-}
 
 export class FixtureRun implements RunSource {
   readonly kind = 'fixture' as const;
@@ -167,26 +139,40 @@ export class FixtureRun implements RunSource {
     return this.#capture;
   }
 
-  async loadSlice(index: number, onProgress: (p: LoadProgress) => void): Promise<LoadedStage> {
+  async loadSlice(
+    index: number,
+    onProgress: (p: LoadProgress) => void,
+    signal?: AbortSignal,
+  ): Promise<LoadedStage> {
+    signal?.throwIfAborted();
     onProgress({ step: 'extracting', pct: 10 });
     const { capture, shot } = await this.#load();
+    signal?.throwIfAborted();
     onProgress({ step: 'building', pct: 30 });
-    const stage = await this.#pool.build({
-      capture,
-      screenshotUrl: shot,
-      sliceIndex: index,
-      seed: 1,
-      difficulty: 'normal',
-    });
+    const stage = await this.#pool.build(
+      {
+        capture,
+        screenshotUrl: shot,
+        sliceIndex: index,
+        seed: 1,
+        difficulty: 'normal',
+      },
+      signal,
+    );
+    signal?.throwIfAborted();
     onProgress({ step: 'texture', pct: 70 });
     const sc = capture.screenshot.scale;
     const { y, height } = stage.source.slice;
-    const image = await bitmapFrom(shot, {
-      x: 0,
-      y: Math.round(y * sc),
-      w: Math.round(stage.size.width * sc),
-      h: Math.round(height * sc),
-    });
+    const image = await bitmapFrom(
+      shot,
+      {
+        x: 0,
+        y: Math.round(y * sc),
+        w: Math.round(stage.size.width * sc),
+        h: Math.round(height * sc),
+      },
+      signal,
+    );
     const ref = index === 0 ? this.id : `${this.id}~${index}`;
     return { stage, image, ref };
   }
@@ -259,9 +245,9 @@ export class ApiRun implements RunSource {
   async #stageId(i: number, signal?: AbortSignal): Promise<string> {
     const deadline = Date.now() + 60_000;
     while (!this.#stageIds[i]) {
-      if (signal?.aborted) throw new StageLoadError('NETWORK', 'aborted');
+      signal?.throwIfAborted();
       if (Date.now() > deadline) throw new StageLoadError('BUILD_FAILED', `slice ${i} never arrived`);
-      const run = await fetchJson<RunResponse>(`${this.#origin}/api/runs/${this.id}`);
+      const run = await fetchJson<RunResponse>(`${this.#origin}/api/runs/${this.id}`, { signal });
       this.#stageIds = run.stageIds;
       if (!this.#stageIds[i]) await new Promise((r) => setTimeout(r, 1000));
     }
@@ -276,13 +262,13 @@ export class ApiRun implements RunSource {
     onProgress({ step: i === 0 ? 'storing' : 'building', pct: 80 });
     const id = await this.#stageId(i, signal);
     const stageUrl = `${this.#origin}/api/stages/${id}`;
-    const stage = await fetchJson<StageData>(stageUrl);
+    const stage = await fetchJson<StageData>(stageUrl, { signal });
     this.#count = stage.source.slice.count;
     if (!this.title) this.title = stage.source.title;
     if (!this.url) this.url = stage.source.url;
     onProgress({ step: 'texture', pct: 90 });
     const tex = new URL(stage.texture.path, new URL(stageUrl, location.href)).toString();
-    return { stage, image: await bitmapFrom(tex), ref: id };
+    return { stage, image: await bitmapFrom(tex, undefined, signal), ref: id };
   }
 }
 

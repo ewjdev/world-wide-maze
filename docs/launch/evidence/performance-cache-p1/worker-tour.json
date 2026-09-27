@@ -1,0 +1,1931 @@
+{
+  "date": "2026-09-27T21:03:57.887Z",
+  "runtimeFingerprint": {
+    "version": 1,
+    "algorithm": "sha256",
+    "sha256": "7cff28e20fd9923b531b8debe58e64f8edadb63539a6f83d498b37b854d64666",
+    "files": 380
+  },
+  "baselineRef": "d88697f",
+  "commit": "e379ef4fd4c3e2f199af4a693f9d6e4fa9838baf",
+  "dirty": "M apps/web/src/game/builder.worker.ts\n M apps/web/src/game/game.ts\n M apps/web/src/game/stages.ts\n M docs/build-log/performance-regression-p1.md\n M docs/launch/performance-regression.md\n M infra/perf/audit-2026-09.mjs\n M infra/perf/p1-overhead.mjs\n M infra/perf/p1-regression.mjs\n M infra/perf/p1-regression.test.mjs\n?? apps/web/src/game/.performance-baseline.worker.ts\n?? apps/web/src/game/.performance-observer.worker.ts\n?? apps/web/src/game/builder-pool.ts\n?? apps/web/src/game/builder-service.ts\n?? apps/web/src/game/decoded-image-cache.ts\n?? apps/web/src/game/stage-errors.ts\n?? apps/web/test/builder.e2e.test.ts\n?? apps/web/test/builder.test.ts\n?? apps/web/test/stage-cancellation.test.ts\n?? docs/launch/evidence/performance-cache-p1/\n?? infra/perf/cache-p1-probe.mjs\n?? infra/perf/p1-fingerprint.mjs",
+  "hardware": "Apple M5 Max\n137438953472",
+  "method": "Headed native Chromium; real module workers; source served by Vite; sequential original/candidate tours; CDP worker GC and backing storage, observer uses WeakRef without retaining images; page is an empty harness, not game renderer.",
+  "rounds": [
+    {
+      "variant": "baseline",
+      "stages": [
+        {
+          "slug": "example-sparse",
+          "sliceIndex": 0,
+          "wallMs": 135.5,
+          "buildMs": 128.40000009536743,
+          "cache": null,
+          "stageHash": "09f567e1f66c9106d373a76afe464d45b4590ef3b93d52c2d420aeed4616822d",
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "decoded": {
+            "decodes": 1,
+            "liveBytes": 4096000
+          },
+          "workerHeap": {
+            "usedSize": 4820816,
+            "totalSize": 5373952,
+            "embedderHeapUsedSize": 85528,
+            "backingStorageSize": 12065671
+          },
+          "pageHeap": {
+            "usedSize": 7121600,
+            "totalSize": 8224768,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5711394
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 263120
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184304
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 208.29999995231628,
+          "buildMs": 194.79999995231628,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 2,
+            "liveBytes": 10311680
+          },
+          "workerHeap": {
+            "usedSize": 5268900,
+            "totalSize": 5636096,
+            "embedderHeapUsedSize": 83328,
+            "backingStorageSize": 13721087
+          },
+          "pageHeap": {
+            "usedSize": 7508640,
+            "totalSize": 10059776,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5774382
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 291056
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184304
+            }
+          ]
+        },
+        {
+          "slug": "govuk-card-grid",
+          "sliceIndex": 0,
+          "wallMs": 284.60000014305115,
+          "buildMs": 251.70000004768372,
+          "cache": null,
+          "stageHash": "6c05df5be838327013f0af0a24c5cc06f7373470f160387ef9f2276466738bd8",
+          "stageId": "83b572f7300da191dd3a072b5439af0e4b0b29ec117bb448037f9eafbb36aa4f",
+          "decoded": {
+            "decodes": 3,
+            "liveBytes": 33607680
+          },
+          "workerHeap": {
+            "usedSize": 5427004,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 83360,
+            "backingStorageSize": 37017190
+          },
+          "pageHeap": {
+            "usedSize": 8486836,
+            "totalSize": 10321920,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5835737
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 331232
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184816
+            }
+          ]
+        },
+        {
+          "slug": "mdn-dark-docs",
+          "sliceIndex": 0,
+          "wallMs": 172,
+          "buildMs": 146.79999995231628,
+          "cache": null,
+          "stageHash": "364312a4b861e3c5e857fd7287a10bc73c9c68fbe0f1eb5cbd3c0df354b135f6",
+          "stageId": "3b5db69d0a473f2c60af4efc3265898d18d93439ba466e001ffd04969f4535f3",
+          "decoded": {
+            "decodes": 4,
+            "liveBytes": 52403200
+          },
+          "workerHeap": {
+            "usedSize": 5414320,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 83648,
+            "backingStorageSize": 55812811
+          },
+          "pageHeap": {
+            "usedSize": 8465452,
+            "totalSize": 11370496,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5887316
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 362304
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184816
+            }
+          ]
+        },
+        {
+          "slug": "image-gallery",
+          "sliceIndex": 0,
+          "wallMs": 252.59999990463257,
+          "buildMs": 197,
+          "cache": null,
+          "stageHash": "06e4b788512bf133ec01b3bbcb7fdacc515a833f41eb3b7a1a4c48006e96eba0",
+          "stageId": "95f6665d1903d7918e838106db313a93f41de51d1144b34f3252537104fd0153",
+          "decoded": {
+            "decodes": 5,
+            "liveBytes": 83123200
+          },
+          "workerHeap": {
+            "usedSize": 5465468,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 84064,
+            "backingStorageSize": 86532912
+          },
+          "pageHeap": {
+            "usedSize": 9115556,
+            "totalSize": 13893632,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5939748
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 400496
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184816
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 0,
+          "wallMs": 229.70000004768372,
+          "buildMs": 178.39999985694885,
+          "cache": null,
+          "stageHash": "597f374bf36badbb2365345b49d7488e7a9d32fc71c4f283d979bff2aa1b66ea",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5511760,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 10256496,
+            "totalSize": 14057472,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 5999867
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98800
+            },
+            {
+              "id": 63578,
+              "rssKiB": 432064
+            },
+            {
+              "id": 63576,
+              "rssKiB": 184816
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 1,
+          "wallMs": 177,
+          "buildMs": 175.69999980926514,
+          "cache": null,
+          "stageHash": "caa58ca96220ef4b517e03e3e1bee0d5af811799c6067976e3cf9026a5e6fd18",
+          "stageId": "ee29f3b0c7e09272b1b407790e6264407e41cb92d118dfa3abd439ac6236e4ee",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5513636,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 11405296,
+            "totalSize": 14221312,
+            "embedderHeapUsedSize": 1612344,
+            "backingStorageSize": 6065254
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98976
+            },
+            {
+              "id": 63578,
+              "rssKiB": 432960
+            },
+            {
+              "id": 63576,
+              "rssKiB": 185424
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 141.80000019073486,
+          "buildMs": 140.29999995231628,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5562992,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 11350960,
+            "totalSize": 15269888,
+            "embedderHeapUsedSize": 1864136,
+            "backingStorageSize": 6128242
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98976
+            },
+            {
+              "id": 63578,
+              "rssKiB": 436992
+            },
+            {
+              "id": 63576,
+              "rssKiB": 185424
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 134.29999995231628,
+          "buildMs": 133.10000014305115,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5634636,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 12300628,
+            "totalSize": 15532032,
+            "embedderHeapUsedSize": 1864136,
+            "backingStorageSize": 6191230
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98976
+            },
+            {
+              "id": 63578,
+              "rssKiB": 437568
+            },
+            {
+              "id": 63576,
+              "rssKiB": 185424
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 173.40000009536743,
+          "buildMs": 119.20000004768372,
+          "cache": null,
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 155786240
+          },
+          "workerHeap": {
+            "usedSize": 5627148,
+            "totalSize": 6438912,
+            "embedderHeapUsedSize": 85016,
+            "backingStorageSize": 159510723
+          },
+          "pageHeap": {
+            "usedSize": 13836056,
+            "totalSize": 16596992,
+            "embedderHeapUsedSize": 1864136,
+            "backingStorageSize": 6208936
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98976
+            },
+            {
+              "id": 63578,
+              "rssKiB": 487328
+            },
+            {
+              "id": 63576,
+              "rssKiB": 185424
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 117.59999990463257,
+          "buildMs": 116.80000019073486,
+          "cache": null,
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 155786240
+          },
+          "workerHeap": {
+            "usedSize": 5666472,
+            "totalSize": 6438912,
+            "embedderHeapUsedSize": 85016,
+            "backingStorageSize": 159510723
+          },
+          "pageHeap": {
+            "usedSize": 15076624,
+            "totalSize": 17858560,
+            "embedderHeapUsedSize": 1864136,
+            "backingStorageSize": 6226642
+          },
+          "rendererProcesses": [
+            {
+              "id": 63577,
+              "rssKiB": 98976
+            },
+            {
+              "id": 63578,
+              "rssKiB": 488656
+            },
+            {
+              "id": 63576,
+              "rssKiB": 185424
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "stages": [
+        {
+          "slug": "example-sparse",
+          "sliceIndex": 0,
+          "wallMs": 121.69999980926514,
+          "buildMs": 114.40000009536743,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 4096000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 1,
+            "evictions": 0,
+            "oversized": 0
+          },
+          "stageHash": "09f567e1f66c9106d373a76afe464d45b4590ef3b93d52c2d420aeed4616822d",
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "decoded": {
+            "decodes": 1,
+            "liveBytes": 4096000
+          },
+          "workerHeap": {
+            "usedSize": 4837804,
+            "totalSize": 5373952,
+            "embedderHeapUsedSize": 87384,
+            "backingStorageSize": 12076614
+          },
+          "pageHeap": {
+            "usedSize": 7126996,
+            "totalSize": 8486912,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5711395
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 266704
+            },
+            {
+              "id": 63736,
+              "rssKiB": 185584
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 187.70000004768372,
+          "buildMs": 175.10000014305115,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 10311680,
+            "entries": 2,
+            "hits": 0,
+            "misses": 2,
+            "evictions": 0,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 2,
+            "liveBytes": 10311680
+          },
+          "workerHeap": {
+            "usedSize": 5288304,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85184,
+            "backingStorageSize": 13732030
+          },
+          "pageHeap": {
+            "usedSize": 7513684,
+            "totalSize": 10321920,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5774383
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 295008
+            },
+            {
+              "id": 63736,
+              "rssKiB": 185648
+            }
+          ]
+        },
+        {
+          "slug": "govuk-card-grid",
+          "sliceIndex": 0,
+          "wallMs": 252.90000009536743,
+          "buildMs": 223.39999985694885,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 29511680,
+            "entries": 2,
+            "hits": 0,
+            "misses": 3,
+            "evictions": 1,
+            "oversized": 0
+          },
+          "stageHash": "6c05df5be838327013f0af0a24c5cc06f7373470f160387ef9f2276466738bd8",
+          "stageId": "83b572f7300da191dd3a072b5439af0e4b0b29ec117bb448037f9eafbb36aa4f",
+          "decoded": {
+            "decodes": 3,
+            "liveBytes": 29511680
+          },
+          "workerHeap": {
+            "usedSize": 5453356,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 85096,
+            "backingStorageSize": 32932031
+          },
+          "pageHeap": {
+            "usedSize": 8491776,
+            "totalSize": 10584064,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5835738
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 333312
+            },
+            {
+              "id": 63736,
+              "rssKiB": 185696
+            }
+          ]
+        },
+        {
+          "slug": "mdn-dark-docs",
+          "sliceIndex": 0,
+          "wallMs": 160.5,
+          "buildMs": 137,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 18795520,
+            "entries": 1,
+            "hits": 0,
+            "misses": 4,
+            "evictions": 3,
+            "oversized": 0
+          },
+          "stageHash": "364312a4b861e3c5e857fd7287a10bc73c9c68fbe0f1eb5cbd3c0df354b135f6",
+          "stageId": "3b5db69d0a473f2c60af4efc3265898d18d93439ba466e001ffd04969f4535f3",
+          "decoded": {
+            "decodes": 4,
+            "liveBytes": 18795520
+          },
+          "workerHeap": {
+            "usedSize": 5437088,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85144,
+            "backingStorageSize": 22215773
+          },
+          "pageHeap": {
+            "usedSize": 8592484,
+            "totalSize": 12156928,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5887317
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 335552
+            },
+            {
+              "id": 63736,
+              "rssKiB": 185984
+            }
+          ]
+        },
+        {
+          "slug": "image-gallery",
+          "sliceIndex": 0,
+          "wallMs": 231.5,
+          "buildMs": 180.89999985694885,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 5,
+            "evictions": 4,
+            "oversized": 0
+          },
+          "stageHash": "06e4b788512bf133ec01b3bbcb7fdacc515a833f41eb3b7a1a4c48006e96eba0",
+          "stageId": "95f6665d1903d7918e838106db313a93f41de51d1144b34f3252537104fd0153",
+          "decoded": {
+            "decodes": 5,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5486912,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 85488,
+            "backingStorageSize": 34140253
+          },
+          "pageHeap": {
+            "usedSize": 9140000,
+            "totalSize": 13893632,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5939749
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 352336
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186144
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 0,
+          "wallMs": 225.60000014305115,
+          "buildMs": 176.29999995231628,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 6,
+            "evictions": 5,
+            "oversized": 0
+          },
+          "stageHash": "597f374bf36badbb2365345b49d7488e7a9d32fc71c4f283d979bff2aa1b66ea",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5533056,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85912,
+            "backingStorageSize": 34140257
+          },
+          "pageHeap": {
+            "usedSize": 10312224,
+            "totalSize": 14057472,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 5999868
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 354048
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186176
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 1,
+          "wallMs": 163.90000009536743,
+          "buildMs": 162.5,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 1,
+            "misses": 6,
+            "evictions": 5,
+            "oversized": 0
+          },
+          "stageHash": "caa58ca96220ef4b517e03e3e1bee0d5af811799c6067976e3cf9026a5e6fd18",
+          "stageId": "ee29f3b0c7e09272b1b407790e6264407e41cb92d118dfa3abd439ac6236e4ee",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5534900,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85912,
+            "backingStorageSize": 34140257
+          },
+          "pageHeap": {
+            "usedSize": 10538924,
+            "totalSize": 15269888,
+            "embedderHeapUsedSize": 1609160,
+            "backingStorageSize": 6065255
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 355536
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186192
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 141.29999995231628,
+          "buildMs": 129.70000004768372,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 1,
+            "misses": 7,
+            "evictions": 6,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5582632,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 86336,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 11492252,
+            "totalSize": 15269888,
+            "embedderHeapUsedSize": 1736496,
+            "backingStorageSize": 6128243
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 98912
+            },
+            {
+              "id": 63738,
+              "rssKiB": 335024
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186192
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 132.39999985694885,
+          "buildMs": 131.10000014305115,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 7,
+            "evictions": 6,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5659640,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86336,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 12497676,
+            "totalSize": 15269888,
+            "embedderHeapUsedSize": 1869928,
+            "backingStorageSize": 6191231
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 99088
+            },
+            {
+              "id": 63738,
+              "rssKiB": 335744
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186800
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 152.79999995231628,
+          "buildMs": 110.79999995231628,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 8,
+            "evictions": 6,
+            "oversized": 1
+          },
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 8,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5648292,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86624,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 14043880,
+            "totalSize": 16859136,
+            "embedderHeapUsedSize": 1869928,
+            "backingStorageSize": 6208937
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 99088
+            },
+            {
+              "id": 63738,
+              "rssKiB": 344320
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186800
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 150.09999990463257,
+          "buildMs": 108.5,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 9,
+            "evictions": 6,
+            "oversized": 2
+          },
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 9,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5686772,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86912,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 15267760,
+            "totalSize": 18120704,
+            "embedderHeapUsedSize": 1869928,
+            "backingStorageSize": 6226643
+          },
+          "rendererProcesses": [
+            {
+              "id": 63737,
+              "rssKiB": 99088
+            },
+            {
+              "id": 63738,
+              "rssKiB": 346192
+            },
+            {
+              "id": 63736,
+              "rssKiB": 186800
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "baseline",
+      "stages": [
+        {
+          "slug": "example-sparse",
+          "sliceIndex": 0,
+          "wallMs": 121.60000014305115,
+          "buildMs": 115.20000004768372,
+          "cache": null,
+          "stageHash": "09f567e1f66c9106d373a76afe464d45b4590ef3b93d52c2d420aeed4616822d",
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "decoded": {
+            "decodes": 1,
+            "liveBytes": 4096000
+          },
+          "workerHeap": {
+            "usedSize": 4814388,
+            "totalSize": 5373952,
+            "embedderHeapUsedSize": 85528,
+            "backingStorageSize": 12065671
+          },
+          "pageHeap": {
+            "usedSize": 7121220,
+            "totalSize": 8224768,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5711395
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 265712
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183040
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 189.29999995231628,
+          "buildMs": 176.70000004768372,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 2,
+            "liveBytes": 10311680
+          },
+          "workerHeap": {
+            "usedSize": 5281616,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 83328,
+            "backingStorageSize": 13721087
+          },
+          "pageHeap": {
+            "usedSize": 7527128,
+            "totalSize": 10059776,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5774383
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 293792
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183040
+            }
+          ]
+        },
+        {
+          "slug": "govuk-card-grid",
+          "sliceIndex": 0,
+          "wallMs": 268.40000009536743,
+          "buildMs": 240,
+          "cache": null,
+          "stageHash": "6c05df5be838327013f0af0a24c5cc06f7373470f160387ef9f2276466738bd8",
+          "stageId": "83b572f7300da191dd3a072b5439af0e4b0b29ec117bb448037f9eafbb36aa4f",
+          "decoded": {
+            "decodes": 3,
+            "liveBytes": 33607680
+          },
+          "workerHeap": {
+            "usedSize": 5407096,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 83360,
+            "backingStorageSize": 37017190
+          },
+          "pageHeap": {
+            "usedSize": 8487092,
+            "totalSize": 10321920,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5835738
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 333632
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183040
+            }
+          ]
+        },
+        {
+          "slug": "mdn-dark-docs",
+          "sliceIndex": 0,
+          "wallMs": 189,
+          "buildMs": 163.59999990463257,
+          "cache": null,
+          "stageHash": "364312a4b861e3c5e857fd7287a10bc73c9c68fbe0f1eb5cbd3c0df354b135f6",
+          "stageId": "3b5db69d0a473f2c60af4efc3265898d18d93439ba466e001ffd04969f4535f3",
+          "decoded": {
+            "decodes": 4,
+            "liveBytes": 52403200
+          },
+          "workerHeap": {
+            "usedSize": 5413120,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 83648,
+            "backingStorageSize": 55812811
+          },
+          "pageHeap": {
+            "usedSize": 8643228,
+            "totalSize": 11894784,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5887317
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 365984
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183376
+            }
+          ]
+        },
+        {
+          "slug": "image-gallery",
+          "sliceIndex": 0,
+          "wallMs": 263.10000014305115,
+          "buildMs": 205.19999980926514,
+          "cache": null,
+          "stageHash": "06e4b788512bf133ec01b3bbcb7fdacc515a833f41eb3b7a1a4c48006e96eba0",
+          "stageId": "95f6665d1903d7918e838106db313a93f41de51d1144b34f3252537104fd0153",
+          "decoded": {
+            "decodes": 5,
+            "liveBytes": 83123200
+          },
+          "workerHeap": {
+            "usedSize": 5484512,
+            "totalSize": 6684672,
+            "embedderHeapUsedSize": 84064,
+            "backingStorageSize": 86532912
+          },
+          "pageHeap": {
+            "usedSize": 9130952,
+            "totalSize": 13631488,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5939749
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 404112
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183376
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 0,
+          "wallMs": 229.70000004768372,
+          "buildMs": 178.79999995231628,
+          "cache": null,
+          "stageHash": "597f374bf36badbb2365345b49d7488e7a9d32fc71c4f283d979bff2aa1b66ea",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5487012,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 10293328,
+            "totalSize": 13795328,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 5999868
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 435552
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183376
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 1,
+          "wallMs": 166.59999990463257,
+          "buildMs": 165.29999995231628,
+          "cache": null,
+          "stageHash": "caa58ca96220ef4b517e03e3e1bee0d5af811799c6067976e3cf9026a5e6fd18",
+          "stageId": "ee29f3b0c7e09272b1b407790e6264407e41cb92d118dfa3abd439ac6236e4ee",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5512364,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 10533224,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1615088,
+            "backingStorageSize": 6065255
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98816
+            },
+            {
+              "id": 63887,
+              "rssKiB": 437040
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183376
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 141.79999995231628,
+          "buildMs": 140.5,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5584176,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 11482760,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1737840,
+            "backingStorageSize": 6128243
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98992
+            },
+            {
+              "id": 63887,
+              "rssKiB": 439008
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183856
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 143.70000004768372,
+          "buildMs": 142.40000009536743,
+          "cache": null,
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 113843200
+          },
+          "workerHeap": {
+            "usedSize": 5608180,
+            "totalSize": 6422528,
+            "embedderHeapUsedSize": 84608,
+            "backingStorageSize": 117253017
+          },
+          "pageHeap": {
+            "usedSize": 12492692,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1869968,
+            "backingStorageSize": 6191231
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98992
+            },
+            {
+              "id": 63887,
+              "rssKiB": 439376
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183856
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 170.29999995231628,
+          "buildMs": 123.39999985694885,
+          "cache": null,
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 155786240
+          },
+          "workerHeap": {
+            "usedSize": 5627284,
+            "totalSize": 6176768,
+            "embedderHeapUsedSize": 85016,
+            "backingStorageSize": 159510723
+          },
+          "pageHeap": {
+            "usedSize": 14038948,
+            "totalSize": 16596992,
+            "embedderHeapUsedSize": 1869968,
+            "backingStorageSize": 6208937
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98992
+            },
+            {
+              "id": 63887,
+              "rssKiB": 490752
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183856
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 116.5,
+          "buildMs": 115.59999990463257,
+          "cache": null,
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 155786240
+          },
+          "workerHeap": {
+            "usedSize": 5688776,
+            "totalSize": 6176768,
+            "embedderHeapUsedSize": 85016,
+            "backingStorageSize": 159510723
+          },
+          "pageHeap": {
+            "usedSize": 15258716,
+            "totalSize": 17858560,
+            "embedderHeapUsedSize": 1869968,
+            "backingStorageSize": 6226643
+          },
+          "rendererProcesses": [
+            {
+              "id": 63886,
+              "rssKiB": 98992
+            },
+            {
+              "id": 63887,
+              "rssKiB": 492256
+            },
+            {
+              "id": 63885,
+              "rssKiB": 183856
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "candidate",
+      "stages": [
+        {
+          "slug": "example-sparse",
+          "sliceIndex": 0,
+          "wallMs": 117.59999990463257,
+          "buildMs": 111.20000004768372,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 4096000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 1,
+            "evictions": 0,
+            "oversized": 0
+          },
+          "stageHash": "09f567e1f66c9106d373a76afe464d45b4590ef3b93d52c2d420aeed4616822d",
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "decoded": {
+            "decodes": 1,
+            "liveBytes": 4096000
+          },
+          "workerHeap": {
+            "usedSize": 4849544,
+            "totalSize": 5373952,
+            "embedderHeapUsedSize": 87384,
+            "backingStorageSize": 12076614
+          },
+          "pageHeap": {
+            "usedSize": 7127048,
+            "totalSize": 8224768,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5711394
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 269072
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181296
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 176.80000019073486,
+          "buildMs": 164.59999990463257,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 10311680,
+            "entries": 2,
+            "hits": 0,
+            "misses": 2,
+            "evictions": 0,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 2,
+            "liveBytes": 10311680
+          },
+          "workerHeap": {
+            "usedSize": 5298328,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85184,
+            "backingStorageSize": 13732030
+          },
+          "pageHeap": {
+            "usedSize": 7513536,
+            "totalSize": 10059776,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5774382
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 297520
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181296
+            }
+          ]
+        },
+        {
+          "slug": "govuk-card-grid",
+          "sliceIndex": 0,
+          "wallMs": 236.10000014305115,
+          "buildMs": 208.5,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 29511680,
+            "entries": 2,
+            "hits": 0,
+            "misses": 3,
+            "evictions": 1,
+            "oversized": 0
+          },
+          "stageHash": "6c05df5be838327013f0af0a24c5cc06f7373470f160387ef9f2276466738bd8",
+          "stageId": "83b572f7300da191dd3a072b5439af0e4b0b29ec117bb448037f9eafbb36aa4f",
+          "decoded": {
+            "decodes": 3,
+            "liveBytes": 29511680
+          },
+          "workerHeap": {
+            "usedSize": 5433100,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85096,
+            "backingStorageSize": 32932031
+          },
+          "pageHeap": {
+            "usedSize": 8491628,
+            "totalSize": 10321920,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5835737
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 333408
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181296
+            }
+          ]
+        },
+        {
+          "slug": "mdn-dark-docs",
+          "sliceIndex": 0,
+          "wallMs": 161.29999995231628,
+          "buildMs": 138,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 18795520,
+            "entries": 1,
+            "hits": 0,
+            "misses": 4,
+            "evictions": 3,
+            "oversized": 0
+          },
+          "stageHash": "364312a4b861e3c5e857fd7287a10bc73c9c68fbe0f1eb5cbd3c0df354b135f6",
+          "stageId": "3b5db69d0a473f2c60af4efc3265898d18d93439ba466e001ffd04969f4535f3",
+          "decoded": {
+            "decodes": 4,
+            "liveBytes": 18795520
+          },
+          "workerHeap": {
+            "usedSize": 5438804,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85144,
+            "backingStorageSize": 22215773
+          },
+          "pageHeap": {
+            "usedSize": 8647572,
+            "totalSize": 11632640,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5887316
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 338064
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181328
+            }
+          ]
+        },
+        {
+          "slug": "image-gallery",
+          "sliceIndex": 0,
+          "wallMs": 230,
+          "buildMs": 179.59999990463257,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 5,
+            "evictions": 4,
+            "oversized": 0
+          },
+          "stageHash": "06e4b788512bf133ec01b3bbcb7fdacc515a833f41eb3b7a1a4c48006e96eba0",
+          "stageId": "95f6665d1903d7918e838106db313a93f41de51d1144b34f3252537104fd0153",
+          "decoded": {
+            "decodes": 5,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5507932,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85488,
+            "backingStorageSize": 34140253
+          },
+          "pageHeap": {
+            "usedSize": 9137332,
+            "totalSize": 13893632,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5939748
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 357888
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181648
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 0,
+          "wallMs": 217.90000009536743,
+          "buildMs": 168.40000009536743,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 0,
+            "misses": 6,
+            "evictions": 5,
+            "oversized": 0
+          },
+          "stageHash": "597f374bf36badbb2365345b49d7488e7a9d32fc71c4f283d979bff2aa1b66ea",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5512412,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85912,
+            "backingStorageSize": 34140257
+          },
+          "pageHeap": {
+            "usedSize": 10298304,
+            "totalSize": 14057472,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 5999867
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 359168
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181648
+            }
+          ]
+        },
+        {
+          "slug": "wikipedia-article",
+          "sliceIndex": 1,
+          "wallMs": 164.20000004768372,
+          "buildMs": 163,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 30720000,
+            "entries": 1,
+            "hits": 1,
+            "misses": 6,
+            "evictions": 5,
+            "oversized": 0
+          },
+          "stageHash": "caa58ca96220ef4b517e03e3e1bee0d5af811799c6067976e3cf9026a5e6fd18",
+          "stageId": "ee29f3b0c7e09272b1b407790e6264407e41cb92d118dfa3abd439ac6236e4ee",
+          "decoded": {
+            "decodes": 6,
+            "liveBytes": 30720000
+          },
+          "workerHeap": {
+            "usedSize": 5538132,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 85912,
+            "backingStorageSize": 34140257
+          },
+          "pageHeap": {
+            "usedSize": 10564200,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1609176,
+            "backingStorageSize": 6065254
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 360624
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181648
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 146.20000004768372,
+          "buildMs": 134.20000004768372,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 1,
+            "misses": 7,
+            "evictions": 6,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5610992,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86336,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 11517504,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1736200,
+            "backingStorageSize": 6128242
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98800
+            },
+            {
+              "id": 64048,
+              "rssKiB": 338064
+            },
+            {
+              "id": 64046,
+              "rssKiB": 181648
+            }
+          ]
+        },
+        {
+          "slug": "hn-front",
+          "sliceIndex": 0,
+          "wallMs": 131.60000014305115,
+          "buildMs": 130.20000004768372,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 7,
+            "evictions": 6,
+            "oversized": 0
+          },
+          "stageHash": "c6311491df4c0e4ef66797d6a8260dd28ddfc5d9ebb0cf233d82c9e2694ddd8e",
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "decoded": {
+            "decodes": 7,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5622596,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86336,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 12497528,
+            "totalSize": 15007744,
+            "embedderHeapUsedSize": 1870792,
+            "backingStorageSize": 6191230
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98976
+            },
+            {
+              "id": 64048,
+              "rssKiB": 338800
+            },
+            {
+              "id": 64046,
+              "rssKiB": 182112
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 159.90000009536743,
+          "buildMs": 115.19999980926514,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 8,
+            "evictions": 6,
+            "oversized": 1
+          },
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 8,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5657156,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86624,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 14043732,
+            "totalSize": 16596992,
+            "embedderHeapUsedSize": 1870792,
+            "backingStorageSize": 6208936
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98976
+            },
+            {
+              "id": 64048,
+              "rssKiB": 348432
+            },
+            {
+              "id": 64046,
+              "rssKiB": 182112
+            }
+          ]
+        },
+        {
+          "slug": "oversized-synthetic",
+          "sliceIndex": 0,
+          "wallMs": 162.79999995231628,
+          "buildMs": 118,
+          "cache": {
+            "budgetBytes": 33554432,
+            "retainedBytes": 6215680,
+            "entries": 1,
+            "hits": 2,
+            "misses": 9,
+            "evictions": 6,
+            "oversized": 2
+          },
+          "stageHash": "8814bf0bb54f2313c5f057c7687db26800f7294a605fe331c74e92aeccef4f75",
+          "stageId": "8c4a24fe7c45126ddcaf6e318e699ef56dc0a6fa650debd2d18e4700b4aac711",
+          "decoded": {
+            "decodes": 9,
+            "liveBytes": 6215680
+          },
+          "workerHeap": {
+            "usedSize": 5719188,
+            "totalSize": 6160384,
+            "embedderHeapUsedSize": 86912,
+            "backingStorageSize": 9635928
+          },
+          "pageHeap": {
+            "usedSize": 15267588,
+            "totalSize": 17858560,
+            "embedderHeapUsedSize": 1870792,
+            "backingStorageSize": 6226642
+          },
+          "rendererProcesses": [
+            {
+              "id": 64047,
+              "rssKiB": 98976
+            },
+            {
+              "id": 64048,
+              "rssKiB": 350880
+            },
+            {
+              "id": 64046,
+              "rssKiB": 182112
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "browser": "153.0.8010.12",
+  "identicalStages": true,
+  "retentionBoundPass": true
+}

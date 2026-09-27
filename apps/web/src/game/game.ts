@@ -320,6 +320,8 @@ export class Game {
   #loaded: LoadedStage | null = null;
   #attract = false;
   #buildAbort: AbortController | null = null;
+  #attractAbort: AbortController | null = null;
+  #worldLoading: Promise<void> = Promise.resolve();
   #timer = new GameTimer();
   #timerArmed = false;
   #pendingSmall: number[] = [];
@@ -578,7 +580,7 @@ export class Game {
       const p = createDriver(this.#driverKind).then((d) => {
         if (this.#disposed) {
           d.dispose();
-          throw new Error('game disposed');
+          throw new DOMException('Obsolete build', 'AbortError');
         }
         this.#driver = d;
         return d;
@@ -593,6 +595,7 @@ export class Game {
 
   dispose(): void {
     this.#disposed = true;
+    this.#attractAbort?.abort();
     cancelAnimationFrame(this.#raf);
     this.#buildAbort?.abort();
     for (const c of this.#cleanups) c();
@@ -792,19 +795,41 @@ export class Game {
     const e = this.#engine;
     if (!e || this.#attract || this.#loaded) return;
     this.#attract = true;
+    const ac = new AbortController();
+    this.#attractAbort?.abort();
+    this.#attractAbort = ac;
     try {
       const entry = catalogEntry(ATTRACT_ID) ?? PRACTICE;
       const run = entry === PRACTICE ? new PracticeRun() : new FixtureRun(entry, this.#pool);
-      const got = await run.loadSlice(0, () => {});
-      if (this.#disposed || this.#view.phase !== 'title' || this.#loaded) {
+      const got = await run.loadSlice(0, () => {}, ac.signal);
+      if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title' || this.#loaded) {
         got.image.close();
         return;
       }
-      await e.loadStage(got.stage, got.image);
-      this.#setEngineImage(got.image);
-      e.setView('map');
+      const loading = this.#worldLoading.then(async () => {
+        if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title') {
+          got.image.close();
+          return;
+        }
+        try {
+          await e.loadStage(got.stage, got.image);
+        } catch (error) {
+          e.unloadStage();
+          got.image.close();
+          throw error;
+        }
+        if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title') {
+          e.unloadStage();
+          got.image.close();
+          return;
+        }
+        this.#setEngineImage(got.image);
+        e.setView('map');
+      });
+      this.#worldLoading = loading.catch(() => {});
+      await loading;
     } catch (err) {
-      console.warn('[wwm] attract stage failed', err);
+      if (!ac.signal.aborted) console.warn('[wwm] attract stage failed', err);
     }
   }
 
@@ -927,6 +952,7 @@ export class Game {
 
   /** Build any public URL through the capture service. */
   chooseUrl(url: string): void {
+    this.#attractAbort?.abort();
     telemetry.track({ name: 'stage_selected', run: 'api' });
     this.audio.unlock();
     this.audio.play('click');
@@ -974,7 +1000,10 @@ export class Game {
     this.#set({ total: this.#stageStartTotal });
     const loaded = this.#loaded;
     if (!this.#send({ type: 'RETRY' })) return;
-    void this.#playLoaded(loaded, new AbortController(), this.#clock);
+    this.#buildAbort?.abort();
+    const ac = new AbortController();
+    this.#buildAbort = ac;
+    void this.#playLoaded(loaded, ac, this.#clock);
   }
 
   askConfirm(kind: 'quit' | 'search'): void {
@@ -1187,6 +1216,7 @@ export class Game {
   // ── building ──────────────────────────────────────────────────────────────────────────────────────────
 
   #beginRun(run: RunSource, slice: number): void {
+    this.#attractAbort?.abort();
     this.#buildAbort?.abort();
     const ac = new AbortController();
     this.#buildAbort = ac;
@@ -1231,7 +1261,13 @@ export class Game {
     this.#ensureDriver().catch(() => {});
     let got: LoadedStage;
     try {
-      got = await run.loadSlice(this.#slice, (p) => this.#progress(p.step, p.pct), ac.signal);
+      got = await run.loadSlice(
+        this.#slice,
+        (p) => {
+          if (!ac.signal.aborted && !this.#disposed) this.#progress(p.step, p.pct);
+        },
+        ac.signal,
+      );
     } catch (err) {
       this.#buildFailed(err, run.url, ac);
       return;
@@ -1242,14 +1278,16 @@ export class Game {
     }
     // Phase 20 M4b: with a lesson loaded, the stage's link portals become Pip gates (same sensor, same pause)
     if (this.learning.active) got = { ...got, stage: this.learning.decorate(got.stage) };
-    this.#loaded = got;
     await this.#playLoaded(got, ac, t0);
   }
 
   async #playLoaded(got: LoadedStage, ac: AbortController, t0: number): Promise<void> {
     const e = this.#engine;
     const run = this.#run;
-    if (!e || !run) return;
+    if (!e || !run) {
+      got.image.close();
+      return;
+    }
     this.#progress('world', 94);
     this.#endGhost();
     let d: SimDriver;
@@ -1263,13 +1301,41 @@ export class Game {
         else await sim.load(got.stage);
         return sim;
       };
-      [, d] = await Promise.all([e.loadStage(got.stage, got.image), loadSim()]);
+      const loading = this.#worldLoading.then(async () => {
+        ac.signal.throwIfAborted();
+        if (this.#disposed || this.#buildAbort !== ac) throw new DOMException('Obsolete build', 'AbortError');
+        // A rejected physics load must not release the queue while texture tiling is still running.
+        const [world, physics] = await Promise.allSettled([e.loadStage(got.stage, got.image), loadSim()]);
+        if (
+          world.status === 'rejected' ||
+          physics.status === 'rejected' ||
+          ac.signal.aborted ||
+          this.#disposed ||
+          this.#buildAbort !== ac
+        ) {
+          // Both loads have settled: clear even late resources created after dispose or a failed load.
+          e.unloadStage();
+          if (world.status === 'rejected') throw world.reason;
+          if (physics.status === 'rejected') throw physics.reason;
+          ac.signal.throwIfAborted();
+          throw new DOMException('Obsolete build', 'AbortError');
+        }
+        return physics.value;
+      });
+      this.#worldLoading = loading.then(
+        () => {},
+        () => {},
+      );
+      d = await loading;
       this.#setEngineImage(got.image);
     } catch (err) {
+      if (got.image !== this.#engineImage) got.image.close();
       this.#buildFailed(new StageLoadError('BUILD_FAILED', String(err)), run.url, ac);
       return;
     }
-    if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'building') return;
+    if (ac.signal.aborted || this.#disposed || this.#buildAbort !== ac || this.#view.phase !== 'building')
+      return;
+    this.#loaded = got;
     // A fresh recording per attempt: tick 0 is the first step after load (08b).
     this.#rec = [];
     this.#timerStartTick = undefined;
@@ -1309,11 +1375,13 @@ export class Game {
     this.#applyPortalStates(got.stage);
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
-    this.#after(wait, () => this.#send({ type: 'BUILT' }));
+    this.#after(wait, () => {
+      if (!ac.signal.aborted && !this.#disposed && this.#buildAbort === ac) this.#send({ type: 'BUILT' });
+    });
   }
 
   #buildFailed(err: unknown, url: string, ac: AbortController): void {
-    if (ac.signal.aborted) return;
+    if (ac.signal.aborted || this.#disposed) return;
     if (this.#travelling) {
       // the linked site never became a stop of the journey
       this.#travelling = false;
