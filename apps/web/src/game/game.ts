@@ -39,7 +39,8 @@ import {
 import type { AudioManager, Bgm } from '../audio/audio.ts';
 import { openHostRoom } from '../controller/useHostRoom.ts';
 import { type GateOutcome, LearningGates } from '../learning/gates.ts';
-import { gateNumber, isLearningHref } from '../learning/href.ts';
+import { isLearningHref } from '../learning/href.ts';
+import { createLockPort } from '../learning/port.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
 import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
 import type { Challenge } from '../ranking/share.ts';
@@ -158,6 +159,11 @@ export interface GameView {
   travel: { label: string; host: string; href: string } | null;
   /** Phase 13: the sites this session rolled through, in order (a web journey once a portal was taken). */
   journey: JourneyStop[];
+  /**
+   * Phase 22: this session played a lesson (Pip gates, locks). Learning runs change the physics (locks), so they
+   * are unranked: never submitted, no ghosts, recordings inexact; the result says "Learning run".
+   */
+  learningRun: boolean;
 }
 
 export interface RankedStage {
@@ -229,6 +235,8 @@ export interface GameTestHooks {
    * so their e2e tests pin 'low' to leave CPU for the sim and the other tests (apps/web/test/browser-env.ts).
    */
   quality?: QualitySetting;
+  /** Phase 22: the learning session seed (0 = answer positions as written; default random). */
+  learningSeed?: number;
 }
 
 export interface GameOptions {
@@ -411,11 +419,23 @@ export class Game {
       portal: null,
       travel: null,
       journey: [],
+      learningRun: false,
     };
     this.#cleanups.push(opts.audio.onChange(() => this.#set({ muted: opts.audio.muted })));
+    const seed = opts.test?.learningSeed;
     this.learning = new LearningGates({
       muted: () => this.audio.muted,
       onClose: (id, outcome) => this.#closeGate(id, outcome),
+      // Phase 22: runtime locks through the current driver and engine (feature-detected, contracts §10.4)
+      locks: createLockPort(
+        () => this.#driver,
+        () => this.#engine,
+      ),
+      ...(seed !== undefined ? { seed: () => seed } : {}),
+      device: () => ({
+        keyboard: this.#view.inputMode === 'keyboard',
+        tilt: this.#view.room.controllerConnected,
+      }),
     });
   }
 
@@ -998,7 +1018,7 @@ export class Game {
   async submitName(raw: string): Promise<SubmitResult> {
     const name = sanitizeName(raw);
     const r = this.#view.ranking;
-    if (!name || !r || r.submitted || !r.source)
+    if (!name || !r || r.submitted || !r.source || this.#view.learningRun)
       return { ok: false, error: 'name', message: 'nothing to submit' };
     this.audio.play('click');
     const stages = this.#results.map((s) => ({ stageId: s.stageId, score: s.stageScore, timeMs: s.timeMs }));
@@ -1151,6 +1171,7 @@ export class Game {
     const track = this.#ghostTrack;
     if (!e || !track || !this.#view.ghost.on || this.#ghostBall || this.#ghostFor !== this.#stage()?.stageId)
       return;
+    if (this.learning.active) return;
     this.#ghostBall = createGhostBall(e, track, { color: 0x4f9fd6, opacity: 0.3, look: 'holo' });
     this.#ghostBall.update((this.#driver?.tick ?? 0) / SIM_HZ);
     this.#set({ ghost: { ...this.#view.ghost, racing: true } });
@@ -1234,9 +1255,12 @@ export class Game {
     let d: SimDriver;
     try {
       this.#attract = false;
+      // Phase 22: a lesson's runtime locks; ranked play passes none (the load is byte-identical)
+      const locks = this.learning.active ? this.learning.locksFor(got.stage) : undefined;
       const loadSim = async () => {
         const sim = await this.#ensureDriver();
-        await sim.load(got.stage);
+        if (locks) await sim.load(got.stage, { locks });
+        else await sim.load(got.stage);
         return sim;
       };
       [, d] = await Promise.all([e.loadStage(got.stage, got.image), loadSim()]);
@@ -1249,15 +1273,20 @@ export class Game {
     // A fresh recording per attempt: tick 0 is the first step after load (08b).
     this.#rec = [];
     this.#timerStartTick = undefined;
-    this.#recExact = d.kind === 'lockstep';
+    // Phase 22: learning runs are unranked, so their recordings are never exact (locks change the physics)
+    const learningRun = this.learning.active;
+    this.#recExact = d.kind === 'lockstep' && !learningRun;
+    this.#goalSwallowed = false;
+    this.#lastAllowed = null;
+    if (learningRun) this.#set({ learningRun: true });
     const stageId = got.stage.stageId;
     const ch = this.#view.challenge;
     if (ch && ch.stageId === null) this.#set({ challenge: { ...ch, stageId } });
     const source = this.#boards.whereStage(stageId, run.kind === 'api');
     this.#set({ stageSource: source });
-    if (source === 'server' && (this.#ghostFor !== stageId || !this.#ghostTrack))
+    if (source === 'server' && !learningRun && (this.#ghostFor !== stageId || !this.#ghostTrack))
       void this.#fetchGhost(got.stage);
-    else if (source !== 'server') {
+    else if (source !== 'server' || learningRun) {
       this.#ghostFor = null;
       this.#ghostTrack = null;
       this.#set({ ghost: { ...this.#view.ghost, run: null } });
@@ -1275,6 +1304,8 @@ export class Game {
     });
     this.#recordStop(got.stage, run);
     this.#dismissedPortals.clear();
+    // Phase 22: draw the lesson's locks (done steps open, their gates used)
+    if (learningRun) for (const id of this.learning.stageReady(got.stage)) this.#dismissedPortals.add(id);
     this.#applyPortalStates(got.stage);
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
@@ -1331,11 +1362,12 @@ export class Game {
     if (this.#opts.test?.skipIntro) this.#after(0.05, () => e.skipIntro());
     void done.then(() => {
       if (this.#view.phase !== 'intro') return;
-      // Phase 20 M4b: a stage with no room for a Pip gate asks its round here, before the countdown
-      if (this.learning.active && (stage.portals ?? []).length === 0 && !this.learning.isOpen) {
+      // Phase 20 M4b: a stage with no room for a Pip gate asks its round here, before the countdown (Phase 22:
+      // also a step whose gate found no room on this stage)
+      if (this.learning.active && this.learning.needsStartCard() && !this.learning.isOpen) {
         this.#afterGate = () => this.#introDone(firstGame);
-        this.learning.open(-1, 0);
-        return;
+        if (this.learning.open(-1)) return;
+        this.#afterGate = null;
       }
       this.#introDone(firstGame);
     });
@@ -1393,6 +1425,7 @@ export class Game {
     switch (ev.type) {
       case 'item':
         e?.handleEvent(ev);
+        if (this.learning.active) this.learning.item(ev.itemId);
         if (ev.kind === 'small') {
           this.#set({ small: this.#view.small + 1 });
           this.#pendingSmall.push(this.#clock + SMALL_CREDIT_DELAY_SEC);
@@ -1406,6 +1439,13 @@ export class Game {
         }
         return false;
       case 'goal':
+        // Phase 22: a physics build without locks still reports the goal; the lesson's finish may be shut
+        if (this.learning.active && this.learning.goalLocked()) {
+          this.#goalSwallowed = true;
+          const id = this.learning.goalLockId;
+          if (id !== null && this.#view.phase === 'play') this.learning.locked(id);
+          return false;
+        }
         if (this.#view.phase === 'play') this.#send({ type: 'GOAL' });
         return true;
       case 'fell':
@@ -1428,13 +1468,26 @@ export class Game {
         }
         return true;
       case 'island':
+        // Phase 22 region guard: an island beyond a closed lock (a jump, a drop) sends the ball back
+        // (only in play: a drop that ends in a fall is the fall's business)
+        if (this.learning.active && this.#view.phase === 'play' && this.learning.island(ev.islandId)) {
+          this.#guardReturn();
+          return true;
+        }
         this.#lastIsland = ev.islandId;
         this.#lastIslandPos = worldToPage(this.#ballPos);
+        if (this.learning.active) this.#lastAllowed = { island: ev.islandId, pos: this.#lastIslandPos };
         return false;
       case 'elevator':
         if (ev.phase === 'start') this.audio.play('elevator');
         return false;
       case 'portal':
+        // Phase 22: a mission post starts its mission without stopping the ball
+        if (this.#isGate(ev.portalId) && this.learning.isPost(ev.portalId)) {
+          if (this.#view.phase === 'play') this.learning.post(ev.portalId);
+          this.#autopilot = null; // e2e: a test roll stops at the post
+          return false;
+        }
         if (this.#isGate(ev.portalId)) {
           if (
             this.#view.phase === 'play' &&
@@ -1458,12 +1511,28 @@ export class Game {
           return true;
         }
         return false;
-      case 'landed':
+      case 'landed': {
         e?.handleEvent(ev);
         this.audio.impact('land', ev.impact);
+        // Phase 22 region guard: a hop that lands beyond a closed lock (no `island` event if it lands back on a
+        // known island first) is caught here too
+        if (this.learning.active && this.#view.phase === 'play') {
+          const at = worldToPage(this.#ballPos);
+          const island = this.#islandAt(at);
+          if (island !== null && this.learning.guard(island)) {
+            this.#guardReturn();
+            return true;
+          }
+          if (island !== null) this.#lastAllowed = { island, pos: at };
+        }
         return false;
+      }
       case 'bump':
         this.audio.impact('bump', ev.impact);
+        return false;
+      case 'locked':
+        // Phase 22 (contracts §10.4): the ball touched a closed lock
+        if (this.learning.active && this.#view.phase === 'play') this.learning.locked(ev.lockId);
         return false;
       default:
         return false;
@@ -1471,6 +1540,23 @@ export class Game {
   };
 
   #fellAt: Vec2 | null = null;
+  /** Phase 22: the last island the region guard allowed (where a guarded ball returns to). */
+  #lastAllowed: { island: number; pos: Vec2 | null } | null = null;
+  /** Phase 22: a physics build without locks latched the goal while the lesson's finish was shut. */
+  #goalSwallowed = false;
+
+  /** Phase 22 region guard: back to the last allowed restart point (no life lost; the recording is inexact). */
+  #guardReturn(): void {
+    const stage = this.#stage();
+    const d = this.#driver;
+    if (!stage || !d) return;
+    const last = this.#lastAllowed;
+    const at = restartPointFor(stage, last?.island ?? stage.start.islandId, last?.pos ?? null);
+    this.#recExact = false;
+    this.#autopilot = null;
+    d.reset(at);
+    void this.#engine?.spawnBall(at, { durationSec: 0.01 });
+  }
 
   #restart(): void {
     const e = this.#engine;
@@ -1603,6 +1689,12 @@ export class Game {
       },
     });
     this.#music('result');
+    // Phase 22: a learning run never reaches the boards
+    if (this.#view.learningRun) {
+      const cur = this.#view.ranking;
+      if (cur) this.#set({ ranking: { ...cur, skipped: true } });
+      return;
+    }
     const source = this.#boards.whereRun(this.#results);
     const stageSources = cleared.map(({ x }) => this.#boards.whereStage(x.stageId, x.fromServer));
     // The server takes each stage once per run (the same site played twice in one session stays on this device).
@@ -1630,6 +1722,7 @@ export class Game {
 
   #resetSession(): void {
     this.learning.resetProgress();
+    this.#set({ learningRun: false });
     this.#results = [];
     this.#replays.clear();
     this.#travelling = false;
@@ -1831,11 +1924,11 @@ export class Game {
     this.audio.setRoll(0, false);
     this.audio.play('oneup', { gain: 0.8, rate: 0.8 });
     this.#haptic('large');
-    this.learning.open(id, gateNumber(p.href) ?? id + 1);
+    if (!this.learning.open(id)) this.#closeGate(id, 'skipped');
   }
 
   /** The card closed ("Roll on!" or "Skip gate"): the gate stays used for this stage and play resumes. */
-  #closeGate(id: number, _outcome: GateOutcome): void {
+  #closeGate(id: number, outcome: GateOutcome): void {
     this.audio.play('click');
     if (id < 0) {
       const next = this.#afterGate;
@@ -1843,8 +1936,11 @@ export class Game {
       next?.();
       return;
     }
-    this.#dismissedPortals.add(id);
-    this.#engine?.setPortalState(id, 'used');
+    // Phase 22: "Later" on a locking step keeps the gate open (the ball can roll back in)
+    if (outcome !== 'later') {
+      this.#dismissedPortals.add(id);
+      this.#engine?.setPortalState(id, 'used');
+    }
     if (this.#view.phase !== 'play') return;
     if (this.#portalTimer) this.#timer.start();
     this.#driver?.setPaused(false);
@@ -1854,6 +1950,7 @@ export class Game {
 
   #onKeyDown(ev: KeyboardEvent): void {
     const p = this.#view.phase;
+    this.learning.noteKey();
     if (this.learning.isOpen && this.learning.key(ev)) return;
     if (p === 'play' && this.#view.portal && !ev.repeat) {
       if (ev.code === 'Enter' || ev.code === 'NumpadEnter' || ev.code === 'KeyY') {
@@ -2058,6 +2155,15 @@ export class Game {
       }
     }
     if (this.#ghostBall) this.#ghostBall.update((d?.tick ?? 0) / SIM_HZ);
+    // Phase 22: the finish opened after a lock-less physics build latched the goal: reaching it again counts
+    if (this.#goalSwallowed && v.phase === 'play' && !this.learning.goalLocked()) {
+      const g = this.#stage()?.goal;
+      const at = worldToPage(this.#ballPos);
+      if (g && Math.hypot(at[0] - g.pos[0], at[1] - g.pos[1]) <= g.radius * 1.5) {
+        this.#goalSwallowed = false;
+        this.#send({ type: 'GOAL' });
+      }
+    }
     const control =
       this.#view.phase === 'play' && !this.#view.portal && !this.#view.travel && !this.learning.isOpen
         ? sample
@@ -2105,6 +2211,7 @@ export class Game {
       small: this.#view.small,
       large: this.#view.large,
       ball: this.#ballPos,
+      island: this.#lastIsland,
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,
       hold: this.#view.hold,
@@ -2113,6 +2220,7 @@ export class Game {
       portal: this.#view.portal,
       journey: this.#view.journey,
       learning: this.learning.debug(),
+      learningRun: this.#view.learningRun,
       api: this.#api,
       engine: this.#engine?.stats() ?? null,
     };
@@ -2152,6 +2260,70 @@ export class Game {
   debugRollIntoGoal(backM = 4.5): boolean {
     const g = this.#stage()?.goal;
     return !!g && this.#rollTo(g.pos, g.islandId, backM);
+  }
+
+  /**
+   * Phase 22 e2e / screenshots: roll the ball at a runtime lock's bridge or lift mouth on its host island (the
+   * lock ids of `debugState().learning.binding.locks`).
+   */
+  debugRollIntoLock(lockId: number, backM = 4.5): boolean {
+    const stage = this.#stage();
+    const lock = this.learning.debug().binding?.locks.find((l) => l.id === lockId);
+    if (!stage || !lock) return false;
+    if (lock.kind === 'goal') return this.debugRollIntoGoal(backM);
+    const c =
+      lock.kind === 'bridge'
+        ? stage.bridges.find((b) => b.id === lock.targetId)
+        : stage.elevators.find((e) => e.id === lock.targetId);
+    if (!c) return false;
+    const from = 'from' in c ? c.from : c.islandFrom;
+    const [mouth, far] = from === lock.islandId ? [c.a, c.b] : [c.b, c.a];
+    // start on the island, backM metres back along the connector's axis, and roll straight at its mouth
+    const len = Math.hypot(mouth[0] - far[0], mouth[1] - far[1]) || 1;
+    const PX = 13.5;
+    const at: Vec2 = [
+      mouth[0] + ((mouth[0] - far[0]) / len) * backM * PX,
+      mouth[1] + ((mouth[1] - far[1]) / len) * backM * PX,
+    ];
+    const isl = stage.islands.find((i) => i.id === lock.islandId);
+    const d = this.#driver;
+    const e = this.#engine;
+    if (!isl || !d || !e || this.#view.phase !== 'play' || !insideWithMargin(at, isl.contour, isl.holes, 8))
+      return false;
+    d.reset(at);
+    const yaw = Math.atan2(-(mouth[0] - at[0]), -(mouth[1] - at[1]));
+    void e.spawnBall(at, { durationSec: 0.01, faceTo: mouth });
+    this.#autopilot = {
+      sample: { tiltX: 0, tiltZ: MAX_TILT_PITCH * 0.6, frameYaw: yaw, power: true, jump: false },
+      ticks: SIM_HZ * 3,
+    };
+    return true;
+  }
+
+  /** Phase 22 e2e: the ball touched a closed lock (what the physics reports; for builds without locks). */
+  debugLocked(lockId: number): void {
+    this.#onSimEvent({ type: 'locked', lockId });
+  }
+
+  /** Phase 22 e2e: the ball reached an island (what the physics reports after a hop). */
+  debugIsland(islandId: number): void {
+    this.#onSimEvent({ type: 'island', islandId });
+  }
+
+  /** The island whose top contains a stage point (the region guard's check on `landed`). */
+  #islandAt(at: Vec2): number | null {
+    const stage = this.#stage();
+    if (!stage) return null;
+    for (const island of stage.islands)
+      if (pointInPolygon(at, island.contour, island.holes)) return island.id;
+    return null;
+  }
+
+  /** Phase 22: the pause menu's grown-up override (after the press-and-hold): open the next lock. */
+  overrideLock(): boolean {
+    if (this.#view.phase !== 'paused' && this.#view.phase !== 'play') return false;
+    this.audio.play('click');
+    return this.learning.overrideNext();
   }
 
   #rollTo(target: Vec2, islandId: number, backM: number): boolean {

@@ -6,11 +6,19 @@
  *     answer by keyboard shows the first hint; the right one shows Pip's success line; "Roll on!" resumes play.
  *     Gate 2 asks round 2.
  *  2. A downloaded learning page picked in the site-select loader: its first playable lesson shows at gate 1.
+ *  3. Phase 22 (`gated`, the default level): the ball rolls at a locked bridge → the lock banner and Pip's line
+ *     (the physics' `locked` event, or the region guard sending the ball back on a build without barriers) → the
+ *     gate's round is solved → the lock opens → the ball crosses. A letter-key round shows its key badges.
+ *  4. Phase 22: the loader strip shows the level; the Grown-ups control (press and hold) switches to `mission`;
+ *     a mission post starts "Bring Pip four gems" with the mission HUD.
+ *
+ * The session seed is pinned (`learningSeed: 0`: answer positions as written) so the answers are known.
+ * `WWM_P22_SHOTS=1` writes screenshots to /tmp/wwm-p22-game/.
  *
  * Speech is removed (the voice player falls back to silent, estimated cue timing) and clip requests are aborted,
  * so the run is silent and deterministic. Needs Playwright Chromium; skipped locally without it, required in CI.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { baselinePath, learningScript } from '@wwm/learning';
 import { type Browser, chromium, type Page, type Route } from 'playwright';
@@ -23,14 +31,44 @@ const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
 
 type Dbg = {
   phase: string;
+  island: number | null;
+  spares: number;
   tick: number;
   timer: { running: boolean; remains: number };
+  ball: [number, number, number];
   learning: {
     active: boolean;
     activityId: string | null;
-    gate: { number: number; round: string; mode: string; solved: boolean } | null;
+    level: string | null;
+    gate: {
+      number: number;
+      round: string;
+      mode: string;
+      solved: boolean;
+      badges: boolean;
+      invited: string[];
+    } | null;
+    binding: {
+      steps: {
+        index: number;
+        kind: string;
+        lock: string;
+        island: number | null;
+        portalId: number | null;
+        lockIds: number[];
+      }[];
+      locks: { id: number; kind: string; targetId: number; islandId: number; open: boolean }[];
+    } | null;
+    said: string[];
+    guards: number;
+    banner: { kind: string; n: number } | null;
+    port: { physics: boolean; engine: boolean };
+    missions: { index: number; status: string; count: number; have: number }[];
   };
+  learningRun: boolean;
 };
+
+const SHOTS = process.env.WWM_P22_SHOTS === '1' ? '/tmp/wwm-p22-game' : null;
 
 describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
   let server: ViteDevServer;
@@ -69,6 +107,7 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
         skipIntro: true,
         noAutoPause: true,
         timeScale: 2,
+        learningSeed: 0,
       };
     }, CI_HOOKS);
     const page = await ctx.newPage();
@@ -98,6 +137,19 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
       id,
     );
   const text = async (p: Page, testId: string) => (await p.textContent(`[data-testid="${testId}"]`)) ?? '';
+  const game = <T>(p: Page, fn: string, ...args: number[]) =>
+    p.evaluate(
+      ([f, a]) => {
+        const g = (window as unknown as { __wwmGame: Record<string, (...x: number[]) => unknown> }).__wwmGame;
+        return g[f as string]?.(...(a as number[])) as T;
+      },
+      [fn, args] as const,
+    );
+  const shot = async (p: Page, name: string) => {
+    if (!SHOTS) return;
+    mkdirSync(SHOTS, { recursive: true });
+    await p.screenshot({ path: `${SHOTS}/${name}.png` });
+  };
 
   test('roll into a Pip gate, answer the round, roll on; the next gate asks the next round', async () => {
     const { page, ctx } = await open('/play/practice?learn=compare-groups');
@@ -201,8 +253,170 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
     await expect
       .poll(() => text(page, 'lgate-feedback'), { timeout: 5_000 })
       .toBe('One, two, three. This group has three gems!');
+    // the only step: the same card goes on to Pip's finale, then rolls on
+    expect(await page.getAttribute('[data-testid="lgate-rollon"]', 'data-next')).toBe('more');
+    await page.click('[data-testid="lgate-rollon"]');
+    await page.waitForSelector('[data-testid="learning-gate"][data-mode="done"]');
     await page.click('[data-testid="lgate-rollon"]');
     await page.waitForSelector('[data-testid="learning-gate"]', { state: 'detached' });
+    await ctx.close();
+    expect(problems).toEqual([]);
+  }, 180_000);
+
+  test('gated: a locked bridge explains itself; solving its gate opens it and the ball crosses', async () => {
+    const { page, ctx } = await open('/play/practice?learn=compare-groups');
+    await waitPhase(page, 'play');
+    let s = await state(page);
+    expect(s.learning.level).toBe('gated');
+    expect(s.learningRun).toBe(true);
+    const step0 = s.learning.binding?.steps[0];
+    expect(step0).toMatchObject({ kind: 'round', lock: 'path', island: 0 });
+    const lockId = step0?.lockIds[0] as number;
+    expect(s.learning.binding?.locks.find((l) => l.id === lockId)).toMatchObject({
+      kind: 'bridge',
+      open: false,
+    });
+
+    expect(s.learning.port).toEqual({ physics: true, engine: true });
+
+    // roll at the bridge with POWER for 3 s: the real gate stops the ball and the physics reports `locked`
+    expect(await game<boolean>(page, 'debugRollIntoLock', lockId, 4)).toBe(true);
+    await page.waitForSelector('[data-testid="learning-banner"]', { timeout: 15_000 });
+    await page.waitForTimeout(700);
+    expect(await text(page, 'learning-banner')).toBe('🔒 Solve Pip gate 1 first');
+    s = await state(page);
+    expect(s.learning.said).toContain('pip.locked.gate.1');
+    await shot(page, '2-lock-banner');
+    // the ball didn't cross: still on the start island, the guard never needed, nothing lost
+    await page.waitForTimeout(2500);
+    s = await state(page);
+    expect(s.island).toBe(0);
+    expect(s.learning.guards).toBe(0);
+    expect(s.phase).toBe('play');
+    expect(s.spares).toBe(3);
+
+    // a hop onto an island past the lock (what a ball can do between close page blocks): the region guard
+    // sends it back to the start island, and Pip says so
+    await game(page, 'debugIsland', 2);
+    await expect.poll(async () => (await state(page)).learning.guards, { timeout: 5_000 }).toBe(1);
+    s = await state(page);
+    expect(s.learning.said).toContain('pip.oops');
+    expect(s.phase).toBe('play');
+
+    // solve gate 1 → the lock opens
+    expect(await roll(page, step0?.portalId as number)).toBe(true);
+    await page.waitForSelector('[data-testid="learning-gate"]', { timeout: 15_000 });
+    expect(await text(page, 'lgate-prompt')).toBe('Which island has more gems?');
+    expect(await text(page, 'lgate-skip')).toBe('Later');
+    await page.click('[data-testid="lgate-choice-b"]');
+    await expect.poll(async () => (await state(page)).learning.gate?.solved, { timeout: 5_000 }).toBe(true);
+    s = await state(page);
+    for (const id of step0?.lockIds ?? [])
+      expect(s.learning.binding?.locks.find((l) => l.id === id)?.open).toBe(true);
+    expect(s.learning.said).toContain('pip.unlocked.bridge');
+    await page.click('[data-testid="lgate-rollon"]');
+    await page.waitForSelector('[data-testid="learning-gate"]', { state: 'detached' });
+    await page.waitForTimeout(1500); // the bars drop (the opening animation)
+    await shot(page, '2b-lock-opened');
+
+    // cross: the same bridge now takes the ball to island 1
+    expect(await game<boolean>(page, 'debugRollIntoLock', lockId, 4)).toBe(true);
+    await expect.poll(async () => (await state(page)).island, { timeout: 15_000 }).toBe(1);
+    const guards = (await state(page)).learning.guards;
+    expect(guards).toBe(1);
+    const step1 = (await state(page)).learning.binding?.steps[1];
+    expect(step1?.island).toBe(1);
+    expect(await roll(page, step1?.portalId as number)).toBe(true);
+    await page.waitForSelector('[data-testid="learning-gate"]', { timeout: 15_000 });
+    expect((await state(page)).learning.guards).toBe(guards);
+    // r2 invites letter keys: badges on the choices, the invite voiced after the callout
+    const gate = (await state(page)).learning.gate;
+    expect(gate).toMatchObject({ round: 'r2', badges: true });
+    expect(await page.locator('svg.wwm-scene.show-keys').count()).toBe(1);
+    expect(await text(page, 'lgate-invite')).toBe('Press the letter');
+    await expect
+      .poll(() => page.locator('[data-choice-mark].is-callout').count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
+    await shot(page, '5-gate-card-badges-callout');
+    await expect
+      .poll(async () => (await state(page)).learning.said, { timeout: 10_000 })
+      .toContain('pip.input.letter-key');
+    await page.keyboard.press('KeyA');
+    await expect.poll(async () => (await state(page)).learning.gate?.solved, { timeout: 5_000 }).toBe(true);
+    await ctx.close();
+    expect(problems).toEqual([]);
+  }, 180_000);
+
+  test('the loader shows the level; Grown-ups switches to missions; a mission post starts its mission', async () => {
+    const { page, ctx } = await open('/');
+    await page.waitForSelector('[data-testid="start"]:not([disabled])', { timeout: 60_000 });
+    await page.click('[data-testid="start"]');
+    await waitPhase(page, 'pairing');
+    await page.click('[data-testid="play-keyboard"]');
+    await waitPhase(page, 'select');
+    await page.click('[data-testid="learning-builtin"]');
+    await page.waitForSelector('[data-testid="learning-level"]');
+    expect(await text(page, 'learning-level')).toContain('Gated');
+    expect(await text(page, 'learning-level')).toContain('Bridges and lifts stay locked');
+    await page.locator('[data-testid="learning-panel"]').scrollIntoViewIfNeeded();
+    await shot(page, '1-loader-level');
+
+    // a quick tap does nothing; a 2 s hold opens the level picker
+    await page.click('[data-testid="learning-grownups"]');
+    expect(await page.locator('[data-testid="learning-levels"]').count()).toBe(0);
+    const box = await page.locator('[data-testid="learning-grownups"]').boundingBox();
+    if (!box) throw new Error('no grown-ups control');
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.waitForTimeout(2300);
+    await page.mouse.up();
+    await page.waitForSelector('[data-testid="learning-levels"]');
+    await page.check('[data-testid="learning-level-mission"]');
+    expect(await text(page, 'learning-level')).toContain('Missions');
+    expect(await text(page, 'learning-level')).toContain('collect 4 gems');
+    await shot(page, '1b-loader-levels');
+    await page.click('[data-testid="learning-levels-close"]');
+
+    await page.click('[data-testid="site-practice"]');
+    await waitPhase(page, 'play');
+    let s = await state(page);
+    expect(s.learning.level).toBe('mission');
+    const collect = s.learning.binding?.steps.find((x) => x.kind === 'mission');
+    expect(collect).toBeTruthy();
+    // the collect post stands behind r1's bridge: solve gate 1 first
+    const first = s.learning.binding?.steps[0];
+    expect(await roll(page, first?.portalId as number)).toBe(true);
+    await page.waitForSelector('[data-testid="learning-gate"]', { timeout: 15_000 });
+    await page.click('[data-testid="lgate-choice-b"]');
+    await page.click('[data-testid="lgate-rollon"]');
+    await page.waitForSelector('[data-testid="learning-gate"]', { state: 'detached' });
+
+    // near the post, then into it: the mission starts without stopping the ball
+    expect(await game<boolean>(page, 'debugRollIntoPortal', collect?.portalId as number, 3)).toBe(true);
+    await page.waitForTimeout(250);
+    await shot(page, '3-mission-post');
+    await page.waitForSelector('[data-testid="learning-mission"]', { timeout: 15_000 });
+    expect(await text(page, 'learning-mission')).toContain('Bring Pip 4 gems');
+    s = await state(page);
+    expect(s.phase).toBe('play');
+    expect(s.learning.said).toEqual(expect.arrayContaining(['pip.mission.post', 'pip.mission.collect.4']));
+    expect(s.learning.missions).toContainEqual(
+      expect.objectContaining({ index: 2, status: 'active', count: 4 }),
+    );
+    // roll away from the post (the mission goes on) for a clear view of the HUD
+    expect(await roll(page, first?.portalId as number)).toBe(true);
+    await page.waitForTimeout(1200);
+    expect((await state(page)).learning.missions).toContainEqual(
+      expect.objectContaining({ status: 'active' }),
+    );
+    await shot(page, '4-mission-hud');
+
+    // the pause menu offers the grown-up override (this level allows it)
+    await page.keyboard.press('Escape');
+    await waitPhase(page, 'paused');
+    await page.waitForSelector('[data-testid="learning-override"]');
+    await page.waitForTimeout(900);
+    await shot(page, '6-pause-override');
     await ctx.close();
     expect(problems).toEqual([]);
   }, 180_000);
