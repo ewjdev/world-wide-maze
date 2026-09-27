@@ -460,6 +460,19 @@ export default function EngineSandbox() {
         S.s = S.route.total * frac;
         S.pos = routeAt(S.route, S.s);
       },
+      /** Phase 22 shots: rest the ball at a stage point (px) and hold it there (`still` motion). */
+      placeAt: (px: number, py: number) => {
+        const S = sim.current;
+        if (!S.hf) return;
+        const x = px / PX_PER_METER;
+        const z = py / PX_PER_METER;
+        const y = sampleTop(S.hf, x, z);
+        S.pos = [x, (Number.isNaN(y) ? 0 : y) + 0.5, z];
+        S.vel = [0, 0, 0];
+        S.vy = 0;
+        S.motion = 'still';
+        setMotion('still');
+      },
       collectNext,
       fire,
       /** load/unload the current stage 5× and report renderer.info.memory before and after */

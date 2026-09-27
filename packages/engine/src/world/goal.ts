@@ -3,6 +3,8 @@
  * in red / yellow / green letters with a white stroke, fading out towards the top; plus a flared wireframe
  * cylinder ("vase"). Both reveal with a `visibility` tween. We add a glowing pad ring (N).
  * The 20 WU spiral doubles as the beacon that is visible from far away.
+ * Phase 22 (N): `locked` (0..1) greys the whole goal out while a goal lock is closed (the padlock badge itself
+ * is drawn by world/locks.ts).
  */
 import { GOAL_RADIUS_M } from '@wwm/schema';
 import { float, mix, positionLocal, select, smoothstep, texture, uniform, uv, vec3 } from 'three/tsl';
@@ -26,13 +28,22 @@ import { type N, type SharedUniforms, setEmissive } from './shared.ts';
 export interface Goal {
   group: Group;
   visibility: N;
+  /** Phase 22: 1 = a goal lock is closed (greyed out), 0 = normal. */
+  locked: N;
   triangles: number;
+}
+
+/** Desaturate towards a light grey by `k` (0..1). */
+function greyOut(c: N, k: N): N {
+  const lum = c.dot(vec3(0.3, 0.59, 0.11));
+  return mix(c, vec3(lum.mul(0.55).add(0.32)), k.mul(0.92));
 }
 
 export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   const group = new Group();
   group.name = 'goal';
   const visibility = uniform(1);
+  const locked = uniform(0);
 
   // ── title ribbon (E geometry, verbatim maths in WU, then scaled) ──
   const c = 0.7;
@@ -82,7 +93,7 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   const tc = texture(tex, uv());
   const yWU = positionLocal.y.div(WU);
   const whiten = smoothstep(0, 1, yWU.div(20).mul(5).sub(0.3));
-  rm.colorNode = mix(vec3(1, 1, 1), tc.rgb, whiten);
+  rm.colorNode = greyOut(mix(vec3(1, 1, 1), tc.rgb, whiten), locked);
   const reveal = uv().x.greaterThanEqual(float(repeat).mul(float(1).sub(visibility)));
   rm.opacityNode = select(tc.a.lessThan(0.3), float(0), float(1))
     .mul(float(1).sub(smoothstep(12, 20, yWU)))
@@ -106,13 +117,19 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   wm.name = 'goal-wire';
   const wyWU = positionLocal.y.div(WU);
   const wireCol = hex(GOAL_WIRE);
-  wm.colorNode = wireCol;
+  wm.colorNode = greyOut(wireCol, locked);
   const wireAlpha = float(1)
     .sub(smoothstep(8, 20, wyWU))
     .mul(0.85)
     .mul(smoothstep(0, 1, visibility.mul(20).sub(wyWU)));
   // transparent glow: scale the emissive (bloom) input by the same alpha
-  setEmissive(wm, wireCol.mul(0.8).mul(wireAlpha));
+  setEmissive(
+    wm,
+    wireCol
+      .mul(0.8)
+      .mul(wireAlpha)
+      .mul(float(1).sub(locked.mul(0.85))),
+  );
   wm.opacityNode = wireAlpha;
   const wire = new Mesh(cg, wm);
   wire.name = 'goal-wire';
@@ -126,8 +143,15 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   const pm = bin.add(new MeshBasicNodeMaterial({ transparent: true, depthWrite: false }));
   pm.name = 'goal-pad';
   const pulse = u.time.mul(3).sin().mul(0.25).add(0.75);
-  pm.colorNode = vec3(1, 1, 1);
-  setEmissive(pm, wireCol.mul(pulse).mul(1.4).mul(visibility));
+  pm.colorNode = mix(vec3(1, 1, 1), vec3(0.62, 0.64, 0.68), locked);
+  setEmissive(
+    pm,
+    greyOut(wireCol, locked)
+      .mul(pulse)
+      .mul(1.4)
+      .mul(visibility)
+      .mul(float(1).sub(locked.mul(0.7))),
+  );
   pm.opacityNode = visibility;
   const pad = new Mesh(pg, pm);
   pad.name = 'goal-pad';
@@ -136,7 +160,7 @@ export function buildGoal(title: string, u: SharedUniforms, bin: Bin): Goal {
   group.traverse((o) => {
     o.frustumCulled = false;
   });
-  return { group, visibility, triangles: pos.length / 9 + 12 * 30 * 2 + 96 };
+  return { group, visibility, locked, triangles: pos.length / 9 + 12 * 30 * 2 + 96 };
 }
 
 function hex(h: number) {

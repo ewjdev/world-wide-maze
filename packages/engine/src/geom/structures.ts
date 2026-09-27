@@ -46,6 +46,12 @@ export interface StageMeshes {
   bridges: MeshData;
   /** Guardrails on islands and bridges (yellow) + elevator pillars (red). */
   rails: MeshData;
+  /**
+   * Phase 22: per-vertex index into `stage.bridges` of the bridge each `bridges` / `rails` vertex belongs to
+   * (−1 = not a bridge: island rails, elevator pillars). Drives the "locked bridge" dimming.
+   */
+  bridgeIndex: Float32Array;
+  railBridgeIndex: Float32Array;
 }
 
 /** Intro stagger per island: 0 at the start island, rising with distance (0..1). */
@@ -185,7 +191,13 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
   const rails = new MeshBuilder();
   bridges.face.group = GROUP_BRIDGE;
   bridges.face.hsv = HSV.green;
-  for (const br of stage.bridges) {
+  const deckIdx: number[] = [];
+  const railIdx: number[] = [];
+  const tag = (list: number[], mb: MeshBuilder, idx: number) => {
+    while (list.length < mb.triangleCount * 3) list.push(idx);
+  };
+  for (const [bi, br] of stage.bridges.entries()) {
+    tag(railIdx, rails, -1);
     const delay = ((delays.get(br.from) ?? 0) + (delays.get(br.to) ?? 0)) / 2;
     bridges.face.delay = delay;
     const len = Math.hypot(br.b[0] - br.a[0], br.b[1] - br.a[1]);
@@ -200,6 +212,7 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
     deck(bridges, rng, a0, br.a, br.width, () => ya, SLAB_THICKNESS_M, true, false);
     deck(bridges, rng, br.a, br.b, br.width, (t) => ya + (yb - ya) * t, SLAB_THICKNESS_M, false, false);
     deck(bridges, rng, br.b, b1, br.width, () => yb, SLAB_THICKNESS_M, false, true);
+    tag(deckIdx, bridges, bi);
     // Side rails on both edges (E: "a thin side rail each side"), outside the deck width.
     rails.face.group = GROUP_BRIDGE;
     rails.face.delay = delay;
@@ -218,6 +231,7 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
       rails.face.base = (ya + yb) / 2;
       railAlong(rails, pts, RAIL_HEIGHT_M);
     }
+    tag(railIdx, rails, bi);
   }
 
   // ── Elevator shafts (static): red corner pillars from below the lower to above the upper level ──
@@ -251,11 +265,15 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
     }
   }
 
+  tag(deckIdx, bridges, -1);
+  tag(railIdx, rails, -1);
   return {
     tops: topBuilders.map((b) => b.build()),
     sides: sides.build(),
     bridges: bridges.build(),
     rails: rails.build(),
+    bridgeIndex: Float32Array.from(deckIdx),
+    railBridgeIndex: Float32Array.from(railIdx),
   };
 }
 

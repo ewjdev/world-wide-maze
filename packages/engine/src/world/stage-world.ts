@@ -112,6 +112,12 @@ export interface StageObjects {
   frameOpacity: N;
   elevatorY: N;
   elevatorIds: Map<number, number>;
+  /**
+   * Phase 22: 0..1 "locked" dimming per bridge (index into `stage.bridges`) and per elevator (index as in
+   * `elevatorIds`). Write `.array[i]`, like `elevatorY`.
+   */
+  bridgeDim: N;
+  elevatorDim: N;
   triangles: number;
 }
 
@@ -132,9 +138,15 @@ export function buildStageObjects(
 
   const sides = new Mesh(toGeometry(meshes.sides, bin), bin.add(sideMaterial(u)));
   sides.name = 'island-sides';
-  const bridges = new Mesh(toGeometry(meshes.bridges, bin), bin.add(bridgeMaterial(u)));
+  const bridgeDim = uniformArray(stage.bridges.length ? stage.bridges.map(() => 0) : [0], 'float');
+  const elevatorDim = uniformArray(stage.elevators.length ? stage.elevators.map(() => 0) : [0], 'float');
+  const bridgeGeo = toGeometry(meshes.bridges, bin);
+  bridgeGeo.setAttribute('bidx', new BufferAttribute(meshes.bridgeIndex, 1));
+  const bridges = new Mesh(bridgeGeo, bin.add(bridgeMaterial(u, bridgeDim)));
   bridges.name = 'bridges';
-  const rails = new Mesh(toGeometry(meshes.rails, bin), bin.add(railMaterial(u)));
+  const railGeo = toGeometry(meshes.rails, bin);
+  railGeo.setAttribute('bidx', new BufferAttribute(meshes.railBridgeIndex, 1));
+  const rails = new Mesh(railGeo, bin.add(railMaterial(u, bridgeDim)));
   rails.name = 'rails';
 
   // ── elevator platforms: two per elevator sharing one footprint (contracts v0.2.2). Platform A's top is
@@ -225,7 +237,7 @@ export function buildStageObjects(
     const md = eb.build();
     const g = toGeometry(md, bin);
     g.setAttribute('eidx', new BufferAttribute(new Float32Array(eidx), 2));
-    elevators = new Mesh(g, bin.add(elevatorMaterial(u, elevatorY, elevatorSum)));
+    elevators = new Mesh(g, bin.add(elevatorMaterial(u, elevatorY, elevatorSum, elevatorDim)));
     elevators.name = 'elevators';
     elevators.frustumCulled = false;
   }
@@ -286,6 +298,8 @@ export function buildStageObjects(
     frameOpacity,
     elevatorY,
     elevatorIds: ids,
+    bridgeDim,
+    elevatorDim,
     triangles,
   };
 }
@@ -353,7 +367,18 @@ function sideMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
   return m;
 }
 
-function bridgeMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
+/**
+ * Phase 22: a locked connector reads as "switched off": desaturated towards a cool grey and darker. `dims` is the
+ * per-bridge (or per-elevator) 0..1 uniform array, `idx` the per-vertex index into it (−1 = never dimmed).
+ */
+function lockDim(color: N, dims: N, idx: N): N {
+  const k = select(idx.greaterThan(-0.5), dims.element(max(idx, float(0)).toInt()), float(0));
+  const lum = color.dot(vec3(0.3, 0.59, 0.11));
+  const grey = vec3(lum.mul(0.62).add(0.1), lum.mul(0.64).add(0.11), lum.mul(0.7).add(0.13));
+  return mix(color, grey, k.mul(0.9));
+}
+
+function bridgeMaterial(u: SharedUniforms, dims: N): MeshBasicNodeMaterial {
   const m = new MeshBasicNodeMaterial();
   m.name = 'bridge';
   const t = uv();
@@ -364,20 +389,22 @@ function bridgeMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
     .mul(0.18);
   const base = fragmentedColor(u).mul(facetShade());
   const deck = mix(base.mul(float(1).add(plank)), vec3(1, 1, 1), edge);
-  m.colorNode = select(isTop, deck, base).mul(ballShadow(u));
+  m.colorNode = lockDim(select(isTop, deck, base), dims, attribute('bidx', 'float')).mul(ballShadow(u));
   m.positionNode = deckPosition(u);
   return m;
 }
 
-function railMaterial(u: SharedUniforms): MeshBasicNodeMaterial {
+function railMaterial(u: SharedUniforms, dims: N): MeshBasicNodeMaterial {
   const m = new MeshBasicNodeMaterial();
   m.name = 'rail';
-  m.colorNode = fragmentedColor(u).mul(facetShade()).mul(ballShadow(u));
+  m.colorNode = lockDim(fragmentedColor(u).mul(facetShade()), dims, attribute('bidx', 'float')).mul(
+    ballShadow(u),
+  );
   m.positionNode = railPosition(u);
   return m;
 }
 
-function elevatorMaterial(u: SharedUniforms, ys: N, sums: N): MeshBasicNodeMaterial {
+function elevatorMaterial(u: SharedUniforms, ys: N, sums: N, dims: N): MeshBasicNodeMaterial {
   const m = new MeshBasicNodeMaterial();
   m.name = 'elevator';
   const glow = attribute('glow', 'float');
@@ -385,9 +412,10 @@ function elevatorMaterial(u: SharedUniforms, ys: N, sums: N): MeshBasicNodeMater
   const yA = ys.element(idx.x.toInt());
   const y = select(idx.y.lessThan(0.5), yA, sums.element(idx.x.toInt()).sub(yA));
   const base = fragmentedColor(u).mul(facetShade());
-  m.colorNode = mix(base, vec3(1, 0.82, 0.8), glow.mul(0.6)).mul(ballShadow(u));
-  // edge strips glow (E: elevators are one of the glow objects in the rebuild brief)
-  setEmissive(m, vec3(1, 0.25, 0.22).mul(glow).mul(u.power.mul(0.4).add(0.9)));
+  m.colorNode = lockDim(mix(base, vec3(1, 0.82, 0.8), glow.mul(0.6)), dims, idx.x).mul(ballShadow(u));
+  // edge strips glow (E: elevators are one of the glow objects in the rebuild brief); a locked lift goes dark
+  const lit = float(1).sub(dims.element(idx.x.toInt()).mul(0.85));
+  setEmissive(m, vec3(1, 0.25, 0.22).mul(glow).mul(u.power.mul(0.4).add(0.9)).mul(lit));
   m.positionNode = positionLocal.add(vec3(0, y, 0)).sub(vec3(0, float(1).sub(u.bridges).mul(40), 0));
   return m;
 }

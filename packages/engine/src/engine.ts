@@ -64,6 +64,15 @@ import { Bin } from './world/bin.ts';
 import { planFirework } from './world/fireworks.ts';
 import { buildGoal, type Goal } from './world/goal.ts';
 import { buildItems, type Items } from './world/items.ts';
+import {
+  type Beacon,
+  buildBeacon,
+  buildLocks,
+  type Locks,
+  type LockVisual,
+  type LockVisualState,
+  OPENING_SEC,
+} from './world/locks.ts';
 import { Particles } from './world/particles.ts';
 import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
@@ -150,6 +159,19 @@ export interface Engine {
    * and the camera glides up to it. Resolves when the ball is gone (≈ 1.6 s); the next `loadStage` resets it.
    */
   playPortal(portalId: number): Promise<void>;
+  /**
+   * Phase 22 (N; contracts §10.4): draw a learning run's runtime locks. Call after `loadStage`; replaces the previous
+   * set (`[]` clears it). Every lock starts `closed`: a gate of bars in `color` across the bridge / lift entry with a
+   * padlock badge (Pip or a gem) and a `label` card, the connector dimmed, a goal lock greys the goal out. Gates stand
+   * exactly where @wwm/physics blocks (`barrierPose`). Specs that don't match the stage are skipped. One draw call.
+   */
+  setLocks(specs: readonly LockVisual[]): void;
+  /** `opening` drops the bars with a sparkle (≈ 1.1 s; a plain fade under reduced motion), then it is gone. */
+  setLockState(id: number, state: LockVisualState): void;
+  /** The ball touched a closed lock: rattle the gate and bounce the padlock (`handleEvent` does this on `locked`). */
+  pulseLock(id: number): void;
+  /** A light beam over a stage point (the gate or post that opens the lock); `null` hides it. */
+  setBeacon(pagePos: [number, number] | null): void;
   /** Camera heading for `InputSample.frameYaw` (see README "Yaw convention"). */
   cameraYaw(): number;
   resize(w: number, h: number): void;
@@ -287,6 +309,14 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let items: Items | null = null;
   let goal: Goal | null = null;
   let portals: Portals | null = null;
+  /** Phase 22: runtime locks (own bin: `setLocks` may rebuild them without reloading the stage) */
+  let locks: Locks | null = null;
+  let lockBin = new Bin();
+  /** lock id → current dim (1 = closed … 0 = open) of its bridge / lift / goal */
+  const lockDims = new Map<number, number>();
+  const lockSpecs = new Map<number, LockVisual['lock']>();
+  const beacon: Beacon = buildBeacon(u, globalBin, opts.reducedMotion ?? false);
+  scene.add(beacon.mesh);
   let bg: Background | null = null;
   let ball: Ball | null = null;
   let hf: Heightfield | null = null;
@@ -454,12 +484,41 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     stageBin.disposeAll();
     stageBin = new Bin();
     stage = objs = textures = items = goal = portals = bg = ball = hf = plan = null;
+    lockBin.disposeAll();
+    lockBin = new Bin();
+    locks = null;
+    lockDims.clear();
+    lockSpecs.clear();
+    beacon.set(null, time);
     ballScale = 1;
     portalWatch = null;
     particles.clear();
     ballOverride = null;
     goalWatch = false;
     envPrimed = false;
+  }
+
+  /** Push the per-lock dims into the bridge / elevator / goal uniforms (a connector takes its darkest lock). */
+  function applyLockDims() {
+    if (!objs || !stage) return;
+    const b = objs.bridgeDim.array as number[];
+    const e = objs.elevatorDim.array as number[];
+    b.fill(0);
+    e.fill(0);
+    let g = 0;
+    for (const l of locks?.instances ?? []) {
+      const dim = lockDims.get(l.id) ?? 0;
+      const spec = lockSpecs.get(l.id);
+      if (!spec) continue;
+      if (spec.kind === 'bridge') {
+        const i = stage.bridges.findIndex((x) => x.id === spec.targetId);
+        if (i >= 0) b[i] = Math.max(b[i] ?? 0, dim);
+      } else if (spec.kind === 'elevator') {
+        const i = objs.elevatorIds.get(spec.targetId);
+        if (i !== undefined) e[i] = Math.max(e[i] ?? 0, dim);
+      } else g = Math.max(g, dim);
+    }
+    if (goal) goal.locked.value = g;
   }
 
   function applyTier() {
@@ -624,6 +683,9 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
           );
           break;
         }
+        case 'locked':
+          engine.pulseLock(e.lockId);
+          break;
         case 'landed':
           if (e.impact > 6)
             particles.emit(
@@ -747,6 +809,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       if (objs) showAllStage(objs);
       if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
       if (portals) portals.mesh.visible = true;
+      if (locks) locks.mesh.visible = true;
       if (pixelLook) textures?.setPixelLook(true);
       finishSpawnNow();
       view = 'chase';
@@ -875,6 +938,84 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       );
       await wait(dur + 0.35);
       ballVisible = false;
+    },
+
+    setLocks(specs) {
+      if (locks) stageRoot.remove(locks.mesh);
+      lockBin.disposeAll();
+      lockBin = new Bin();
+      locks = null;
+      lockDims.clear();
+      lockSpecs.clear();
+      if (stage && specs.length > 0) {
+        locks = buildLocks(stage, specs, u, lockBin, reducedMotion);
+        if (locks) {
+          locks.mesh.visible = !intro || time - intro.t0 >= intro.tl.appear.start;
+          stageRoot.add(locks.mesh);
+          for (const l of locks.instances) lockDims.set(l.id, 1);
+          for (const sp of specs) lockSpecs.set(sp.lock.id, sp.lock);
+        }
+      }
+      applyLockDims();
+    },
+
+    setLockState(id, st) {
+      const L = locks;
+      const inst = L?.instances.find((l) => l.id === id);
+      if (!L || !inst) return;
+      const prevState = L.state(id);
+      if (prevState === st) return;
+      L.setState(id, st, time);
+      if (st === 'closed') lockDims.set(id, 1);
+      else if (st === 'open') lockDims.set(id, 0);
+      else {
+        const dur = reducedMotion ? 0.45 : OPENING_SEC;
+        tween(
+          dur,
+          (k) => {
+            if (L !== locks || L.state(id) !== 'opening') return;
+            lockDims.set(id, 1 - ease.cubicInOut(k));
+            applyLockDims();
+          },
+          () => {
+            if (L === locks && L.state(id) === 'opening') L.setState(id, 'open', time);
+          },
+        );
+        if (!reducedMotion) {
+          const [cx, cy, cz] = inst.gate ? inst.center : inst.badge;
+          const c = inst.color;
+          const col = (Math.round(c[0] * 255) << 16) | (Math.round(c[1] * 255) << 8) | Math.round(c[2] * 255);
+          particles.emit(
+            {
+              origin: new Vector3(cx, cy + (inst.gate ? 1.6 : 0), cz),
+              count: 80,
+              speed: [2, 6.5],
+              life: [0.5, 1.2],
+              size: [0.07, 0.2],
+              colors: [col, 0xffffff, 0xffe27a],
+              drag: 2.4,
+              glow: 1.7,
+              twinkle: 0.45,
+            },
+            time,
+          );
+        }
+      }
+      applyLockDims();
+    },
+
+    pulseLock(id) {
+      locks?.pulse(id, time);
+    },
+
+    setBeacon(pagePos) {
+      if (!pagePos || !stage) {
+        beacon.set(null, time);
+        return;
+      }
+      const x = pagePos[0] / PX_PER_METER;
+      const z = pagePos[1] / PX_PER_METER;
+      beacon.set(new Vector3(x, surfaceAt(x, z, startWorld.y), z), time);
     },
 
     cameraYaw() {
@@ -1214,6 +1355,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       u.appear.value = ease.backOut(progress(t, tl.appear));
       if (items) items.small.visible = items.large.visible = items.largeShell.visible = t >= tl.appear.start;
       if (portals) portals.mesh.visible = t >= tl.appear.start;
+      if (locks) locks.mesh.visible = t >= tl.appear.start;
       if (goal) {
         goal.visibility.value = progress(t, tl.appear);
         goal.group.visible = t >= tl.appear.start;
@@ -1235,6 +1377,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         if (objs) showAllStage(objs);
         if (items) items.small.visible = items.large.visible = items.largeShell.visible = true;
         if (portals) portals.mesh.visible = true;
+        if (locks) locks.mesh.visible = true;
         view = 'chase';
         chase.holdPosition = false;
         chase.reset(startWorld.clone().add(new Vector3(0, 0.5, 0)), goalWorld);
