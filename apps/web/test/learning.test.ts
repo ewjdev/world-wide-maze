@@ -139,7 +139,12 @@ describe('gates → the lesson state machine', () => {
     let state = initialState(compare);
     const first = openStep(compare, state);
     expect(first.state.phase).toBe('round');
-    expect(first.say).toEqual([lineId.gate, lineId.intro(compare.id), lineId.prompt(compare.id, 'r1')]);
+    expect(first.say).toEqual([
+      lineId.gate,
+      lineId.intro(compare.id),
+      lineId.prompt(compare.id, 'r1'),
+      lineId.callout(compare.id, 'r1'),
+    ]);
     state = first.state;
     // skipped: the next gate asks the same round again
     expect(openStep(compare, state)).toMatchObject({ state, say: [lineId.prompt(compare.id, 'r1')] });
@@ -147,7 +152,7 @@ describe('gates → the lesson state machine', () => {
     expect(state.solved).toBe(true);
     const second = openStep(compare, state);
     expect(second.state.index).toBe(1);
-    expect(second.say).toEqual([lineId.prompt(compare.id, 'r2')]);
+    expect(second.say).toEqual([lineId.prompt(compare.id, 'r2'), lineId.callout(compare.id, 'r2')]);
   });
 
   test('after the main rounds a gate offers the bonus, and after that it only rolls on', () => {

@@ -91,7 +91,12 @@ async function tts(base: string, text: string, voiceId: string, key: string): Pr
     });
     if (response.ok) return ((await response.json()) as { alignment: Alignment }).alignment;
     const detail = await response.text();
-    if ((response.status === 429 || response.status >= 500) && attempt < 5) {
+    // AI Gateway `wwm` rate-limits per minute: wait out a 429 rather than give up
+    if (response.status === 429 && attempt < 8) {
+      await new Promise((resolve) => setTimeout(resolve, 20_000));
+      continue;
+    }
+    if (response.status >= 500 && attempt < 5) {
       await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
       continue;
     }
@@ -147,6 +152,9 @@ async function voiceBaseline(): Promise<void> {
     return;
   }
   const base = await startProxy();
+  // progress is kept even if a run is interrupted: finished clips are already in R2
+  const made = new Map<string, { ms: number; words: number[] }>();
+  let failure: unknown = null;
   try {
     if (verify) {
       const missing: string[] = [];
@@ -158,21 +166,22 @@ async function voiceBaseline(): Promise<void> {
       );
     }
     if (write && unique.length) {
-      const made = new Map<string, { ms: number; words: number[] }>();
       let done = 0;
-      await pool(unique, 3, async ({ line, hash }) => {
+      await pool(unique, 2, async ({ line, hash }) => {
         const alignment = await tts(base, line.text, voice.voiceId, `${hash}.mp3`);
         made.set(hash, wordTimings(line.text, alignment));
         done++;
         console.log(`  [${done}/${unique.length}] ${line.id}`);
       });
-      for (const { line, hash } of todo) {
-        const timing = made.get(hash);
-        if (timing) clips.push({ line: line.id, text: line.text, hash, ms: timing.ms, words: timing.words });
-      }
     }
+  } catch (error) {
+    failure = error;
   } finally {
     stopProxy();
+  }
+  for (const { line, hash } of todo) {
+    const timing = made.get(hash);
+    if (timing) clips.push({ line: line.id, text: line.text, hash, ms: timing.ms, words: timing.words });
   }
   if (write) {
     clips.sort((a, b) => a.line.localeCompare(b.line));
@@ -181,6 +190,7 @@ async function voiceBaseline(): Promise<void> {
       `Wrote ${clips.length} clips to ${fileURLToPath(MANIFEST)}. Audio: ${DEFAULT_AUDIO_BASE}<hash>.mp3`,
     );
   }
+  if (failure) throw failure;
 }
 
 // ── audition ──────────────────────────────────────────────────────────────────────────────────────────────

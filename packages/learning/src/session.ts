@@ -4,8 +4,9 @@
  * a trick round unlocks its follow-up, and bonus rounds are offered, never required.
  */
 
+import { presentRound } from './present.ts';
 import { type Activity, checkRound, type Round } from './schema.ts';
-import { lineId } from './script.ts';
+import { lineId, roundScript, type ScriptLine } from './script.ts';
 
 export type Phase = 'intro' | 'round' | 'bonus-offer' | 'done';
 /** What the page should show alongside the voice. */
@@ -25,6 +26,11 @@ export interface LessonState {
   solved: boolean;
   /** Required rounds solved so far: the bridge's built planks (follow-ups and bonus rounds don't add one). */
   built: number;
+  /** Answer positions are shuffled per play-through from this seed (0 = as written). */
+  seed: number;
+  shuffle: 'positions' | 'none';
+  /** Rounds solved in this play-through, in order. */
+  played: string[];
 }
 
 export type LessonEvent =
@@ -33,7 +39,9 @@ export type LessonEvent =
   | { type: 'hint' }
   | { type: 'match' }
   | { type: 'next' }
-  | { type: 'bonus'; accept: boolean };
+  | { type: 'bonus'; accept: boolean }
+  /** Games (Phase 22): start a specific round, e.g. the round a level's step puts behind a gate. */
+  | { type: 'play'; roundId: string };
 
 export interface Step {
   state: LessonState;
@@ -42,8 +50,14 @@ export interface Step {
   show: Show;
 }
 
-export function initialState(activity: Activity): LessonState {
+export function initialState(
+  activity: Activity,
+  options: { seed?: number; shuffle?: 'positions' | 'none' } = {},
+): LessonState {
   return {
+    seed: options.seed ?? 0,
+    shuffle: options.shuffle ?? 'positions',
+    played: [],
     activityId: activity.id,
     phase: 'intro',
     index: 0,
@@ -57,8 +71,30 @@ export function initialState(activity: Activity): LessonState {
   };
 }
 
+/** The current round as shown in this play-through (positions shuffled from the session seed). */
 export function currentRound(activity: Activity, state: LessonState): Round {
-  return activity.rounds[state.index] as Round;
+  return presentRound(activity.rounds[state.index] as Round, state.seed, state.shuffle);
+}
+
+/** A fresh random seed for a play-through (never 0, which means "as written"). */
+export function randomSeed(): number {
+  return 1 + Math.floor(Math.random() * 0xfffffffe);
+}
+
+const opening = (activity: Activity, round: Round) => [
+  lineId.prompt(activity.id, round.id),
+  lineId.callout(activity.id, round.id),
+];
+
+/**
+ * The follow-up round a game should play right after `roundId` is solved, if its trigger fired (e.g. r3b after
+ * r3 needed the strategy), else null.
+ */
+export function followUpAfter(activity: Activity, state: LessonState, roundId: string): string | null {
+  const at = activity.rounds.findIndex((round) => round.id === roundId);
+  const next = activity.rounds[at + 1];
+  if (!next?.onlyAfterHelpOn || next.onlyAfterHelpOn !== roundId) return null;
+  return state.helped.includes(roundId) && !state.played.includes(next.id) ? next.id : null;
 }
 
 const isRequired = (round: Round) => !round.optional && !round.onlyAfterHelpOn;
@@ -112,7 +148,7 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       if (state.phase !== 'intro') return none;
       return {
         state: freshRound(state, 0),
-        say: [lineId.intro(activity.id), lineId.prompt(activity.id, activity.rounds[0]?.id ?? '')],
+        say: [lineId.intro(activity.id), ...opening(activity, activity.rounds[0] as Round)],
         show: null,
       };
     }
@@ -127,6 +163,7 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
             result: 'correct',
             solved: true,
             built: state.built + (isRequired(round) ? 1 : 0),
+            played: [...state.played, round.id],
           },
           say: [lineId.success(activity.id, round.id)],
           show: 'celebrate',
@@ -177,13 +214,34 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       const upcoming = activity.rounds[next] as Round;
       if (upcoming.optional && !round.optional)
         return { state: { ...freshRound(state, next, 'bonus-offer') }, say: [lineId.bonus], show: null };
-      return { state: freshRound(state, next), say: [lineId.prompt(activity.id, upcoming.id)], show: null };
+      return { state: freshRound(state, next), say: opening(activity, upcoming), show: null };
     }
     case 'bonus': {
       if (state.phase !== 'bonus-offer') return none;
       if (!event.accept)
         return { state: { ...state, phase: 'done' }, say: [lineId.finale(activity.id)], show: 'celebrate' };
-      return { state: { ...state, phase: 'round' }, say: [lineId.prompt(activity.id, round.id)], show: null };
+      return { state: { ...state, phase: 'round' }, say: opening(activity, round), show: null };
+    }
+    case 'play': {
+      const index = activity.rounds.findIndex((candidate) => candidate.id === event.roundId);
+      if (index < 0) throw new Error(`Unknown round ${event.roundId}.`);
+      const target = activity.rounds[index] as Round;
+      const intro = state.phase === 'intro' ? [lineId.intro(activity.id)] : [];
+      return { state: freshRound(state, index), say: [...intro, ...opening(activity, target)], show: null };
     }
   }
+}
+
+/**
+ * The script for this moment of a play-through: every line (from `scriptIndex(path)`), with the current round's
+ * lines as shown (shuffled positions change count and callout texts; clips are found by text).
+ */
+export function sessionScript(
+  index: ReadonlyMap<string, ScriptLine>,
+  activity: Activity,
+  state: LessonState,
+): Map<string, ScriptLine> {
+  const lines = new Map(index);
+  for (const line of roundScript(activity, currentRound(activity, state))) lines.set(line.id, line);
+  return lines;
 }

@@ -40,8 +40,9 @@ export interface VoicePlayer {
 
 const MS_PER_WORD = 420;
 
+/** The clip for a line is found by its exact text, so a line keeps its clip wherever it's used (Phase 22). */
 export function clipFor(clips: readonly VoiceClip[], line: ScriptLine): VoiceClip | undefined {
-  return clips.find((clip) => clip.line === line.id && clip.text === line.text);
+  return clips.find((clip) => clip.text === line.text);
 }
 
 export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
@@ -211,7 +212,7 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
     },
     unlock() {
       // never interrupt Pip: unlocking only matters before the first clip plays
-      if (!audio || !audio.paused) return;
+      if (!audio?.paused) return;
       // a silent, gesture-initiated play unlocks this element for later programmatic plays (iOS Safari)
       audio.muted = true;
       void audio

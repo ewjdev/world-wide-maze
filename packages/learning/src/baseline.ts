@@ -42,6 +42,24 @@ const activities: Activity[] = [
     ],
     tools: [],
     finale: 'Three gems for Pip’s bridge. Nice counting!',
+    play: {
+      defaultLevel: 'gated',
+      levels: [
+        { id: 'explore', label: 'Explore', steps: 'rounds', locks: { mode: 'none' } },
+        {
+          id: 'gated',
+          label: 'Gated',
+          steps: 'rounds',
+          locks: { mode: 'path', connectors: ['bridge', 'elevator'], goal: true, override: 'grown-up' },
+        },
+        {
+          id: 'mission',
+          label: 'Missions',
+          steps: [{ mission: 'collect', count: 3 }, { round: 'r1' }],
+          locks: { mode: 'path', connectors: ['bridge'], goal: true, override: 'grown-up' },
+        },
+      ],
+    },
     parentNote:
       'Notice whether your child pairs one number word with each object. Naming the last number does not by itself establish understanding.',
     offlineActivity: 'Ask for three blocks. Rearrange them and count together again.',
@@ -75,6 +93,25 @@ const activities: Activity[] = [
     ],
     tools: [],
     finale: 'Five gems! Pip’s bridge is getting longer.',
+    input: ['letter-key', 'tilt'],
+    play: {
+      defaultLevel: 'gated',
+      levels: [
+        { id: 'explore', label: 'Explore', steps: 'rounds', locks: { mode: 'none' } },
+        {
+          id: 'gated',
+          label: 'Gated',
+          steps: 'rounds',
+          locks: { mode: 'path', connectors: ['bridge', 'elevator'], goal: true, override: 'grown-up' },
+        },
+        {
+          id: 'mission',
+          label: 'Missions',
+          steps: [{ mission: 'collect', count: 5 }, { round: 'r1' }],
+          locks: { mode: 'path', connectors: ['bridge'], goal: true, override: 'grown-up' },
+        },
+      ],
+    },
     parentNote:
       'Try a different arrangement away from the screen. Repeating this one question can become position memory.',
     offlineActivity: 'Put five large blocks in a line, then a circle. Ask if the amount changed.',
@@ -105,6 +142,7 @@ const activities: Activity[] = [
       {
         id: 'r2',
         kind: 'compare',
+        input: ['letter-key', 'tilt'],
         prompt: 'Ooh, these are close. Which island has more gems?',
         islands: [island(5, 'scatter', 'medium', 7), island(4, 'scatter', 'medium', 3)],
         allowSame: false,
@@ -133,6 +171,7 @@ const activities: Activity[] = [
       {
         id: 'r3b',
         kind: 'compare',
+        input: ['arrows', 'tilt'],
         prompt: 'One more tricky one. Big gems or little gems. Which island has more?',
         onlyAfterHelpOn: 'r3',
         islands: [island(6, 'tight', 'small'), island(4, 'spread', 'large')],
@@ -148,6 +187,7 @@ const activities: Activity[] = [
       {
         id: 'r4',
         kind: 'compare',
+        input: ['letter-key', 'tilt'],
         prompt: 'Which island has more? Or are they the same?',
         islands: [island(4, 'spread'), island(4, 'tight')],
         allowSame: true,
@@ -177,6 +217,7 @@ const activities: Activity[] = [
       {
         id: 'r5b',
         kind: 'difference',
+        input: ['number-key', 'tilt'],
         prompt: 'How many more gems are on the island with six?',
         optional: true,
         islands: [island(3, 'dice'), island(6, 'dice')],
@@ -192,6 +233,38 @@ const activities: Activity[] = [
     ],
     tools: ['match'],
     finale: 'We did it! You built the whole bridge.',
+    play: {
+      defaultLevel: 'gated',
+      levels: [
+        { id: 'explore', label: 'Explore', steps: 'rounds', locks: { mode: 'none' } },
+        { id: 'goal-only', label: 'Answer before the finish', steps: 'rounds', locks: { mode: 'goal' } },
+        {
+          id: 'gated',
+          label: 'Gated',
+          steps: 'rounds',
+          locks: { mode: 'path', connectors: ['bridge', 'elevator'], goal: true, override: 'grown-up' },
+        },
+        {
+          id: 'mission',
+          label: 'Missions',
+          steps: [
+            { round: 'r1' },
+            { round: 'r2', lock: 'none' },
+            { mission: 'collect', count: 4 },
+            { round: 'r3' },
+            { mission: 'reach', island: 'most-gems', lock: 'goal' },
+            { round: 'r4' },
+          ],
+          locks: {
+            mode: 'path',
+            connectors: ['bridge'],
+            goal: true,
+            signals: { beacon: false },
+            override: 'grown-up',
+          },
+        },
+      ],
+    },
     parentNote:
       'The tricky rounds space or size gems so the smaller group looks bigger. If your child chooses the longer or bigger-looking island, that is common at this age: use the match tool together and ask, "Who has leftovers?" Ask how they decided, and notice whether they count, match, or guess.',
     offlineActivity:
@@ -297,6 +370,7 @@ const activities: Activity[] = [
     ],
     tools: [],
     finale: 'The square family is together again!',
+    input: ['letter-key', 'tilt'],
     parentNote:
       'Ask your child to describe the sorting rule. Other valid grouping rules can be explored with physical objects.',
     offlineActivity: 'Sort large toy shapes by shape, mix them up, then sort by color.',
@@ -309,7 +383,7 @@ const voice = manifest.voiceId ? { provider: 'elevenlabs' as const, ...manifest 
 export const baselinePath = parseLearningPath({
   format: LEARNING_VERSION,
   id: 'little-discoveries',
-  version: '2.0.0',
+  version: '3.0.0',
   title: 'Little discoveries',
   description:
     'Count gems. Spot a shape. Find a pattern. Six small adventures with Pip across the sky islands.',
@@ -318,6 +392,7 @@ export const baselinePath = parseLearningPath({
   reviewStatus: 'pilot-needs-educator-review',
   provenance: 'original-baseline',
   theme: skyIslands,
+  play: { shuffle: 'positions', input: ['tap', 'arrows', 'tilt'] },
   ...(voice ? { voice } : {}),
   activities,
 });

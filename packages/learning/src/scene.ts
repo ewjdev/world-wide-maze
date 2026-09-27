@@ -8,8 +8,8 @@
  * and position answer buttons over `SceneLayout.choices` boxes (viewBox units).
  */
 import { type GemLayout, layoutGroup, pairUp } from './layout.ts';
+import { choiceKeys } from './present.ts';
 import {
-  type Activity,
   choiceIds,
   type PaletteKey,
   type Round,
@@ -118,11 +118,6 @@ function describeGroup(count: number, arrangement: string, size: string): string
 
 function describeTokens(tokens: Token[]): string {
   return tokens.map((token) => (token.shape === 'gem' ? 'gem' : `${token.color} ${token.shape}`)).join(', ');
-}
-
-/** Counting and comparison options keep neutral names on screen so the label doesn't give the answer away. */
-export function neutralLabels(activity: Pick<Activity, 'domain'>): boolean {
-  return activity.domain === 'counting' || activity.domain === 'comparison';
 }
 
 export function sceneLayout(
@@ -305,6 +300,11 @@ const STYLE = `.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-
 .wwm-scene .mark.is-pulse{animation:wwm-pulse .7s ease-in-out 2}
 .wwm-scene .mark.is-correct .check{opacity:1}
 .wwm-scene .check{opacity:0;transition:opacity .2s}
+.wwm-scene .mark.is-callout .halo{opacity:1;stroke:var(--wwm-focus);stroke-dasharray:none}
+.wwm-scene .mark.is-callout{animation:wwm-pulse .45s ease-in-out 1}
+.wwm-scene .key-badge{opacity:0;transition:opacity .2s,transform .2s}
+.wwm-scene.show-keys .key-badge{opacity:1}
+.wwm-scene .key-badge.is-callout{transform:scale(1.25)}
 .wwm-scene .pip{transition:transform .9s cubic-bezier(.3,.8,.3,1)}
 .wwm-scene .pip.is-happy{animation:wwm-hop .5s ease-in-out 2}
 .wwm-scene .plank.is-new{animation:wwm-drop .5s ease-out}
@@ -424,6 +424,18 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
         `<g class="mark" data-choice-mark="${escapeXml(choice.id)}">${halo(choice, 26)}<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="22" fill="${p.paper}" stroke="${p.islandEdge}" stroke-width="3"/>${tokenRow(theme, option.tokens, { x: x + 12, y: y + 16, w: w - 24, h: h - 76 }, 72)}<text x="${n(x + w / 2)}" y="${n(y + h - 24)}" text-anchor="middle" font-size="30" font-weight="700" fill="${p.ink}">${escapeXml(choice.label)}</text>${check(choice)}</g>`,
       );
     }
+  }
+
+  // key badges (shown when the round invites letter or number keys: add `show-keys` to the svg)
+  const keys = choiceKeys(round);
+  for (const choice of layout.choices) {
+    const key = keys[choice.id];
+    if (!key) continue;
+    const cx = choice.box.x + 10;
+    const cy = choice.box.y + 10;
+    out.push(
+      `<g class="key-badge" data-key-badge="${escapeXml(choice.id)}"><rect x="${n(cx - 22)}" y="${n(cy - 22)}" width="44" height="44" rx="10" fill="${p.ink}"/><text x="${n(cx)}" y="${n(cy + 11)}" text-anchor="middle" font-size="32" font-weight="800" fill="${p.paper}">${escapeXml(key)}</text></g>`,
+    );
   }
 
   // the bridge

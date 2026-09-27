@@ -7,7 +7,9 @@
 import { z } from 'zod';
 import { LEGACY_VERSION, legacyPathSchema } from './legacy.ts';
 
-export const LEARNING_VERSION = 'wwm-learning/0.2' as const;
+export const LEARNING_VERSION = 'wwm-learning/0.3' as const;
+/** Phase 20's format: a subset of 0.3 (no `play`, `input` or `family`), accepted and upgraded on read. */
+export const PREVIOUS_VERSION = 'wwm-learning/0.2' as const;
 export const LEARNING_SCRIPT_ID = 'wwm-learning';
 export const MAX_DOCUMENT_BYTES = 200_000;
 export const MAX_THEME_BYTES = 12_000;
@@ -153,8 +155,21 @@ export const groupSchema = z
   .strict();
 export type GemGroup = z.infer<typeof groupSchema>;
 
+// ── how a child answers (Phase 22) ─────────────────────────────────────────────────────────────────────
+
+/** Ways a child may be *invited* to answer; consumers fall back to what the device can do. */
+export const INPUT_MODES = ['tap', 'letter-key', 'number-key', 'arrows', 'tilt'] as const;
+export type InputMode = (typeof INPUT_MODES)[number];
+const inputList = z
+  .array(z.enum(INPUT_MODES))
+  .min(1)
+  .max(INPUT_MODES.length)
+  .refine((modes) => new Set(modes).size === modes.length, { message: 'Input modes must be unique.' });
+
 const roundBase = {
   id,
+  /** Invited input for this round (overrides the activity's and the path's). */
+  input: inputList.optional(),
   prompt: line,
   /** A ladder: a nudge, then a strategy, then a worked example. */
   hints: z.array(line).min(1).max(3),
@@ -225,6 +240,80 @@ export type Round = z.infer<typeof roundSchema>;
 export type RoundKind = Round['kind'];
 export const ROUND_KINDS = ['choose', 'compare', 'difference'] as const satisfies readonly RoundKind[];
 
+// ── levels: steps and per-level lock configuration (Phase 22) ─────────────────────────────────────────────
+
+export const STEP_LOCKS = ['path', 'goal', 'none'] as const;
+export type StepLock = (typeof STEP_LOCKS)[number];
+const stepLock = z.enum(STEP_LOCKS);
+export const reachTargetSchema = z.union([
+  z.enum(['most-gems', 'fewest-gems']),
+  z.object({ letter: z.string().regex(/^[A-J]$/) }).strict(),
+]);
+export type ReachTarget = z.infer<typeof reachTargetSchema>;
+export const stepSchema = z.union([
+  z.object({ round: id, lock: stepLock.optional() }).strict(),
+  z
+    .object({
+      mission: z.literal('collect'),
+      count: z.number().int().min(1).max(10),
+      lock: stepLock.optional(),
+    })
+    .strict(),
+  z.object({ mission: z.literal('reach'), island: reachTargetSchema, lock: stepLock.optional() }).strict(),
+]);
+export type LevelStep = z.infer<typeof stepSchema>;
+
+export const LOCK_MODES = ['none', 'goal', 'path'] as const;
+export const lockConfigSchema = z
+  .object({
+    /** none: optional stops · goal: only the finish waits · path: steps close the way forward. */
+    mode: z.enum(LOCK_MODES),
+    /** What `path` may lock. Required (non-empty) exactly when mode is `path`. */
+    connectors: z
+      .array(z.enum(['bridge', 'elevator']))
+      .max(2)
+      .optional(),
+    /** Whether the finish also waits for every locking step (forced true for mode `goal`). */
+    goal: z.boolean().optional(),
+    /** How a lock explains itself at the bridge (all default true). */
+    signals: z
+      .object({
+        banner: z.boolean().optional(),
+        voice: z.boolean().optional(),
+        beacon: z.boolean().optional(),
+        mapPadlocks: z.boolean().optional(),
+      })
+      .strict()
+      .optional(),
+    /** Whether a grown-up may open a lock early in this level. */
+    override: z.enum(['grown-up', 'none']).optional(),
+  })
+  .strict();
+export type LockConfig = z.infer<typeof lockConfigSchema>;
+
+export const levelSchema = z
+  .object({
+    id,
+    label: line.max(40),
+    /** `rounds`: the required rounds in order, each with the level's default lock. */
+    steps: z.union([z.literal('rounds'), z.array(stepSchema).min(1).max(12)]),
+    locks: lockConfigSchema,
+  })
+  .strict();
+export type Level = z.infer<typeof levelSchema>;
+
+export const activityPlaySchema = z
+  .object({ defaultLevel: id, levels: z.array(levelSchema).min(1).max(6) })
+  .strict();
+export type ActivityPlay = z.infer<typeof activityPlaySchema>;
+
+/** The lock a step actually has in a level (the step's own, else the level's default). */
+export function effectiveLock(level: Level, step: LevelStep | { round: string }): StepLock {
+  const own = 'lock' in step ? step.lock : undefined;
+  if (own) return own;
+  return level.locks.mode === 'path' ? 'path' : level.locks.mode === 'goal' ? 'goal' : 'none';
+}
+
 // ── activities and the path ───────────────────────────────────────────────────────────────────────────────
 
 export const activitySchema = z
@@ -239,6 +328,10 @@ export const activitySchema = z
     tools: z.array(z.literal('match')).max(1),
     /** Pip's last line once every round is done. */
     finale: line,
+    /** Invited input for every round of this activity (a round's own `input` wins). */
+    input: inputList.optional(),
+    /** Game levels: ordered steps plus a lock configuration each. Absent → `explore` + `gated` are generated. */
+    play: activityPlaySchema.optional(),
     parentNote: text,
     offlineActivity: text,
     prerequisites: z.array(id).max(6),
@@ -260,7 +353,53 @@ export const activitySchema = z
       ctx.addIssue({ code: 'custom', message: 'Optional (bonus) rounds come last.' });
     if (activity.tools.includes('match') && !activity.rounds.some((round) => round.kind !== 'choose'))
       ctx.addIssue({ code: 'custom', message: 'The match tool needs a round with islands.' });
+    if (activity.play)
+      for (const issue of playIssues(activity.rounds, activity.play))
+        ctx.addIssue({ code: 'custom', message: issue });
   });
+
+/** Readable problems with an activity's levels (empty when valid). */
+export function playIssues(rounds: readonly Round[], play: ActivityPlay): string[] {
+  const issues: string[] = [];
+  const ids = play.levels.map((level) => level.id);
+  if (new Set(ids).size !== ids.length) issues.push('Level IDs must be unique.');
+  if (!ids.includes(play.defaultLevel))
+    issues.push(`defaultLevel "${play.defaultLevel}" is not one of the levels.`);
+  const required = rounds
+    .filter((round) => !round.optional && !round.onlyAfterHelpOn)
+    .map((round) => round.id);
+  for (const level of play.levels) {
+    const where = `Level "${level.id}"`;
+    const { mode, connectors, goal } = level.locks;
+    if (mode === 'path' && !connectors?.length)
+      issues.push(`${where}: a path lock needs connectors (bridge and/or elevator).`);
+    if (mode !== 'path' && connectors?.length) issues.push(`${where}: connectors only apply to mode "path".`);
+    if (mode === 'goal' && goal === false) issues.push(`${where}: mode "goal" always locks the finish.`);
+    const steps = level.steps === 'rounds' ? required.map((round) => ({ round })) : level.steps;
+    let last = -1;
+    const used = new Set<string>();
+    let locking = 0;
+    for (const step of steps) {
+      if ('round' in step) {
+        const at = required.indexOf(step.round);
+        if (at < 0) issues.push(`${where}: "${step.round}" is not a required round of this activity.`);
+        else if (at <= last || used.has(step.round))
+          issues.push(`${where}: rounds must appear once each, in the order they were written.`);
+        last = Math.max(last, at);
+        used.add(step.round);
+      }
+      const lock = effectiveLock(level, step);
+      if (lock !== 'none') locking++;
+      if (lock === 'path' && mode !== 'path')
+        issues.push(`${where}: a step can only lock the path when the level's mode is "path".`);
+      if (lock === 'goal' && (mode === 'none' || goal === false))
+        issues.push(`${where}: a step can only lock the finish when the level locks the finish.`);
+    }
+    if (mode !== 'none' && locking === 0)
+      issues.push(`${where}: locks need at least one step that opens them.`);
+  }
+  return issues;
+}
 export type Activity = z.infer<typeof activitySchema>;
 
 export const clipSchema = z
@@ -294,7 +433,7 @@ export const pathSchema = z
   .object({
     format: z.literal(LEARNING_VERSION),
     id,
-    version: z.literal('2.0.0'),
+    version: z.enum(['2.0.0', '3.0.0']),
     title: text,
     description: text,
     language: z.literal('en'),
@@ -303,6 +442,16 @@ export const pathSchema = z
     provenance: z.enum(['original-baseline', 'parent-personalized-introductions']),
     theme: themeSchema,
     voice: voiceSchema.optional(),
+    /** Path-wide play defaults. */
+    play: z
+      .object({ shuffle: z.enum(['positions', 'none']), input: inputList })
+      .strict()
+      .optional(),
+    /** A grown-up's choices (family version): a level per activity, and tap-only answering. */
+    family: z
+      .object({ levels: z.record(id, id), tapOnly: z.boolean() })
+      .strict()
+      .optional(),
     activities: z.array(activitySchema).min(1).max(20),
   })
   .strict()
@@ -315,6 +464,15 @@ export const pathSchema = z
           ctx.addIssue({ code: 'custom', message: 'Prerequisites must reference earlier activities.' });
       }
       seen.add(activity.id);
+    }
+    for (const [activityId, levelId] of Object.entries(path.family?.levels ?? {})) {
+      const activity = path.activities.find((candidate) => candidate.id === activityId);
+      const levels = activity?.play?.levels.map((level) => level.id) ?? ['explore', 'gated'];
+      if (!activity || !levels.includes(levelId))
+        ctx.addIssue({
+          code: 'custom',
+          message: `The family level "${levelId}" doesn't exist for "${activityId}".`,
+        });
     }
   });
 
@@ -334,6 +492,8 @@ export function parseLearningPath(value: unknown): LearningPath {
     if (!upgrade) throw new Error('Legacy learning documents are not supported here.');
     return pathSchema.parse(upgrade(legacyPathSchema.parse(value)));
   }
+  if (value && typeof value === 'object' && 'format' in value && value.format === PREVIOUS_VERSION)
+    return pathSchema.parse({ ...value, format: LEARNING_VERSION });
   return pathSchema.parse(value);
 }
 

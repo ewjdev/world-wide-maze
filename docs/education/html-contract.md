@@ -81,3 +81,30 @@ The baseline ID and version do not uniquely identify fork text. Consumers must r
 Use `readLearningDocument` (a DOM you already have permission to read) or `readLearningHtml` (HTML text, such as a downloaded file). Both only parse the inert JSON and never run page code. This package deliberately has no arbitrary-URL fetcher. A future remote loader needs its own origin policy, size limits, sanitized rendering, and publishing and review provenance. Never insert untrusted page markup into the game, and never treat prose as agent instructions.
 
 The standalone lesson pages are the first consumer. The WWM game is the second. `/play/practice?learn=<activityId>` uses the bundled baseline, and the site-select "Load a learning page…" control reads a downloaded learning HTML file through `readLearningHtml`. The game then places "Pip gates" (learning portals, href `wwm-learning:<activity>/<n>`) on the stage and plays one round per gate. It uses the shared `step()` state machine and draws each round with `sceneSvg`, the trusted renderer. `checkpointSpec(theme, activity, roundId)` gives a game engine-neutral round data: choices in on-screen order, the answer, and gem positions in ball radii. Falls and maze scores must not become educational proficiency signals. One play-through is practice, not an assessment of mastery. Authentication, cross-origin publishing and learner records are separate additions.
+
+## `wwm-learning/0.3` (Phase 22): how play works
+
+0.3 is a superset of 0.2. A 0.2 document is read as 0.3. Additions:
+
+- **`input`**, on the path's `play`, on an activity, or on a round (most specific wins): the ways a child is *invited* to answer. Values: `tap`, `letter-key`, `number-key`, `arrows`, `tilt`.
+  - `inputPolicy(path, activity, round, device)` applies device fallbacks.
+  - `judgeInput` nudges up to twice, then accepts.
+  - `keyToChoice` maps keys to choices: A/B, S for "same", digits.
+- **`play.shuffle`:** `positions` (default) or `none`. `presentRound(round, seed)` shows a round with its positions shuffled for one play-through. The answer follows the shuffle, and the callout names positions, not answers.
+- **Callout lines:** each round has one, e.g. "Island A… or island B?". Its `choice` cues pulse each choice as it's named.
+- **Levels:** `activity.play = { defaultLevel, levels: [{ id, label, steps, locks }] }`. Each level is the author's recipe:
+  - **Steps:** rounds and missions, in order. `steps: "rounds"` means the required rounds.
+  - **Lock configuration:**
+    - `mode`: `none`, `goal` or `path`
+    - `connectors`: `bridge`, `elevator`
+    - `goal`
+    - `signals`: `banner`, `voice`, `beacon`, `mapPadlocks`
+    - `override`: `grown-up` or `none`
+  - **Per-step override:** a step can set `lock` to `path`, `goal` or `none`.
+  - **Missions:** `collect { count }` and `reach { island: most-gems | fewest-gems | { letter } }`.
+  - **Missing play block:** an activity without `play` gets `explore` and `gated`.
+  - **Validation:** `playIssues` reports contradictions in readable words.
+  - **Game capabilities:** `levelRequires` and `playableLevels` let a game offer only the levels it can fully honour.
+- **`family = { levels: { [activityId]: levelId }, tapOnly }`:** the grown-up's choices, carried in the exported HTML. `resolveLevel` returns the grown-up's choice, else the author's default.
+
+The document declares **intent, never geometry**. It can't name a bridge, because it doesn't know which website becomes the maze. A game binds the steps to its own world. WWM's binding and runtime locks are described in `plans/phase-22-learning-mechanics.md` §4–5 and in contracts §10.4.
