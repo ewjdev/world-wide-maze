@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "b77b6747cdd8e984",
+  "hash": "e1098aa8bbbc9134",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -32,6 +32,7 @@
     "docs/build-log/phase-22-locks.md",
     "docs/build-log/phase-22-page.md",
     "docs/build-log/phase-22.md",
+    "docs/build-log/phase-23.md",
     "docs/facts/whats-built.md",
     "docs/reference/archive-index.md",
     "docs/reference/bundle-notes.md",
@@ -2574,6 +2575,23 @@
       "url": "/log#phase-22",
       "kind": "build-log",
       "text": "## Test evidence\n- `pnpm check`: 1,188 tests passed, 29 skipped.\n- **Orchestrator walkthrough, lesson page (1440×900, real clips from R2, no errors):**\n  - The parent chose Missions, and the lesson notes described it.\n  - In round 2, a tap got \"Try pressing the letter!\" and the letter key answered.\n  - The downloaded HTML carries `family: { compare-groups: mission }`.\n- **Orchestrator walkthrough, game (1440×900):** that downloaded file, loaded with `?learn=compare-groups`, played the Missions level.\n  - Rolling at gate 1's lock showed the banner \"🔒 Solve Pip gate 1 first\".\n  - Solving the gate opened three bridges.\n  - The mission post said \"Bring Pip four gems!\", and a pickup said \"One!\", with the mission chip on the HUD.\n  - The practice stage had room for two physical locks; the remaining steps lock the finish.\n\n## Remaining defects and follow-ups\n- Physical-lock coverage is 70%, not 80%. Options: relax gate-spot rules near cuts, or have the builder place chokepoints for lessons.\n- Most mazes can be hopped around; the region guard handles it. Raising guardrails at lock boundaries is optional.\n- The engine can't hide map padlocks yet (`signals.mapPadlocks: false` levels aren't offered).\n- Real-site mazes don't show island letters, so letter `reach` missions rely on the beacon. No baseline level uses them.\n- A touchscreen laptop counts as having a keyboard; taps are accepted after two nudges.\n- Tilt selection and the gated flow haven't been tried on the physical iPhone.\n- Educator review is still required before any public launch."
+    },
+    {
+      "id": "docs/build-log/phase-23.md",
+      "title": "Phase 23 execution log — initial contract and persistence slice · Implemented",
+      "path": "docs/build-log/phase-23.md",
+      "url": "/log#phase-23",
+      "kind": "build-log",
+      "text": "September 26, 2026. Branch: `feat/phase-23-lesson-limits`. This is an implementation slice, not the four-lesson POC or a release.\n\n## Implemented\n- A strict, separately versioned `wwm-learning/0.4` Bridge Builders document and inert HTML readback. Existing 0.1–0.3 learning content continues through its existing reader; the sampler remains draft in the path registry.\n- Four Bridge Builders encounters with exact totals, authored hints, unique pickup and connector IDs, plus a bound stage and manifest under `fixtures/learning/bridge-builders/`.\n- A pure reducer for pickup, prediction, reversible tray staging/return, hints, exact Confirm and encounter transition. Each event names lesson revision, session, attempt, node, event ID and sequence. Duplicate accepted events do not mutate state twice.\n- A stage binder that checks the frozen stage hash, every target/connector reference, target clearance and active sensor separation.\n- IndexedDB storage (`wwm-learning-poc`, version 1, `sessions` keyed by path/activity) with revision comparison, identity checks and explicit delete functions. A BridgeSession coordinator commits state before world projection; save failure, conflict, projection retry and session-only continuation have separate outcomes."
+    },
+    {
+      "id": "docs/build-log/phase-23.md#evidence",
+      "title": "Phase 23 execution log — initial contract and persistence slice › Evidence · Open gates",
+      "path": "docs/build-log/phase-23.md",
+      "anchor": "evidence",
+      "url": "/log#phase-23",
+      "kind": "build-log",
+      "text": "## Evidence\n- `pnpm --filter @wwm/learning typecheck`, learning tests, web typecheck and targeted world/session tests passed.\n- The authored stage passes `validateStage`; fixture JSON parses back to the same lesson document.\n- Final `pnpm check` passed after regenerating the docent corpus index: 90 test files and 1,197 tests passed; 2 files and 30 tests were skipped. Lint reported two pre-existing advisory findings outside this slice.\n\n## Open gates\n- M0 content and page-by-page UI review is incomplete. The four scripts are still drafts requiring educator and fluent-speaker review. The Bridge Builders fixture uses an adapted existing stage; physical traversal and learner usability have not been verified.\n- M1 is partial: the 0.4 reader currently supports Bridge Builders, and the other three activity schemas, explicit 0.1–0.3 node adapters, locale-aware audio manifest and consumer rendering remain.\n- M2 is partial: storage and commit ordering exist for Bridge Builders, but there is no production game adapter restoring physics/rendering before input and no real browser IndexedDB test yet.\n- M3–M7 are not implemented. The sampler has no public or local playable route; no provider audio was generated, no learner clips were recorded, no physical iPhone audio test or comparative playtest occurred, and nothing was deployed.\n\nKeep the sampler hidden until the relevant capabilities and end-to-end tests are present. The old `little-discoveries` path remains the only playable learning path."
     },
     {
       "id": "docs/facts/whats-built.md",
