@@ -69,3 +69,49 @@ Final verdict: **READY FOR USER REVIEW AND SIGN-OFF**. This is execution-plan re
 The author also clarified graph-DFS cycle handling and a bounded recording-limit outcome. Keep those constraints during implementation rather than silently widening policy, content or public-service scope.
 
 **User approval remains PENDING. Stop before execution.**
+
+## Run-history addendum review
+
+User follow-up: “lets also keep track of each jev run and all the decisions that jev makes”. Reviewed only the resulting plan delta: authoritative local archive, full decision/attempt inspection, durable-before-action gates, crash status, limits, exports and revised estimate. The earlier four findings remain resolved; this does not reopen their architecture. The current estimate is **4.5–8 days**, superseding the earlier range above.
+
+The delta now meets the intended retention scope: browser cache eviction cannot delete history, all started runs and attempts have durable identities, replay and history are distinct, and capacity exhaustion stops work instead of silently deleting older runs. Remaining findings concern whether that record survives the specific crash and browsing sequences introduced by this design.
+
+### JEV-SD-05 — P1 — Reconcile evidence and recording files as well as reservation records
+
+**Evidence:** Revised §7 stores response evidence, recording chunks, a per-run journal, a separate budget ledger and a rebuildable index. Its explicit cross-file recovery rule covers a budget reservation missing from the journal. The response path only says fsync the response/receipt before replying; index recovery scans journals. A durable response file or input chunk can therefore exist after a crash without its journal reference, and a completed journal event can reference data whose publication sequence is unspecified.
+
+**Consequence:** History can incorrectly call an answer unknown, omit an observed decision, or understate/overstate its confirmed replay prefix even though surviving files contain the missing evidence. That directly affects the new “all decisions” requirement.
+
+**Required plan change:** Specify an evidence commit sequence with deterministic attempt/chunk identities and hashes: durable file publication, then fsynced journal reference, then acknowledgment; filesystem directory durability must be accounted for when creating/renaming files. Recovery must reconcile durable orphan response/chunk files and journal references idempotently, rebuild confirmed ticks from a verified contiguous chunk chain, quarantine conflicting/truncated artifacts, and never redispatch an attempt. A complete response can enrich an interrupted run without proving execution. Explicitly acknowledge the unavoidable receive-in-memory-before-durable-write crash interval as unknown/possibly unsaved; do not promise preservation of volatile data after process failure.
+
+**Acceptance:** Faults before/after each file publication, journal append and acknowledgment yield either inspectable retained evidence or an explicit missing/unknown state, never a missing known answer silently relabeled as complete and never duplicate paid dispatch.
+
+Disposition: **RESOLVED IN PLAN**. Revised evidence recovery specifies fsynced immutable artifact publication and directory synchronization before journal acknowledgment, idempotent orphan reconciliation, contiguous confirmed chunk recovery and explicit volatile-response uncertainty. Cross-file ledger authority remains distinct from recoverable evidence.
+
+### JEV-SD-06 — P1 — Define run ownership before marking reopened runs interrupted
+
+**Evidence:** Revised §4 makes history reachable during Watching. Revised §7 says “On reopening, nonterminal runs are marked interrupted”, while cancellation allows the server to retain a provider response after browser disconnect. No run-owner/reconnect distinction accompanies the new history APIs.
+
+**Consequence:** Opening a second history tab could mark a still-running session interrupted, or a reloaded browser could continue appending movement under an ambiguous prior owner. Late provider evidence could overwrite an interruption outcome or be rejected by a terminal-state validator.
+
+**Required plan change:** Distinguish read-only history access from recovery. Use a runtime-instance and run-owner identity; only the owner may append live action/chunk events. Runtime startup reconciles prior-instance unfinished runs; ordinary history reads never change status. Define browser reload/loss handling and stale-owner rejection without auto-resuming interrupted motion. Permit appended late/unknown attempt evidence after terminal/interrupted state while preserving that outcome and disallowing new action authorization.
+
+**Acceptance:** A history tab cannot interrupt a live run; owner reload/disconnect plus delayed response produces a preserved receipt without new movement; old-owner writes after interruption are rejected; next-run linkage never mutates the earlier run.
+
+Disposition: **RESOLVED IN PLAN**. Process/run/document ownership now separates read-only history, full-page reload and temporary transport reconnection. A new document interrupts the old run and may start a linked run; only the same still-live simulation can resume after identity and input-prefix reconciliation. Late answers enrich evidence without reopening terminal state. This preserves the original exclusion of restoring a live policy from replay.
+
+### JEV-SD-07 — P2 — Enforce the archive's authenticated-only serving boundary
+
+**Evidence:** Revised §7 places the archive within the worktree and reasons from “outside Vite's public directory” to “served only through authenticated ... APIs”. Existing `apps/web/vite.config.ts:72–83` defines server/proxy settings but no archive-specific filesystem denial. Public-directory exclusion alone does not establish a development file-serving denial.
+
+**Consequence:** The plan's privacy assertion lacks an enforcement mechanism for Vite filesystem/raw/static serving, including ordinary dev mode after the archive has been created.
+
+**Required plan change:** Explicitly deny serving the archive through static, `/@fs`, raw/import and equivalent decoded paths in every dev-server mode that can reach the workspace, or locate it outside the served filesystem with an equally enforced boundary. Authenticated history handlers should read validated files directly. This is a targeted archive boundary, not a new production security project.
+
+**Acceptance:** Requests for a known archive file through API without token and through development file-serving paths fail; authenticated history works; source bundles/build outputs do not contain archive content.
+
+Disposition: **RESOLVED IN PLAN**. Revised archive boundary explicitly denies filesystem/raw/static/symlink paths in normal and dedicated dev independently of authenticated API registration, covers encoded/traversal requests and excludes archive assets from builds/preview.
+
+Addendum re-review: re-read the revised archive/recovery and ownership contracts, including the final distinction between full-page refresh and temporary transport loss. **JEV-SD-05, JEV-SD-06 and JEV-SD-07 are all resolved in the plan.**
+
+Addendum final verdict: **READY FOR USER REVIEW AND SIGN-OFF**. The plan now gives the user's run/decision-tracking requirement a durable archive, browsable attempt-level evidence, retention without automatic deletion, and explicit crash/unknown limits. That is document-level readiness; none of those mechanisms has been implemented or verified at runtime. No implementation, provider activity or runtime tests were performed. **User execution approval remains PENDING.**
