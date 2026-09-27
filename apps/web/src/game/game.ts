@@ -2151,9 +2151,14 @@ export class Game {
         e.setBall(r.ball, r.alpha);
         e.setElevators(r.elevators);
         const [vx, vy, vz] = r.ball.vel;
-        this.audio.setRoll(Math.hypot(vx, vy, vz), r.ball.grounded && this.#view.phase === 'play');
+        // a gate card or portal prompt may have opened during this step: the world is paused, so no rolling
+        const paused = this.learning.isOpen || !!this.#view.portal || !!this.#view.travel;
+        this.audio.setRoll(
+          paused ? 0 : Math.hypot(vx, vy, vz),
+          !paused && r.ball.grounded && this.#view.phase === 'play',
+        );
       }
-    }
+    } else this.audio.setRoll(0, false); // not stepping (gate card, prompt, pause…): the rolling sound fades out
     if (this.#ghostBall) this.#ghostBall.update((d?.tick ?? 0) / SIM_HZ);
     // Phase 22: the finish opened after a lock-less physics build latched the goal: reaching it again counts
     if (this.#goalSwallowed && v.phase === 'play' && !this.learning.goalLocked()) {
@@ -2211,6 +2216,7 @@ export class Game {
       small: this.#view.small,
       large: this.#view.large,
       ball: this.#ballPos,
+      rollLevel: this.audio.rollLevel,
       island: this.#lastIsland,
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,

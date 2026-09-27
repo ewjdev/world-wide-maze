@@ -36,6 +36,7 @@ type Dbg = {
   tick: number;
   timer: { running: boolean; remains: number };
   ball: [number, number, number];
+  rollLevel: number;
   learning: {
     active: boolean;
     activityId: string | null;
@@ -167,6 +168,9 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
     // paused: the sim doesn't step while the card shows
     await page.waitForTimeout(400);
     expect((await state(page)).tick).toBe(s1.tick);
+    // the ball rolled in with POWER, but the rolling/wind sound doesn't carry on behind the card
+    expect(s1.rollLevel).toBe(0);
+    expect((await state(page)).rollLevel).toBe(0);
     // the scene: two islands to tap, drawn by the shared renderer
     expect(await page.locator('[data-testid="lgate-scene"] svg.wwm-scene').count()).toBe(1);
     expect(await page.getAttribute('[data-testid="lgate-choice-a"]', 'aria-label')).toBe('Island A: 2 gems');

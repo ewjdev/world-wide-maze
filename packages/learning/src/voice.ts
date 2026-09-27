@@ -39,6 +39,8 @@ export interface VoicePlayer {
 }
 
 const MS_PER_WORD = 420;
+/** 1 ms of silence (a valid 44-byte WAV) for unlocking audio on the first tap. */
+const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=';
 
 /** The clip for a line is found by its exact text, so a line keeps its clip wherever it's used (Phase 22). */
 export function clipFor(clips: readonly VoiceClip[], line: ScriptLine): VoiceClip | undefined {
@@ -53,6 +55,7 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
   const failed = new Set<string>();
   const warmed = new Map<string, HTMLAudioElement>();
   let generation = 0;
+  let unlocked = false;
   let cancelCurrent: (() => void) | null = null;
 
   const url = (clip: VoiceClip) => `${base}${clip.hash}.mp3`;
@@ -213,17 +216,18 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
       options.onLine?.(null);
     },
     unlock() {
-      // never interrupt Pip: unlocking only matters before the first clip plays
-      if (!audio?.paused) return;
-      // a silent, gesture-initiated play unlocks this element for later programmatic plays (iOS Safari)
-      audio.muted = true;
+      // A gesture-initiated play of a tiny silent clip unlocks this element for later programmatic plays (iOS
+      // Safari). It never touches Pip's own clips: the element isn't muted, and the silent clip is paused only if
+      // it is still the one loaded, so a line that starts in the same tap ("Tap Pip to start") plays in full.
+      if (!audio || unlocked || audio.src) return;
+      unlocked = true;
+      audio.src = SILENT_WAV;
       void audio
         .play()
-        .catch(() => {})
-        .finally(() => {
-          audio.pause();
-          audio.muted = false;
-        });
+        .then(() => {
+          if (audio.src === SILENT_WAV) audio.pause();
+        })
+        .catch(() => {});
     },
     preload(lines) {
       if (typeof Audio === 'undefined') return;

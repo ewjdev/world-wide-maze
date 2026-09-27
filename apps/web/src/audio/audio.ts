@@ -238,6 +238,11 @@ export class AudioManager {
   #muted: boolean;
   #lastBump = 0;
   #roll: { src: AudioBufferSourceNode; gain: GainNode; filter: BiquadFilterNode } | null = null;
+  #rollLevel = 0;
+  /** The rolling loop's current target level, 0–1 (tests and debugging). */
+  get rollLevel(): number {
+    return this.#rollLevel;
+  }
   #music: { track: Bgm; timer: ReturnType<typeof setInterval>; nextAt: number; step: number } | null = null;
   #wantMusic: Bgm | null = null;
   #listeners = new Set<() => void>();
@@ -328,6 +333,7 @@ export class AudioManager {
 
   /** Rolling loop: pitch and volume by speed, silent in the air (E). */
   setRoll(speed: number, grounded: boolean): void {
+    this.#rollLevel = grounded ? Math.min(1, speed / 14) : 0;
     const ctx = this.#ctx;
     if (!ctx || !this.#master || ctx.state !== 'running') return;
     if (!this.#roll) {

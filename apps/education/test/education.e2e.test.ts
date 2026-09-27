@@ -941,4 +941,56 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await page.locator('#saved-state').textContent()).toContain('Using the original');
     await context.close();
   });
+
+  it('voices the introduction and the first question in full after "Tap Pip to start" (no unlock cut-off)', async () => {
+    // a real audio element this time: every clip is a 0.3 s silent WAV, so `ended` fires and the lines advance
+    const rate = 8000;
+    const samples = Math.round(rate * 0.3);
+    const wav = Buffer.alloc(44 + samples * 2);
+    wav.write('RIFF', 0);
+    wav.writeUInt32LE(36 + samples * 2, 4);
+    wav.write('WAVEfmt ', 8);
+    wav.writeUInt32LE(16, 16);
+    wav.writeUInt16LE(1, 20);
+    wav.writeUInt16LE(1, 22);
+    wav.writeUInt32LE(rate, 24);
+    wav.writeUInt32LE(rate * 2, 28);
+    wav.writeUInt16LE(2, 32);
+    wav.writeUInt16LE(16, 34);
+    wav.write('data', 36);
+    wav.writeUInt32LE(samples * 2, 40);
+    const context = await browser.newContext();
+    await context.addInitScript(() => {
+      const log: string[] = [];
+      Object.defineProperty(window, '__media', { value: log });
+      const proto = HTMLMediaElement.prototype;
+      const play = proto.play;
+      const pause = proto.pause;
+      proto.play = function (this: HTMLMediaElement) {
+        if (this.src.endsWith('.mp3')) log.push(`play ${this.src.split('/').pop()} muted=${this.muted}`);
+        return play.call(this);
+      };
+      proto.pause = function (this: HTMLMediaElement) {
+        if (this.src.endsWith('.mp3') && !this.ended) log.push(`pause ${this.src.split('/').pop()}`);
+        return pause.call(this);
+      };
+    });
+    await context.route('**/*.mp3', (route) =>
+      route.fulfill({ status: 200, contentType: 'audio/wav', body: wav }),
+    );
+    const page = await context.newPage();
+    await page.goto(`${base}/lessons/compare-groups/?seed=0`);
+    await page.locator('#pip-start').click();
+    const media = () => page.evaluate(() => (window as unknown as { __media: string[] }).__media);
+    // intro, prompt, callout: three clips in a row, each starting only after the previous one ended
+    await expect
+      .poll(async () => (await media()).filter((entry) => entry.startsWith('play')).length, {
+        timeout: 10_000,
+      })
+      .toBeGreaterThanOrEqual(3);
+    const log = await media();
+    expect(log.filter((entry) => entry.includes('muted=true'))).toEqual([]);
+    expect(log.filter((entry) => entry.startsWith('pause'))).toEqual([]);
+    await context.close();
+  });
 });
