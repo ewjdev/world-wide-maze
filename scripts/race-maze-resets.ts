@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Verify authored restart points select their intended physical layer. */
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -7,10 +8,9 @@ import { createRaceSimulation, type RaceCourse } from '../packages/race/src/inde
 const dir = resolve(import.meta.dirname, '../fixtures/race');
 let failed = 0;
 for (const entry of await readdir(dir, { withFileTypes: true })) {
-  if (!entry.isDirectory()) continue;
+  if (!entry.isDirectory() || !existsSync(resolve(dir, entry.name, 'course.json'))) continue;
   let course: RaceCourse;
   try {
-    await readFile(resolve(dir, entry.name, 'maze.json'));
     course = JSON.parse(await readFile(resolve(dir, entry.name, 'course.json'), 'utf8'));
   } catch {
     continue;

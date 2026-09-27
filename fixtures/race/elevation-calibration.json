@@ -1,0 +1,1541 @@
+{
+  "profile": {
+    "version": "elevation-v1",
+    "horizontalSpeedLimit": 48,
+    "gradeDeadband": 0.001,
+    "downhillDamping": 0.04,
+    "uphillDamping": 0.7,
+    "overspeedDamping": 1,
+    "momentumThreshold": 24,
+    "momentumBlendRange": 12,
+    "floorRestitution": 0,
+    "supportSeparationSpeed": 0.5,
+    "supportSelection": "compressive-impulse-v2"
+  },
+  "numericalTolerance": "Authored analytic profiles have a nominal maximum of 20 degrees. Float32 collider tessellation/contact normals have approximately 0.01 degree numerical variation at the boundary; maximumObservedGrade reports actual Rapier contact normals, not authored analytic grade.",
+  "limitations": "Calibration measures ordinary-input attainability and footprint, not human controllability. Long straight calibration ramps are not catalog courses. Phone max-tilt descent shows brief separation at sampled crest/contact transitions; keyboard descents remain supported. Turn envelope is the footprint to an 80-degree heading change under a 90-degree commanded turn, not a constant-radius turning claim.",
+  "method": "Fixed 120 Hz Rapier, ordinary bounded input (25 degree keyboard or 45 degree maximum phone tilt; explicit per-case field), no turbo and no injected pose or velocity. Calibration corridors are deliberately straight and are not catalog courses.",
+  "cases": [
+    {
+      "runM": 40,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 45.56243515016277,
+      "exitSpeed": 42.116615295429284,
+      "speedAtTenMetersAfterExit": 36.998573303235666,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.3642661184614714,
+      "minimumAnalyticCrestRadiusM": 27.474774194546224,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          160.0185089111328,
+          0.4949747323989868,
+          10
+        ],
+        "quat": [
+          2.324635204331571e-7,
+          -8.112589284792193e-7,
+          0.943045973777771,
+          0.33266234397888184
+        ],
+        "vel": [
+          11.61514663696289,
+          -0.17313191294670105,
+          -3.004092974379091e-8
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 10.213863372802734,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724555015563965,
+          "y": 10.20380973815918,
+          "speed": 7.268216133117676,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.229135513305664,
+          "y": 10.024653434753418,
+          "speed": 13.571166992187505,
+          "grade": -0.10967385833462848,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 40.096282958984375,
+          "y": 5.339467525482178,
+          "speed": 31.681602478027415,
+          "grade": -0.3642661184614714,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 73.75780487060547,
+          "y": 1.948338508605957,
+          "speed": 35.47277069092927,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 5,
+          "x": 99.28804779052734,
+          "y": 0.49314767122268677,
+          "speed": 18.63346099853707,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 6,
+          "x": 115.06144714355469,
+          "y": 0.49453097581863403,
+          "speed": 13.715145111084222,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 7,
+          "x": 127.95414733886719,
+          "y": 0.49485310912132263,
+          "speed": 12.231154441833521,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 8,
+          "x": 139.97793579101562,
+          "y": 0.4949423372745514,
+          "speed": 11.783573150634767,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 9,
+          "x": 151.7395477294922,
+          "y": 0.49496856331825256,
+          "speed": 11.648541450500488,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 80,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 45.78533172609865,
+      "exitSpeed": 42.88410949709635,
+      "speedAtTenMetersAfterExit": 37.74227905275235,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.36394277655113444,
+      "minimumAnalyticCrestRadiusM": 54.94954838909245,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          200.05320739746094,
+          0.49497443437576294,
+          10
+        ],
+        "quat": [
+          -6.749842782483029e-7,
+          -0.0000012979490975340013,
+          -0.2049591839313507,
+          -0.9787705540657043
+        ],
+        "vel": [
+          11.617278099060059,
+          -0.17313191294670105,
+          3.852660768188798e-8
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 19.919736862182617,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724553108215332,
+          "y": 19.909683227539062,
+          "speed": 7.268215179443359,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.212936401367188,
+          "y": 19.81671905517578,
+          "speed": 13.391036987304688,
+          "grade": -0.0572954220090104,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 39.77085494995117,
+          "y": 16.949960708618164,
+          "speed": 29.982276916503906,
+          "grade": -0.2674528473015919,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 70.19966125488281,
+          "y": 6.583836555480957,
+          "speed": 43.955230712937706,
+          "grade": -0.34188902346028577,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 106.74658966064453,
+          "y": 1.7387758493423462,
+          "speed": 39.480800628682736,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 6,
+          "x": 135.9901580810547,
+          "y": 0.4921318292617798,
+          "speed": 20.639226913456145,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 7,
+          "x": 152.939697265625,
+          "y": 0.49438753724098206,
+          "speed": 14.321320533752965,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 8,
+          "x": 166.18739318847656,
+          "y": 0.4948156476020813,
+          "speed": 12.4140186309815,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 9,
+          "x": 178.31809997558594,
+          "y": 0.49493154883384705,
+          "speed": 11.838678359985357,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 10,
+          "x": 190.11199951171875,
+          "y": 0.4949653744697571,
+          "speed": 11.665183067321777,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 120,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 45.924182891846456,
+      "exitSpeed": 43.356185913086726,
+      "speedAtTenMetersAfterExit": 38.110313415527884,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.3639595813130967,
+      "minimumAnalyticCrestRadiusM": 82.42432258363867,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          240.0385284423828,
+          0.49497413635253906,
+          10
+        ],
+        "quat": [
+          -7.7932116937518e-7,
+          -3.1719463322588126e-7,
+          0.22811025381088257,
+          0.973635196685791
+        ],
+        "vel": [
+          11.61846923828125,
+          -0.17313191294670105,
+          -7.022192605177224e-9
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 29.6256103515625,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724517822265625,
+          "y": 29.615556716918945,
+          "speed": 7.268188953399658,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.206144332885742,
+          "y": 29.5520076751709,
+          "speed": 13.332328796386719,
+          "grade": -0.03893214095772285,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 39.76940155029297,
+          "y": 27.506601333618164,
+          "speed": 29.135498046875,
+          "grade": -0.19813270368761043,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 69.28069305419922,
+          "y": 18.936153411865234,
+          "speed": 44.65841674804688,
+          "grade": -0.351509361377061,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 105.22378540039062,
+          "y": 6.420737266540527,
+          "speed": 44.31497573852708,
+          "grade": -0.30128315065230216,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 141.2963104248047,
+          "y": 0.8202818036079407,
+          "speed": 42.770904541016385,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 7,
+          "x": 173.28167724609375,
+          "y": 0.49078455567359924,
+          "speed": 22.3436069488527,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 8,
+          "x": 191.2317352294922,
+          "y": 0.49426016211509705,
+          "speed": 14.837347984313984,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 9,
+          "x": 204.7816162109375,
+          "y": 0.49478334188461304,
+          "speed": 12.569693565368656,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 10,
+          "x": 217.00335693359375,
+          "y": 0.4949222803115845,
+          "speed": 11.885618209838867,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 11,
+          "x": 228.82461547851562,
+          "y": 0.49496257305145264,
+          "speed": 11.679340362548828,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 180,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 46.906951904296875,
+      "exitSpeed": 43.75679779054351,
+      "speedAtTenMetersAfterExit": 38.42264556885885,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.3640008096274791,
+      "minimumAnalyticCrestRadiusM": 123.63648387545801,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          300.0121765136719,
+          0.49497389793395996,
+          10
+        ],
+        "quat": [
+          -3.9483043678956165e-7,
+          0.0000030095209240244003,
+          -0.266343891620636,
+          -0.9638780355453491
+        ],
+        "vel": [
+          11.619641304016113,
+          -0.17313191294670105,
+          3.202642773203479e-8
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 44.184417724609375,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724520683288574,
+          "y": 44.17436599731445,
+          "speed": 7.268197536468506,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.201522827148438,
+          "y": 44.13081741333008,
+          "speed": 13.28944206237793,
+          "grade": -0.02620059552961943,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 39.78839111328125,
+          "y": 42.702266693115234,
+          "speed": 28.4175968170166,
+          "grade": -0.14062892935258053,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 68.05398559570312,
+          "y": 36.50785446166992,
+          "speed": 44.98817443847656,
+          "grade": -0.28356622729623066,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 104.07302856445312,
+          "y": 24.508792877197266,
+          "speed": 46.481620788584046,
+          "grade": -0.3625369285524268,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 140.0413818359375,
+          "y": 11.817068099975586,
+          "speed": 46.14009094243447,
+          "grade": -0.32432861237906196,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 7,
+          "x": 175.9532012939453,
+          "y": 2.615304470062256,
+          "speed": 45.52722930910453,
+          "grade": -0.17000740693842353,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 8,
+          "x": 213.3614044189453,
+          "y": 1.3742783069610596,
+          "speed": 37.06468963624046,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 9,
+          "x": 239.69752502441406,
+          "y": 0.49293985962867737,
+          "speed": 19.183681488038882,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 10,
+          "x": 255.79342651367188,
+          "y": 0.49449220299720764,
+          "speed": 13.881270408630593,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 11,
+          "x": 268.7834777832031,
+          "y": 0.49484288692474365,
+          "speed": 12.281285285949728,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 12,
+          "x": 280.8365173339844,
+          "y": 0.494939386844635,
+          "speed": 11.798666000366213,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 13,
+          "x": 292.6070251464844,
+          "y": 0.4949676990509033,
+          "speed": 11.653117179870605,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 120,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": true,
+      "maxSpeed": 45.924182891846456,
+      "exitSpeed": 43.356185913086726,
+      "speedAtTenMetersAfterExit": 33.99687194824272,
+      "stopDistance": 25.482925415039062,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.3639595813130967,
+      "minimumAnalyticCrestRadiusM": 82.42432258363867,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          165.69769287109375,
+          0.499653697013855,
+          10
+        ],
+        "quat": [
+          -4.466686931436925e-8,
+          8.018920425456599e-7,
+          -0.97181236743927,
+          -0.23575574159622192
+        ],
+        "vel": [
+          0.9938135743141174,
+          0,
+          -1.7298086163464177e-7
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 29.6256103515625,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724517822265625,
+          "y": 29.615556716918945,
+          "speed": 7.268188953399658,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.206144332885742,
+          "y": 29.5520076751709,
+          "speed": 13.332328796386719,
+          "grade": -0.03893214095772285,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 39.76940155029297,
+          "y": 27.506601333618164,
+          "speed": 29.135498046875,
+          "grade": -0.19813270368761043,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 69.28069305419922,
+          "y": 18.936153411865234,
+          "speed": 44.65841674804688,
+          "grade": -0.351509361377061,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 105.22378540039062,
+          "y": 6.420737266540527,
+          "speed": 44.31497573852708,
+          "grade": -0.30128315065230216,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 141.29405212402344,
+          "y": 0.8196591138839722,
+          "speed": 42.51552581787185,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 7,
+          "x": 163.19683837890625,
+          "y": 0.4984034597873688,
+          "speed": 6.326922893524266,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 80,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": true,
+      "brake": false,
+      "maxSpeed": 12.628095626832973,
+      "exitSpeed": 12.248831748964815,
+      "speedAtTenMetersAfterExit": 11.813222885132166,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.36410554632279796,
+      "minimumAnalyticCrestRadiusM": 54.94954838909245,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          200.0057830810547,
+          19.906713485717773,
+          10.000001907348633
+        ],
+        "quat": [
+          -0.000003185207560818526,
+          0.00002031244002864696,
+          0.9786438941955566,
+          -0.20556293427944183
+        ],
+        "vel": [
+          11.590065002441406,
+          -0.17313191294670105,
+          2.5660815139438853e-10
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 0.507990837097168,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.7245512008667,
+          "y": 0.49793753027915955,
+          "speed": 7.268206596374512,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 22.938053131103516,
+          "y": 0.5725758075714111,
+          "speed": 11.141161918640137,
+          "grade": 0.04724285102656708,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 34.99917221069336,
+          "y": 2.2978808879852295,
+          "speed": 11.914958000183775,
+          "grade": 0.22432260475634294,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 45.75157928466797,
+          "y": 5.2601799964904785,
+          "speed": 9.449940681458258,
+          "grade": 0.31918674544635944,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 53.89823532104492,
+          "y": 8.030608177185059,
+          "speed": 7.033007144928572,
+          "grade": 0.3550244623977303,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 60.05193328857422,
+          "y": 10.255455017089844,
+          "speed": 5.482533933328449,
+          "grade": 0.3639427764453362,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 7,
+          "x": 65.08142852783203,
+          "y": 12.075362205505371,
+          "speed": 4.741948128197203,
+          "grade": 0.3581085033417902,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 8,
+          "x": 69.69676971435547,
+          "y": 13.693367004394531,
+          "speed": 4.62337923061039,
+          "grade": 0.3418890234524347,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 9,
+          "x": 74.45668029785156,
+          "y": 15.26151180267334,
+          "speed": 5.022470474268368,
+          "grade": 0.31529412485102615,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 10,
+          "x": 79.88744354248047,
+          "y": 16.86428451538086,
+          "speed": 5.980700969699745,
+          "grade": 0.2729709487493316,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 11,
+          "x": 86.65686798095703,
+          "y": 18.4791259765625,
+          "speed": 7.75196361541836,
+          "grade": 0.20340373704984177,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 12,
+          "x": 95.85811614990234,
+          "y": 19.75810432434082,
+          "speed": 10.94084644317642,
+          "grade": 0.07691816110960058,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 13,
+          "x": 107.85066986083984,
+          "y": 19.906660079956055,
+          "speed": 11.870880126953647,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 14,
+          "x": 119.663330078125,
+          "y": 19.906713485717773,
+          "speed": 11.674872398376511,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 15,
+          "x": 131.361328125,
+          "y": 19.906713485717773,
+          "speed": 11.615696907043459,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 16,
+          "x": 143.02432250976562,
+          "y": 19.906713485717773,
+          "speed": 11.597779273986816,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 17,
+          "x": 154.67745971679688,
+          "y": 19.906713485717773,
+          "speed": 11.592391014099121,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 18,
+          "x": 166.3255615234375,
+          "y": 19.906713485717773,
+          "speed": 11.590757369995117,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 19,
+          "x": 177.972900390625,
+          "y": 19.906713485717773,
+          "speed": 11.590258598327637,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 20,
+          "x": 189.6202392578125,
+          "y": 19.906713485717773,
+          "speed": 11.590100288391113,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 80,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 12,
+      "climbing": true,
+      "brake": false,
+      "maxSpeed": 14.93932724005362,
+      "exitSpeed": 14.768786430433485,
+      "speedAtTenMetersAfterExit": 12.950649261489364,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.25381292525038746,
+      "minimumAnalyticCrestRadiusM": 94.09260218956909,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          200.06048583984375,
+          11.83132553100586,
+          10.00016975402832
+        ],
+        "quat": [
+          0.000014394538084161468,
+          -0.000008896487997844815,
+          -0.19441048800945282,
+          -0.980920135974884
+        ],
+        "vel": [
+          11.590256690979004,
+          -0.17313191294670105,
+          2.2186354975417544e-9
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 0.507990837097168,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.7245512008667,
+          "y": 0.49793753027915955,
+          "speed": 7.268206596374512,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 22.947608947753906,
+          "y": 0.5404878258705139,
+          "speed": 11.233386039733887,
+          "grade": 0.027589558748863728,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 35.74976348876953,
+          "y": 1.6437854766845703,
+          "speed": 13.50057792663576,
+          "grade": 0.13488549435132635,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 48.989173889160156,
+          "y": 3.890775680541992,
+          "speed": 12.742052078247161,
+          "grade": 0.1963468301811505,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 61.13784408569336,
+          "y": 6.415623188018799,
+          "speed": 11.627882004860657,
+          "grade": 0.21244583801885342,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 72.49066162109375,
+          "y": 8.740798950195312,
+          "speed": 11.248193742581792,
+          "grade": 0.19265347601572802,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 7,
+          "x": 84.01726531982422,
+          "y": 10.658736228942871,
+          "speed": 12.011323929231974,
+          "grade": 0.1348935355274105,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 8,
+          "x": 97.02423858642578,
+          "y": 11.785563468933105,
+          "speed": 14.234784126363317,
+          "grade": 0.03346056601802109,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 9,
+          "x": 110.96884155273438,
+          "y": 11.831074714660645,
+          "speed": 12.846181869519516,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 10,
+          "x": 123.35261535644531,
+          "y": 11.831256866455078,
+          "speed": 11.969029426575945,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 11,
+          "x": 135.22271728515625,
+          "y": 11.831304550170898,
+          "speed": 11.704493522644157,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 12,
+          "x": 146.9378662109375,
+          "y": 11.831321716308594,
+          "speed": 11.624668121337901,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 13,
+          "x": 158.60650634765625,
+          "y": 11.831323623657227,
+          "speed": 11.600531578063965,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 14,
+          "x": 170.2611541748047,
+          "y": 11.831324577331543,
+          "speed": 11.59323787689209,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 15,
+          "x": 181.91004943847656,
+          "y": 11.831324577331543,
+          "speed": 11.591038703918457,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 16,
+          "x": 193.55738830566406,
+          "y": 11.83132553100586,
+          "speed": 11.590391159057617,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 80,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": true,
+      "restartSpeed": 3.2963733673473627,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": true,
+      "brake": false,
+      "maxSpeed": 12.66264152526896,
+      "exitSpeed": 12.326278686523935,
+      "speedAtTenMetersAfterExit": 11.840200424194407,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.36410570207860943,
+      "minimumAnalyticCrestRadiusM": 54.94954838909245,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          200.0722198486328,
+          19.906713485717773,
+          10.000001907348633
+        ],
+        "quat": [
+          0.000023233429601532407,
+          0.000016155370758497156,
+          0.9921558499336243,
+          -0.12500736117362976
+        ],
+        "vel": [
+          11.590069770812988,
+          -0.17313191294670105,
+          -2.5446961204877994e-10
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 0.507990837097168,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.7245512008667,
+          "y": 0.49793753027915955,
+          "speed": 7.268206596374512,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 22.938053131103516,
+          "y": 0.5725758075714111,
+          "speed": 11.141161918640137,
+          "grade": 0.04724285102656708,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 34.99917221069336,
+          "y": 2.2978808879852295,
+          "speed": 11.914958000183775,
+          "grade": 0.22432260475634294,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 45.75157928466797,
+          "y": 5.2601799964904785,
+          "speed": 9.449940681458258,
+          "grade": 0.31918674544635944,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 53.89823532104492,
+          "y": 8.030608177185059,
+          "speed": 7.033007144928572,
+          "grade": 0.3550244623977303,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 60.05190658569336,
+          "y": 10.255446434020996,
+          "speed": 5.453850270909262,
+          "grade": 0.36394277644508827,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 7,
+          "x": 60.17844009399414,
+          "y": 10.302326202392578,
+          "speed": 3.3518750667940744,
+          "grade": -0.36393931641708915,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 8,
+          "x": 56.414878845214844,
+          "y": 8.93560791015625,
+          "speed": 2.6990761756947257,
+          "grade": -0.36150990644104086,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 9,
+          "x": 55.1375846862793,
+          "y": 8.475722312927246,
+          "speed": 0.14268441504993548,
+          "grade": 0.35940294644933735,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 10,
+          "x": 56.375732421875,
+          "y": 8.921585083007812,
+          "speed": 2.086097478867698,
+          "grade": 0.36150990644152015,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 11,
+          "x": 58.98615646362305,
+          "y": 9.86843490600586,
+          "speed": 3.0226771831514534,
+          "grade": 0.3637826559646268,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 12,
+          "x": 62.23707962036133,
+          "y": 11.050490379333496,
+          "speed": 3.4697775840759437,
+          "grade": 0.36296997817379417,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 13,
+          "x": 65.84262084960938,
+          "y": 12.347321510314941,
+          "speed": 3.7803001403808856,
+          "grade": 0.35502446239775776,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 14,
+          "x": 69.78243255615234,
+          "y": 13.72283935546875,
+          "speed": 4.164469718933141,
+          "grade": 0.3418890234606491,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 15,
+          "x": 74.20748901367188,
+          "y": 15.1831693649292,
+          "speed": 4.770437717437876,
+          "grade": 0.3191867454463756,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 16,
+          "x": 79.42855072021484,
+          "y": 16.73836326599121,
+          "speed": 5.787189960479805,
+          "grade": 0.2783219499446817,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 17,
+          "x": 85.99100494384766,
+          "y": 18.342573165893555,
+          "speed": 7.515162467957382,
+          "grade": 0.2105377502907672,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 18,
+          "x": 94.8859634399414,
+          "y": 19.680866241455078,
+          "speed": 10.560515403747756,
+          "grade": 0.08648451586953526,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 19,
+          "x": 106.79020690917969,
+          "y": 19.906658172607422,
+          "speed": 11.941367149353166,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 20,
+          "x": 118.6441650390625,
+          "y": 19.906709671020508,
+          "speed": 11.696164131164563,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 21,
+          "x": 130.3545379638672,
+          "y": 19.906713485717773,
+          "speed": 11.622124671936035,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 22,
+          "x": 142.02157592773438,
+          "y": 19.906713485717773,
+          "speed": 11.599720001220703,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 23,
+          "x": 153.67572021484375,
+          "y": 19.906713485717773,
+          "speed": 11.592967987060547,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 24,
+          "x": 165.32432556152344,
+          "y": 19.906713485717773,
+          "speed": 11.590920448303223,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 25,
+          "x": 176.97166442871094,
+          "y": 19.906713485717773,
+          "speed": 11.590303421020508,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 26,
+          "x": 188.61900329589844,
+          "y": 19.906713485717773,
+          "speed": 11.590103149414062,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 80,
+      "inputTiltDegrees": 45,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": false,
+      "turnEnvelope": null,
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 48.00000000008808,
+      "exitSpeed": 43.45838546755092,
+      "speedAtTenMetersAfterExit": 41.16285324098091,
+      "stopDistance": null,
+      "unsupportedRampTicks": 8,
+      "longestAirSeconds": 0.06666666666666667,
+      "maximumObservedGrade": 0.3641048283236003,
+      "minimumAnalyticCrestRadiusM": 54.94954838909245,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          200.04103088378906,
+          0.49285510182380676,
+          10
+        ],
+        "quat": [
+          -0.0000015466972627109499,
+          -0.0000016098083506221883,
+          -0.8653795123100281,
+          -0.5011169910430908
+        ],
+        "vel": [
+          19.742477416992188,
+          -0.16321080923080444,
+          5.158211138223123e-7
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000072479248047,
+          "y": 19.919736862182617,
+          "speed": 0.013809267431497574,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 16.359973907470703,
+          "y": 19.907608032226562,
+          "speed": 12.282220840454102,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 32.86069107055664,
+          "y": 18.573101043701172,
+          "speed": 30.330553054809585,
+          "grade": -0.18864385712519752,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 65.1593246459961,
+          "y": 8.357133865356445,
+          "speed": 48.00000000005532,
+          "grade": -0.3594029466180392,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 100.9410629272461,
+          "y": 0.7448373436927795,
+          "speed": 43.281726837179214,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 5,
+          "x": 137.84524536132812,
+          "y": 0.48749077320098877,
+          "speed": 29.01897239685399,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 6,
+          "x": 163.20111083984375,
+          "y": 0.49077171087265015,
+          "speed": 22.466167449951588,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 7,
+          "x": 184.47862243652344,
+          "y": 0.492449015378952,
+          "speed": 20.303913116455117,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    },
+    {
+      "runM": 120,
+      "inputTiltDegrees": 24.980959867703895,
+      "restart": false,
+      "restartSpeed": null,
+      "turn": true,
+      "turnEnvelope": {
+        "seconds": 2.6416666666666666,
+        "forwardMeters": 36.70661926269531,
+        "lateralMeters": 22.17197036743164,
+        "finalSpeed": 11.28311308337079
+      },
+      "maximumAngleDegrees": 20,
+      "climbing": false,
+      "brake": false,
+      "maxSpeed": 45.924182891846456,
+      "exitSpeed": 43.356185913086726,
+      "speedAtTenMetersAfterExit": 33.50798833171516,
+      "stopDistance": null,
+      "unsupportedRampTicks": 0,
+      "longestAirSeconds": 0,
+      "maximumObservedGrade": 0.3639595813130967,
+      "minimumAnalyticCrestRadiusM": 82.42432258363867,
+      "reachedExit": true,
+      "failed": false,
+      "final": {
+        "pos": [
+          176.92138671875,
+          0.49503374099731445,
+          32.17197036743164
+        ],
+        "quat": [
+          -0.3324437737464905,
+          -0.4918401539325714,
+          0.34533730149269104,
+          0.7268538475036621
+        ],
+        "vel": [
+          1.953067660331726,
+          -0.17313191294670105,
+          11.11279296875
+        ],
+        "grounded": true
+      },
+      "samples": [
+        {
+          "seconds": 0,
+          "x": 10.000040054321289,
+          "y": 29.6256103515625,
+          "speed": 0.00767101626843214,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 1,
+          "x": 13.724517822265625,
+          "y": 29.615556716918945,
+          "speed": 7.268188953399658,
+          "grade": 0,
+          "support": "island:0"
+        },
+        {
+          "seconds": 2,
+          "x": 23.206144332885742,
+          "y": 29.5520076751709,
+          "speed": 13.332328796386719,
+          "grade": -0.03893214095772285,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 3,
+          "x": 39.76940155029297,
+          "y": 27.506601333618164,
+          "speed": 29.135498046875,
+          "grade": -0.19813270368761043,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 4,
+          "x": 69.28069305419922,
+          "y": 18.936153411865234,
+          "speed": 44.65841674804688,
+          "grade": -0.351509361377061,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 5,
+          "x": 105.22378540039062,
+          "y": 6.420737266540527,
+          "speed": 44.31497573852708,
+          "grade": -0.30128315065230216,
+          "support": "bridge:0"
+        },
+        {
+          "seconds": 6,
+          "x": 141.28977966308594,
+          "y": 0.8202818036079407,
+          "speed": 42.292833007418096,
+          "grade": 0,
+          "support": null
+        },
+        {
+          "seconds": 7,
+          "x": 167.19615173339844,
+          "y": 0.4938119649887085,
+          "speed": 15.870606362089097,
+          "grade": 0,
+          "support": "island:1"
+        },
+        {
+          "seconds": 8,
+          "x": 175.1297607421875,
+          "y": 0.4950072169303894,
+          "speed": 11.352226512109379,
+          "grade": 0,
+          "support": "island:1"
+        }
+      ]
+    }
+  ]
+}

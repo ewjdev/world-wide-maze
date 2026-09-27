@@ -1,11 +1,11 @@
 {
   "schema": "wwm.race-course/1",
-  "courseId": "bbe4412705eb67bfeb76825f1942811f477575e92a9fdf0adde077d247453634",
+  "courseId": "1e4da3a7712306717a20317ad62ab56a74d8485b6e7fff73a23e9049d99d0c52",
   "title": "Island Leap",
   "description": "Choose a flowing ground line, link short hops, or aim a long leap. Carry your exit speed through the final turn.",
   "stage": {
     "schema": "wwm.stage/2",
-    "stageId": "bbe4412705eb67bfeb76825f1942811f477575e92a9fdf0adde077d247453634",
+    "stageId": "1e4da3a7712306717a20317ad62ab56a74d8485b6e7fff73a23e9049d99d0c52",
     "builderVersion": "1.2.0",
     "seed": 24,
     "difficulty": "normal",
@@ -75,7 +75,7 @@
           [63, 182]
         ],
         "holes": [],
-        "level": 10,
+        "level": 10.764115,
         "guardrails": [
           [
             [827, 342],
@@ -157,7 +157,7 @@
           [1014, 197]
         ],
         "holes": [],
-        "level": 11,
+        "level": 11.830782,
         "guardrails": [],
         "restartPoints": [[1045, 260]],
         "sourceElementIds": [1]
@@ -207,7 +207,7 @@
           [1185, 221]
         ],
         "holes": [],
-        "level": 10,
+        "level": 9.151372,
         "guardrails": [],
         "restartPoints": [[1230, 275]],
         "sourceElementIds": [2]
@@ -257,7 +257,7 @@
           [1305, 131]
         ],
         "holes": [],
-        "level": 10,
+        "level": 7.150452,
         "guardrails": [],
         "restartPoints": [[1420, 215]],
         "sourceElementIds": [3]
@@ -299,7 +299,7 @@
           [849, 410]
         ],
         "holes": [],
-        "level": 10,
+        "level": 9.934485,
         "guardrails": [
           [[913, 408], [1040, 408]],
           [
@@ -360,7 +360,7 @@
           [1194, 482]
         ],
         "holes": [],
-        "level": 10,
+        "level": 9.283785,
         "guardrails": [
           [[1262, 480], [1325, 480]],
           [
@@ -430,7 +430,7 @@
           [1194, 380]
         ],
         "holes": [],
-        "level": 10.5,
+        "level": 9.743965,
         "guardrails": [],
         "restartPoints": [[1230, 400]],
         "sourceElementIds": [8]
@@ -480,7 +480,7 @@
           [1104, 182]
         ],
         "holes": [],
-        "level": 9,
+        "level": 10.897042,
         "guardrails": [],
         "restartPoints": [[1130, 265]],
         "sourceElementIds": [9]
@@ -494,9 +494,10 @@
         "a": [920, 260],
         "b": [1010, 260],
         "width": 70,
-        "levelA": 10,
-        "levelB": 11,
-        "type": "ramp"
+        "levelA": 10.764115,
+        "levelB": 11.830782,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 1,
@@ -505,9 +506,10 @@
         "a": [1230, 330],
         "b": [1230, 380],
         "width": 56,
-        "levelA": 10,
-        "levelB": 10.5,
-        "type": "ramp"
+        "levelA": 9.151372,
+        "levelB": 9.743965,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 2,
@@ -516,9 +518,10 @@
         "a": [1230, 420],
         "b": [1230, 480],
         "width": 56,
-        "levelA": 10.5,
-        "levelB": 10,
-        "type": "ramp"
+        "levelA": 9.743965,
+        "levelB": 9.283785,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 3,
@@ -527,9 +530,10 @@
         "a": [870, 340],
         "b": [870, 410],
         "width": 78,
-        "levelA": 10,
-        "levelB": 10,
-        "type": "flat"
+        "levelA": 10.764115,
+        "levelB": 9.934485,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 4,
@@ -538,10 +542,11 @@
         "a": [1110, 475],
         "b": [1190, 505],
         "width": 56,
-        "control": [1140, 555],
-        "levelA": 10,
-        "levelB": 10,
-        "type": "flat"
+        "control": [1144.1179863296343, 528.2330888573774],
+        "levelA": 9.934485,
+        "levelB": 9.283785,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 5,
@@ -550,9 +555,10 @@
         "a": [1360, 300],
         "b": [1360, 480],
         "width": 62,
-        "levelA": 10,
-        "levelB": 10,
-        "type": "flat"
+        "levelA": 7.150452,
+        "levelB": 9.283785,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       },
       {
         "id": 6,
@@ -561,9 +567,10 @@
         "a": [1130, 340],
         "b": [1080, 404],
         "width": 56,
-        "levelA": 9,
-        "levelB": 10,
-        "type": "ramp"
+        "levelA": 10.897042,
+        "levelB": 9.934485,
+        "type": "ramp",
+        "elevationProfile": "smoothstep"
       }
     ],
     "elevators": [],
@@ -592,7 +599,7 @@
   "gates": [
     {
       "id": "choose-your-line",
-      "center": [59.25925925925926, 10.5, 23.703703703703702],
+      "center": [59.25925925925926, 11.264115, 23.703703703703702],
       "normal": [1, 0],
       "halfWidth": 13.333333333333334,
       "halfHeight": 7,
@@ -600,7 +607,7 @@
     },
     {
       "id": "routes-merge",
-      "center": [101.85185185185185, 10.5, 40.74074074074074],
+      "center": [101.85185185185185, 9.783785, 40.74074074074074],
       "normal": [0, 1],
       "halfWidth": 12.592592592592593,
       "halfHeight": 7,
@@ -608,7 +615,7 @@
     },
     {
       "id": "finish",
-      "center": [101.85185185185185, 10.5, 51.851851851851855],
+      "center": [101.85185185185185, 9.783785, 51.851851851851855],
       "normal": [0, 1],
       "halfWidth": 12.592592592592593,
       "halfHeight": 7,
@@ -627,7 +634,7 @@
         "id": "leap",
         "gate": {
           "id": "launch-lip",
-          "center": [79.25925925925925, 11.5, 19.25925925925926],
+          "center": [79.25925925925925, 12.330782, 19.25925925925926],
           "normal": [1, 0],
           "halfWidth": 2.1481481481481484,
           "halfHeight": 1,
@@ -641,7 +648,7 @@
         "id": "near-hop",
         "gate": {
           "id": "near-hop-lip",
-          "center": [91.11111111111111, 11, 30.74074074074074],
+          "center": [91.11111111111111, 10.243965, 30.74074074074074],
           "normal": [0, 1],
           "halfWidth": 2.814814814814815,
           "halfHeight": 1,
@@ -653,7 +660,7 @@
       }
     ]
   },
-  "generatorVersion": "1.2.0",
+  "generatorVersion": "race-elevation/1",
   "seed": 24,
   "provenance": {
     "sourceHash": "eda8fe436e06ebff981877a198966c460cff0184b7c759898a366c4cadb30861",
@@ -662,5 +669,6 @@
   "validation": {
     "valid": true,
     "extractedIslands": 8
-  }
+  },
+  "physicsProfile": "elevation-v1"
 }

@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.5`** (curved Race courses and life inventory, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.6`** (Race elevation and charge eligibility, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -507,3 +507,14 @@ The optional `RaceCourse.stunts` contract and `RaceInputSample.turbo` live in `@
 Optional bridge `control`, `bank` and `rails` fields describe a shared tessellated surface for rendering and physics. Directed `StageData.flightLinks` describe authored jump reachability without adding walkable colliders. Layered height queries preserve lower overpass slabs.
 
 `RaceState` adds optional lives/maxLives and an exhausted phase; its boost payload includes stored turboCharges. Every uninterrupted 360 ticks at qualifying cruise speed banks one charge, including turns and flight. A fresh request consumes one effective boost. Falls and manual recovery deduct one stored turbo (floored at zero) and one of three lives; the fall/lost pair deducts once. Recovery preserves remaining stock, zero lives halts the attempt, and retry starts fresh. Current Race replay compatibility uses base rules v3 / stunt rules v4; prior rules are not replayed as new runs.
+
+
+### Phase 29 Race elevation and momentum
+
+`Bridge.elevationProfile?: 'smoothstep'` is a structural contract in TypeScript and Zod. At normalized horizontal arc distance u, height interpolates with `u*u*(3-2*u)`; absence preserves linear height. The shared surface is selected for any profile, curve or bank in collision, rendering and camera heightfields. Race validation uses an explicit caller policy, never a stage-supplied exemption: local maximum grade (including analytic centerline maximum and actual top triangles with banking) must be at most tan(20°). Float32 collider triangles are checked separately with a 0.01° numerical tolerance; authored geometry has no added angular allowance. Mean grades below tan(5°) require at most 4 m horizontal arc length. Brief eased endpoints are part of the ramp profile, not separate long shallow connectors. Default validation retains the original slope bound.
+
+`RaceCourse.physicsProfile?: 'elevation-v1'` selects trusted Race physics and timed-charge rules. Unknown profiles reject. Profile geometry, course identity, physics fingerprint and rules version must agree for a ghost to be eligible. Original/Education continue to use their unchanged default simulation path. Beta rollout has no archive UI, data migration or rollback infrastructure; incompatible records are not compared with new courses.
+
+Timed turbo charging requires grounded qualifying-speed travel on a non-descending support surface. Actual contact normal projected along horizontal velocity identifies descent, with the small numerical grade deadband defined by the versioned physics profile. Downhill or airborne travel resets partial charge but preserves stock; one effective button press can still spend a stored charge. Existing landing speed rewards are separate from timed charges. Falls retain the one-charge/one-life penalty. Optional `RaceState.boost.chargingReason` reports `charging`, `slow`, `downhill`, `airborne`, `recovering` or `disabled` to desktop/phone views.
+
+The new Race profile permits downhill momentum up to 48 m/s horizontal speed, retains vertical airborne motion, and lets excess momentum decay after a descent. Existing turbo impulse ceilings remain 24/26 m/s; pressing turbo at higher terrain speed does not consume a charge. Calibration evidence pins the profile parameters and attainable speed/braking envelope. The actual resolved profile participates in replay compatibility.

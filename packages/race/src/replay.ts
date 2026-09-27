@@ -13,7 +13,10 @@ export async function replayRace(
 ): Promise<RaceGhostTrack> {
   if (
     !validateAttempt(attempt) ||
-    !compatible(attempt.compatibility, makeCompatibility(course.courseId, !!course.stunts))
+    !compatible(
+      attempt.compatibility,
+      makeCompatibility(course.courseId, !!course.stunts, course.physicsProfile),
+    )
   )
     throw new Error('Incompatible or malformed Race attempt');
   const gateErrors = validateGates(course.gates);

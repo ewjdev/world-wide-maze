@@ -4,7 +4,9 @@ These are owned HTML pages captured with the same Playwright `capturePage` pipel
 
 Each directory contains source `index.html`, original `capture.json` and `texture.png`, an `authoring.json` mapping stable section IDs to measured centers and captured element IDs, the frozen `course.json`, solver trace/report, exact solver inputs, and Race reducer/replay evidence.
 
-Reproduce from owned HTML:
+The current beta adds an explicit elevation-design pass after base extraction. See [elevation review](elevation-review/README.md) for the complete rebuild sequence and all fourteen 2D maps. Base commands below must be followed by `race-elevation-build.ts` before final verification.
+
+Reproduce base geometry from owned HTML:
 
 ```sh
 node scripts/race-capture.ts
@@ -24,9 +26,9 @@ The Race builder extracts screenshot/DOM terrain before selecting topology. It v
 
 | Course | Islands | Solver finish | Race gate finish | Falls / jumps |
 | --- | ---: | ---: | ---: | ---: |
-| Flow Sprint | 9 | 31.892 s | 3802 ticks / 31.683 s | 0 / 0 |
-| Switchback | 9 | 32.900 s | 3922 ticks / 32.683 s | 0 / 0 |
-| Longline | 8 | 28.483 s | 3403 ticks / 28.358 s | 0 / 0 |
+| Flow Sprint | 9 | see solver report | 2974 ticks / 24.783 s | 0 / 0 |
+| Switchback | 9 | see solver report | 3006 ticks / 25.050 s | 0 / 0 |
+| Longline | 8 | see solver report | 2561 ticks / 21.342 s | 0 / 0 |
 
 Solver completion uses the ordinary goal sensor just beyond Race's independent finish plane, explaining the small time difference. For a Race replay, stop input consumption at the Race finish tick. `race-verify.ts` does exactly this and proves all sector/finish ticks again through `replayRace` in a second physics simulation.
 
@@ -47,7 +49,7 @@ node scripts/race-maze-report.ts
 
 Each maze owns `review.md`, per-route ordinary inputs and traces, exact-replay reports, and screenshots. `review.html` is the consolidated screenshot gallery; `maze-verification.json` is its identity-checked summary. The browser verifier compares final pose and complete checkpoint progress to the independent physics run and rejects stale course identities. It suppresses Vite HMR during a run so another course rebuild cannot reset the test.
 
-Rail-free bridges are explicit. Curved/banked meshes share geometry with colliders; Sky Weave adds a verified crossing with four metres between deck tops. Physical ramp lips retain the existing automatic upward assist. Turbo now stacks without an inventory cap: each uninterrupted 360 ticks at the course cruise speed earns one charge, including turning and airborne travel. A fresh press spends one charge for an impulse; at the speed cap the charge is retained. These baseline maze runs bank charges but do not spend them. Timing is a scripted feasibility baseline, not a claim of optimal routes or practiced human times. Catch recovery, human difficulty and progressive risk require further playtesting as noted in each review.
+Rail-free bridges are explicit. Curved/banked meshes share geometry with colliders; Sky Weave adds a verified crossing with four metres between deck tops. Physical ramp lips retain the existing automatic upward assist. Downhill and airborne travel reset partial charging but preserve stored turbo. Race elevation enables terrain momentum up to 48 m/s, with local ramp grades limited to 20° and sub-5° connectors limited to 4 m. Turbo now stacks without an inventory cap: each uninterrupted 360 ticks at the course cruise speed earns one charge, while grounded on level or uphill terrain, including turns. A fresh press spends one charge for an impulse; at the speed cap the charge is retained. These baseline maze runs bank charges but do not spend them. Timing is a scripted feasibility baseline, not a claim of optimal routes or practiced human times. Catch recovery, human difficulty and progressive risk require further playtesting as noted in each review.
 
 ## Straightaways, turbo stacks and lives
 

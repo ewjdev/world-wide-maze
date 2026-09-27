@@ -126,6 +126,8 @@ export interface Bridge {
   control?: Vec2;
   /** Peak crossfall in radians (±0.35); smoothly tapers to zero at both mouths. */
   bank?: number;
+  /** Optional smooth vertical transition over normalized horizontal arc length. */
+  elevationProfile?: 'smoothstep';
   /** Side rails default to enabled; race bridges may explicitly omit them. */
   rails?: boolean;
   type: BridgeType; // 'ramp' iff levelA ≠ levelB
@@ -359,6 +361,7 @@ export interface RaceState {
     ready: boolean;
     chargeTicks: number;
     chargeRequired: number;
+    chargingReason?: 'charging' | 'slow' | 'downhill' | 'airborne' | 'recovering' | 'disabled';
     turboTicks: number;
     turboCharges?: number;
   };

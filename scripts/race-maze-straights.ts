@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Audit playable authored routes: a long straight exceeds 24m before accumulating a 20deg turn. */
 import { readdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -10,7 +11,12 @@ const arg = process.argv.indexOf('--slug'),
 const turn = (20 * Math.PI) / 180;
 let failures = 0;
 for (const entry of await readdir(root, { withFileTypes: true })) {
-  if (!entry.isDirectory() || (slug && entry.name !== slug)) continue;
+  if (
+    !entry.isDirectory() ||
+    !existsSync(resolve(root, entry.name, 'course.json')) ||
+    (slug && entry.name !== slug)
+  )
+    continue;
   const dir = resolve(root, entry.name);
   const course: RaceCourse = JSON.parse(await readFile(resolve(dir, 'course.json'), 'utf8'));
   const limitMetres = 3 * (course.stunts?.cruiseSpeed ?? 8);

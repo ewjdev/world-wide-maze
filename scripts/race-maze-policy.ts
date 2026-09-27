@@ -25,8 +25,12 @@ export interface MazeRoutePoints {
   defaultRoute: string;
   routes: MazeRoute[];
 }
-export function createMazePolicy(route: MazeRoute, options: { targetSpeed?: number } = {}) {
+export function createMazePolicy(
+  route: MazeRoute,
+  options: { targetSpeed?: number; elevation?: boolean } = {},
+) {
   let waypoint = 0;
+  let launches = 0;
   const speedLimit = options.targetSpeed ?? route.targetSpeed ?? 10;
   const tilt = (acceleration: number) =>
     Math.asin(Math.max(-Math.sin(0.436), Math.min(Math.sin(0.436), acceleration / ((46.3 * 5) / 7))));
@@ -38,11 +42,20 @@ export function createMazePolicy(route: MazeRoute, options: { targetSpeed?: numb
     ball: BallState;
     mechanics: RaceMechanics;
   }): RaceInputSample => {
+    if (mechanics.launches > launches) {
+      launches = mechanics.launches;
+      if (route.points[waypoint]?.id?.endsWith('-lip')) waypoint++;
+    }
     let target = route.points[waypoint];
     if (!target) throw new Error(`Empty route ${route.id}`);
     let dx = target.x / PX_PER_METER - ball.pos[0];
     let dz = target.z / PX_PER_METER - ball.pos[2];
-    if (Math.hypot(dx, dz) < (target.radius ?? 0.65) && waypoint < route.points.length - 1) {
+    const previous = route.points[waypoint - 1];
+    const px = previous ? (target.x - previous.x) / PX_PER_METER : 0;
+    const pz = previous ? (target.z - previous.z) / PX_PER_METER : 0;
+    const passed =
+      options.elevation && !target.launch && previous && dx * px + dz * pz < 0 && Math.hypot(dx, dz) < 1.5;
+    if ((Math.hypot(dx, dz) < (target.radius ?? 0.65) || passed) && waypoint < route.points.length - 1) {
       target = route.points[++waypoint];
       dx = target.x / PX_PER_METER - ball.pos[0];
       dz = target.z / PX_PER_METER - ball.pos[2];
@@ -62,9 +75,18 @@ export function createMazePolicy(route: MazeRoute, options: { targetSpeed?: numb
     const speed = target.launch ? requested : Math.min(requested, Math.sqrt(cornerSpeed ** 2 + 9 * distance));
     const vx = (dx / distance) * speed;
     const vz = (dz / distance) * speed;
+    const horizontal = Math.hypot(ball.vel[0], ball.vel[2]);
+    const downhill = options.elevation && mechanics.chargingReason === 'downhill';
+    const damping = downhill ? 0.04 : 1.2;
+    // Compensate observed rolling slope while still issuing only bounded player tilt.
+    // Airborne trajectories receive no artificial ground-normal assumption.
+    const gravity =
+      options.elevation && ball.grounded && horizontal > 0.5
+        ? (((-46.3 * 5) / 7) * ball.vel[1]) / (horizontal * horizontal + ball.vel[1] * ball.vel[1])
+        : 0;
     return {
-      tiltX: tilt(4 * (vx - ball.vel[0]) + 1.2 * vx),
-      tiltZ: tilt(-4 * (vz - ball.vel[2]) - 1.2 * vz),
+      tiltX: tilt(4 * (vx - ball.vel[0]) + damping * vx - gravity * ball.vel[0]),
+      tiltZ: tilt(-4 * (vz - ball.vel[2]) - damping * vz + gravity * ball.vel[2]),
       frameYaw: 0,
       power: true,
       jump: false,

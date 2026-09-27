@@ -6,18 +6,28 @@ const harness = vi.hoisted(() => ({
   ball: { pos: [0, 0.5, 0], vel: [8, 0, 0], quat: [0, 0, 0, 1], grounded: true } as BallState,
   events: [] as SimStepResult['events'],
   impulses: [] as number[][],
+  support: { normal: [0, 1, 0], surfaceId: 'island:0' } as {
+    normal: [number, number, number];
+    surfaceId: string;
+  } | null,
+  options: [] as unknown[],
 }));
-vi.mock('@wwm/physics', () => ({
-  createSimulation: async () => ({
-    params: { ballRadius: 0.5 },
-    load: async () => {},
-    reset: () => {},
-    dispose: () => {},
-    setLock: () => {},
-    getBallState: () => structuredClone(harness.ball),
-    applyVelocityDelta: (v: number[]) => harness.impulses.push(v),
-    step: () => ({ ball: structuredClone(harness.ball), events: harness.events, elevators: [] }),
-  }),
+vi.mock('@wwm/physics', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@wwm/physics')>()),
+  createSimulation: async (options: unknown) => {
+    harness.options.push(options);
+    return {
+      params: { ballRadius: 0.5 },
+      load: async () => {},
+      reset: () => {},
+      dispose: () => {},
+      setLock: () => {},
+      getBallState: () => structuredClone(harness.ball),
+      getSurfaceSupport: () => structuredClone(harness.support),
+      applyVelocityDelta: (v: number[]) => harness.impulses.push(v),
+      step: () => ({ ball: structuredClone(harness.ball), events: harness.events, elevators: [] }),
+    };
+  },
 }));
 
 import { createRaceSimulation } from '../src/simulation.ts';
@@ -51,6 +61,8 @@ beforeEach(() => {
   harness.ball = { pos: [0, 0.5, 0], vel: [8, 0, 0], quat: [0, 0, 0, 1], grounded: true } as BallState;
   harness.events = [];
   harness.impulses = [];
+  harness.options = [];
+  harness.support = { normal: [0, 1, 0], surfaceId: 'island:0' };
 });
 test('every three seconds at full speed adds a turbo, including turns and flight', async () => {
   const sim = await createRaceSimulation(course);
@@ -151,3 +163,102 @@ test.each([-Math.PI / 2, Math.PI / 2])(
     sim.dispose();
   },
 );
+
+const elevationStage = structuredClone(stage);
+elevationStage.islands = [elevationStage.islands[0]];
+elevationStage.bridges = [];
+elevationStage.elevators = [];
+elevationStage.items = [];
+elevationStage.goal = {
+  ...elevationStage.goal,
+  islandId: elevationStage.start.islandId,
+  pos: elevationStage.start.pos,
+};
+const elevationCourse: RaceCourse = { ...course, stage: elevationStage, physicsProfile: 'elevation-v1' };
+test('elevation charges at tick 360 only on supported level or uphill travel', async () => {
+  const sim = await createRaceSimulation(elevationCourse);
+  expect(harness.options).toEqual([{ raceElevation: true }]);
+  for (let i = 0; i < 359; i++) sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 0, chargeTicks: 359, chargingReason: 'charging' });
+  sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 1, chargeTicks: 0 });
+  // Same downhill ramp, opposite travel: uphill earns; Y velocity is irrelevant.
+  harness.support = { normal: [0.2, 1, 0], surfaceId: 'ramp:1' };
+  harness.ball.vel = [-8, -20, 0];
+  for (let i = 0; i < 360; i++) sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 2, chargeTicks: 0, chargingReason: 'charging' });
+});
+test('entering downhill at tick 360 resets partial charge without spending stock', async () => {
+  const sim = await createRaceSimulation(elevationCourse);
+  for (let i = 0; i < 719; i++) sim.step(input);
+  harness.support = { normal: [0.2, 1, 0], surfaceId: 'ramp:1' };
+  harness.ball.vel = [8, 30, 0]; // Upward world velocity must not hide downhill travel.
+  sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 1, chargeTicks: 0, chargingReason: 'downhill' });
+  for (let i = 0; i < 720; i++) sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 1, chargeTicks: 0 });
+  sim.step({ ...input, turbo: true });
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 0, chargeTicks: 0 });
+  expect(harness.impulses).toHaveLength(1);
+  harness.support = { normal: [0, 1, 0], surfaceId: 'island:1' };
+  for (let i = 0; i < 359; i++) sim.step(input);
+  expect(sim.getMechanics().turboCharges).toBe(0);
+  sim.step(input);
+  expect(sim.getMechanics().turboCharges).toBe(1);
+});
+test('airborne and missing support cannot complete a partial charge or farm a descent launch', async () => {
+  const sim = await createRaceSimulation(elevationCourse);
+  for (let i = 0; i < 719; i++) sim.step(input);
+  harness.ball.grounded = false;
+  for (let i = 0; i < 720; i++) sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 1, chargeTicks: 0, chargingReason: 'airborne' });
+  sim.step({ ...input, turbo: true });
+  expect(sim.getMechanics().turboCharges).toBe(0);
+  harness.ball.grounded = true;
+  harness.support = null;
+  for (let i = 0; i < 360; i++) sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 0, chargeTicks: 0, chargingReason: 'airborne' });
+});
+test('surface grade deadband ignores seam noise but includes bank crossfall in the travel direction', async () => {
+  const sim = await createRaceSimulation(elevationCourse);
+  harness.support = { normal: [0.0009, 1, 0.2], surfaceId: 'ramp:1' };
+  for (let i = 0; i < 360; i++) sim.step(input);
+  expect(sim.getMechanics().turboCharges).toBe(1);
+  harness.ball.vel = [0, 0, 8];
+  sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({ chargeTicks: 0, chargingReason: 'downhill' });
+});
+test('elevation overspeed preserves stock at turbo cap and falling deducts once', async () => {
+  const sim = await createRaceSimulation(elevationCourse);
+  for (let i = 0; i < 720; i++) sim.step(input);
+  harness.support = { normal: [0.2, 1, 0], surfaceId: 'ramp:1' };
+  harness.ball.vel = [48, 0, 0];
+  sim.step({ ...input, turbo: true });
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 2, chargeTicks: 0, chargingReason: 'downhill' });
+  expect(harness.impulses).toHaveLength(0);
+  harness.events = [{ type: 'fell', restartAt: [0, 0] }];
+  sim.step(input);
+  harness.events = [{ type: 'lost' }];
+  sim.step(input);
+  expect(sim.getMechanics()).toMatchObject({
+    turboCharges: 1,
+    lives: 2,
+    chargeTicks: 0,
+    chargingReason: 'recovering',
+  });
+  sim.reset();
+  expect(sim.getMechanics()).toMatchObject({ turboCharges: 1, lives: 2, chargeTicks: 0 });
+});
+test('unknown profile rejects before allocating simulation', async () => {
+  await expect(
+    createRaceSimulation({ ...course, physicsProfile: 'future' } as unknown as RaceCourse),
+  ).rejects.toThrow('Unknown Race physics profile');
+  expect(harness.options).toHaveLength(0);
+});
+
+test('elevation rejects invalid geometry before allocating physics', async () => {
+  const bad = structuredClone(elevationCourse);
+  bad.stage.goal.pos = [-100, -100];
+  await expect(createRaceSimulation(bad)).rejects.toThrow('out-of-bounds');
+  expect(harness.options).toHaveLength(0);
+});

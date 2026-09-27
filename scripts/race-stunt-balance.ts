@@ -349,6 +349,7 @@ export async function runBalanceMatrix(course: RaceCourse, factory: BalancePolic
   }
   return {
     courseId: course.courseId,
+    compatibility: makeCompatibility(course.courseId, true, course.physicsProfile),
     schema: 'wwm.race-balance/1',
     method:
       'Fixed-step real Rapier; shared closed-loop route policy observes current ball state each tick. Perturbations change ordinary tilt/yaw/POWER/turbo input only. No teleport or state injection. Each clean run repeated exactly.',
@@ -502,7 +503,7 @@ async function writeRecoveryArtifacts(
       schema: 'wwm.race-attempt/1',
       id: 'island-leap-catch-return',
       createdAt: 0,
-      compatibility: makeCompatibility(course.courseId, true),
+      compatibility: makeCompatibility(course.courseId, true, course.physicsProfile),
       inputSource: 'keyboard',
       outcome: 'finished',
       progress,
@@ -516,6 +517,7 @@ async function writeRecoveryArtifacts(
       }
     const validation = {
       courseId: course.courseId,
+      compatibility: attempt.compatibility,
       progress,
       mechanics: sim.getMechanics(),
       events,

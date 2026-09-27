@@ -202,7 +202,7 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
     tag(railIdx, rails, -1);
     const delay = ((delays.get(br.from) ?? 0) + (delays.get(br.to) ?? 0)) / 2;
     bridges.face.delay = delay;
-    if (br.control || br.bank) {
+    if (br.control || br.bank || br.elevationProfile) {
       const sections = bridgeSections(br);
       const distances = [0];
       for (let i = 1; i < sections.length; i++) {

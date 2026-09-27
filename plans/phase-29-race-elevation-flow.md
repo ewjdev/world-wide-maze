@@ -1,6 +1,6 @@
 # Phase 29 — Elevation, momentum and Race turbo
 
-Status: approved for implementation on 2026-09-27; plan committed before code changes. Prepared against Race branch `codex/race-mode`, baseline `0832b4c`. Existing Race work is in PR #17. Work in this checkout; preserve unrelated changes and the running preview.
+Status: implemented locally on 2026-09-27; final verification and beta review recorded in [Phase 29 build log](../docs/build-log/phase-29-race-elevation-flow.md). Plan committed as `913da6f` before code changes. Prepared against Race branch `codex/race-mode`, baseline `0832b4c`. Existing Race work is in PR #17. Work in this checkout; preserve unrelated changes and the running preview.
 
 ## Goal
 

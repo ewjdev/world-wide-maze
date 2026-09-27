@@ -101,6 +101,7 @@ export const BridgeSchema = z.object({
   type: BridgeTypeSchema,
   control: Vec2Schema.optional(),
   bank: finite.min(-0.35).max(0.35).optional(),
+  elevationProfile: z.literal('smoothstep').optional(),
   rails: z.boolean().optional(),
   levelA: finite,
   levelB: finite,
@@ -249,6 +250,9 @@ export const RaceStateSchema = z.object({
       ready: z.boolean(),
       chargeTicks: z.number().int().nonnegative(),
       chargeRequired: z.number().int().positive(),
+      chargingReason: z
+        .enum(['charging', 'slow', 'downhill', 'airborne', 'recovering', 'disabled'])
+        .optional(),
       turboTicks: z.number().int().nonnegative(),
       turboCharges: z.number().int().nonnegative().optional(),
     })

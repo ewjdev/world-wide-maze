@@ -33,6 +33,7 @@ export function createRoutePolicy(
           ]
         : [
             [1380, 210],
+            [1360, 250],
             [1360, 530],
             [1375, 570],
             [1375, 730],
@@ -54,7 +55,10 @@ export function createRoutePolicy(
       let target = targets[waypoint];
       let dx = target[0] / PX_PER_METER - ball.pos[0],
         dz = target[1] / PX_PER_METER - ball.pos[2];
-      if (Math.hypot(dx, dz) < 2 && waypoint < targets.length - 1) {
+      if (
+        Math.hypot(dx, dz) < (route === 'far' && waypoint === 1 ? 0.6 : 2) &&
+        waypoint < targets.length - 1
+      ) {
         waypoint++;
         target = targets[waypoint];
         dx = target[0] / PX_PER_METER - ball.pos[0];

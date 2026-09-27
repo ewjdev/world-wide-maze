@@ -156,6 +156,17 @@ run('Race stunt browser acceptance', () => {
       expect(await turbo.textContent()).toContain('Ready');
       expect(await turbo.textContent()).toContain('Turbo × 2');
       expect(await turbo.textContent()).toContain('25% next');
+      race.boost.chargingReason = 'downhill';
+      race.boost.chargeTicks = 0;
+      send(state);
+      await expect.poll(() => turbo.textContent()).toContain('Downhill · no charge');
+      expect(await turbo.isEnabled()).toBe(true);
+      race.boost.chargingReason = 'airborne';
+      send(state);
+      await expect.poll(() => turbo.textContent()).toContain('Airborne · no charge');
+      expect(await turbo.isEnabled()).toBe(true);
+      race.boost.chargingReason = 'charging';
+      send(state);
       expect(await page.getByTestId('race-host-hud').textContent()).toContain('Lives 2 / 3');
       const power = page.getByTestId('btn-power');
       await power.dispatchEvent('pointerdown', { pointerId: 7, isPrimary: true, pointerType: 'touch' });

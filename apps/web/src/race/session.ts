@@ -38,6 +38,7 @@ export interface RaceView {
   countdown: number;
   progress: RaceProgress;
   mechanics: RaceMechanics | null;
+  speed: number;
   stuntEvent: RaceMechanics['lastEvent'];
   best: RaceAttempt | null;
   comparisonBest: RaceAttempt | null;
@@ -71,6 +72,7 @@ export class RaceSession {
     countdown: 3,
     progress: createProgress(),
     mechanics: null,
+    speed: 0,
     stuntEvent: null,
     best: null,
     comparisonBest: null,
@@ -233,7 +235,9 @@ export class RaceSession {
     const generation = this.#generation;
     const read = ++this.#historyRead;
     try {
-      const result = await this.#history.list(makeCompatibility(this.course.courseId, !!this.course.stunts));
+      const result = await this.#history.list(
+        makeCompatibility(this.course.courseId, !!this.course.stunts, this.course.physicsProfile),
+      );
       if (this.#disposed || generation !== this.#generation || read !== this.#historyRead) return;
       this.#set({ best: result.best, recent: result.recent, persistent: result.persistent });
     } catch {
@@ -453,7 +457,11 @@ export class RaceSession {
       schema: 'wwm.race-attempt/1',
       id: this.#attemptId,
       createdAt: this.#createdAt,
-      compatibility: makeCompatibility(this.course.courseId, !!this.course.stunts),
+      compatibility: makeCompatibility(
+        this.course.courseId,
+        !!this.course.stunts,
+        this.course.physicsProfile,
+      ),
       inputSource: this.#inputSource,
       outcome,
       progress: this.#progress,
@@ -625,7 +633,12 @@ export class RaceSession {
     }
     if (now - this.#publishAt > 80) {
       this.#publishAt = now;
-      this.#set({ progress: this.#progress, mechanics: this.#sim?.getMechanics() ?? null });
+      const velocity = this.#simReady ? this.#sim?.getBallState().vel : undefined;
+      this.#set({
+        progress: this.#progress,
+        mechanics: this.#sim?.getMechanics() ?? null,
+        speed: velocity ? Math.hypot(velocity[0], velocity[2]) : 0,
+      });
       this.#syncPhone();
     }
   };

@@ -2,6 +2,11 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.6 (2026-09-27, Race elevation)
+- Optional `Bridge.elevationProfile: 'smoothstep'` round-trips through the schema and selects one shared render/collider/camera surface, including straight unbanked ramps.
+- Trusted `validateStage(stage, { mode: 'race' })` enforces a 20-degree local surface limit and a 4 m maximum for connectors below 5-degree mean grade. Default Original/Education validation retains its existing slope limit.
+- Optional Race boost `chargingReason` communicates downhill/airborne restrictions to the controller without changing existing message requirements.
+
 ## 0.3.5 (2026-09-27, curved Race courses and lives)
 - Optional quadratic/banked bridge surfaces, rail-free decks and directed flight links share render/physics geometry.
 - Race controller state adds turbo inventory, lives and exhausted phase; retries and replays retain host authority.

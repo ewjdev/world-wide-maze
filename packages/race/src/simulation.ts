@@ -1,4 +1,10 @@
-import { createSimulation, type LockableSimulation, type RapierSimulation } from '@wwm/physics';
+import {
+  createSimulation,
+  type LockableSimulation,
+  RACE_GRADE_DEADBAND,
+  type RapierSimulation,
+  surfaceTravelGrade,
+} from '@wwm/physics';
 import {
   type BallState,
   pointInPolygon,
@@ -7,8 +13,10 @@ import {
   type SimStepResult,
   type StageData,
   type Vec2,
+  validateStage,
 } from '@wwm/schema';
 import { pageToWorld, worldToPage } from '@wwm/schema/space';
+import { racePhysicsOptions } from './profile.ts';
 import { advanceProgress, createProgress, validateGates } from './progress.ts';
 import type {
   RaceCourse,
@@ -76,10 +84,11 @@ export interface RaceSimulation extends LockableSimulation {
   /** Charge the same penalty as falling; reset itself never charges twice. */
   penalizeRecovery(): void;
 }
-const empty = (s?: RaceStunts): RaceMechanics => ({
+const empty = (s?: RaceStunts, profile?: RaceCourse['physicsProfile']): RaceMechanics => ({
   enabled: !!s,
   chargeTicks: 0,
   chargeRequired: s?.chargeTicks ?? 0,
+  ...(profile ? { chargingReason: s ? ('slow' as const) : ('disabled' as const) } : {}),
   ready: false,
   turboCharges: 0,
   lives: 3,
@@ -108,13 +117,13 @@ class StuntSimulation implements RaceSimulation {
   constructor(course: RaceCourse, sim: RapierSimulation) {
     this.course = course;
     this.sim = sim;
-    this.mechanics = empty(course.stunts);
+    this.mechanics = empty(course.stunts, course.physicsProfile);
   }
   async load(stage: StageData, options?: SimLoadOptions): Promise<void> {
     if (stage !== this.course.stage && JSON.stringify(stage) !== JSON.stringify(this.course.stage))
       throw new Error('Race simulation stage does not match course');
     await this.sim.load(stage, options);
-    this.mechanics = empty(this.course.stunts);
+    this.mechanics = empty(this.course.stunts, this.course.physicsProfile);
     this.progress = createProgress();
     this.used.clear();
     this.previousTurbo = false;
@@ -124,7 +133,15 @@ class StuntSimulation implements RaceSimulation {
   reset(to?: Vec2): void {
     if (this.mechanics.exhausted) throw new Error('Race has no lives remaining');
     this.sim.reset(to);
-    this.mechanics = { ...this.mechanics, chargeTicks: 0, turboTicks: 0, lastEvent: null };
+    this.mechanics = {
+      ...this.mechanics,
+      chargeTicks: 0,
+      ...(this.course.physicsProfile
+        ? { chargingReason: this.course.stunts ? ('slow' as const) : ('disabled' as const) }
+        : {}),
+      turboTicks: 0,
+      lastEvent: null,
+    };
     this.fallPenalized = false;
     this.flight = null;
     // Retain earned turbos, lives, and launch consumption: recovery is not a new run.
@@ -138,6 +155,7 @@ class StuntSimulation implements RaceSimulation {
     m.lives = Math.max(0, m.lives - 1);
     m.exhausted = m.lives === 0;
     m.chargeTicks = 0;
+    if (this.course.physicsProfile) m.chargingReason = 'recovering';
     m.ready = m.turboCharges > 0;
     m.turboTicks = 0;
     m.lastEvent = m.exhausted ? 'out-of-lives' : 'fall';
@@ -209,10 +227,17 @@ class StuntSimulation implements RaceSimulation {
       m.lastEvent = m.exhausted ? 'out-of-lives' : 'fall';
       this.flight = null;
     }
-    // Full-speed flow can continue through corners. Each uninterrupted three-second
-    // segment earns another stored turbo, including fast airborne travel.
+    // Terrain charging follows actual support and travel direction, never world-Y
+    // velocity (which confuses flight with descent). Legacy courses retain their rules.
     if (s && !this.fallPenalized) {
-      if (speed + 0.00001 < s.cruiseSpeed) m.chargeTicks = 0;
+      let reason: RaceMechanics['chargingReason'] = speed + 0.00001 < s.cruiseSpeed ? 'slow' : 'charging';
+      if (this.course.physicsProfile === 'elevation-v1') {
+        const support = this.sim.getSurfaceSupport();
+        if (!b.grounded || !support) reason = 'airborne';
+        else if (surfaceTravelGrade(support, b.vel) < -RACE_GRADE_DEADBAND) reason = 'downhill';
+      }
+      if (this.course.physicsProfile) m.chargingReason = reason;
+      if (reason !== 'charging') m.chargeTicks = 0;
       else {
         m.chargeTicks++;
         if (m.chargeTicks >= s.chargeTicks) {
@@ -281,7 +306,12 @@ function crosses(gate: RaceGate, previous: BallState['pos'], current: BallState[
   );
 }
 export async function createRaceSimulation(course: RaceCourse): Promise<RaceSimulation> {
+  const options = racePhysicsOptions(course.physicsProfile);
   const errors = validateStunts(course);
+  if (course.physicsProfile === 'elevation-v1') {
+    const validation = validateStage(course.stage, { mode: 'race' });
+    if (!validation.ok) errors.push(...validation.errors.map((error) => `${error.code}: ${error.message}`));
+  }
   if (errors.length) throw new Error(errors.join('; '));
-  return new StuntSimulation(course, await createSimulation());
+  return new StuntSimulation(course, await createSimulation(options));
 }

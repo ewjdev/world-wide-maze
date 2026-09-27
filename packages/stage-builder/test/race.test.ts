@@ -3,6 +3,7 @@ import { validateStage } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
 import { decodePng } from '../src/node/png.ts';
 import { buildRaceCourse, type RaceAuthoring } from '../src/race.ts';
+import { applyRaceElevation } from '../src/race-elevation.ts';
 
 const load = (slug: string) => {
   const dir = new URL(`../../../fixtures/race/${slug}/`, import.meta.url);
@@ -16,35 +17,47 @@ const load = (slug: string) => {
       difficulty: 'normal' as const,
     },
     author: JSON.parse(readFileSync(new URL('authoring.json', dir), 'utf8')) as RaceAuthoring,
+    elevation: JSON.parse(readFileSync(new URL('elevation-design.json', dir), 'utf8')),
     saved: JSON.parse(readFileSync(new URL('course.json', dir), 'utf8')),
   };
 };
 
 describe('curated HTML Race terrain and routes', () => {
   test.each(['flow-sprint', 'switchback', 'longline'])('%s rebuild is byte-identical and valid', (slug) => {
-    const { input, author, saved } = load(slug);
-    const course = buildRaceCourse(input, author);
+    const { input, author, saved, elevation } = load(slug);
+    const base = buildRaceCourse(input, author);
+    expect(base).toEqual(buildRaceCourse(input, author));
+    expect(validateStage(base.stage).errors).toEqual([]);
+    expect(base.stage.bridges.every((bridge) => bridge.levelA >= bridge.levelB)).toBe(true);
+    const course = applyRaceElevation(base, elevation);
     expect(course).toEqual(saved);
-    expect(validateStage(course.stage).errors).toEqual([]);
+    expect(applyRaceElevation(course, elevation)).toEqual(course);
+    expect(base.stage.bridges.every((bridge) => bridge.elevationProfile === undefined)).toBe(true);
+    expect(validateStage(course.stage, { mode: 'race' }).errors).toEqual([]);
     expect(course.stage.bridges).toHaveLength(author.sections.length - 1);
     expect(course.gates).toHaveLength(author.sections.length);
     expect(course.stage.elevators).toEqual([]);
     expect(course.stage.items).toEqual([]);
     expect(course.stage.portals).toEqual([]);
     expect(course.stage.islands.every((island) => island.sourceElementIds.length > 0)).toBe(true);
-    expect(course.stage.bridges.every((bridge) => bridge.levelA >= bridge.levelB)).toBe(true);
+    expect(course.stage.bridges.some((bridge) => bridge.levelA < bridge.levelB)).toBe(true);
+    expect(course.stage.bridges.some((bridge) => bridge.levelA > bridge.levelB)).toBe(true);
   });
   test('resolved settings and actual source/texture contents partition course identity', () => {
-    const { input, author, saved } = load('flow-sprint');
+    const { input, author, saved, elevation } = load('flow-sprint');
     for (const changed of [
       { ...author, descentPerBridge: 0.2 },
       { ...author, textureHash: 'changed' },
       { ...author, sourceHash: 'changed' },
       { ...author, bridgeWidthPx: 72 },
     ]) {
-      expect(buildRaceCourse(input, changed).courseId).not.toBe(saved.courseId);
+      expect(applyRaceElevation(buildRaceCourse(input, changed), elevation).courseId).not.toBe(
+        saved.courseId,
+      );
     }
-    expect(buildRaceCourse({ ...input, seed: 25 }, author).courseId).not.toBe(saved.courseId);
+    expect(applyRaceElevation(buildRaceCourse({ ...input, seed: 25 }, author), elevation).courseId).not.toBe(
+      saved.courseId,
+    );
     const relocated = {
       ...input,
       capture: {
@@ -53,7 +66,9 @@ describe('curated HTML Race terrain and routes', () => {
         url: 'http://localhost:9000/relocated',
       },
     };
-    expect(buildRaceCourse(relocated, author).courseId).toBe(saved.courseId);
+    // The base HTML builder remains relocation-neutral. The frozen elevation release
+    // hashes its complete owned source metadata together with the final geometry.
+    expect(buildRaceCourse(relocated, author).courseId).toBe(buildRaceCourse(input, author).courseId);
   });
   test('bounded route search uses incoming heading and checked interior approaches', () => {
     const { input, author } = load('flow-sprint');

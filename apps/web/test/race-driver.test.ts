@@ -3,9 +3,11 @@ import { createSimulation } from '@wwm/physics';
 import {
   advanceProgress,
   createProgress,
+  createRaceSimulation,
   type RaceCourse,
   type RaceGate,
   type RaceProgress,
+  racePhysicsOptions,
 } from '@wwm/race';
 import { type InputSample, SIM_HZ, type SimEvent } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
@@ -106,7 +108,7 @@ describe('Race authoritative driver ticks', () => {
     'same frozen input finishes at the same sector/finish ticks at %s',
     async (_label, schedule) => {
       expect(courseId).toBe(course.courseId);
-      const sim = await createSimulation();
+      const sim = await createRaceSimulation(course);
       const driver = new LockstepDriver(sim);
       try {
         await driver.load(course.stage);
@@ -123,7 +125,10 @@ describe('Race authoritative driver ticks', () => {
   test('early Original goal contact does not prevent later Race finish; repeated load retries restore ticks and physics', async () => {
     const stage = structuredClone(course.stage);
     stage.goal = { ...stage.goal, ...stage.start };
-    const sim = await createSimulation();
+    // Deliberately relocate Original's goal sensor for this low-level driver test;
+    // the real course validator requires a different goal island. Use the same
+    // selected physics profile as live Race without weakening course validation.
+    const sim = await createSimulation(racePhysicsOptions(course.physicsProfile));
     const driver = new LockstepDriver(sim);
     try {
       let initial: ReturnType<typeof sim.getBallState> | null = null;

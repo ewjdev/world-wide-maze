@@ -4,6 +4,15 @@ export const raceEn = {
     'Follow the green gates and carry speed through the turns. Every 3 seconds at full speed earns another turbo. Store them and press T or tap Turbo to use one at any time. You have 3 lives; falling costs 1 life and 1 stored turbo.',
   stuntHint:
     'Follow the green gates. Take the ground route or jump between islands, then line up for the exit turn. Every 3 seconds at full speed earns another turbo. Store them and press T or tap Turbo to use one at any time. You have 3 lives; falling costs 1 life and 1 stored turbo. Ramps launch automatically. Clean landings give a small boost.',
+  elevationHint:
+    'Descend to build momentum and carry it into the next climb. Charge a turbo by holding at least {{speed}} m/s for 3 seconds on level or uphill ground. Downhill and airborne travel reset partial charge; stored turbos remain available. Falling costs 1 life and 1 stored turbo.',
+  elevationJumpHint: 'Jump ramps launch automatically; clean landings give a small boost.',
+  turboRecovering: 'Recovering · no charge',
+  turboSpeed: '{{speed}} m/s',
+  turboDownhill: 'Downhill · no charge',
+  turboAirborne: 'Airborne · no charge',
+  turboSlow: 'Build speed to charge',
+  turboGrounded: 'Next turbo · 3 seconds at {{speed}} m/s on level or uphill ground',
   stuntControls: 'Arrows / WASD to roll · T for turbo · Space to jump · R to retry',
   turbo: 'Turbo',
   turboReady: 'Turbo ready',
@@ -94,6 +103,15 @@ export const raceJa: Record<keyof typeof raceEn, string> = {
     '緑のゲートを順番に通過し、カーブでも速度を保とう。最高速度を3秒保つたびにターボが1つたまります。ストックして、Tキーまたはターボボタンでいつでも1つ使用できます。ライフは3つ。落下するとライフとターボを1つずつ失います。',
   stuntHint:
     '緑のゲートを順番に通過。地上ルートか島を渡るジャンプを選び、出口のカーブに備えよう。最高速度を3秒保つたびにターボが1つたまります。ストックして、Tキーまたはターボボタンでいつでも1つ使用できます。ライフは3つ。落下するとライフとターボを1つずつ失います。ランプでは自動でジャンプし、きれいな着地で小さく加速します。',
+  elevationHint:
+    '下り坂で勢いをつけて、次の上り坂へ。平地または上り坂で秒速{{speed}}m以上を3秒保つとターボが1つたまります。下り坂や空中では充電途中の進み具合がリセットされますが、ストックしたターボは使えます。落下するとライフとターボを1つずつ失います。',
+  elevationJumpHint: 'ジャンプ用ランプでは自動でジャンプし、きれいな着地で少し加速します。',
+  turboRecovering: '復帰中 · 充電なし',
+  turboSpeed: '秒速{{speed}}m',
+  turboDownhill: '下り坂 · 充電なし',
+  turboAirborne: '空中 · 充電なし',
+  turboSlow: '速度を上げて充電',
+  turboGrounded: '次のターボ · 平地か上り坂で秒速{{speed}}mを3秒',
   stuntControls: '矢印 / WASDで移動 · Tでターボ · Spaceでジャンプ · Rで再挑戦',
   turbo: 'ターボ',
   turboReady: 'ターボ準備完了',

@@ -20,6 +20,8 @@ export interface RaceCourse {
   generatorVersion: string;
   seed: number;
   stunts?: RaceStunts;
+  /** Opt-in terrain momentum and grounded charging rules. Absent retains legacy Race physics. */
+  physicsProfile?: 'elevation-v1';
 }
 export type PracticeReason =
   | 'fall'
@@ -100,6 +102,7 @@ export interface RaceMechanics {
   enabled: boolean;
   chargeTicks: number;
   chargeRequired: number;
+  chargingReason?: 'charging' | 'slow' | 'downhill' | 'airborne' | 'recovering' | 'disabled';
   /** Derived convenience flag: at least one stored turbo. */
   ready: boolean;
   turboCharges: number;

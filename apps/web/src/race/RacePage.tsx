@@ -319,17 +319,43 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 max={v.mechanics.chargeRequired}
                 value={v.mechanics.chargeTicks}
               />
-              <small role="status" data-testid="race-stunt-event">
-                {t(
-                  v.stuntEvent === 'landing'
-                    ? 'race.cleanLanding'
-                    : v.stuntEvent === 'launch'
-                      ? 'race.launched'
-                      : v.mechanics.turboTicks > 0
-                        ? 'race.turboActive'
-                        : 'race.turboCharging',
-                )}
-              </small>
+              {session.course.physicsProfile === 'elevation-v1' && (
+                <small className="race-charging-reason" data-testid="race-charging-reason">
+                  {t(
+                    v.mechanics.chargingReason === 'downhill'
+                      ? 'race.turboDownhill'
+                      : v.mechanics.chargingReason === 'airborne'
+                        ? 'race.turboAirborne'
+                        : v.mechanics.chargingReason === 'slow'
+                          ? 'race.turboSlow'
+                          : v.mechanics.chargingReason === 'recovering'
+                            ? 'race.turboRecovering'
+                            : 'race.turboGrounded',
+                    { speed: session.course.stunts?.cruiseSpeed },
+                  )}
+                </small>
+              )}
+              {session.course.physicsProfile === 'elevation-v1' && (
+                <small className="race-speed" data-testid="race-speed">
+                  {t('race.turboSpeed', { speed: v.speed.toFixed(1) })}
+                </small>
+              )}
+              {(session.course.physicsProfile !== 'elevation-v1' ||
+                v.stuntEvent === 'landing' ||
+                v.stuntEvent === 'launch' ||
+                v.mechanics.turboTicks > 0) && (
+                <small role="status" data-testid="race-stunt-event">
+                  {t(
+                    v.stuntEvent === 'landing'
+                      ? 'race.cleanLanding'
+                      : v.stuntEvent === 'launch'
+                        ? 'race.launched'
+                        : v.mechanics.turboTicks > 0
+                          ? 'race.turboActive'
+                          : 'race.turboCharging',
+                  )}
+                </small>
+              )}
             </div>
           )}
           <div className="race-play-bottom">
@@ -380,13 +406,19 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 <h1>{t(hasJumps ? 'race.stuntReady' : 'race.ready')}</h1>
                 <p>
                   {t(
-                    hasJumps
-                      ? 'race.stuntHint'
-                      : session.course.stunts
-                        ? 'race.groundBoostHint'
-                        : 'race.readyHint',
+                    session.course.physicsProfile === 'elevation-v1'
+                      ? 'race.elevationHint'
+                      : hasJumps
+                        ? 'race.stuntHint'
+                        : session.course.stunts
+                          ? 'race.groundBoostHint'
+                          : 'race.readyHint',
+                    { speed: session.course.stunts?.cruiseSpeed },
                   )}
                 </p>
+                {session.course.physicsProfile === 'elevation-v1' && hasJumps && (
+                  <p>{t('race.elevationJumpHint')}</p>
+                )}
                 <p className="race-best-line">
                   {v.best ? (
                     <>

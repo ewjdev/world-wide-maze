@@ -40,7 +40,9 @@ export function bridgeSections(br: Bridge): BridgeSection[] {
   }
   for (const section of result) {
     section.progress /= distance || 1;
-    section.y = (br.levelA + (br.levelB - br.levelA) * section.progress) * LEVEL_HEIGHT_M;
+    const u = section.progress;
+    const heightProgress = br.elevationProfile === 'smoothstep' ? u * u * (3 - 2 * u) : u;
+    section.y = (br.levelA + (br.levelB - br.levelA) * heightProgress) * LEVEL_HEIGHT_M;
     section.bank = (br.bank ?? 0) * Math.sin(Math.PI * section.progress);
   }
   return result;
@@ -97,4 +99,44 @@ export function bridgeSurfaceMesh(br: Bridge, thickness: number, side = 0, railT
   const end = (sections.length - 1) * 4;
   quad(end, end + 2, end + 3, end + 1);
   return { vertices: Float32Array.from(vertices), indices: Uint32Array.from(indices) };
+}
+
+/** Grade of the actual top triangles, plus the analytic vertical-profile maximum.
+ * Includes bank/corner effects: a safe centerline must not hide a steep inner edge.
+ * A folded or degenerate deck fails closed rather than passing an absolute-normal check.
+ */
+export function bridgeGradeMetrics(br: Bridge): {
+  runMeters: number;
+  meanGrade: number;
+  maxGrade: number;
+  maxColliderGrade: number;
+} {
+  const sections = bridgeSections(br);
+  const runMeters = bridgeArcLength(br) / PX_PER_METER;
+  const rise = Math.abs(br.levelB - br.levelA) * LEVEL_HEIGHT_M;
+  const meanGrade = rise === 0 ? 0 : rise / (runMeters || 1e-12);
+  let maxGrade = meanGrade * (br.elevationProfile === 'smoothstep' ? 1.5 : 1);
+  let maxColliderGrade = 0;
+  const halfWidth = br.width / PX_PER_METER / 2;
+  const grade = (a: Vec3, b: Vec3, c: Vec3): number => {
+    const u = b.map((v, i) => v - (a[i] as number));
+    const v = c.map((v, i) => v - (a[i] as number));
+    const nx = (u[1] as number) * (v[2] as number) - (u[2] as number) * (v[1] as number);
+    const ny = (u[2] as number) * (v[0] as number) - (u[0] as number) * (v[2] as number);
+    const nz = (u[0] as number) * (v[1] as number) - (u[1] as number) * (v[0] as number);
+    return ny > 1e-12 ? Math.hypot(nx, nz) / ny : Infinity;
+  };
+  for (let i = 1; i < sections.length; i++) {
+    const before = sections[i - 1] as BridgeSection;
+    const after = sections[i] as BridgeSection;
+    const a = bridgeSectionPoint(before, halfWidth);
+    const b = bridgeSectionPoint(after, halfWidth);
+    const c = bridgeSectionPoint(after, -halfWidth);
+    const d = bridgeSectionPoint(before, -halfWidth);
+    maxGrade = Math.max(maxGrade, grade(a, b, c), grade(a, c, d));
+    const quantized = [a, b, c, d].map((p) => p.map(Math.fround) as Vec3);
+    const [qa, qb, qc, qd] = quantized as [Vec3, Vec3, Vec3, Vec3];
+    maxColliderGrade = Math.max(maxColliderGrade, grade(qa, qb, qc), grade(qa, qc, qd));
+  }
+  return { runMeters, meanGrade, maxGrade, maxColliderGrade };
 }

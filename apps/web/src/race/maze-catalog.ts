@@ -2,7 +2,7 @@
 export const MAZE_COURSES = [
   {
     slug: 'flow-delta',
-    courseId: '72a110013a88f49010b9d32f8638c1979c0d4624a4147e5239ca46a9baf16d21',
+    courseId: '11ecfa550dcc8456ccb0380ae4a22bdd83318e1e8b8b9c757216d9efeea44f2e',
     title: 'Flow Delta',
     description: 'Continuous speed + route reading',
     islands: 28,
@@ -11,7 +11,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'hairpin-terraces',
-    courseId: '81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693',
+    courseId: '4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809',
     title: 'Hairpin Terraces',
     description: 'Braking point + exit alignment',
     islands: 29,
@@ -20,7 +20,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'skipping-stones',
-    courseId: 'ae3a6a04b82d7548e08a88f2c1e1ca68fc178f26850e80b96d0c35c7e87bb58a',
+    courseId: 'c607d0900618c6727b1c15f1ed4849c1c53ad616c48a617a6168019dc1805e51',
     title: 'Skipping Stones',
     description: 'Three landings + momentum retention',
     islands: 36,
@@ -29,7 +29,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'twin-canyons',
-    courseId: '10c24640f869462867352ffc2d3ecd79e9d7feebecae6e7fa4233f545743ee2a',
+    courseId: '2c25b864c3faac584b17fb51c813788e1489f70fa8c7cd3a08de7a8105417a97',
     title: 'Twin Canyons',
     description: 'Two consecutive boost decisions',
     islands: 36,
@@ -38,7 +38,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'cliff-ribbon',
-    courseId: 'a7bf3be33bc80b1257edcdbdd9c78cfcdba74fa62c728d258a46af655caa8f9e',
+    courseId: '4f0f79c20eaf1a23b62efe674de2fbd3d30f965c78e791e9c38d69004af2cccc',
     title: 'Cliff Ribbon',
     description: 'Sustained steering + restrained speed',
     islands: 27,
@@ -47,7 +47,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'bankshot-basin',
-    courseId: 'd8a346e87ddd9f745d92197709384d77011ef017b7dfc6b908931f7453e1c635',
+    courseId: 'cf95e6f10caf023951361efb24fccc8d6da7110a3f8ca467033f0b39c101d9b9',
     title: 'Bankshot Basin',
     description: 'Curved approach + launch heading + exit',
     islands: 27,
@@ -56,7 +56,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'switchyard',
-    courseId: '6d7015dd4bd7534c98d72dff3026f25cfc0e48a767faef277854659a84f44397',
+    courseId: '155f0cd01a1a873a151b0f5aabfe8ab4d81c7f34cba12759e04485a27eac121a',
     title: 'Switchyard',
     description: 'Consecutive route decisions + alignment',
     islands: 30,
@@ -65,7 +65,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'sky-weave',
-    courseId: '6e285653ecdc66b6e274ab9a757a4538942f8d1ad6daa662615fe2e898d39cba',
+    courseId: 'bfa6d61014d6d3af433686cf8224cb62dc92a1fc9a0e9352e5578af97875f892',
     title: 'Sky Weave',
     description: 'Speed + level awareness + jump alignment',
     islands: 28,
@@ -74,7 +74,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'needle-garden',
-    courseId: 'bd933bc0fd3896d507986f73422f55f972b5d83e719e2d1d42d2012c2faf3688',
+    courseId: 'e7008c47a9cdf1b10b923d3b8eb3d64f1100f24062cd92175f9047b6e6ef5bc6',
     title: 'Needle Garden',
     description: 'Slow precision + fast transfer + accurate landing',
     islands: 23,
@@ -83,7 +83,7 @@ export const MAZE_COURSES = [
   },
   {
     slug: 'redline-relay',
-    courseId: 'b90e96c4018b581d771c5541497fac4c2a241c5c18ba468e22eda30e2f423b69',
+    courseId: '09a58f41adeaad1a633e8740eb5fbff6a445be01ed0ffbd01936d404e4d3b668',
     title: 'Redline Relay',
     description: 'Charge planning + aimed hops + precision exits',
     islands: 39,

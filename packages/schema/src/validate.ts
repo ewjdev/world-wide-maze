@@ -39,7 +39,7 @@
  * | `goal-outside-island`     | goal position inside its island |
  */
 import type { z } from 'zod';
-import { bridgeArcLength, bridgeSectionPoint, bridgeSections } from './bridge-surface.ts';
+import { bridgeArcLength, bridgeGradeMetrics, bridgeSectionPoint, bridgeSections } from './bridge-surface.ts';
 import {
   BALL_RADIUS_M,
   BALL_RADIUS_PX,
@@ -140,7 +140,11 @@ const EPS = 1e-9;
  * Validate a stage: structure first (Zod), then every semantic invariant. Accepts `unknown` so it can be
  * used directly on fetched JSON. Never throws.
  */
-export function validateStage(input: unknown): StageValidationResult {
+export interface StageValidationOptions {
+  /** Trusted caller selects Race authoring rules; defaults preserve the Original/Education contract. */
+  mode?: 'race';
+}
+export function validateStage(input: unknown, options: StageValidationOptions = {}): StageValidationResult {
   const parsed = StageDataSchema.safeParse(input);
   if (!parsed.success) {
     return {
@@ -195,7 +199,7 @@ export function validateStage(input: unknown): StageValidationResult {
   }
   for (const [i, br] of stage.bridges.entries()) {
     bounds(br.control ? [br.a, br.b, br.control] : [br.a, br.b], `bridge ${br.id}`, `bridges[${i}]`);
-    if (br.control || br.bank) {
+    if (br.control || br.bank || br.elevationProfile) {
       const edges = bridgeSections(br).flatMap((section) =>
         [-1, 1].map((side): Vec2 => {
           const p = bridgeSectionPoint(section, (side * br.width) / PX_PER_METER / 2);
@@ -337,10 +341,26 @@ export function validateStage(input: unknown): StageValidationResult {
     const slope = br.control
       ? Math.abs((br.levelB - br.levelA) * LEVEL_HEIGHT_M) / (bridgeArcLength(br) / PX_PER_METER || 1e-12)
       : rampSlope(br.a, br.b, br.levelA, br.levelB);
-    if (slope > MAX_RAMP_SLOPE + EPS)
+    const raceMetrics = options.mode === 'race' ? bridgeGradeMetrics(br) : null;
+    const localSlope =
+      raceMetrics?.maxGrade ?? (br.elevationProfile ? bridgeGradeMetrics(br).maxGrade : slope);
+    const limit = options.mode === 'race' ? Math.tan((20 * Math.PI) / 180) : MAX_RAMP_SLOPE;
+    if (localSlope > limit + EPS)
+      err('ramp-too-steep', `bridge ${br.id} local slope ${localSlope.toFixed(4)} > ${limit.toFixed(4)}`, p);
+
+    // Float32 mesh/contact normals can differ slightly from authored double geometry.
+    // Keep the authored 20° maximum strict; allow only 0.01° of quantization error.
+    if (raceMetrics && raceMetrics.maxColliderGrade > Math.tan((20.01 * Math.PI) / 180))
+      err('race-collider-too-steep', `bridge ${br.id} quantized collider exceeds 20.01 degrees`, p);
+
+    if (
+      raceMetrics &&
+      raceMetrics.meanGrade < Math.tan((5 * Math.PI) / 180) - EPS &&
+      raceMetrics.runMeters > 4 + EPS
+    )
       err(
-        'ramp-too-steep',
-        `bridge ${br.id} slope ${slope.toFixed(4)} > ${MAX_RAMP_SLOPE} (use an elevator)`,
+        'race-shallow-connector-too-long',
+        `bridge ${br.id} below 5 degrees runs ${raceMetrics.runMeters.toFixed(2)} m; maximum is 4 m`,
         p,
       );
 

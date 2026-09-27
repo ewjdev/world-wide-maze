@@ -291,7 +291,7 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           </p>
           <p className="wwmc-hint">
             {view.host?.race?.boost
-              ? 'Hold POWER and tilt to roll. Every 3 seconds at full speed earns another turbo. Store them and tap Turbo any time. Falling costs 1 life and 1 turbo.'
+              ? 'Hold POWER and tilt to roll. Every 3 seconds at full speed through eligible sections earns another turbo. Elevation courses do not charge downhill or in the air. Store them and tap Turbo any time. Falling costs 1 life and 1 turbo.'
               : t.powerHint}
           </p>
           <button type="button" className="wwmc-link" onClick={() => session?.retryCalibration()}>
@@ -319,7 +319,11 @@ function TurboButton({ session, view }: { session: ControllerSession | null; vie
       <strong>Turbo × {boost.turboCharges ?? (boost.ready ? 1 : 0)}</strong>
       <span>
         {boost.ready ? 'Ready · tap · ' : ''}
-        {charge}% next
+        {boost.chargingReason === 'downhill'
+          ? 'Downhill · no charge'
+          : boost.chargingReason === 'airborne'
+            ? 'Airborne · no charge'
+            : `${charge}% next`}
       </span>
     </button>
   );

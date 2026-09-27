@@ -240,7 +240,7 @@ export function bridgeSpecs(
   islands: ReadonlyMap<number, Island>,
   p: PhysicsParams,
 ): StaticSpec[] {
-  if (bridge.control || bridge.bank) {
+  if (bridge.control || bridge.bank || bridge.elevationProfile) {
     const role: ColliderRole = { type: 'bridge', bridgeId: bridge.id };
     const out: StaticSpec[] = [{ shape: 'trimesh', ...bridgeSurfaceMesh(bridge, p.slabThickness), role }];
     if (bridge.rails !== false)

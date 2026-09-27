@@ -77,7 +77,7 @@ for (const route of ['safe', 'near', 'far'] as const) {
       schema: 'wwm.race-attempt/1',
       id: `island-leap-${route}`,
       createdAt: 0,
-      compatibility: makeCompatibility(course.courseId, true),
+      compatibility: makeCompatibility(course.courseId, true, course.physicsProfile),
       inputSource: 'keyboard',
       outcome: 'finished',
       progress,
@@ -91,6 +91,7 @@ for (const route of ['safe', 'near', 'far'] as const) {
     const report = {
       route,
       courseId: course.courseId,
+      compatibility: attempt.compatibility,
       progress,
       mechanics,
       events,

@@ -20,7 +20,9 @@ for (const slug of slugs) {
   test(`${slug}: published geometry, flight graph and verified route evidence agree`, () => {
     const course: RaceCourse = read(`fixtures/race/${slug}/course.json`);
     expect(read(`apps/web/public/race/${slug}/course.json`)).toEqual(course);
-    expect(validateStage(course.stage).errors).toEqual([]);
+    expect(
+      validateStage(course.stage, course.physicsProfile === 'elevation-v1' ? { mode: 'race' } : {}).errors,
+    ).toEqual([]);
     expect(validateGates(course.gates)).toEqual([]);
     expect(validateStunts(course)).toEqual([]);
     expect(course.stage.bridges.every((bridge) => bridge.rails === false)).toBe(true);
@@ -62,5 +64,16 @@ for (const slug of ['flow-sprint', 'switchback', 'longline', 'island-leap']) {
     expect(audit.courseId).toBe(course.courseId);
     expect(audit.pass).toBe(true);
     expect(audit.longStraights.length).toBeLessThanOrEqual(1);
+  });
+}
+
+for (const slug of [...slugs, 'flow-sprint', 'switchback', 'longline', 'island-leap']) {
+  test(`${slug}: elevation profile has real climbs, descents and validated local grades`, () => {
+    const course: RaceCourse = read(`fixtures/race/${slug}/course.json`);
+    expect(course.physicsProfile).toBe('elevation-v1');
+    expect(validateStage(course.stage, { mode: 'race' }).errors).toEqual([]);
+    expect(course.stage.bridges.some((b) => b.levelB > b.levelA)).toBe(true);
+    expect(course.stage.bridges.some((b) => b.levelB < b.levelA)).toBe(true);
+    expect(course.stage.bridges.every((b) => b.elevationProfile === 'smoothstep')).toBe(true);
   });
 }

@@ -51,7 +51,7 @@ export function buildHeightfield(stage: StageData, cellPx = 4): Heightfield {
     fillPolygon([isl.contour, ...isl.holes], cellPx, cols, rows, (c, r) => put(c, r, y, SLAB_THICKNESS_M));
   }
   for (const br of stage.bridges) {
-    if (br.control || br.bank) {
+    if (br.control || br.bank || br.elevationProfile) {
       const mesh = bridgeSurfaceMesh(br, SLAB_THICKNESS_M);
       const vertex = (i: number): [number, number, number] => [
         (mesh.vertices[i * 3] as number) * PX_PER_METER,

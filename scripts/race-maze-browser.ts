@@ -1,7 +1,9 @@
+import { existsSync } from 'node:fs';
 /** Browser replays only the inputs already validated in Rapier; captures playable UI evidence. */
 import { mkdir, mkdtemp, readdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import type { RaceSession, RaceTestHooks } from '../apps/web/src/race/session.ts';
+import { compatible, makeCompatibility } from '../packages/race/src/index.ts';
 import { chromium } from '../tools/fixture-capture/node_modules/playwright/index.mjs';
 import type { MazeRoutePoints } from './race-maze-policy.ts';
 
@@ -22,6 +24,7 @@ const slugs = requestedSlug
       .filter(
         (entry) =>
           entry.isDirectory() &&
+          existsSync(resolve(fixtures, entry.name, 'course.json')) &&
           !['flow-sprint', 'switchback', 'longline', 'island-leap'].includes(entry.name),
       )
       .map((entry) => entry.name);
@@ -48,6 +51,13 @@ try {
         'utf8',
       ),
     );
+    const course = JSON.parse(await readFile(resolve(dir, 'course.json'), 'utf8'));
+    const compatibility = makeCompatibility(course.courseId, !!course.stunts, course.physicsProfile);
+    if (
+      course.physicsProfile &&
+      (!validation.compatibility || !compatible(validation.compatibility, compatibility))
+    )
+      throw new Error(`${slug}/${route}: headless proof uses a stale or missing physics profile`);
     const trace = JSON.parse(await readFile(resolve(dir, `${route}-trace.json`), 'utf8'));
     const shots = resolve(dir, 'screenshots');
     await mkdir(shots, { recursive: true });
@@ -143,6 +153,7 @@ try {
         JSON.stringify(
           {
             courseId: state.courseId,
+            compatibility,
             route,
             renderingQuality: quality,
             url: `${baseUrl}/race/${slug}`,

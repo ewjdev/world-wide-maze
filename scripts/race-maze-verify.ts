@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs';
 /** Real Rapier course traversal and independent exact input replay. */
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
@@ -22,6 +23,7 @@ const arg = (name: string) => {
 };
 const requestedSlug = arg('--slug');
 const requestedRoute = arg('--route');
+const proofId = arg('--proof-id');
 const speed = arg('--speed') ? Number(arg('--speed')) : undefined;
 const maxTicks = Number(arg('--max-ticks') ?? 18000);
 const fixtures = resolve(root, 'fixtures/race');
@@ -31,6 +33,7 @@ const slugs = requestedSlug
       .filter(
         (entry) =>
           entry.isDirectory() &&
+          existsSync(resolve(fixtures, entry.name, 'course.json')) &&
           !['flow-sprint', 'switchback', 'longline', 'island-leap'].includes(entry.name),
       )
       .map((entry) => entry.name);
@@ -39,12 +42,14 @@ async function verify(course: RaceCourse, route: MazeRoute, dir: string) {
   const errors = validateGates(course.gates);
   if (errors.length) throw new Error(errors.join('; '));
   const simulation = await createRaceSimulation(course);
-  const policy = createMazePolicy(route, { targetSpeed: speed });
+  const policy = createMazePolicy(route, { targetSpeed: speed, elevation: !!course.physicsProfile });
   let progress = createProgress();
   const recorder = new RaceRecorder(undefined, true);
   const inputs: RaceInputSample[] = [];
   const ticks: number[][] = [];
   const events: unknown[] = [];
+  let maxChargeTicks = 0;
+  const chargingTicks: Record<string, number> = {};
   await simulation.load(course.stage);
   try {
     for (let tick = 1; tick <= maxTicks; tick++) {
@@ -54,6 +59,9 @@ async function verify(course: RaceCourse, route: MazeRoute, dir: string) {
       if (!recorder.record(input)) throw new Error('Recording truncated');
       const step = simulation.step(input);
       const mechanics = simulation.getMechanics();
+      maxChargeTicks = Math.max(maxChargeTicks, mechanics.chargeTicks);
+      const reason = mechanics.chargingReason ?? 'legacy';
+      chargingTicks[reason] = (chargingTicks[reason] ?? 0) + 1;
       progress = advanceProgress(progress, course.gates, {
         tick,
         previous: before.pos,
@@ -63,8 +71,11 @@ async function verify(course: RaceCourse, route: MazeRoute, dir: string) {
       ticks.push([...step.ball.pos, ...step.ball.vel, Number(step.ball.grounded), ...step.ball.quat]);
       if (step.events.length || mechanics.lastEvent)
         events.push({ tick, events: step.events, mechanic: mechanics.lastEvent, pos: step.ball.pos });
-      if (progress.reasons.length)
-        throw new Error(`Invalid run at tick ${tick}: ${JSON.stringify({ progress, ball: step.ball })}`);
+      if (progress.reasons.length) {
+        throw new Error(
+          `Invalid run at tick ${tick}: ${JSON.stringify({ progress, ball: step.ball, mechanics })}`,
+        );
+      }
       if (progress.finishTick !== null) break;
     }
     if (progress.finishTick === null)
@@ -81,7 +92,7 @@ async function verify(course: RaceCourse, route: MazeRoute, dir: string) {
       schema: 'wwm.race-attempt/1',
       id: `${course.courseId}-${route.id}`,
       createdAt: 0,
-      compatibility: makeCompatibility(course.courseId, !!course.stunts),
+      compatibility: makeCompatibility(course.courseId, !!course.stunts, course.physicsProfile),
       inputSource: 'keyboard',
       outcome: 'finished',
       progress,
@@ -103,12 +114,15 @@ async function verify(course: RaceCourse, route: MazeRoute, dir: string) {
     const seconds = progress.finishTick / 120;
     const report = {
       courseId: course.courseId,
+      compatibility: attempt.compatibility,
       route: route.id,
       seconds,
       targetWindowSeconds: [55, 65],
       withinTargetWindow: seconds >= 55 && seconds <= 65,
       progress,
       mechanics,
+      maxChargeTicks,
+      chargingTicks,
       replayVerified: true,
       verifiedTicks: ticks.length,
       controller: { targetSpeed: speed ?? route.targetSpeed ?? 10 },
@@ -145,9 +159,31 @@ for (const slug of slugs) {
   const routes = requestedRoute ? data.routes.filter((route) => route.id === requestedRoute) : data.routes;
   if (!routes.length) throw new Error(`No matching routes in ${slug}`);
   const reports = [];
-  for (const route of routes) reports.push(await verify(course, route, dir));
+  for (const route of routes)
+    reports.push(
+      await verify(
+        course,
+        proofId
+          ? {
+              ...route,
+              id: proofId,
+              points: route.points.map((p) => (p.launch ? p : { ...p, speed: speed ?? p.speed })),
+            }
+          : route,
+        dir,
+      ),
+    );
+  if (proofId) continue;
   await writeFile(
     resolve(dir, 'race-validation.json'),
-    JSON.stringify({ courseId: course.courseId, routes: reports }, null, 2),
+    JSON.stringify(
+      {
+        courseId: course.courseId,
+        compatibility: makeCompatibility(course.courseId, !!course.stunts, course.physicsProfile),
+        routes: reports,
+      },
+      null,
+      2,
+    ),
   );
 }

@@ -1,16 +1,32 @@
-import { DEFAULT_PARAMS, PHYSICS_VERSION } from '@wwm/physics';
+import { DEFAULT_PARAMS, PHYSICS_VERSION, RACE_ELEVATION_PROFILE } from '@wwm/physics';
 import { SIM_HZ } from '@wwm/schema';
+import { racePhysicsOptions } from './profile.ts';
 import { validateRecording } from './recording.ts';
-import type { RaceAttempt, RaceCompatibility } from './types.ts';
+import type { RaceAttempt, RaceCompatibility, RaceCourse } from './types.ts';
 
 export const RACE_RULES_VERSION = 'wwm.race-rules/3';
 export const RACE_STUNT_RULES_VERSION = 'wwm.race-rules/4';
-export function makeCompatibility(courseId: string, stuntsEnabled = false): RaceCompatibility {
+export const RACE_ELEVATION_RULES_VERSION = 'wwm.race-rules/5';
+export function makeCompatibility(
+  courseId: string,
+  stuntsEnabled = false,
+  physicsProfile?: RaceCourse['physicsProfile'],
+): RaceCompatibility {
+  const options = racePhysicsOptions(physicsProfile);
+  const params = Object.entries(DEFAULT_PARAMS).sort(([a], [b]) => a.localeCompare(b));
   return {
     courseId,
     physicsVersion: PHYSICS_VERSION,
-    physicsConfig: JSON.stringify(Object.entries(DEFAULT_PARAMS).sort(([a], [b]) => a.localeCompare(b))),
-    rulesVersion: stuntsEnabled ? RACE_STUNT_RULES_VERSION : RACE_RULES_VERSION,
+    physicsConfig: JSON.stringify(
+      physicsProfile ? { params, options, profile: RACE_ELEVATION_PROFILE } : params,
+    ),
+    rulesVersion: physicsProfile
+      ? stuntsEnabled
+        ? RACE_ELEVATION_RULES_VERSION
+        : `${RACE_ELEVATION_RULES_VERSION}-plain`
+      : stuntsEnabled
+        ? RACE_STUNT_RULES_VERSION
+        : RACE_RULES_VERSION,
     hz: SIM_HZ,
   };
 }
@@ -65,7 +81,9 @@ export function validateAttempt(value: unknown): value is RaceAttempt {
     c.hz !== SIM_HZ
   )
     return false;
-  const turboRules = [RACE_STUNT_RULES_VERSION, 'wwm.race-rules/2'].includes(c.rulesVersion);
+  const turboRules = [RACE_STUNT_RULES_VERSION, RACE_ELEVATION_RULES_VERSION, 'wwm.race-rules/2'].includes(
+    c.rulesVersion,
+  );
   if (turboRules !== (a.recording.format === 'wwm.race-input/2')) return false;
   if (
     !Number.isSafeInteger(p.tick) ||

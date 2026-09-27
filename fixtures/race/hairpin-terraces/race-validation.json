@@ -1,32 +1,47 @@
 {
-  "courseId": "81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693",
+  "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+  "compatibility": {
+    "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+    "physicsVersion": "0.2.0",
+    "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+    "rulesVersion": "wwm.race-rules/5",
+    "hz": 120
+  },
   "routes": [
     {
-      "courseId": "81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693",
+      "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+      "compatibility": {
+        "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+        "physicsVersion": "0.2.0",
+        "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+        "rulesVersion": "wwm.race-rules/5",
+        "hz": 120
+      },
       "route": "route-0",
-      "seconds": 62.016666666666666,
+      "seconds": 60.56666666666667,
       "targetWindowSeconds": [
         55,
         65
       ],
       "withinTargetWindow": true,
       "progress": {
-        "tick": 7442,
+        "tick": 7268,
         "nextGate": 4,
         "sectorTicks": [
-          2060,
-          3888,
-          5967
+          1944,
+          3701,
+          5812
         ],
-        "finishTick": 7442,
+        "finishTick": 7268,
         "reasons": []
       },
       "mechanics": {
         "enabled": true,
-        "chargeTicks": 329,
+        "chargeTicks": 43,
         "chargeRequired": 360,
-        "ready": true,
-        "turboCharges": 4,
+        "chargingReason": "charging",
+        "ready": false,
+        "turboCharges": 0,
         "lives": 3,
         "maxLives": 3,
         "exhausted": false,
@@ -35,8 +50,15 @@
         "landings": 0,
         "lastEvent": null
       },
+      "maxChargeTicks": 314,
+      "chargingTicks": {
+        "slow": 3260,
+        "charging": 2013,
+        "airborne": 21,
+        "downhill": 1974
+      },
       "replayVerified": true,
-      "verifiedTicks": 7442,
+      "verifiedTicks": 7268,
       "controller": {
         "targetSpeed": 9.6
       },
@@ -52,12 +74,12 @@
           "mechanic": null,
           "pos": [
             24.888927459716797,
-            12.507990837097168,
+            11.56447696685791,
             113.77782440185547
           ]
         },
         {
-          "tick": 430,
+          "tick": 459,
           "events": [
             {
               "type": "island",
@@ -66,43 +88,13 @@
           ],
           "mechanic": null,
           "pos": [
-            46.18118667602539,
-            12.499093055725098,
-            115.48919677734375
+            46.1676025390625,
+            13.186100006103516,
+            115.45967102050781
           ]
         },
         {
-          "tick": 446,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3985393047332764
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            47.18670654296875,
-            12.497029304504395,
-            114.80155181884766
-          ]
-        },
-        {
-          "tick": 518,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2308528423309326
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            52.03723907470703,
-            12.498172760009766,
-            111.73248291015625
-          ]
-        },
-        {
-          "tick": 757,
+          "tick": 772,
           "events": [
             {
               "type": "island",
@@ -111,53 +103,13 @@
           ],
           "mechanic": null,
           "pos": [
-            70.08016204833984,
-            12.496427536010742,
-            112.01425170898438
+            70.18958282470703,
+            14.97520923614502,
+            111.84969329833984
           ]
         },
         {
-          "tick": 768,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            70.75101470947266,
-            12.614224433898926,
-            112.49127960205078
-          ]
-        },
-        {
-          "tick": 776,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 3.00974440574646
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            71.2563247680664,
-            12.49831771850586,
-            112.86597442626953
-          ]
-        },
-        {
-          "tick": 849,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.712475538253784
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            76.10304260253906,
-            12.498260498046875,
-            115.90991973876953
-          ]
-        },
-        {
-          "tick": 1065,
+          "tick": 1091,
           "events": [
             {
               "type": "island",
@@ -166,28 +118,13 @@
           ],
           "mechanic": null,
           "pos": [
-            92.36626434326172,
-            12.498163223266602,
-            116.61590576171875
+            92.33028411865234,
+            16.605749130249023,
+            116.4428939819336
           ]
         },
         {
-          "tick": 1082,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.900892496109009
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            93.37477111816406,
-            12.496788024902344,
-            115.95553588867188
-          ]
-        },
-        {
-          "tick": 1474,
+          "tick": 1537,
           "events": [
             {
               "type": "island",
@@ -196,13 +133,13 @@
           ],
           "mechanic": null,
           "pos": [
-            109.94692993164062,
-            12.498979568481445,
-            104.24512481689453
+            109.99341583251953,
+            14.547067642211914,
+            104.21097564697266
           ]
         },
         {
-          "tick": 1835,
+          "tick": 1859,
           "events": [
             {
               "type": "island",
@@ -211,13 +148,13 @@
           ],
           "mechanic": null,
           "pos": [
-            125.38410186767578,
-            12.499496459960938,
-            95.61808776855469
+            124.88883972167969,
+            12.76016902923584,
+            95.4239730834961
           ]
         },
         {
-          "tick": 2473,
+          "tick": 2351,
           "events": [
             {
               "type": "island",
@@ -226,13 +163,13 @@
           ],
           "mechanic": null,
           "pos": [
-            102.67010498046875,
-            12.168862342834473,
-            89.49984741210938
+            102.73809051513672,
+            10.276063919067383,
+            89.3741683959961
           ]
         },
         {
-          "tick": 2959,
+          "tick": 2777,
           "events": [
             {
               "type": "island",
@@ -241,38 +178,13 @@
           ],
           "mechanic": null,
           "pos": [
-            76.5418701171875,
-            11.836261749267578,
-            90.64872741699219
+            76.59977722167969,
+            7.497519016265869,
+            90.48058319091797
           ]
         },
         {
-          "tick": 3052,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 3.1569514885533065
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            70.46734619140625,
-            11.811169624328613,
-            86.59565734863281
-          ]
-        },
-        {
-          "tick": 3212,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            58.12773132324219,
-            11.600594520568848,
-            84.0025405883789
-          ]
-        },
-        {
-          "tick": 3291,
+          "tick": 3108,
           "events": [
             {
               "type": "island",
@@ -281,13 +193,13 @@
           ],
           "mechanic": null,
           "pos": [
-            52.214073181152344,
-            11.50383186340332,
-            86.35526275634766
+            52.14939880371094,
+            9.319497108459473,
+            85.99462127685547
           ]
         },
         {
-          "tick": 3786,
+          "tick": 3585,
           "events": [
             {
               "type": "island",
@@ -296,13 +208,13 @@
           ],
           "mechanic": null,
           "pos": [
-            29.482030868530273,
-            11.504284858703613,
-            71.06022644042969
+            29.46607780456543,
+            7.038438320159912,
+            71.48846435546875
           ]
         },
         {
-          "tick": 4246,
+          "tick": 4059,
           "events": [
             {
               "type": "island",
@@ -311,28 +223,13 @@
           ],
           "mechanic": null,
           "pos": [
-            49.8411750793457,
-            11.167911529541016,
-            62.81647872924805
+            49.88767623901367,
+            8.768606185913086,
+            62.81964111328125
           ]
         },
         {
-          "tick": 4260,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2761154174804688
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            50.84782409667969,
-            11.164103507995605,
-            62.82126235961914
-          ]
-        },
-        {
-          "tick": 4685,
+          "tick": 4591,
           "events": [
             {
               "type": "island",
@@ -341,23 +238,13 @@
           ],
           "mechanic": null,
           "pos": [
-            73.55409240722656,
-            10.836392402648926,
-            61.21343994140625
+            73.57400512695312,
+            11.253790855407715,
+            61.102203369140625
           ]
         },
         {
-          "tick": 4942,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            92.44149017333984,
-            10.550867080688477,
-            66.83733367919922
-          ]
-        },
-        {
-          "tick": 4977,
+          "tick": 4882,
           "events": [
             {
               "type": "island",
@@ -366,28 +253,13 @@
           ],
           "mechanic": null,
           "pos": [
-            95.00321960449219,
-            10.499760627746582,
-            65.6871109008789
+            94.97420501708984,
+            9.703595161437988,
+            65.65900421142578
           ]
         },
         {
-          "tick": 4992,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.4692208766937256
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            95.88365173339844,
-            10.497593879699707,
-            65.09493255615234
-          ]
-        },
-        {
-          "tick": 5413,
+          "tick": 5372,
           "events": [
             {
               "type": "island",
@@ -396,13 +268,13 @@
           ],
           "mechanic": null,
           "pos": [
-            112.15321350097656,
-            10.499422073364258,
-            51.03543472290039
+            112.21986389160156,
+            11.973367691040039,
+            51.028289794921875
           ]
         },
         {
-          "tick": 5760,
+          "tick": 5721,
           "events": [
             {
               "type": "island",
@@ -411,13 +283,13 @@
           ],
           "mechanic": null,
           "pos": [
-            125.79540252685547,
-            10.498923301696777,
-            39.99944305419922
+            125.4176025390625,
+            10.866689682006836,
+            39.81507110595703
           ]
         },
         {
-          "tick": 6520,
+          "tick": 6355,
           "events": [
             {
               "type": "island",
@@ -426,38 +298,13 @@
           ],
           "mechanic": null,
           "pos": [
-            97.1209487915039,
-            10.50112247467041,
-            31.735210418701172
+            97.13272094726562,
+            13.695420265197754,
+            31.789508819580078
           ]
         },
         {
-          "tick": 6535,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.296910285949707
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            96.08281707763672,
-            10.497445106506348,
-            32.27259826660156
-          ]
-        },
-        {
-          "tick": 6633,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            89.56543731689453,
-            10.496498107910156,
-            36.366214752197266
-          ]
-        },
-        {
-          "tick": 6961,
+          "tick": 6800,
           "events": [
             {
               "type": "island",
@@ -466,28 +313,13 @@
           ],
           "mechanic": null,
           "pos": [
-            64.81072235107422,
-            10.500572204589844,
-            35.010250091552734
+            64.8082504272461,
+            11.089926719665527,
+            35.026885986328125
           ]
         },
         {
-          "tick": 6975,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3681626319885254
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            64.0001220703125,
-            10.498169898986816,
-            34.4282341003418
-          ]
-        },
-        {
-          "tick": 7391,
+          "tick": 7219,
           "events": [
             {
               "type": "island",
@@ -496,13 +328,13 @@
           ],
           "mechanic": null,
           "pos": [
-            35.435306549072266,
-            10.504131317138672,
-            33.185340881347656
+            35.474002838134766,
+            13.212895393371582,
+            33.18449783325195
           ]
         },
         {
-          "tick": 7437,
+          "tick": 7263,
           "events": [
             {
               "type": "goal"
@@ -510,40 +342,48 @@
           ],
           "mechanic": null,
           "pos": [
-            31.788454055786133,
-            10.496430397033691,
-            33.15965270996094
+            31.830284118652344,
+            13.207398414611816,
+            33.16814422607422
           ]
         }
       ],
       "method": "Ordinary bounded tilt, power and optional turbo inputs through real fixed-step Rapier; ordered gates, no falls or recovery, exact float32 pose and progress replay in a second simulation. Scripted feasibility, not human difficulty or optimal-route evidence."
     },
     {
-      "courseId": "81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693",
+      "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+      "compatibility": {
+        "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+        "physicsVersion": "0.2.0",
+        "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+        "rulesVersion": "wwm.race-rules/5",
+        "hz": 120
+      },
       "route": "route-1",
-      "seconds": 61.25,
+      "seconds": 59.53333333333333,
       "targetWindowSeconds": [
         55,
         65
       ],
       "withinTargetWindow": true,
       "progress": {
-        "tick": 7350,
+        "tick": 7144,
         "nextGate": 4,
         "sectorTicks": [
-          2058,
-          3801,
-          5875
+          1941,
+          3571,
+          5689
         ],
-        "finishTick": 7350,
+        "finishTick": 7144,
         "reasons": []
       },
       "mechanics": {
         "enabled": true,
-        "chargeTicks": 329,
+        "chargeTicks": 45,
         "chargeRequired": 360,
-        "ready": true,
-        "turboCharges": 4,
+        "chargingReason": "charging",
+        "ready": false,
+        "turboCharges": 0,
         "lives": 3,
         "maxLives": 3,
         "exhausted": false,
@@ -552,8 +392,15 @@
         "landings": 0,
         "lastEvent": null
       },
+      "maxChargeTicks": 323,
+      "chargingTicks": {
+        "slow": 3056,
+        "charging": 2110,
+        "airborne": 28,
+        "downhill": 1950
+      },
       "replayVerified": true,
-      "verifiedTicks": 7350,
+      "verifiedTicks": 7144,
       "controller": {
         "targetSpeed": 9.6
       },
@@ -569,12 +416,12 @@
           "mechanic": null,
           "pos": [
             24.888927459716797,
-            12.507990837097168,
+            11.56447696685791,
             113.77782440185547
           ]
         },
         {
-          "tick": 430,
+          "tick": 459,
           "events": [
             {
               "type": "island",
@@ -583,43 +430,13 @@
           ],
           "mechanic": null,
           "pos": [
-            46.18118667602539,
-            12.499093055725098,
-            115.48919677734375
+            46.1676025390625,
+            13.186100006103516,
+            115.45967102050781
           ]
         },
         {
-          "tick": 446,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3985393047332764
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            47.18670654296875,
-            12.497029304504395,
-            114.80155181884766
-          ]
-        },
-        {
-          "tick": 518,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2308528423309326
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            52.03723907470703,
-            12.498172760009766,
-            111.73248291015625
-          ]
-        },
-        {
-          "tick": 757,
+          "tick": 772,
           "events": [
             {
               "type": "island",
@@ -628,53 +445,13 @@
           ],
           "mechanic": null,
           "pos": [
-            70.08016204833984,
-            12.496427536010742,
-            112.01425170898438
+            70.18958282470703,
+            14.97520923614502,
+            111.84969329833984
           ]
         },
         {
-          "tick": 768,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            70.75101470947266,
-            12.614224433898926,
-            112.49127960205078
-          ]
-        },
-        {
-          "tick": 776,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 3.00974440574646
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            71.2563247680664,
-            12.49831771850586,
-            112.86597442626953
-          ]
-        },
-        {
-          "tick": 849,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.712475538253784
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            76.10304260253906,
-            12.498260498046875,
-            115.90991973876953
-          ]
-        },
-        {
-          "tick": 1065,
+          "tick": 1091,
           "events": [
             {
               "type": "island",
@@ -683,28 +460,13 @@
           ],
           "mechanic": null,
           "pos": [
-            92.36626434326172,
-            12.498163223266602,
-            116.61590576171875
+            92.33028411865234,
+            16.605749130249023,
+            116.4428939819336
           ]
         },
         {
-          "tick": 1082,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.900892496109009
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            93.37477111816406,
-            12.496788024902344,
-            115.95553588867188
-          ]
-        },
-        {
-          "tick": 1474,
+          "tick": 1537,
           "events": [
             {
               "type": "island",
@@ -713,13 +475,13 @@
           ],
           "mechanic": null,
           "pos": [
-            109.94692993164062,
-            12.498979568481445,
-            104.24512481689453
+            109.99341583251953,
+            14.547067642211914,
+            104.21097564697266
           ]
         },
         {
-          "tick": 1835,
+          "tick": 1859,
           "events": [
             {
               "type": "island",
@@ -728,13 +490,13 @@
           ],
           "mechanic": null,
           "pos": [
-            125.38410186767578,
-            12.499496459960938,
-            95.61808776855469
+            124.88885498046875,
+            12.760202407836914,
+            95.42364501953125
           ]
         },
         {
-          "tick": 2552,
+          "tick": 2367,
           "events": [
             {
               "type": "island",
@@ -743,23 +505,13 @@
           ],
           "mechanic": null,
           "pos": [
-            104.03976440429688,
-            12.002930641174316,
-            80.79975128173828
+            104.10469055175781,
+            11.098894119262695,
+            80.91650390625
           ]
         },
         {
-          "tick": 2818,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            83.73943328857422,
-            11.627041816711426,
-            81.14993286132812
-          ]
-        },
-        {
-          "tick": 2884,
+          "tick": 2689,
           "events": [
             {
               "type": "island",
@@ -768,43 +520,13 @@
           ],
           "mechanic": null,
           "pos": [
-            79.58940124511719,
-            11.52165412902832,
-            77.79493713378906
+            79.56855773925781,
+            12.93575382232666,
+            77.77749633789062
           ]
         },
         {
-          "tick": 2898,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3605446815490723
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            78.90155792236328,
-            11.497096061706543,
-            76.96974182128906
-          ]
-        },
-        {
-          "tick": 3000,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.4218766689300537
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            73.56888580322266,
-            11.497496604919434,
-            71.03572845458984
-          ]
-        },
-        {
-          "tick": 3261,
+          "tick": 3074,
           "events": [
             {
               "type": "island",
@@ -813,47 +535,28 @@
           ],
           "mechanic": null,
           "pos": [
-            55.97382354736328,
-            11.496841430664062,
-            73.5770034790039
+            55.8796501159668,
+            9.641742706298828,
+            73.54762268066406
           ]
         },
         {
-          "tick": 3276,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.4923129081726074
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            55.311649322509766,
-            11.497980117797852,
-            74.28851318359375
-          ]
-        },
-        {
-          "tick": 3695,
+          "tick": 3445,
           "events": [
             {
               "type": "island",
               "islandId": 4
-            },
-            {
-              "type": "landed",
-              "impact": 2.368906021118164
             }
           ],
           "mechanic": null,
           "pos": [
-            34.56624984741211,
-            11.49837875366211,
-            69.0160903930664
+            35.210105895996094,
+            7.043888568878174,
+            69.63224029541016
           ]
         },
         {
-          "tick": 4161,
+          "tick": 3929,
           "events": [
             {
               "type": "island",
@@ -862,28 +565,13 @@
           ],
           "mechanic": null,
           "pos": [
-            49.84082794189453,
-            11.167840003967285,
-            62.81571960449219
-          ]
-        },
-        {
-          "tick": 4175,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2655436992645264
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            50.849037170410156,
-            11.164116859436035,
+            49.826499938964844,
+            8.764246940612793,
             62.81753158569336
           ]
         },
         {
-          "tick": 4601,
+          "tick": 4465,
           "events": [
             {
               "type": "island",
@@ -892,53 +580,13 @@
           ],
           "mechanic": null,
           "pos": [
-            73.5385513305664,
-            10.834148406982422,
-            61.185367584228516
+            73.58393096923828,
+            11.252801895141602,
+            61.05536651611328
           ]
         },
         {
-          "tick": 4617,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.5112545490264893
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            74.61235046386719,
-            10.830489158630371,
-            61.86050796508789
-          ]
-        },
-        {
-          "tick": 4693,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.9223219267889333
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            79.69420623779297,
-            10.809673309326172,
-            64.9903564453125
-          ]
-        },
-        {
-          "tick": 4866,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            92.99958038330078,
-            10.539979934692383,
-            66.65208435058594
-          ]
-        },
-        {
-          "tick": 4894,
+          "tick": 4757,
           "events": [
             {
               "type": "island",
@@ -947,13 +595,13 @@
           ],
           "mechanic": null,
           "pos": [
-            95.00540924072266,
-            10.50159740447998,
-            65.64006042480469
+            94.96468353271484,
+            9.70377254486084,
+            65.63325500488281
           ]
         },
         {
-          "tick": 5326,
+          "tick": 5246,
           "events": [
             {
               "type": "island",
@@ -962,13 +610,13 @@
           ],
           "mechanic": null,
           "pos": [
-            112.14961242675781,
-            10.515524864196777,
-            50.99644088745117
+            112.2066879272461,
+            11.969301223754883,
+            51.074195861816406
           ]
         },
         {
-          "tick": 5671,
+          "tick": 5598,
           "events": [
             {
               "type": "island",
@@ -977,13 +625,13 @@
           ],
           "mechanic": null,
           "pos": [
-            125.76997375488281,
-            10.498912811279297,
-            40.009300231933594
+            125.40786743164062,
+            10.864885330200195,
+            39.828086853027344
           ]
         },
         {
-          "tick": 6428,
+          "tick": 6232,
           "events": [
             {
               "type": "island",
@@ -992,38 +640,13 @@
           ],
           "mechanic": null,
           "pos": [
-            97.12161254882812,
-            10.501075744628906,
-            31.735248565673828
+            97.16426086425781,
+            13.69037914276123,
+            31.76265525817871
           ]
         },
         {
-          "tick": 6443,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2856814861297607
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            96.08383178710938,
-            10.497443199157715,
-            32.2720947265625
-          ]
-        },
-        {
-          "tick": 6541,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            89.56757354736328,
-            10.496500015258789,
-            36.365272521972656
-          ]
-        },
-        {
-          "tick": 6869,
+          "tick": 6677,
           "events": [
             {
               "type": "island",
@@ -1032,28 +655,13 @@
           ],
           "mechanic": null,
           "pos": [
-            64.81236267089844,
-            10.500411987304688,
-            35.010955810546875
+            64.7933349609375,
+            11.091620445251465,
+            35.0081672668457
           ]
         },
         {
-          "tick": 6883,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3363256454467773
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            64.00298309326172,
-            10.49760913848877,
-            34.429771423339844
-          ]
-        },
-        {
-          "tick": 7299,
+          "tick": 7095,
           "events": [
             {
               "type": "island",
@@ -1062,13 +670,13 @@
           ],
           "mechanic": null,
           "pos": [
-            35.43445587158203,
-            10.504129409790039,
-            33.18531799316406
+            35.45090103149414,
+            13.214760780334473,
+            33.184200286865234
           ]
         },
         {
-          "tick": 7345,
+          "tick": 7139,
           "events": [
             {
               "type": "goal"
@@ -1076,40 +684,48 @@
           ],
           "mechanic": null,
           "pos": [
-            31.78667449951172,
-            10.496430397033691,
-            33.15971755981445
+            31.806137084960938,
+            13.207401275634766,
+            33.16822814941406
           ]
         }
       ],
       "method": "Ordinary bounded tilt, power and optional turbo inputs through real fixed-step Rapier; ordered gates, no falls or recovery, exact float32 pose and progress replay in a second simulation. Scripted feasibility, not human difficulty or optimal-route evidence."
     },
     {
-      "courseId": "81edf424d88687f984f9383e04083d25588e4cefa25f2617f4e5f557c031a693",
+      "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+      "compatibility": {
+        "courseId": "4dc9a616273713e11704f6fd0952a5ab352b4bff4d8122d2333d05e391cc1809",
+        "physicsVersion": "0.2.0",
+        "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+        "rulesVersion": "wwm.race-rules/5",
+        "hz": 120
+      },
       "route": "route-2",
-      "seconds": 62.90833333333333,
+      "seconds": 62.80833333333333,
       "targetWindowSeconds": [
         55,
         65
       ],
       "withinTargetWindow": true,
       "progress": {
-        "tick": 7549,
+        "tick": 7537,
         "nextGate": 4,
         "sectorTicks": [
-          2060,
-          3873,
-          6047
+          1944,
+          3688,
+          6059
         ],
-        "finishTick": 7549,
+        "finishTick": 7537,
         "reasons": []
       },
       "mechanics": {
         "enabled": true,
-        "chargeTicks": 328,
+        "chargeTicks": 42,
         "chargeRequired": 360,
-        "ready": true,
-        "turboCharges": 3,
+        "chargingReason": "charging",
+        "ready": false,
+        "turboCharges": 0,
         "lives": 3,
         "maxLives": 3,
         "exhausted": false,
@@ -1118,8 +734,15 @@
         "landings": 2,
         "lastEvent": null
       },
+      "maxChargeTicks": 314,
+      "chargingTicks": {
+        "slow": 3605,
+        "charging": 2178,
+        "airborne": 183,
+        "downhill": 1571
+      },
       "replayVerified": true,
-      "verifiedTicks": 7549,
+      "verifiedTicks": 7537,
       "controller": {
         "targetSpeed": 9.6
       },
@@ -1135,12 +758,12 @@
           "mechanic": null,
           "pos": [
             24.888927459716797,
-            12.507990837097168,
+            11.56447696685791,
             113.77782440185547
           ]
         },
         {
-          "tick": 430,
+          "tick": 459,
           "events": [
             {
               "type": "island",
@@ -1149,43 +772,13 @@
           ],
           "mechanic": null,
           "pos": [
-            46.18118667602539,
-            12.499093055725098,
-            115.48919677734375
+            46.1676025390625,
+            13.186100006103516,
+            115.45967102050781
           ]
         },
         {
-          "tick": 446,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.3985393047332764
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            47.18670654296875,
-            12.497029304504395,
-            114.80155181884766
-          ]
-        },
-        {
-          "tick": 518,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2308528423309326
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            52.03723907470703,
-            12.498172760009766,
-            111.73248291015625
-          ]
-        },
-        {
-          "tick": 757,
+          "tick": 772,
           "events": [
             {
               "type": "island",
@@ -1194,53 +787,13 @@
           ],
           "mechanic": null,
           "pos": [
-            70.08016204833984,
-            12.496427536010742,
-            112.01425170898438
+            70.18958282470703,
+            14.97520923614502,
+            111.84969329833984
           ]
         },
         {
-          "tick": 768,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            70.75101470947266,
-            12.614224433898926,
-            112.49127960205078
-          ]
-        },
-        {
-          "tick": 776,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 3.00974440574646
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            71.2563247680664,
-            12.49831771850586,
-            112.86597442626953
-          ]
-        },
-        {
-          "tick": 849,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.712475538253784
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            76.10304260253906,
-            12.498260498046875,
-            115.90991973876953
-          ]
-        },
-        {
-          "tick": 1065,
+          "tick": 1091,
           "events": [
             {
               "type": "island",
@@ -1249,28 +802,13 @@
           ],
           "mechanic": null,
           "pos": [
-            92.36626434326172,
-            12.498163223266602,
-            116.61590576171875
+            92.33028411865234,
+            16.605749130249023,
+            116.4428939819336
           ]
         },
         {
-          "tick": 1082,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.900892496109009
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            93.37477111816406,
-            12.496788024902344,
-            115.95553588867188
-          ]
-        },
-        {
-          "tick": 1474,
+          "tick": 1537,
           "events": [
             {
               "type": "island",
@@ -1279,13 +817,13 @@
           ],
           "mechanic": null,
           "pos": [
-            109.94692993164062,
-            12.498979568481445,
-            104.24512481689453
+            109.99341583251953,
+            14.547067642211914,
+            104.21097564697266
           ]
         },
         {
-          "tick": 1835,
+          "tick": 1859,
           "events": [
             {
               "type": "island",
@@ -1294,13 +832,13 @@
           ],
           "mechanic": null,
           "pos": [
-            125.38410186767578,
-            12.499496459960938,
-            95.61808776855469
+            124.88883972167969,
+            12.76016902923584,
+            95.4239730834961
           ]
         },
         {
-          "tick": 2473,
+          "tick": 2351,
           "events": [
             {
               "type": "island",
@@ -1309,13 +847,13 @@
           ],
           "mechanic": null,
           "pos": [
-            102.67010498046875,
-            12.168862342834473,
-            89.49984741210938
+            102.73809051513672,
+            10.276063919067383,
+            89.3741683959961
           ]
         },
         {
-          "tick": 2959,
+          "tick": 2777,
           "events": [
             {
               "type": "island",
@@ -1324,38 +862,13 @@
           ],
           "mechanic": null,
           "pos": [
-            76.5418701171875,
-            11.836261749267578,
-            90.64872741699219
+            76.59977722167969,
+            7.497519016265869,
+            90.48058319091797
           ]
         },
         {
-          "tick": 3052,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 3.1569514885533065
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            70.46734619140625,
-            11.811169624328613,
-            86.59565734863281
-          ]
-        },
-        {
-          "tick": 3212,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            58.12773132324219,
-            11.600594520568848,
-            84.0025405883789
-          ]
-        },
-        {
-          "tick": 3291,
+          "tick": 3108,
           "events": [
             {
               "type": "island",
@@ -1364,13 +877,13 @@
           ],
           "mechanic": null,
           "pos": [
-            52.214073181152344,
-            11.50383186340332,
-            86.35526275634766
+            52.14939880371094,
+            9.319497108459473,
+            85.99462127685547
           ]
         },
         {
-          "tick": 3786,
+          "tick": 3585,
           "events": [
             {
               "type": "island",
@@ -1379,28 +892,13 @@
           ],
           "mechanic": null,
           "pos": [
-            29.482481002807617,
-            11.504390716552734,
-            71.06019592285156
+            29.4661808013916,
+            7.039126873016357,
+            71.48705291748047
           ]
         },
         {
-          "tick": 4015,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.2559924125671387
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            32.12462615966797,
-            11.498830795288086,
-            53.86333465576172
-          ]
-        },
-        {
-          "tick": 4327,
+          "tick": 4221,
           "events": [
             {
               "type": "island",
@@ -1409,13 +907,13 @@
           ],
           "mechanic": null,
           "pos": [
-            44.22533416748047,
-            11.50230884552002,
-            53.3551025390625
+            44.06227493286133,
+            8.517006874084473,
+            53.74560546875
           ]
         },
         {
-          "tick": 4417,
+          "tick": 4320,
           "events": [
             {
               "type": "island",
@@ -1424,38 +922,38 @@
           ],
           "mechanic": null,
           "pos": [
-            47.95195007324219,
-            11.653797149658203,
-            55.02863693237305
+            47.77605056762695,
+            8.682265281677246,
+            54.4383544921875
           ]
         },
         {
-          "tick": 4433,
+          "tick": 4337,
           "events": [
             {
               "type": "landed",
-              "impact": 1.4008440971374512
+              "impact": 1.836790680885315
             }
           ],
           "mechanic": null,
           "pos": [
-            48.41128921508789,
-            11.762283325195312,
-            54.717830657958984
+            48.41640853881836,
+            8.7691011428833,
+            53.899253845214844
           ]
         },
         {
-          "tick": 4467,
+          "tick": 4363,
           "events": [],
           "mechanic": "launch",
           "pos": [
-            49.829341888427734,
-            11.756922721862793,
-            53.54523849487305
+            49.662532806396484,
+            8.767499923706055,
+            53.11039352416992
           ]
         },
         {
-          "tick": 4543,
+          "tick": 4439,
           "events": [
             {
               "type": "island",
@@ -1463,33 +961,18 @@
             },
             {
               "type": "landed",
-              "impact": 12.390707015991211
+              "impact": 12.48963451385498
             }
           ],
           "mechanic": "landing",
           "pos": [
-            55.445674896240234,
-            10.99887466430664,
-            51.15068435668945
+            55.33399200439453,
+            7.954961776733398,
+            51.617408752441406
           ]
         },
         {
-          "tick": 4559,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.4484434127807617
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            56.7510986328125,
-            10.997817993164062,
-            50.871681213378906
-          ]
-        },
-        {
-          "tick": 4998,
+          "tick": 4875,
           "events": [
             {
               "type": "island",
@@ -1498,13 +981,13 @@
           ],
           "mechanic": null,
           "pos": [
-            69.70869445800781,
-            10.998876571655273,
-            45.67714309692383
+            69.85987091064453,
+            9.00178337097168,
+            45.38268280029297
           ]
         },
         {
-          "tick": 5397,
+          "tick": 5372,
           "events": [
             {
               "type": "island",
@@ -1513,13 +996,13 @@
           ],
           "mechanic": null,
           "pos": [
-            92.63971710205078,
-            11.014537811279297,
-            43.90778350830078
+            92.3539810180664,
+            10.361936569213867,
+            43.81216049194336
           ]
         },
         {
-          "tick": 5496,
+          "tick": 5490,
           "events": [
             {
               "type": "island",
@@ -1528,23 +1011,23 @@
           ],
           "mechanic": null,
           "pos": [
-            95.71756744384766,
-            11.155332565307617,
-            41.080528259277344
+            95.78076171875,
+            10.528888702392578,
+            41.268524169921875
           ]
         },
         {
-          "tick": 5557,
+          "tick": 5536,
           "events": [],
           "mechanic": "launch",
           "pos": [
-            98.03528594970703,
-            11.257671356201172,
-            40.9250602722168
+            97.95108795166016,
+            10.62148380279541,
+            40.73849868774414
           ]
         },
         {
-          "tick": 5634,
+          "tick": 5612,
           "events": [
             {
               "type": "island",
@@ -1552,44 +1035,14 @@
             },
             {
               "type": "landed",
-              "impact": 12.424240112304688
+              "impact": 12.414799690246582
             }
           ],
           "mechanic": "landing",
           "pos": [
-            103.85470581054688,
-            10.498922348022461,
-            39.52165222167969
-          ]
-        },
-        {
-          "tick": 5650,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.476280927658081
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            105.13011932373047,
-            10.497832298278809,
-            39.114009857177734
-          ]
-        },
-        {
-          "tick": 5721,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.6453545093536377
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            109.8718032836914,
-            10.498470306396484,
-            36.956626892089844
+            103.8973159790039,
+            9.86296272277832,
+            39.4886589050293
           ]
         },
         {
@@ -1602,13 +1055,13 @@
           ],
           "mechanic": null,
           "pos": [
-            119.91959381103516,
-            10.509495735168457,
-            32.814842224121094
+            119.61274719238281,
+            10.867668151855469,
+            32.768272399902344
           ]
         },
         {
-          "tick": 6624,
+          "tick": 6630,
           "events": [
             {
               "type": "island",
@@ -1617,38 +1070,13 @@
           ],
           "mechanic": null,
           "pos": [
-            97.13936614990234,
-            10.49850845336914,
-            31.720489501953125
+            97.11406707763672,
+            13.69347858428955,
+            31.70279312133789
           ]
         },
         {
-          "tick": 6641,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.5877647399902344
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            95.97797393798828,
-            10.497583389282227,
-            32.32201385498047
-          ]
-        },
-        {
-          "tick": 6734,
-          "events": [],
-          "mechanic": "charged",
-          "pos": [
-            89.78993225097656,
-            10.49647331237793,
-            36.2210578918457
-          ]
-        },
-        {
-          "tick": 7065,
+          "tick": 7071,
           "events": [
             {
               "type": "island",
@@ -1657,28 +1085,13 @@
           ],
           "mechanic": null,
           "pos": [
-            64.8320541381836,
-            10.497390747070312,
-            35.02667236328125
+            64.78202056884766,
+            11.092597961425781,
+            34.990150451660156
           ]
         },
         {
-          "tick": 7081,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.585462808609009
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            63.93778610229492,
-            10.497635841369629,
-            34.37620162963867
-          ]
-        },
-        {
-          "tick": 7497,
+          "tick": 7488,
           "events": [
             {
               "type": "island",
@@ -1687,28 +1100,13 @@
           ],
           "mechanic": null,
           "pos": [
-            35.48455047607422,
-            10.500404357910156,
-            33.18612289428711
+            35.47248077392578,
+            13.21324348449707,
+            33.184444427490234
           ]
         },
         {
-          "tick": 7513,
-          "events": [
-            {
-              "type": "landed",
-              "impact": 2.4530601501464844
-            }
-          ],
-          "mechanic": null,
-          "pos": [
-            34.237667083740234,
-            10.497488021850586,
-            33.17115783691406
-          ]
-        },
-        {
-          "tick": 7544,
+          "tick": 7532,
           "events": [
             {
               "type": "goal"
@@ -1716,9 +1114,9 @@
           ],
           "mechanic": null,
           "pos": [
-            31.81178855895996,
-            10.496474266052246,
-            33.16224670410156
+            31.82802391052246,
+            13.207391738891602,
+            33.16850280761719
           ]
         }
       ],

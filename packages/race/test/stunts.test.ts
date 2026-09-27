@@ -304,3 +304,69 @@ test('turbo preserves a banked charge above its cap and can be used from standst
     sim.dispose();
   }
 });
+
+test('elevation replay fingerprints profile, retains old valid attempts and reproduces turbo poses', async () => {
+  const c = course();
+  c.physicsProfile = 'elevation-v1';
+  c.stage.size = { width: 400 * PX_PER_METER, height: 12 * PX_PER_METER };
+  c.stage.source.pageWidth = c.stage.size.width;
+  c.stage.source.pageHeight = c.stage.size.height;
+  c.stunts.cruiseSpeed = 8;
+  c.stunts.launchPads = [];
+  c.stage.islands = [c.stage.islands[0]];
+  c.stage.islands[0].contour = [pt(0, 0), pt(400, 0), pt(400, 12), pt(0, 12)];
+  c.stage.goal = { ...c.stage.goal, islandId: 0, pos: pt(390, 6) };
+  c.gates[0].center[0] = 350;
+  const sim = await createRaceSimulation(c);
+  await sim.load(c.stage);
+  const recorder = new RaceRecorder(undefined, true);
+  const poses = [sim.getBallState().pos];
+  const rotations = [sim.getBallState().quat];
+  let progress = createProgress();
+  let spent = false;
+  try {
+    for (let tick = 1; tick <= 1200; tick++) {
+      const input: RaceInputSample = { ...forward, turbo: sim.getMechanics().ready && !spent };
+      spent ||= !!input.turbo;
+      recorder.record(input);
+      const result = sim.step(input);
+      progress = advanceProgress(progress, c.gates, {
+        tick,
+        previous: poses[poses.length - 1],
+        current: result.ball.pos,
+        fell: result.events.some((e) => e.type === 'fell' || e.type === 'lost'),
+      });
+      poses.push(result.ball.pos);
+      rotations.push(result.ball.quat);
+    }
+    expect(spent).toBe(true);
+    expect(progress.reasons).toEqual([]);
+    const attempt: RaceAttempt = {
+      schema: 'wwm.race-attempt/1',
+      id: 'elevation-replay',
+      createdAt: 0,
+      inputSource: 'keyboard',
+      outcome: 'abandoned',
+      progress,
+      recording: recorder.finish(),
+      compatibility: makeCompatibility(c.courseId, true, c.physicsProfile),
+    };
+    const legacy = { ...attempt, compatibility: makeCompatibility(c.courseId, true) };
+    expect(validateAttempt(legacy)).toBe(true);
+    expect(validateAttempt(attempt)).toBe(true);
+    expect(compatible(legacy.compatibility, attempt.compatibility)).toBe(false);
+    expect(JSON.parse(attempt.compatibility.physicsConfig)).toMatchObject({
+      options: { raceElevation: true },
+      profile: { version: 'elevation-v1', horizontalSpeedLimit: 48 },
+    });
+    await expect(replayRace(c, legacy)).rejects.toThrow('Incompatible');
+    const track = await replayRace(c, attempt);
+    expect(track.progress).toEqual(progress);
+    for (let i = 0; i < poses.length; i++) {
+      expect(Array.from(track.pos.slice(i * 3, i * 3 + 3))).toEqual(poses[i].map(Math.fround));
+      expect(Array.from(track.quat.slice(i * 4, i * 4 + 4))).toEqual(rotations[i].map(Math.fround));
+    }
+  } finally {
+    sim.dispose();
+  }
+});

@@ -1,0 +1,643 @@
+{
+  "courseId": "3849f547391b8714e9bd80b11b37afc153d93e8018876aa6730a8a5d48dc3d24",
+  "compatibility": {
+    "courseId": "3849f547391b8714e9bd80b11b37afc153d93e8018876aa6730a8a5d48dc3d24",
+    "physicsVersion": "0.2.0",
+    "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+    "rulesVersion": "wwm.race-rules/5",
+    "hz": 120
+  },
+  "method": "Ordinary bounded tilt, no turbo spending or injected state. Continuous-line lookahead driver, clean full-course finish required.",
+  "best": {
+    "speed": 9.5,
+    "lookahead": 2,
+    "progress": {
+      "tick": 2810,
+      "nextGate": 9,
+      "sectorTicks": [
+        221,
+        606,
+        937,
+        1298,
+        1690,
+        2087,
+        2373,
+        2697
+      ],
+      "finishTick": 2810,
+      "reasons": []
+    },
+    "maxChargeTicks": 359,
+    "charges": 1,
+    "interruptions": [
+      {
+        "tick": 255,
+        "previousChargeTicks": 115,
+        "reason": "airborne",
+        "pos": [
+          12.42194938659668,
+          9.906270027160645,
+          27.405574798583984
+        ],
+        "speed": 10.479013219666326
+      },
+      {
+        "tick": 362,
+        "previousChargeTicks": 99,
+        "reason": "slow",
+        "pos": [
+          11.4535551071167,
+          9.886933326721191,
+          35.84966278076172
+        ],
+        "speed": 7.980263061153719
+      },
+      {
+        "tick": 635,
+        "previousChargeTicks": 155,
+        "reason": "airborne",
+        "pos": [
+          25.84336280822754,
+          10.657062530517578,
+          35.96265411376953
+        ],
+        "speed": 9.066121538765543
+      },
+      {
+        "tick": 743,
+        "previousChargeTicks": 99,
+        "reason": "slow",
+        "pos": [
+          34.049957275390625,
+          10.633647918701172,
+          35.32399368286133
+        ],
+        "speed": 7.919310218996307
+      },
+      {
+        "tick": 975,
+        "previousChargeTicks": 137,
+        "reason": "airborne",
+        "pos": [
+          34.99368667602539,
+          11.651771545410156,
+          49.65537643432617
+        ],
+        "speed": 10.115255721759407
+      },
+      {
+        "tick": 1088,
+        "previousChargeTicks": 106,
+        "reason": "slow",
+        "pos": [
+          34.158546447753906,
+          11.629193305969238,
+          58.44525146484375
+        ],
+        "speed": 7.927327847626436
+      },
+      {
+        "tick": 1329,
+        "previousChargeTicks": 121,
+        "reason": "airborne",
+        "pos": [
+          21.469959259033203,
+          12.397372245788574,
+          57.46796798706055
+        ],
+        "speed": 9.593180405402846
+      },
+      {
+        "tick": 1462,
+        "previousChargeTicks": 127,
+        "reason": "slow",
+        "pos": [
+          11.343503952026367,
+          12.375865936279297,
+          57.43400573730469
+        ],
+        "speed": 7.918712445184174
+      },
+      {
+        "tick": 1850,
+        "previousChargeTicks": 73,
+        "reason": "slow",
+        "pos": [
+          11.878478050231934,
+          11.380276679992676,
+          80.59886169433594
+        ],
+        "speed": 7.96757573808979
+      },
+      {
+        "tick": 2114,
+        "previousChargeTicks": 141,
+        "reason": "airborne",
+        "pos": [
+          25.82427978515625,
+          11.81884479522705,
+          80.20236206054688
+        ],
+        "speed": 10.013446880716568
+      },
+      {
+        "tick": 2733,
+        "previousChargeTicks": 129,
+        "reason": "airborne",
+        "pos": [
+          57.03289031982422,
+          12.385268211364746,
+          65.87001037597656
+        ],
+        "speed": 10.47429192606175
+      }
+    ],
+    "mechanics": {
+      "enabled": true,
+      "chargeTicks": 71,
+      "chargeRequired": 360,
+      "chargingReason": "charging",
+      "ready": true,
+      "turboCharges": 1,
+      "lives": 3,
+      "maxLives": 3,
+      "exhausted": false,
+      "turboTicks": 0,
+      "launches": 0,
+      "landings": 0,
+      "lastEvent": null
+    }
+  },
+  "results": [
+    {
+      "speed": 8.1,
+      "lookahead": 2,
+      "progress": {
+        "tick": 3024,
+        "nextGate": 9,
+        "sectorTicks": [
+          231,
+          638,
+          987,
+          1382,
+          1783,
+          2204,
+          2534,
+          2895
+        ],
+        "finishTick": 3024,
+        "reasons": []
+      },
+      "maxChargeTicks": 133,
+      "charges": 0,
+      "interruptions": [
+        {
+          "tick": 274,
+          "previousChargeTicks": 79,
+          "reason": "airborne",
+          "pos": [
+            12.429671287536621,
+            9.91093635559082,
+            27.605754852294922
+          ],
+          "speed": 9.018589992556445
+        },
+        {
+          "tick": 1031,
+          "previousChargeTicks": 67,
+          "reason": "airborne",
+          "pos": [
+            35.134254455566406,
+            11.651545524597168,
+            49.659183502197266
+          ],
+          "speed": 8.664898477701723
+        },
+        {
+          "tick": 2234,
+          "previousChargeTicks": 64,
+          "reason": "airborne",
+          "pos": [
+            25.862173080444336,
+            11.81827449798584,
+            80.03416442871094
+          ],
+          "speed": 8.78846972420638
+        },
+        {
+          "tick": 2992,
+          "previousChargeTicks": 133,
+          "reason": "slow",
+          "pos": [
+            56.32752990722656,
+            12.360298156738281,
+            62.06772232055664
+          ],
+          "speed": 7.9959567177479425
+        }
+      ],
+      "mechanics": {
+        "enabled": true,
+        "chargeTicks": 0,
+        "chargeRequired": 360,
+        "chargingReason": "slow",
+        "ready": false,
+        "turboCharges": 0,
+        "lives": 3,
+        "maxLives": 3,
+        "exhausted": false,
+        "turboTicks": 0,
+        "launches": 0,
+        "landings": 0,
+        "lastEvent": null
+      }
+    },
+    {
+      "speed": 8.1,
+      "lookahead": 4,
+      "progress": {
+        "tick": 2793,
+        "nextGate": 9,
+        "sectorTicks": [
+          231,
+          599,
+          928,
+          1274,
+          1632,
+          2007,
+          2336,
+          2666
+        ],
+        "finishTick": 2793,
+        "reasons": []
+      },
+      "maxChargeTicks": 130,
+      "charges": 0,
+      "interruptions": [
+        {
+          "tick": 274,
+          "previousChargeTicks": 79,
+          "reason": "airborne",
+          "pos": [
+            12.383830070495605,
+            9.910776138305664,
+            27.605615615844727
+          ],
+          "speed": 9.019670000520344
+        },
+        {
+          "tick": 702,
+          "previousChargeTicks": 63,
+          "reason": "slow",
+          "pos": [
+            30.788330078125,
+            10.63363265991211,
+            35.491943359375
+          ],
+          "speed": 7.996304513054184
+        },
+        {
+          "tick": 1378,
+          "previousChargeTicks": 64,
+          "reason": "slow",
+          "pos": [
+            16.478910446166992,
+            12.375855445861816,
+            57.688331604003906
+          ],
+          "speed": 7.997417368001118
+        },
+        {
+          "tick": 1967,
+          "previousChargeTicks": 62,
+          "reason": "slow",
+          "pos": [
+            20.985219955444336,
+            11.382284164428711,
+            79.6617660522461
+          ],
+          "speed": 7.877216778679211
+        },
+        {
+          "tick": 2758,
+          "previousChargeTicks": 130,
+          "reason": "slow",
+          "pos": [
+            56.559120178222656,
+            12.360299110412598,
+            62.2461051940918
+          ],
+          "speed": 7.995191270188797
+        }
+      ],
+      "mechanics": {
+        "enabled": true,
+        "chargeTicks": 0,
+        "chargeRequired": 360,
+        "chargingReason": "slow",
+        "ready": false,
+        "turboCharges": 0,
+        "lives": 3,
+        "maxLives": 3,
+        "exhausted": false,
+        "turboTicks": 0,
+        "launches": 0,
+        "landings": 0,
+        "lastEvent": null
+      }
+    },
+    {
+      "speed": 8.1,
+      "lookahead": 6,
+      "progress": {
+        "tick": 2628,
+        "nextGate": 9,
+        "sectorTicks": [
+          231,
+          568,
+          873,
+          1193,
+          1524,
+          1869,
+          2197,
+          2501
+        ],
+        "finishTick": 2628,
+        "reasons": []
+      },
+      "maxChargeTicks": 80,
+      "charges": 0,
+      "interruptions": [
+        {
+          "tick": 274,
+          "previousChargeTicks": 79,
+          "reason": "airborne",
+          "pos": [
+            12.306478500366211,
+            9.911799430847168,
+            27.603004455566406
+          ],
+          "speed": 9.018402488782934
+        },
+        {
+          "tick": 1296,
+          "previousChargeTicks": 64,
+          "reason": "slow",
+          "pos": [
+            16.551427841186523,
+            12.375856399536133,
+            57.68378448486328
+          ],
+          "speed": 7.995437881864427
+        },
+        {
+          "tick": 2544,
+          "previousChargeTicks": 80,
+          "reason": "airborne",
+          "pos": [
+            56.70951843261719,
+            12.385054588317871,
+            65.729736328125
+          ],
+          "speed": 9.015730113345489
+        }
+      ],
+      "mechanics": {
+        "enabled": true,
+        "chargeTicks": 0,
+        "chargeRequired": 360,
+        "chargingReason": "slow",
+        "ready": false,
+        "turboCharges": 0,
+        "lives": 3,
+        "maxLives": 3,
+        "exhausted": false,
+        "turboTicks": 0,
+        "launches": 0,
+        "landings": 0,
+        "lastEvent": null
+      }
+    },
+    {
+      "speed": 8.1,
+      "lookahead": 8,
+      "progress": {
+        "tick": 2473,
+        "nextGate": 9,
+        "sectorTicks": [
+          231,
+          541,
+          823,
+          1119,
+          1425,
+          1739,
+          2067,
+          2347
+        ],
+        "finishTick": 2473,
+        "reasons": []
+      },
+      "maxChargeTicks": 121,
+      "charges": 0,
+      "interruptions": [
+        {
+          "tick": 316,
+          "previousChargeTicks": 121,
+          "reason": "slow",
+          "pos": [
+            12.083077430725098,
+            9.886967658996582,
+            30.57865333557129
+          ],
+          "speed": 7.986673661317283
+        },
+        {
+          "tick": 2387,
+          "previousChargeTicks": 82,
+          "reason": "airborne",
+          "pos": [
+            56.439395904541016,
+            12.380511283874512,
+            65.89603424072266
+          ],
+          "speed": 8.924279865937823
+        }
+      ],
+      "mechanics": {
+        "enabled": true,
+        "chargeTicks": 0,
+        "chargeRequired": 360,
+        "chargingReason": "slow",
+        "ready": false,
+        "turboCharges": 0,
+        "lives": 3,
+        "maxLives": 3,
+        "exhausted": false,
+        "turboTicks": 0,
+        "launches": 0,
+        "landings": 0,
+        "lastEvent": null
+      }
+    },
+    {
+      "speed": 9.5,
+      "lookahead": 2,
+      "progress": {
+        "tick": 2810,
+        "nextGate": 9,
+        "sectorTicks": [
+          221,
+          606,
+          937,
+          1298,
+          1690,
+          2087,
+          2373,
+          2697
+        ],
+        "finishTick": 2810,
+        "reasons": []
+      },
+      "maxChargeTicks": 359,
+      "charges": 1,
+      "interruptions": [
+        {
+          "tick": 255,
+          "previousChargeTicks": 115,
+          "reason": "airborne",
+          "pos": [
+            12.42194938659668,
+            9.906270027160645,
+            27.405574798583984
+          ],
+          "speed": 10.479013219666326
+        },
+        {
+          "tick": 362,
+          "previousChargeTicks": 99,
+          "reason": "slow",
+          "pos": [
+            11.4535551071167,
+            9.886933326721191,
+            35.84966278076172
+          ],
+          "speed": 7.980263061153719
+        },
+        {
+          "tick": 635,
+          "previousChargeTicks": 155,
+          "reason": "airborne",
+          "pos": [
+            25.84336280822754,
+            10.657062530517578,
+            35.96265411376953
+          ],
+          "speed": 9.066121538765543
+        },
+        {
+          "tick": 743,
+          "previousChargeTicks": 99,
+          "reason": "slow",
+          "pos": [
+            34.049957275390625,
+            10.633647918701172,
+            35.32399368286133
+          ],
+          "speed": 7.919310218996307
+        },
+        {
+          "tick": 975,
+          "previousChargeTicks": 137,
+          "reason": "airborne",
+          "pos": [
+            34.99368667602539,
+            11.651771545410156,
+            49.65537643432617
+          ],
+          "speed": 10.115255721759407
+        },
+        {
+          "tick": 1088,
+          "previousChargeTicks": 106,
+          "reason": "slow",
+          "pos": [
+            34.158546447753906,
+            11.629193305969238,
+            58.44525146484375
+          ],
+          "speed": 7.927327847626436
+        },
+        {
+          "tick": 1329,
+          "previousChargeTicks": 121,
+          "reason": "airborne",
+          "pos": [
+            21.469959259033203,
+            12.397372245788574,
+            57.46796798706055
+          ],
+          "speed": 9.593180405402846
+        },
+        {
+          "tick": 1462,
+          "previousChargeTicks": 127,
+          "reason": "slow",
+          "pos": [
+            11.343503952026367,
+            12.375865936279297,
+            57.43400573730469
+          ],
+          "speed": 7.918712445184174
+        },
+        {
+          "tick": 1850,
+          "previousChargeTicks": 73,
+          "reason": "slow",
+          "pos": [
+            11.878478050231934,
+            11.380276679992676,
+            80.59886169433594
+          ],
+          "speed": 7.96757573808979
+        },
+        {
+          "tick": 2114,
+          "previousChargeTicks": 141,
+          "reason": "airborne",
+          "pos": [
+            25.82427978515625,
+            11.81884479522705,
+            80.20236206054688
+          ],
+          "speed": 10.013446880716568
+        },
+        {
+          "tick": 2733,
+          "previousChargeTicks": 129,
+          "reason": "airborne",
+          "pos": [
+            57.03289031982422,
+            12.385268211364746,
+            65.87001037597656
+          ],
+          "speed": 10.47429192606175
+        }
+      ],
+      "mechanics": {
+        "enabled": true,
+        "chargeTicks": 71,
+        "chargeRequired": 360,
+        "chargingReason": "charging",
+        "ready": true,
+        "turboCharges": 1,
+        "lives": 3,
+        "maxLives": 3,
+        "exhausted": false,
+        "turboTicks": 0,
+        "launches": 0,
+        "landings": 0,
+        "lastEvent": null
+      }
+    }
+  ]
+}
