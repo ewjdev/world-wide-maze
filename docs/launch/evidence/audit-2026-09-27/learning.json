@@ -1,0 +1,3486 @@
+{
+  "date": "2026-09-27T19:25:18.446Z",
+  "base": "http://127.0.0.1:4318",
+  "mode": "learning",
+  "browser": "153.0.8010.12",
+  "headless": false,
+  "commit": "0b33c14cef45c34905d202bbc760b956cb573362",
+  "hardware": "Apple M5 Max\n137438953472",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4203,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+          "driverVendor": "Apple",
+          "driverVersion": "26.6.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.036955,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_2d_canvas_auto_flush",
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6",
+    "commandLine": "/Users/ewj/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-angle=metal --user-data-dir=/var/folders/yq/vw6fjyjj2lq060nlzyt2xcr00000gn/T/playwright_chromiumdev_profile-DAtFgh --remote-debugging-pipe --no-startup-window --flag-switches-begin --flag-switches-end --enable-unsafe-swiftshader"
+  },
+  "runs": [
+    {
+      "name": "learning-play",
+      "elapsedMs": 15306,
+      "frame": {
+        "n": 896,
+        "mean": 17.07689732142857,
+        "p50": 16.69999999999891,
+        "p95": 17.599999999998545,
+        "p99": 18.299999999999272,
+        "max": 233.29999999999927,
+        "over25": 2,
+        "over50": 2
+      },
+      "engineCpuMs": {
+        "n": 897,
+        "mean": 0.8220735752462942,
+        "p50": 0.7000000476837158,
+        "p95": 1.5,
+        "p99": 1.7000000476837158,
+        "max": 2.799999952316284,
+        "over25": 0,
+        "over50": 0
+      },
+      "fps": 58.55864687698109,
+      "taskMs": 1622.0190000000002,
+      "mainThreadBusyPct": 10.597275578204627,
+      "samples": [
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 318,
+          "timer": {
+            "remains": 297.3500000000024,
+            "int": 297,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [8.26960563659668, 0.49767541885375977, 17.57419776916504],
+          "rollLevel": 0.5510993839454428,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 6.756100000047701,
+          "hold": null,
+          "recording": {
+            "ticks": 318,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 57.5,
+            "drawCalls": 49,
+            "triangles": 24024,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 21,
+              "textures": 25,
+              "programs": 88,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 438,
+          "timer": {
+            "remains": 296.3500000000033,
+            "int": 296,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [11.939899444580078, 0.49846383929252625, 21.079086303710938],
+          "rollLevel": 0.4481188296942674,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 7.75610000004771,
+          "hold": null,
+          "recording": {
+            "ticks": 438,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60,
+            "drawCalls": 48,
+            "triangles": 23988,
+            "tier": 0,
+            "sceneDrawCalls": 22,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 21,
+              "textures": 25,
+              "programs": 88,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 558,
+          "timer": {
+            "remains": 295.35000000000423,
+            "int": 295,
+            "running": true
+          },
+          "total": 1,
+          "spares": 3,
+          "small": 1,
+          "large": 0,
+          "ball": [12.546798706054688, 0.49940210580825806, 18.695560455322266],
+          "rollLevel": 0.28135860287577275,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 8.756100000047699,
+          "hold": null,
+          "recording": {
+            "ticks": 558,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000006,
+            "drawCalls": 48,
+            "triangles": 23988,
+            "tier": 0,
+            "sceneDrawCalls": 22,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 21,
+              "textures": 25,
+              "programs": 88,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 680,
+          "timer": {
+            "remains": 294.3333333333385,
+            "int": 294,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [13.163750648498535, 0.49868351221084595, 21.47015953063965],
+          "rollLevel": 0.416053083715007,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 9.77280000004769,
+          "hold": null,
+          "recording": {
+            "ticks": 680,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000002,
+            "drawCalls": 48,
+            "triangles": 23988,
+            "tier": 0,
+            "sceneDrawCalls": 22,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 21,
+              "textures": 25,
+              "programs": 88,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 799,
+          "timer": {
+            "remains": 293.3416666666727,
+            "int": 293,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [20.02691078186035, 0.496961385011673, 20.871774673461914],
+          "rollLevel": 0.6295894828875668,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 10.77270000004768,
+          "hold": null,
+          "recording": {
+            "ticks": 799,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00600060006007,
+            "drawCalls": 48,
+            "triangles": 23988,
+            "tier": 0,
+            "sceneDrawCalls": 22,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 21,
+              "textures": 25,
+              "programs": 88,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 912,
+          "timer": {
+            "remains": 292.4000000000069,
+            "int": 292,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [19.1606502532959, 0.4984501600265503, 17.663846969604492],
+          "rollLevel": 0.44970210644461245,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 11.706200000047676,
+          "hold": null,
+          "recording": {
+            "ticks": 912,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 57.45967741935487,
+            "drawCalls": 49,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1034,
+          "timer": {
+            "remains": 291.38333333334117,
+            "int": 291,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [16.84762191772461, 0.49935182929039, 17.60329246520996],
+          "rollLevel": 0.2927328689919096,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 12.72290000004766,
+          "hold": null,
+          "recording": {
+            "ticks": 1034,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 57.47705959463553,
+            "drawCalls": 49,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1154,
+          "timer": {
+            "remains": 290.3833333333421,
+            "int": 290,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [19.48261070251465, 0.4987605810165405, 16.527061462402344],
+          "rollLevel": 0.4037828148009413,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 13.72280000004765,
+          "hold": null,
+          "recording": {
+            "ticks": 1154,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00100842030963,
+            "drawCalls": 49,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1274,
+          "timer": {
+            "remains": 289.383333333343,
+            "int": 289,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [18.353595733642578, 0.4968411326408386, 9.348413467407227],
+          "rollLevel": 0.6417737855265456,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 14.722900000047638,
+          "hold": null,
+          "recording": {
+            "ticks": 1274,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000008,
+            "drawCalls": 49,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1394,
+          "timer": {
+            "remains": 288.3833333333439,
+            "int": 288,
+            "running": true
+          },
+          "total": 2,
+          "spares": 3,
+          "small": 2,
+          "large": 0,
+          "ball": [13.57645034790039, 0.49836504459381104, 4.176258563995361],
+          "rollLevel": 0.46047915376389,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 15.722900000047632,
+          "hold": null,
+          "recording": {
+            "ticks": 1394,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.99798326106698,
+            "drawCalls": 48,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1516,
+          "timer": {
+            "remains": 287.36666666667816,
+            "int": 287,
+            "running": true
+          },
+          "total": 3,
+          "spares": 3,
+          "small": 4,
+          "large": 0,
+          "ball": [12.417363166809082, 0.49929818511009216, 5.810816287994385],
+          "rollLevel": 0.30474007852391055,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 16.73950000004762,
+          "hold": null,
+          "recording": {
+            "ticks": 1516,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000006,
+            "drawCalls": 50,
+            "triangles": 24146,
+            "tier": 0,
+            "sceneDrawCalls": 24,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1636,
+          "timer": {
+            "remains": 286.36666666667907,
+            "int": 286,
+            "running": true
+          },
+          "total": 4,
+          "spares": 3,
+          "small": 4,
+          "large": 0,
+          "ball": [13.24836540222168, 0.4994807839393616, 3.4628288745880127],
+          "rollLevel": 0.2581745313495838,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 17.73950000004761,
+          "hold": null,
+          "recording": {
+            "ticks": 1636,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000009,
+            "drawCalls": 49,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1755,
+          "timer": {
+            "remains": 285.3750000000133,
+            "int": 285,
+            "running": true
+          },
+          "total": 4,
+          "spares": 3,
+          "small": 4,
+          "large": 0,
+          "ball": [7.52572774887085, 0.4973391592502594, 4.411947727203369],
+          "rollLevel": 0.5896373208051326,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 18.739000000047593,
+          "hold": null,
+          "recording": {
+            "ticks": 1755,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.01500375093793,
+            "drawCalls": 48,
+            "triangles": 23850,
+            "tier": 0,
+            "sceneDrawCalls": 22,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1876,
+          "timer": {
+            "remains": 284.3666666666809,
+            "int": 284,
+            "running": true
+          },
+          "total": 4,
+          "spares": 3,
+          "small": 4,
+          "large": 0,
+          "ball": [4.321536064147949, 0.4983283281326294, 8.620588302612305],
+          "rollLevel": 0.4669870776856938,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 19.740500000047582,
+          "hold": null,
+          "recording": {
+            "ticks": 1876,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.967748437815146,
+            "drawCalls": 47,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 10,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1998,
+          "timer": {
+            "remains": 283.35000000001514,
+            "int": 283,
+            "running": true
+          },
+          "total": 4,
+          "spares": 3,
+          "small": 4,
+          "large": 0,
+          "ball": [6.679866790771484, 0.49937304854393005, 9.044611930847168],
+          "rollLevel": 0.2880547172490017,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 20.757100000047583,
+          "hold": null,
+          "recording": {
+            "ticks": 1998,
+            "exact": false,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": true,
+            "activityId": "compare-groups",
+            "level": "gated",
+            "mode": "path",
+            "seed": 3732559938,
+            "phase": "intro",
+            "index": 0,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": {
+              "path": [0, 1, 2, 3],
+              "chain": 3,
+              "coverage": {
+                "path": 4,
+                "physical": 3,
+                "fallback": 1,
+                "unplaced": 0
+              },
+              "goalLockId": 5,
+              "steps": [
+                {
+                  "index": 0,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 0,
+                  "number": 1,
+                  "lockIds": [0, 1, 2],
+                  "goal": true,
+                  "portalId": 0
+                },
+                {
+                  "index": 1,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 1,
+                  "number": 2,
+                  "lockIds": [3],
+                  "goal": true,
+                  "portalId": 1
+                },
+                {
+                  "index": 2,
+                  "kind": "round",
+                  "lock": "path",
+                  "fallback": null,
+                  "island": 2,
+                  "number": 3,
+                  "lockIds": [4],
+                  "goal": true,
+                  "portalId": 2
+                },
+                {
+                  "index": 3,
+                  "kind": "round",
+                  "lock": "goal",
+                  "fallback": "no-cut",
+                  "island": 3,
+                  "number": 4,
+                  "lockIds": [],
+                  "goal": true,
+                  "portalId": 3
+                }
+              ],
+              "locks": [
+                {
+                  "id": 0,
+                  "kind": "bridge",
+                  "targetId": 0,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 1,
+                  "kind": "bridge",
+                  "targetId": 1,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 2,
+                  "kind": "bridge",
+                  "targetId": 2,
+                  "islandId": 0,
+                  "open": false
+                },
+                {
+                  "id": 3,
+                  "kind": "bridge",
+                  "targetId": 3,
+                  "islandId": 1,
+                  "open": false
+                },
+                {
+                  "id": 4,
+                  "kind": "elevator",
+                  "targetId": 0,
+                  "islandId": 2,
+                  "open": false
+                },
+                {
+                  "id": 5,
+                  "kind": "goal",
+                  "targetId": 0,
+                  "islandId": 3,
+                  "open": false
+                }
+              ]
+            },
+            "missions": [],
+            "banner": {
+              "seq": 1,
+              "step": 0,
+              "kind": "gate",
+              "n": 1,
+              "count": 0,
+              "have": 0
+            },
+            "said": ["pip.locked.gate.1"],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": true,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00403388463111,
+            "drawCalls": 48,
+            "triangles": 24090,
+            "tier": 0,
+            "sceneDrawCalls": 23,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 22,
+              "textures": 25,
+              "programs": 90,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        }
+      ],
+      "before": {
+        "metrics": {
+          "Timestamp": 1715796.402277,
+          "AudioHandlers": 0,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 209,
+          "LayoutObjects": 233,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 320,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 8,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 0,
+          "ArrayBufferContents": 209,
+          "LayoutCount": 15,
+          "RecalcStyleCount": 254,
+          "LayoutDuration": 0.005749,
+          "RecalcStyleDuration": 0.022535,
+          "DevToolsCommandDuration": 0.00369,
+          "ScriptDuration": 0.378136,
+          "V8CompileDuration": 0,
+          "TaskDuration": 0.570626,
+          "TaskOtherDuration": 0.160516,
+          "ThreadTime": 0.593575,
+          "ProcessTime": 1.33839,
+          "JSHeapUsedSize": 23381000,
+          "JSHeapTotalSize": 45154304,
+          "FirstMeaningfulPaint": 1715790.823221,
+          "DomContentLoaded": 1715790.617279,
+          "NavigationStart": 1715790.584452
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 320,
+          "jsEventListeners": 209
+        },
+        "heap": {
+          "usedSize": 23381000,
+          "totalSize": 45154304,
+          "embedderHeapUsedSize": 6501304,
+          "backingStorageSize": 4724826
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 38073,
+            "cpuTime": 2.32061,
+            "rssKiB": 238272
+          },
+          {
+            "type": "renderer",
+            "id": 38099,
+            "cpuTime": 0.055418,
+            "rssKiB": 100544
+          },
+          {
+            "type": "renderer",
+            "id": 38100,
+            "cpuTime": 1.338592,
+            "rssKiB": 355184
+          },
+          {
+            "type": "renderer",
+            "id": 38098,
+            "cpuTime": 0.14351,
+            "rssKiB": 186032
+          },
+          {
+            "type": "GPU",
+            "id": 38082,
+            "cpuTime": 1.291782,
+            "rssKiB": 246960
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 38083,
+            "cpuTime": 0.108599,
+            "rssKiB": 107952
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 38085,
+            "cpuTime": 0.035014,
+            "rssKiB": 79712
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 184,
+            "timer": {
+              "remains": 298.46666666666806,
+              "int": 298,
+              "running": true
+            },
+            "total": 0,
+            "spares": 3,
+            "small": 0,
+            "large": 0,
+            "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+            "rollLevel": 0,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 5.639500000047693,
+            "hold": null,
+            "recording": {
+              "ticks": 184,
+              "exact": false,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": true,
+              "activityId": "compare-groups",
+              "level": "gated",
+              "mode": "path",
+              "seed": 3732559938,
+              "phase": "intro",
+              "index": 0,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": {
+                "path": [0, 1, 2, 3],
+                "chain": 3,
+                "coverage": {
+                  "path": 4,
+                  "physical": 3,
+                  "fallback": 1,
+                  "unplaced": 0
+                },
+                "goalLockId": 5,
+                "steps": [
+                  {
+                    "index": 0,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 0,
+                    "number": 1,
+                    "lockIds": [0, 1, 2],
+                    "goal": true,
+                    "portalId": 0
+                  },
+                  {
+                    "index": 1,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 1,
+                    "number": 2,
+                    "lockIds": [3],
+                    "goal": true,
+                    "portalId": 1
+                  },
+                  {
+                    "index": 2,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 2,
+                    "number": 3,
+                    "lockIds": [4],
+                    "goal": true,
+                    "portalId": 2
+                  },
+                  {
+                    "index": 3,
+                    "kind": "round",
+                    "lock": "goal",
+                    "fallback": "no-cut",
+                    "island": 3,
+                    "number": 4,
+                    "lockIds": [],
+                    "goal": true,
+                    "portalId": 3
+                  }
+                ],
+                "locks": [
+                  {
+                    "id": 0,
+                    "kind": "bridge",
+                    "targetId": 0,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 1,
+                    "kind": "bridge",
+                    "targetId": 1,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 2,
+                    "kind": "bridge",
+                    "targetId": 2,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 3,
+                    "kind": "bridge",
+                    "targetId": 3,
+                    "islandId": 1,
+                    "open": false
+                  },
+                  {
+                    "id": 4,
+                    "kind": "elevator",
+                    "targetId": 0,
+                    "islandId": 2,
+                    "open": false
+                  },
+                  {
+                    "id": 5,
+                    "kind": "goal",
+                    "targetId": 0,
+                    "islandId": 3,
+                    "open": false
+                  }
+                ]
+              },
+              "missions": [],
+              "banner": null,
+              "said": [],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": true,
+            "api": "unknown",
+            "engine": {
+              "fps": 59.99798326106684,
+              "drawCalls": 47,
+              "triangles": 23988,
+              "tier": 0,
+              "sceneDrawCalls": 22,
+              "envDrawCalls": 11,
+              "postDrawCalls": 14,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 20,
+                "textures": 25,
+                "programs": 86,
+                "renderTargets": 15
+              },
+              "tierLog": []
+            }
+          },
+          "rendererMemory": {
+            "attributes": 77,
+            "attributesSize": 1517092,
+            "geometries": 20,
+            "indexAttributes": 6,
+            "indexAttributesSize": 80304,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 86,
+            "programsSize": 269359,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 25,
+            "texturesSize": 292618709,
+            "uniformBuffers": 89,
+            "uniformBuffersSize": 19488,
+            "total": 294504952
+          },
+          "canvas": {
+            "width": 2880,
+            "height": 1800
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "bgra8unorm-storage",
+            "texture-formats-tier1",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "shader-f16",
+            "texture-formats-tier2",
+            "timestamp-query",
+            "clip-distances",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "after": {
+        "metrics": {
+          "Timestamp": 1715811.739983,
+          "AudioHandlers": 74,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 200,
+          "LayoutObjects": 85,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 174,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 9,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 0,
+          "ArrayBufferContents": 230,
+          "LayoutCount": 173,
+          "RecalcStyleCount": 1152,
+          "LayoutDuration": 0.025278,
+          "RecalcStyleDuration": 0.064929,
+          "DevToolsCommandDuration": 0.011757,
+          "ScriptDuration": 1.628336,
+          "V8CompileDuration": 0,
+          "TaskDuration": 2.192645,
+          "TaskOtherDuration": 0.462345,
+          "ThreadTime": 2.140966,
+          "ProcessTime": 4.099373,
+          "JSHeapUsedSize": 18095612,
+          "JSHeapTotalSize": 51970048,
+          "FirstMeaningfulPaint": 1715790.823221,
+          "DomContentLoaded": 1715790.617279,
+          "NavigationStart": 1715790.584452
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 174,
+          "jsEventListeners": 200
+        },
+        "heap": {
+          "usedSize": 18095612,
+          "totalSize": 51970048,
+          "embedderHeapUsedSize": 4296752,
+          "backingStorageSize": 4736904
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 38073,
+            "cpuTime": 2.54062,
+            "rssKiB": 242688
+          },
+          {
+            "type": "renderer",
+            "id": 38099,
+            "cpuTime": 0.100084,
+            "rssKiB": 100656
+          },
+          {
+            "type": "renderer",
+            "id": 38100,
+            "cpuTime": 4.099489,
+            "rssKiB": 394160
+          },
+          {
+            "type": "renderer",
+            "id": 38098,
+            "cpuTime": 0.14529,
+            "rssKiB": 186128
+          },
+          {
+            "type": "GPU",
+            "id": 38082,
+            "cpuTime": 4.538792,
+            "rssKiB": 245600
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 38083,
+            "cpuTime": 0.124903,
+            "rssKiB": 108544
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 38085,
+            "cpuTime": 0.035058,
+            "rssKiB": 79728
+          },
+          {
+            "type": "audio.mojom.AudioService",
+            "id": 38203,
+            "cpuTime": 0.177721,
+            "rssKiB": 96064
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 2001,
+            "timer": {
+              "remains": 283.32500000001517,
+              "int": 283,
+              "running": true
+            },
+            "total": 4,
+            "spares": 3,
+            "small": 4,
+            "large": 0,
+            "ball": [6.619710922241211, 0.49932122230529785, 8.960490226745605],
+            "rollLevel": 0.29929434910277847,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 20.789000000047583,
+            "hold": null,
+            "recording": {
+              "ticks": 2001,
+              "exact": false,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": true,
+              "activityId": "compare-groups",
+              "level": "gated",
+              "mode": "path",
+              "seed": 3732559938,
+              "phase": "intro",
+              "index": 0,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": {
+                "path": [0, 1, 2, 3],
+                "chain": 3,
+                "coverage": {
+                  "path": 4,
+                  "physical": 3,
+                  "fallback": 1,
+                  "unplaced": 0
+                },
+                "goalLockId": 5,
+                "steps": [
+                  {
+                    "index": 0,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 0,
+                    "number": 1,
+                    "lockIds": [0, 1, 2],
+                    "goal": true,
+                    "portalId": 0
+                  },
+                  {
+                    "index": 1,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 1,
+                    "number": 2,
+                    "lockIds": [3],
+                    "goal": true,
+                    "portalId": 1
+                  },
+                  {
+                    "index": 2,
+                    "kind": "round",
+                    "lock": "path",
+                    "fallback": null,
+                    "island": 2,
+                    "number": 3,
+                    "lockIds": [4],
+                    "goal": true,
+                    "portalId": 2
+                  },
+                  {
+                    "index": 3,
+                    "kind": "round",
+                    "lock": "goal",
+                    "fallback": "no-cut",
+                    "island": 3,
+                    "number": 4,
+                    "lockIds": [],
+                    "goal": true,
+                    "portalId": 3
+                  }
+                ],
+                "locks": [
+                  {
+                    "id": 0,
+                    "kind": "bridge",
+                    "targetId": 0,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 1,
+                    "kind": "bridge",
+                    "targetId": 1,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 2,
+                    "kind": "bridge",
+                    "targetId": 2,
+                    "islandId": 0,
+                    "open": false
+                  },
+                  {
+                    "id": 3,
+                    "kind": "bridge",
+                    "targetId": 3,
+                    "islandId": 1,
+                    "open": false
+                  },
+                  {
+                    "id": 4,
+                    "kind": "elevator",
+                    "targetId": 0,
+                    "islandId": 2,
+                    "open": false
+                  },
+                  {
+                    "id": 5,
+                    "kind": "goal",
+                    "targetId": 0,
+                    "islandId": 3,
+                    "open": false
+                  }
+                ]
+              },
+              "missions": [],
+              "banner": {
+                "seq": 1,
+                "step": 0,
+                "kind": "gate",
+                "n": 1,
+                "count": 0,
+                "have": 0
+              },
+              "said": ["pip.locked.gate.1"],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": true,
+            "api": "unknown",
+            "engine": {
+              "fps": 60.04503377533174,
+              "drawCalls": 49,
+              "triangles": 24090,
+              "tier": 0,
+              "sceneDrawCalls": 23,
+              "envDrawCalls": 12,
+              "postDrawCalls": 14,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 22,
+                "textures": 25,
+                "programs": 90,
+                "renderTargets": 15
+              },
+              "tierLog": []
+            }
+          },
+          "rendererMemory": {
+            "attributes": 86,
+            "attributesSize": 1852164,
+            "geometries": 22,
+            "indexAttributes": 7,
+            "indexAttributesSize": 80328,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 90,
+            "programsSize": 281056,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 25,
+            "texturesSize": 292618709,
+            "uniformBuffers": 91,
+            "uniformBuffersSize": 19600,
+            "total": 294851857
+          },
+          "canvas": {
+            "width": 2880,
+            "height": 1800
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "bgra8unorm-storage",
+            "texture-formats-tier1",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "shader-f16",
+            "texture-formats-tier2",
+            "timestamp-query",
+            "clip-distances",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "longTasks": [
+        {
+          "at": 5846.699999809265,
+          "ms": 233
+        }
+      ],
+      "vitals": {
+        "lcp": 2524
+      }
+    }
+  ]
+}
