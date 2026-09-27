@@ -3,11 +3,15 @@
 import { execFileSync } from 'node:child_process';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
 const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
-const out = new URL('../../docs/launch/evidence/audit-2026-09-27/', import.meta.url);
+const out = process.env.AUDIT_OUT
+  ? pathToFileURL(`${resolve(process.env.AUDIT_OUT)}/`)
+  : new URL('../../docs/launch/evidence/audit-2026-09-27/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const mode = process.argv[2] ?? 'frames';
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
