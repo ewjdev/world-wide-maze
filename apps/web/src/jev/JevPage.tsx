@@ -29,6 +29,7 @@ import { FixtureRun, PracticeRun, StageBuilderPool } from '../game/stages.ts';
 import { type Availability, JevClient } from './client.ts';
 import { ReplaySession, Session } from './session.ts';
 import './jev.css';
+import { InputDisplay } from './InputDisplay.tsx';
 
 const api = new JevClient();
 function time(ticks: number) {
@@ -68,6 +69,8 @@ export default function JevPage() {
   const engine = useRef<Engine | null>(null);
   const live = useRef<Session | null>(null);
   const replay = useRef<ReplaySession | null>(null);
+  const currentInput = useRef<InputSample | null>(null);
+  const jumpUntil = useRef(0);
   const [, render] = useState(0);
   const [fixtureId, setFixture] = useState('fixture-hn-front');
   const [maze, setMaze] = useState<MazeFixture>(fixture('first-fork'));
@@ -97,6 +100,9 @@ export default function JevPage() {
     input: InputSample | null,
     elevators: { id: number; y: number }[] = [],
   ) => {
+    currentInput.current = input;
+    if (!input) jumpUntil.current = 0;
+    else if (input.jump) jumpUntil.current = performance.now() + 140;
     engine.current?.setElevators(elevators);
     engine.current?.setBall(b);
     if (input) engine.current?.setControl(input);
@@ -227,6 +233,8 @@ export default function JevPage() {
     };
   }, [maze, availability, runStatus]);
   async function showStage(f: MazeFixture) {
+    currentInput.current = null;
+    jumpUntil.current = 0;
     if (f.textureDataUrl) {
       const image = await createImageBitmap(await (await fetch(f.textureDataUrl)).blob());
       await engine.current?.loadStage(f.stage, image);
@@ -392,6 +400,26 @@ export default function JevPage() {
   const errors = error ?? v?.error ?? replay.current?.error;
   const f = maze;
   const score = replay.current?.score ?? live.current?.pilot.score ?? scoreAt(maze.stage, new Set(), 0);
+  const playing = replay.current
+    ? !replay.current.paused && !replay.current.error
+    : !!v && !v.paused && v.phase === 'executing';
+  const playbackFrame = replay.current ? frames.findLast((fr) => fr.tick <= elapsed) : null;
+  const playbackChoice = playbackFrame
+    ? receipts.findLast(
+        (r) =>
+          r.decisionId === playbackFrame.id &&
+          r.status === 'accepted' &&
+          detail?.events.some((e) => e.type === 'action' && e.data.attemptId === r.attemptId),
+      )
+    : null;
+  const activeFrame = replay.current ? playbackFrame : v?.current;
+  const activeChoice = replay.current ? playbackChoice : v?.active;
+  const targetOption = activeFrame?.candidates.find((c) => c.id === activeChoice?.choice);
+  const targetLabel = targetOption
+    ? `${activeChoice?.source === 'jev' ? 'Jev' : 'Controller'} target: ${targetOption.direction}${targetOption.destination ? ` · ${targetOption.destination}` : ''}`
+    : v?.phase === 'deciding'
+      ? 'Choosing the next target…'
+      : 'Waiting for a run';
   return (
     <main className={`jev-page ${collapsed ? 'is-collapsed' : ''}`}>
       <header className="jev-header">
@@ -442,6 +470,14 @@ export default function JevPage() {
               <span>Jev best · this maze</span>
             </div>
           </section>
+          <InputDisplay
+            input={currentInput.current}
+            viewYaw={engine.current?.cameraYaw() ?? 0}
+            jumping={performance.now() < jumpUntil.current}
+            active={playing}
+            target={targetLabel}
+            recorded={!!replay.current}
+          />
           <div className="jev-view">
             <button
               type="button"

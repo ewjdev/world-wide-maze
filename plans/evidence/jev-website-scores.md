@@ -30,3 +30,11 @@ Screenshots: `docs/build-log/assets/jev/library-desktop.png`, `library-live.png`
 Final validation: all 25 focused maze-agent/runtime tests passed; repository type checking and lint passed (lint warnings remain); production web build passed (existing bundle-size warning). Browser replay seek at decision three restored 213 points, 15 gems including two large, 259 seconds remaining, and the 1,312 local Jev record with no replay errors. Library selection also loaded MDN section two successfully at 390px width with no overflow.
 
 Fresh independent UI finish review disposition: **ship**. No material fixes. The named Impeccable reviewer role was unavailable, so a fresh general agent performed the review using the supplied finishing-review contract, source files and screenshots. Incumbent type/material fidelity and mobile controls were retained; no new design system was introduced.
+
+## Animated controller display
+
+The spectator now displays an animated arrow-key cluster and spacebar with the current target. Arrow highlights project the real analog input into the current camera frame, including diagonal combinations, with a small deadzone for noise. Press/release uses 100 ms transitions; reduced-motion mode retains highlights without transforms. Pause, run end, stage changes, and replay seek release the displayed inputs. Replay uses its recorded inputs and a target derived from the playback tick, independently of the notebook's selected decision.
+
+The current controller issues no jumps, so the spacebar remains idle and the UI explicitly says jumping is off. The display supports actual jump input pulses but does not invent them or alter the controller's policy. On mobile the input strip sits beneath the maze to avoid covering the ball.
+
+Validation: camera-frame/deadzone/diagonal and jump-pulse/paused display tests passed, along with both session/replay integration tests. Browser smoke verified live steering, pause release, real Jev recording target/inputs, mobile overflow, and reduced-motion styles. Type checking and web build passed.

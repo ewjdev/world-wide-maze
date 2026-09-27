@@ -656,3 +656,157 @@ body:has(.jev-page) {
     max-width: 100%;
   }
 }
+
+.jev-input-display {
+  position: absolute;
+  right: 30px;
+  bottom: 65px;
+  width: 242px;
+  background: #fff;
+  border: 1px solid var(--j-line);
+  padding: 12px;
+  pointer-events: none;
+}
+.jev-input-target {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: 650;
+  line-height: 1.35;
+}
+.jev-keyboard {
+  display: grid;
+  grid-template-columns: repeat(3, 34px) 1fr;
+  grid-template-rows: repeat(2, 32px);
+  gap: 4px;
+}
+.jev-key {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #acb9bd;
+  border-radius: 3px;
+  background: #f5f7f7;
+  color: #42545b;
+  font:
+    600 12px "Figtree Variable",
+    sans-serif;
+  transition:
+    transform 100ms ease-out,
+    background-color 100ms ease-out,
+    color 100ms ease-out;
+}
+.jev-key[data-active="true"] {
+  transform: translateY(2px);
+  background: #237c85;
+  border-color: #237c85;
+  color: #fff;
+}
+.jev-key svg {
+  width: 19px;
+  height: 19px;
+}
+.jev-key-up {
+  grid-column: 2;
+  grid-row: 1;
+}
+.jev-key-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+.jev-key-down {
+  grid-column: 2;
+  grid-row: 2;
+}
+.jev-key-right {
+  grid-column: 3;
+  grid-row: 2;
+}
+.jev-key-left svg {
+  transform: rotate(-90deg);
+}
+.jev-key-down svg {
+  transform: rotate(180deg);
+}
+.jev-key-right svg {
+  transform: rotate(90deg);
+}
+.jev-key-space {
+  grid-column: 4;
+  grid-row: 2;
+  flex-direction: column;
+  line-height: 1.1;
+}
+.jev-key-space span {
+  font-size: 9px;
+  font-weight: 400;
+}
+.jev-input-caption {
+  margin: 8px 0 0;
+  font-size: 11px;
+}
+.jev-input-note {
+  margin: 2px 0 0;
+  color: var(--j-muted);
+  font-size: 10px;
+}
+@media (max-width: 700px) {
+  .jev-stage {
+    height: calc(48dvh + 104px);
+    min-height: 434px;
+  }
+  .jev-stage .jev-canvas-host {
+    bottom: 104px;
+  }
+  .jev-stage .jev-view {
+    bottom: 157px;
+  }
+  .jev-stage .jev-stage-footer {
+    bottom: 119px;
+  }
+  .jev-input-display {
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 104px;
+    padding: 10px 18px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 174px;
+    column-gap: 12px;
+    align-content: center;
+    border-width: 1px 0 0;
+  }
+  .jev-input-target {
+    grid-column: 1;
+    font-size: 11px;
+    margin: 0 0 6px;
+  }
+  .jev-keyboard {
+    grid-column: 2;
+    grid-row: 1 / 4;
+    align-self: center;
+    grid-template-columns: repeat(3, 27px) 1fr;
+    grid-template-rows: repeat(2, 27px);
+    gap: 3px;
+  }
+  .jev-key svg {
+    width: 16px;
+    height: 16px;
+  }
+  .jev-input-caption {
+    grid-column: 1;
+    font-size: 10px;
+    margin: 0;
+  }
+  .jev-input-note {
+    grid-column: 1;
+    font-size: 9px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .jev-key {
+    transition: none;
+  }
+  .jev-key[data-active="true"] {
+    transform: none;
+  }
+}
