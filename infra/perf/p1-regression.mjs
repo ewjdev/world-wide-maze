@@ -2,6 +2,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
 const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 const state = (run) => run?.after?.game?.state;
@@ -10,7 +11,18 @@ const backend = (run) => state(run)?.engine?.backend;
 const key = (run) =>
   JSON.stringify(run.spec ?? { quality: run.quality, throttle: run.throttle, name: run.name });
 
-export function compareEvidence(baseline, candidate) {
+const gpuIdentity = (report) => {
+  const gpu = report.system?.gpu;
+  if (!gpu) return null;
+  return JSON.stringify({
+    devices: gpu.devices,
+    renderer: gpu.auxAttributes?.glRenderer,
+    vendor: gpu.auxAttributes?.glVendor,
+    implementation: gpu.auxAttributes?.glImplementationParts,
+  });
+};
+
+export function compareEvidence(baseline, candidate, currentFingerprint) {
   const gates = [];
   const add = (id, status, details) => gates.push({ id, status, ...details });
   const required = ['frames', 'gpu', 'replay', 'lifecycle'];
@@ -21,7 +33,25 @@ export function compareEvidence(baseline, candidate) {
     }
     const a = baseline[mode];
     const b = candidate[mode];
-    const sameHost = a.hardware === b.hardware && a.browser === b.browser && a.headless === b.headless;
+    const sameHost =
+      a.hardware === b.hardware &&
+      a.browser === b.browser &&
+      a.headless === b.headless &&
+      gpuIdentity(a) !== null &&
+      gpuIdentity(a) === gpuIdentity(b);
+    if (!b.runtimeFingerprint?.sha256)
+      add(`source:${mode}`, 'missing', { message: 'Candidate runtime content fingerprint required.' });
+    else if (currentFingerprint && b.runtimeFingerprint.sha256 !== currentFingerprint.sha256)
+      add(`source:${mode}`, 'fail', {
+        message: 'Native evidence is stale for the current runtime source.',
+        measured: b.runtimeFingerprint,
+        current: currentFingerprint,
+      });
+    else
+      add(`source:${mode}`, 'pass', {
+        measured: b.runtimeFingerprint,
+        checkedAgainstCurrentTree: !!currentFingerprint,
+      });
     add(`environment:${mode}`, sameHost ? 'pass' : 'review', {
       baseline: {
         commit: a.commit,
@@ -30,6 +60,7 @@ export function compareEvidence(baseline, candidate) {
         headless: a.headless,
         viewport: a.viewport ?? 'legacy harness: 1440x900, verify source',
         date: a.date,
+        gpu: gpuIdentity(a),
       },
       candidate: {
         commit: b.commit,
@@ -38,13 +69,24 @@ export function compareEvidence(baseline, candidate) {
         headless: b.headless,
         viewport: b.viewport ?? 'legacy harness: 1440x900, verify source',
         date: b.date,
+        gpu: gpuIdentity(b),
       },
       message: sameHost
         ? 'Host/browser match; compare scenario DPR, backend and workload below.'
-        : 'Timing comparison requires review because host/browser/headless differ.',
+        : 'Timing comparison requires review because host/browser/headless/GPU identity differs or is missing.',
     });
     if (!b.commit || !b.browser || !b.hardware || !b.date)
       add(`metadata:${mode}`, 'missing', { message: 'Candidate commit/browser/hardware/date required.' });
+    for (const old of a.runs ?? []) {
+      if (old.error || old.errors?.length || !finite(old.frame?.p95)) continue;
+      const run = b.runs?.find((r) => key(r) === key(old));
+      if (!run || !finite(run.frame?.p95) || !finite(run.frame?.n) || run.frame.n < 1 || !backend(run))
+        add(`scenario:${mode}:${key(old)}`, 'missing', {
+          message: 'Successful baseline scenario requires valid candidate frame samples and backend.',
+        });
+    }
+    if (mode === 'frames' && !(a.runs ?? []).some((r) => finite(r.frame?.p95) && !r.error))
+      add('scenario:frames', 'missing', { message: 'No successful baseline frame scenarios.' });
     for (const run of b.runs ?? []) {
       if (run.error || run.errors?.length)
         add(`runtime:${mode}:${key(run)}`, 'fail', { error: run.error, errors: run.errors });
@@ -119,25 +161,78 @@ export function compareEvidence(baseline, candidate) {
   }
 
   const retries = candidate.lifecycle?.retries;
-  if (!retries || retries.length < 5)
-    add('memory:retry-attributes', 'missing', { message: 'At least five post-GC retries required.' });
+  const oldRetries = baseline.lifecycle?.retries;
+  if (!retries || retries.length < 5 || !oldRetries || oldRetries.length < 5)
+    add('memory:retry-attributes', 'missing', {
+      message: 'At least five post-GC retries in both baseline and candidate required.',
+    });
   else {
-    const first = retries[1]?.game?.rendererMemory;
-    const last = retries.at(-1)?.game?.rendererMemory;
-    if (!finite(first?.attributesSize) || !finite(last?.attributesSize))
-      add('memory:retry-attributes', 'missing', { message: 'Retry attribute byte counters unavailable.' });
-    else {
-      const growthBytes = last.attributesSize - first.attributesSize;
-      add('memory:retry-attributes', growthBytes > 0 ? 'known-failure' : 'pass', {
-        issue: '#24',
-        growthBytes,
-        retriesAfterWarmup: retries.length - 2,
-        bytesPerRetry: growthBytes / (retries.length - 2),
-        message:
-          growthBytes > 0
-            ? 'Known P2 attribute retention is still failing. Do not report memory acceptance or silently treat this as green.'
-            : 'No post-warmup attribute-byte growth observed.',
+    const slope = (runs, key) => {
+      const first = runs[1]?.game?.rendererMemory?.[key];
+      const last = runs.at(-1)?.game?.rendererMemory?.[key];
+      return finite(first) && finite(last) ? (last - first) / (runs.length - 2) : null;
+    };
+    const bytesPerRetry = slope(retries, 'attributesSize');
+    const baselineBytesPerRetry = slope(oldRetries, 'attributesSize');
+    const attributesPerRetry = slope(retries, 'attributes');
+    const baselineAttributesPerRetry = slope(oldRetries, 'attributes');
+    if (![bytesPerRetry, baselineBytesPerRetry, attributesPerRetry, baselineAttributesPerRetry].every(finite))
+      add('memory:retry-attributes', 'missing', {
+        message: 'Baseline/candidate retry attribute bytes and counts required.',
       });
+    else {
+      const knownBound =
+        baselineBytesPerRetry > 0 && baselineBytesPerRetry <= 44800 + 256 && baselineAttributesPerRetry <= 2;
+      const worse =
+        bytesPerRetry > Math.max(0, baselineBytesPerRetry) + 256 ||
+        attributesPerRetry > Math.max(0, baselineAttributesPerRetry) + 0.01;
+      const growth = bytesPerRetry > 0 || attributesPerRetry > 0;
+      add(
+        'memory:retry-attributes',
+        worse || (growth && !knownBound) ? 'fail' : growth ? 'known-failure' : 'pass',
+        {
+          issue: '#24',
+          bytesPerRetry,
+          baselineBytesPerRetry,
+          attributesPerRetry,
+          baselineAttributesPerRetry,
+          growthBytes: bytesPerRetry * (retries.length - 2),
+          retriesAfterWarmup: retries.length - 2,
+          message:
+            worse || (growth && !knownBound)
+              ? 'New or worse attribute retention fails the P1 gate; it is not waived as P2.'
+              : growth
+                ? 'Existing P2 retention remains failing within the measured baseline bound. Memory acceptance remains open.'
+                : 'No post-warmup attribute growth.',
+        },
+      );
+    }
+    for (const allocation of [
+      'textures',
+      'texturesSize',
+      'renderTargets',
+      'geometries',
+      'storageAttributes',
+      'storageAttributesSize',
+      'readbackBuffers',
+      'readbackBuffersSize',
+      'indirectStorageAttributes',
+      'indirectStorageAttributesSize',
+      'indexAttributes',
+      'indexAttributesSize',
+      'uniformBuffers',
+      'uniformBuffersSize',
+    ]) {
+      const before = slope(oldRetries, allocation);
+      const after = slope(retries, allocation);
+      if (finite(before) && !finite(after))
+        add(`memory:retry-${allocation}`, 'missing', { message: 'Candidate allocation counter missing.' });
+      else if (finite(before) && finite(after) && after > Math.max(0, before) + 0.01)
+        add(`memory:retry-${allocation}`, 'fail', {
+          baselinePerRetry: before,
+          candidatePerRetry: after,
+          message: 'New/worse allocation growth is not covered by known P2 attribute retention.',
+        });
     }
   }
 
@@ -211,7 +306,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     console.error('Usage: node infra/perf/p1-regression.mjs BASELINE_DIR CANDIDATE_DIR OUTPUT_JSON');
     process.exitCode = 2;
   } else {
-    const report = compareEvidence(readEvidence(baseline), readEvidence(candidate));
+    const report = compareEvidence(readEvidence(baseline), readEvidence(candidate), runtimeFingerprint());
     writeFileSync(resolve(output), `${JSON.stringify(report, null, 2)}\n`);
     console.log(
       JSON.stringify(

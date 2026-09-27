@@ -5,6 +5,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
@@ -18,6 +19,7 @@ const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', 
 const root = await browser.newBrowserCDPSession();
 const report = {
   date: new Date().toISOString(),
+  runtimeFingerprint: runtimeFingerprint(),
   base,
   mode,
   browser: browser.version(),

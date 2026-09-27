@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
@@ -17,6 +18,7 @@ const browser = await chromium.launch({
 });
 const report = {
   date: new Date().toISOString(),
+  runtimeFingerprint: runtimeFingerprint(),
   base,
   browser: browser.version(),
   headless,
