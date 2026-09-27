@@ -5,8 +5,6 @@ import { bridgeSections, PX_PER_METER } from '../../../packages/schema/src/index
 
 const dir = import.meta.dirname;
 const course = JSON.parse(await readFile(`${dir}/course.json`, 'utf8'));
-const spec = JSON.parse(await readFile(`${dir}/maze.json`, 'utf8'));
-const ids = Object.keys(spec.nodes).filter((x) => !x.startsWith('X'));
 const cross = (a, b) => a[0] * b[1] - a[1] * b[0];
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const intersections = [];

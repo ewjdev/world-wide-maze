@@ -15,6 +15,8 @@ import {
 } from '@wwm/schema';
 import { BUILDER_VERSION, buildStage as realBuildStage } from '@wwm/stage-builder';
 import handmade from '../../../fixtures/stages/handmade-simple.json' with { type: 'json' };
+import type { SliceTexture } from './capture/types.ts';
+import { type ModerationDecision, pendingDecision } from './moderation.ts';
 
 export interface StageBuilder {
   /** Goes into `stageId`, `runId` and the KV cache key. */
@@ -22,13 +24,18 @@ export interface StageBuilder {
   buildStage: BuildStageFn;
 }
 
-/** Content-safety hook (task 8). No-op now; Phase 11/12 can plug in a model. */
-export type ModerateFn = (shot: {
+/** Content evidence includes the independently uploaded textures, not just the analysis screenshot. */
+export interface ModerationInput {
   png: Uint8Array;
   width: number;
   height: number;
   url: string;
-}) => Promise<'ok' | 'block'>;
+  title?: string;
+  text?: string;
+  textures?: SliceTexture[];
+}
+export type ModerateFn = (shot: ModerationInput) => Promise<ModerationDecision | 'ok' | 'block'>;
+/** Explicit test/benchmark hook; never used by createServices. */
 export const allowAllContent: ModerateFn = async () => 'ok';
 
 /** Phase 09's solver hook: reject stages the bot can't finish (the pipeline then tries the next seed). */
@@ -156,7 +163,7 @@ export const STUB_BUILDER: StageBuilder = { version: STUB_BUILDER_VERSION, build
  * Hooks the Worker uses. Phase 09 sets `validatePlayable` (solver), Phase 11/12 replace `moderate`.
  */
 export const DEFAULT_HOOKS: { moderate: ModerateFn; validatePlayable?: ValidatePlayableFn } = {
-  moderate: allowAllContent,
+  moderate: async () => pendingDecision('manual_review'),
   validatePlayable: solverHook,
 };
 

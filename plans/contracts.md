@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.4`** (Race stunt controller CCR, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.5`** (curved Race courses and life inventory, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -475,6 +475,12 @@ The separate `wwm-learning/0.4` Bridge Builders document and semantic binding ma
 
 No simulation, renderer or worker implementation is claimed here. The proposed shape must be reconciled with their actual interfaces and tested against a physical stage before enabling the sampler.
 
+**v0.3.3, Phase 21 CCRs (orchestrator, 2026-09-26):**
+- **CCR-21-1 accepted:** additive private operator API types exported from `packages/schema/src/admin.ts`; consumers are Worker admin routes and the lazy web `/admin` console. `ModerationStatus` is `approved | pending_review | blocked`. Catalog/attempt lists return `items` and nullable `nextCursor`; detail includes original/final URLs, review evidence URLs, events and applicable rules. No admin identity or secret enters the bundle.
+- Every `/api/admin/*` endpoint verifies a Cloudflare Access RS256 JWT, issuer, audience, expiry, subject and an operator email allowlist. Mutations require same-origin requests, bounded JSON and a reason. API responses and evidence are `private, no-store`.
+- Routes: `GET session`, `GET catalog`, `GET attempts`, `GET runs/:runId`, `GET runs/:runId/evidence/:item`, `GET rules`; `POST runs/:runId/decision`, `POST rules`, `POST runs/:runId/refresh`, `POST runs/:runId/remove`.
+- Public wire types remain unchanged; pending/blocked builds use `CAPTURE_BLOCKED`. D1 policy gates all hosted source-content reads; public user captures use `private, no-store`. URL cache keys hash normalized URL, effective seed, difficulty and builder version. Local upload identity includes complete capture content and texture bytes, excluding the untrusted claimed ID.
+
 
 ### Phase 24 Race contract (implemented; straight-course release)
 
@@ -494,3 +500,10 @@ The optional `RaceCourse.stunts` contract and `RaceInputSample.turbo` live in `@
 `createRaceSimulation(course)` wraps the ordinary simulation for both play and replay. It handles three-second forward speed charging, one banked turbo, designated launch crossings and validated first landings. Turbo is applied before a step; launch and landing velocity deltas are applied after the physical step and returned in that step's ball state. Positions are never teleported by a boost. Ordered shared gates are evaluated on the same physical segment in live play and replay; optional islands are not mandatory gates.
 
 `RapierSimulation.applyVelocityDelta` is an additive local API with finite bounded velocity changes, preserving rotation and contact/fall history. No standard physics parameters, step ordering or ordinary colliders changed, so the shared PHYSICS_VERSION is retained; stunt mechanics are versioned separately. Recovery clears charge and flight provenance while retaining consumed launch IDs and progress high-water marks. New runs reset all stunt state. Authored ramps use valid existing straight geometry; the upward launch assist is explicitly a Race mechanic, not a claim of purely passive ramp ballistics.
+
+
+### Phase 27–28 Race curves, turbo inventory and lives
+
+Optional bridge `control`, `bank` and `rails` fields describe a shared tessellated surface for rendering and physics. Directed `StageData.flightLinks` describe authored jump reachability without adding walkable colliders. Layered height queries preserve lower overpass slabs.
+
+`RaceState` adds optional lives/maxLives and an exhausted phase; its boost payload includes stored turboCharges. Every uninterrupted 360 ticks at qualifying cruise speed banks one charge, including turns and flight. A fresh request consumes one effective boost. Falls and manual recovery deduct one stored turbo (floored at zero) and one of three lives; the fall/lost pair deducts once. Recovery preserves remaining stock, zero lives halts the attempt, and retry starts fresh. Current Race replay compatibility uses base rules v3 / stunt rules v4; prior rules are not replayed as new runs.

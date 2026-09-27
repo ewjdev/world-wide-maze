@@ -5,6 +5,9 @@
  *
  *   node infra/scripts/smoke.mjs https://<host> [--dev]     (--dev: local wrangler dev, where stats is on)
  */
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
 const base = (process.argv[2] ?? '').replace(/\/$/, '');
 const dev = process.argv.includes('--dev');
 if (!/^https?:\/\//.test(base)) {
@@ -39,6 +42,23 @@ await check('SPA fallback for /play/:id and /c/:code', async () => {
     const r = await fetch(`${base}${p}`);
     expect(r.status === 200 && (await r.text()).includes('<div id="root">'), `${p}: ${r.status}`);
   }
+});
+await check('Mazify extension ZIP download and checksum', async () => {
+  const { version } = JSON.parse(
+    readFileSync(new URL('../../apps/extension/package.json', import.meta.url), 'utf8'),
+  );
+  const filename = `wwm-maze-this-page-${version}.zip`;
+  const r = await fetch(`${base}/downloads/${filename}`);
+  expect(r.status === 200, `ZIP status ${r.status}`);
+  expect(r.headers.get('content-type')?.includes('application/zip'), 'download is not a ZIP response');
+  expect(r.headers.get('content-disposition')?.includes('attachment'), 'missing download disposition');
+  const bytes = Buffer.from(await r.arrayBuffer());
+  expect(bytes.length > 4 && bytes.readUInt32LE(0) === 0x04034b50, 'ZIP signature missing');
+  const checksum = await fetch(`${base}/downloads/${filename}.sha256`);
+  expect(checksum.status === 200, `checksum status ${checksum.status}`);
+  const hash = createHash('sha256').update(bytes).digest('hex');
+  expect((await checksum.text()).trim() === `${hash}  ${filename}`, 'ZIP checksum mismatch');
+  return `v${version}, ${bytes.length} bytes, SHA-256 ${hash}`;
 });
 await check('GET /api/health', async () => {
   const r = await fetch(`${base}/api/health`);

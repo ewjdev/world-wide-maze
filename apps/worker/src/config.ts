@@ -8,6 +8,7 @@ import { HttpCapturer } from './capture/http-capturer.ts';
 import type { Capturer } from './capture/types.ts';
 import { ServiceError } from './errors.ts';
 import { createLogger, type Logger } from './log.ts';
+import { createModerator } from './moderation.ts';
 import type { BrowserGate, PipelineDeps } from './pipeline.ts';
 import { createDohResolver, type DnsResolver } from './policy/dns.ts';
 import { type CheckUrlDeps, parseAllowHosts } from './policy/url-policy.ts';
@@ -95,6 +96,7 @@ export function createServices(env: Env, ctx: { jobId?: string; requestId?: stri
     resolver,
     allowHosts: parseAllowHosts(env.DEV_ALLOWED_HOSTS),
     isOptedOut: (host) => store.isOptedOut(host),
+    isUrlBlocked: (url) => store.catalog.isUrlBlocked(url),
   };
   const builder = defaultStageBuilder();
   const pipeline: PipelineDeps = {
@@ -102,7 +104,8 @@ export function createServices(env: Env, ctx: { jobId?: string; requestId?: stri
       return createCapturer(env, policy, log);
     },
     builder,
-    moderate: DEFAULT_HOOKS.moderate,
+    moderate: createModerator(env),
+    isUrlBlocked: policy.isUrlBlocked,
     ...(DEFAULT_HOOKS.validatePlayable ? { validatePlayable: DEFAULT_HOOKS.validatePlayable } : {}),
     store,
     gate: limiterGate(

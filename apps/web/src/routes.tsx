@@ -87,6 +87,10 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
 
 const pageRoutes: RouteObject[] = [
   {
+    path: '/admin',
+    lazy: async () => ({ Component: (await import('./admin/AdminPage.tsx')).default }),
+  },
+  {
     path: '/privacy/analytics',
     lazy: async () => ({ Component: (await import('./pages/privacy/AnalyticsPrivacy.tsx')).default }),
   },

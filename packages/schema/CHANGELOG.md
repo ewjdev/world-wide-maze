@@ -2,15 +2,24 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.5 (2026-09-27, curved Race courses and lives)
+- Optional quadratic/banked bridge surfaces, rail-free decks and directed flight links share render/physics geometry.
+- Race controller state adds turbo inventory, lives and exhausted phase; retries and replays retain host authority.
+- Includes the private admin contracts from main without changing their API semantics.
+
 ## 0.3.4 (2026-09-27, Race jumps and turbo)
 - Optional controller `stuntVersion: 1` capability, `race-turbo` control message, and authoritative Race boost charge/ready/timer payload.
 - Stunt courses require the new capability before phone play; old Race and Original flows retain their protocol.
 - Standard binary inputs and StageData are unchanged. Race-only v2 recording captures turbo in its own bounded format.
 
-## 0.3.3 (2026-09-26, Race)
+### Race controller additions (included in 0.3.4)
 - Optional `StateMessage.race` version-1 timer, sector, phase, practice and split payload.
 - Additive `capabilities-request` / `capabilities { raceVersion: 1 }` controller handshake. Old messages still parse; Race requires support before GO and can fall back to keyboard.
 - Stage geometry, standard input samples and Original/Education state semantics unchanged.
+## 0.3.3 (2026-09-26, URL catalog and review)
+- CCR-21-1: additive private admin catalog, attempts, evidence, decision, rule and audit types in `src/admin.ts`.
+- Public stage/job response shapes unchanged; pending review uses existing `CAPTURE_BLOCKED`.
+- Shared uploads derive capture identity from capture content and every texture; claimed client IDs cannot overwrite retained evidence.
 
 ## 0.3.2 (2026-09-26, analytics)
 - Added the shared versioned telemetry event/context/envelope schemas with closed categories and bounded numeric fields.

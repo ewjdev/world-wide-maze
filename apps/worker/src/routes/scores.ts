@@ -119,7 +119,11 @@ export const scoresRoutes = new Hono<AppEnv>();
 
 scoresRoutes.get('/stage/:stageId', async (c) => {
   const stageId = c.req.param('stageId');
-  if (!HEX64.test(stageId)) return Response.json({ error: 'stage not found' }, { status: 404 });
+  if (!HEX64.test(stageId) || !(await c.get('services').store.catalog.canServeStage(stageId)))
+    return Response.json(
+      { error: 'stage not found' },
+      { status: 404, headers: { 'cache-control': 'no-store' } },
+    );
   const { results } = await c.env.DB.prepare(
     `SELECT name, score, time_ms, created_at FROM (
        SELECT name, score, time_ms, created_at,
@@ -135,7 +139,7 @@ scoresRoutes.get('/stage/:stageId', async (c) => {
     timeMs: r.time_ms,
     at: r.created_at,
   }));
-  return c.json<ScoresResponse>({ entries }, 200, { 'cache-control': 'public, max-age=10' });
+  return c.json<ScoresResponse>({ entries }, 200, { 'cache-control': 'private, no-store' });
 });
 
 scoresRoutes.get('/run', async (c) => {
@@ -154,12 +158,16 @@ scoresRoutes.get('/run', async (c) => {
     timeMs: r.time_ms,
     at: r.created_at,
   }));
-  return c.json<ScoresResponse>({ entries }, 200, { 'cache-control': 'public, max-age=10' });
+  return c.json<ScoresResponse>({ entries }, 200, { 'cache-control': 'private, no-store' });
 });
 
 scoresRoutes.get('/stage/:stageId/ghost', async (c) => {
   const stageId = c.req.param('stageId');
-  if (!HEX64.test(stageId)) return Response.json({ error: 'stage not found' }, { status: 404 });
+  if (!HEX64.test(stageId) || !(await c.get('services').store.catalog.canServeStage(stageId)))
+    return Response.json(
+      { error: 'stage not found' },
+      { status: 404, headers: { 'cache-control': 'no-store' } },
+    );
   const row = await c.env.DB.prepare(
     `SELECT name, score, time_ms, replay_key FROM scores
      WHERE stage_id = ?1 AND verified = 1 AND replay_key IS NOT NULL
@@ -170,10 +178,10 @@ scoresRoutes.get('/stage/:stageId/ghost', async (c) => {
   const obj = row ? await c.env.STAGES.get(row.replay_key) : null;
   // No ghost yet is a normal state, not an error: 204 keeps browsers from logging a failed request.
   if (!row || !obj)
-    return new Response(null, { status: 204, headers: { 'cache-control': 'public, max-age=10' } });
+    return new Response(null, { status: 204, headers: { 'cache-control': 'private, no-store' } });
   const replay = (await obj.json()) as { physicsVersion: string; inputs: unknown[] };
   return c.json({ name: row.name, score: row.score, timeMs: row.time_ms, ...replay }, 200, {
-    'cache-control': 'public, max-age=60',
+    'cache-control': 'private, no-store',
   });
 });
 

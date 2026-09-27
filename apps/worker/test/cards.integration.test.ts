@@ -11,6 +11,7 @@ import { PHYSICS_VERSION } from '@wwm/physics';
 import type { StageData } from '@wwm/schema';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { createTestHarness } from 'wrangler';
+import { seedApprovedStage } from './helpers/approved-stage.ts';
 
 const root = fileURLToPath(new URL('../../..', import.meta.url));
 const configPath = resolve(root, 'apps/worker/wrangler.jsonc');
@@ -100,10 +101,7 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
   beforeAll(async () => {
     await server.update({ workers: [{ configPath }] });
     await server.listen();
-    const w = server.getWorker<{
-      STAGES: { put(key: string, value: string | Uint8Array): Promise<unknown> };
-      DB: { prepare(q: string): { bind(...a: unknown[]): { run(): Promise<unknown> } } };
-    }>();
+    const w = server.getWorker<Env>();
     await w.applyD1Migrations('DB' as never);
     const env = await w.getEnv();
     for (const s of [stage, web]) await env.STAGES.put(`stages/${s.stageId}.json`, JSON.stringify(s));
@@ -123,6 +121,7 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
       .bind(web.stageId, web.source.url, web.source.title, now)
       .run();
 
+    for (const s of [stage, web]) await seedApprovedStage(env, s);
     const verified = await post({
       kind: 'stage',
       stageId: web.stageId,
@@ -228,7 +227,7 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
     expect(Object.keys(timings).length).toBe(cases.length);
   });
 
-  test('unknown ids and kinds are 404; the ?v= version makes the image immutable', async () => {
+  test('unknown ids and kinds are 404; reviewed site artwork stays cacheable and user captures stay revocable', async () => {
     expect((await get('/api/cards/score/AAAAAAAAAAAAAAAA.png')).status).toBe(404);
     expect((await get(`/api/cards/stage/${'e'.repeat(64)}.png`)).status).toBe(404);
     expect((await get('/api/cards/nope/x.png')).status).toBe(404);
@@ -238,9 +237,9 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
     const img = new URL(unesc(tags(page).ogImage ?? ''));
     const r = await get(img.pathname + img.search);
     expect(r.status).toBe(200);
-    expect(r.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    expect(r.headers.get('cache-control')).toBe('private, no-store');
     const stale = await get(`${img.pathname}?v=0000000000000000`);
-    expect(stale.headers.get('cache-control')).toBe('public, max-age=600');
+    expect(stale.headers.get('cache-control')).toBe('private, no-store');
   });
 
   describe.each(Object.entries(CRAWLERS))('crawler %s', (_bot, ua) => {
@@ -333,12 +332,10 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
         n: 'sh1t_head',
       }),
     );
-    const html = await (await get(`/j/${trail}`, CRAWLERS.twitter)).text();
-    const t = tags(html);
+    const response = await get(`/j/${trail}`, CRAWLERS.twitter);
+    expect(response.status).toBe(404); // A journey must resolve to approved stored stages.
+    const html = await response.text();
     expect(html).not.toContain('<script>alert');
-    expect(t.ogDescription).not.toContain('99,999,999');
-    expect(t.ogTitle).toBe('A web journey: 2 sites turned into mazes');
-    expect(t.ogDescription).toContain('evil.example → another site');
     const bad = await get('/j/not-a-trail!', CRAWLERS.twitter);
     expect(bad.status).toBe(404); // no assets in tests; in production the app shows its "invalid link" page
   });

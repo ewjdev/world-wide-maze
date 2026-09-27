@@ -1,4 +1,4 @@
-import { type Difficulty, hashString } from '@wwm/schema';
+import { type Difficulty, hashString, sha256Hex } from '@wwm/schema';
 
 export { computeRunId } from '@wwm/schema';
 
@@ -7,16 +7,12 @@ export function defaultSeed(normalizedUrl: string): number {
   return hashString(normalizedUrl) >>> 0;
 }
 
-/**
- * KV cache key (G0 update): `run:<normUrl>:<difficulty>:<builderVersion>`, plus `:seed=<n>` only when the
- * client chose a seed (the default seed is a function of the URL, so it adds nothing).
- */
-export function runCacheKey(
+/** Hashed variant identity fits KV limits even for the longest accepted URL. */
+export async function runCacheKey(
   normUrl: string,
   difficulty: Difficulty,
   builderVersion: string,
   seed?: number,
-): string {
-  const base = `run:${normUrl}:${difficulty}:${builderVersion}`;
-  return seed === undefined ? base : `${base}:seed=${seed >>> 0}`;
+): Promise<string> {
+  return `run:v2:${await sha256Hex(JSON.stringify([normUrl, difficulty, builderVersion, (seed ?? defaultSeed(normUrl)) >>> 0]))}`;
 }

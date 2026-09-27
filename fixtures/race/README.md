@@ -67,3 +67,5 @@ node scripts/race-maze-browser.ts --slug flow-sprint --base-url http://127.0.0.1
 ```
 
 Browser replays require the development server; production intentionally disables injected test inputs. `--quality low` is available for software-rendered test runs. Browser evidence compares full mechanics as well as progress and final pose; incomplete screenshots are never published as a passing run.
+
+The inline SVGs in the captured source HTML are frozen texture fixtures, not shipped interactive UI. Their title lint rule is excluded narrowly in `biome.json` to preserve the recorded source hashes. Public course JSON is formatted for repository lint; verification compares parsed content with the frozen fixture.

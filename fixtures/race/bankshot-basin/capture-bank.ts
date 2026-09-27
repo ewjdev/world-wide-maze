@@ -1,5 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from '../../../tools/fixture-capture/node_modules/playwright/index.mjs';
+
 const dir = import.meta.dirname;
 const read = async (f) => JSON.parse(await readFile(`${dir}/${f}`, 'utf8'));
 const c = await read('course.json'),

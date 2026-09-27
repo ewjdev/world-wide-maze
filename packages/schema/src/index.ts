@@ -3,6 +3,7 @@
  * Import from here; never redeclare these types elsewhere.
  */
 
+export * from './admin.ts';
 export * from './bridge-surface.ts';
 export * from './codec.ts';
 export * from './constants.ts';
