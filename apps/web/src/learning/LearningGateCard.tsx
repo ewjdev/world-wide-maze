@@ -10,9 +10,15 @@
  * `show` (pulse, retry, match, worked, celebrate) and from voice cues (a spoken number lights a gem, a spoken
  * "match" draws a pair line, "left over" marks the leftovers). Transparent buttons over the choice boxes take
  * taps; the cursor (tilt / arrow keys) is the scene's `is-focus` halo.
+ *
+ * Phase 22: the round is the one shown in this session (shuffled positions). Pip's callout names each choice and a
+ * `choice` cue pulses it (`.is-callout` on the mark and its key badge). When the round invites letter or number
+ * keys, the scene shows its key badges (`show-keys`); an answer through an input the round didn't invite gets a
+ * gentle nudge (twice, then it's accepted) and the badges flash.
  */
 import {
   type Cue,
+  type InputMode,
   type LessonState,
   layoutGroup,
   neutralLabels,
@@ -47,6 +53,7 @@ export function useLearning(): [LearningGates, LearningView] {
 }
 
 const EFFECTS = [
+  'is-callout',
   'is-lit',
   'is-leftover',
   'is-shown',
@@ -114,7 +121,11 @@ function applyShow(root: Element, gate: GateView): void {
 }
 
 function applyCue(root: Element, cue: Cue, round: Round): void {
-  if (cue.type === 'light')
+  if (cue.type === 'choice') {
+    for (const el of root.querySelectorAll('.is-callout')) el.classList.remove('is-callout');
+    restart(mark(root, cue.id), 'is-callout');
+    restart(root.querySelector(`[data-key-badge="${CSS.escape(cue.id)}"]`), 'is-callout');
+  } else if (cue.type === 'light')
     root.querySelector(`[data-gem="${cue.island}-${cue.index}"]`)?.classList.add('is-lit');
   else if (cue.type === 'pair') root.querySelector(`[data-pair="${cue.index}"]`)?.classList.add('is-shown');
   else
@@ -168,6 +179,14 @@ function GateCard({
   const planks = requiredRounds(activity);
   const style = { '--pc': theme.palette.gate, '--glow': theme.palette.glow } as Style;
   const eyebrow = gate.number > 0 ? t('learning.gate.label', { n: gate.number }) : t('learning.gate.start');
+  const invite = gate.policy.promptLine?.replace(/^pip\.input\./, '') as InputMode | undefined;
+  const tapOnly = !!lesson.path.family?.tapOnly;
+  const nextLabel =
+    gate.next === 'follow-up'
+      ? t('learning.gate.oneMore')
+      : gate.next === 'more'
+        ? t('learning.gate.next')
+        : t('learning.gate.rollOn');
   const pip = spriteMarkup(theme, 'pip', 72, 'wwm-lgate__pipsvg');
   const pipButton = (
     <button
@@ -278,6 +297,11 @@ function GateCard({
               <h2 id="lgate-h" className="wwm-lgate__prompt" data-testid="lgate-prompt">
                 {gate.round.prompt}
               </h2>
+              {invite && !tapOnly && !gate.state.solved && (
+                <p className="wwm-lgate__invite" data-testid="lgate-invite" data-mode={invite}>
+                  {t(`learning.input.${invite}`)}
+                </p>
+              )}
             </div>
             <p className="wwm-lgate__bridge">
               {t('learning.gate.bridge', { built: Math.min(gate.state.built, planks), total: planks })}
@@ -292,10 +316,11 @@ function GateCard({
                   <button
                     type="button"
                     className="wwm-btn wwm-btn--primary wwm-lgate__go"
-                    onClick={() => learning.rollOn()}
+                    onClick={() => learning.proceed()}
                     data-testid="lgate-rollon"
+                    data-next={gate.next}
                   >
-                    {t('learning.gate.rollOn')} <Icon name="arrow" />
+                    {nextLabel} <Icon name="arrow" />
                   </button>
                 ) : (
                   <>
@@ -322,12 +347,16 @@ function GateCard({
                       className="wwm-btn wwm-btn--ghost wwm-btn--small wwm-lgate__skip"
                       onClick={() => learning.skip()}
                       data-testid="lgate-skip"
+                      data-locking={gate.locking}
                     >
-                      {t('learning.gate.skip')}
+                      {gate.locking ? t('learning.gate.later') : t('learning.gate.skip')}
                     </button>
                   </>
                 )}
               </div>
+              {gate.policy.badges && !gate.state.solved && !phone && (
+                <p className="wwm-lgate__keys wwm-lgate__keys--badges">{t('learning.gate.keysBadges')}</p>
+              )}
               <p className="wwm-lgate__keys">
                 <Glyphs
                   text={t(
@@ -337,7 +366,9 @@ function GateCard({
                         : 'learning.gate.keysNextPc'
                       : phone
                         ? 'learning.gate.keysPhone'
-                        : 'learning.gate.keysPc',
+                        : gate.locking
+                          ? 'learning.gate.keysLater'
+                          : 'learning.gate.keysPc',
                   )}
                 />
               </p>
@@ -398,6 +429,22 @@ function Scene({
     return () => clearTimeout(done);
   }, [svg, gate.seq]);
 
+  // key badges when the round invites letter or number keys (again after `svg` re-renders the scene)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: `svg` replaces the scene element
+  useLayoutEffect(() => {
+    sceneRef.current?.querySelector('svg.wwm-scene')?.classList.toggle('show-keys', gate.policy.badges);
+  }, [svg, gate.policy.badges, sceneRef]);
+
+  // a nudge towards the invited input: the badges (or the choices) flash
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs on each nudge
+  useEffect(() => {
+    const el = sceneRef.current;
+    if (!el || gate.nudgeSeq === 0) return;
+    const badges = el.querySelectorAll('[data-key-badge]');
+    if (gate.policy.badges && badges.length > 0) for (const b of badges) restart(b, 'is-callout');
+    else for (const m of el.querySelectorAll('[data-choice-mark]')) restart(m, 'is-pulse');
+  }, [gate.nudgeSeq]);
+
   // the cursor: the scene's focus halo (again after `svg` re-renders the scene)
   // biome-ignore lint/correctness/useExhaustiveDependencies: `svg` replaces the marks, the ref is stable
   useLayoutEffect(() => {
@@ -440,7 +487,7 @@ function Scene({
           }}
           aria-label={choice.ariaLabel}
           aria-pressed={state.solved && state.choice === choice.id}
-          onClick={() => learning.answer(choice.id)}
+          onClick={() => learning.tap(choice.id)}
           data-testid={`lgate-choice-${choice.id}`}
         />
       ))}

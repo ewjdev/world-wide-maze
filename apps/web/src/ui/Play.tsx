@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
 import { LearningGateCard } from '../learning/LearningGateCard.tsx';
-import { LearningHud } from '../learning/LearningPanel.tsx';
+import { LearningHud, LearningOverride } from '../learning/LearningPanel.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyHud, PortalPromptCard, TravelIris } from './Journey.tsx';
 import { BallIcon, GemIcon, Glyphs, Icon, TiltRing, useSiteTitle } from './parts.tsx';
@@ -279,6 +279,7 @@ function MapMenu() {
                 <Icon name="exit" /> {t('map.quit')}
               </button>
             </div>
+            <LearningOverride /> {/* Phase 22: grown-ups may open the next lock (level permitting) */}
           </>
         ) : (
           <div role="alertdialog" aria-labelledby="confirm-h" className="wwm-confirm">

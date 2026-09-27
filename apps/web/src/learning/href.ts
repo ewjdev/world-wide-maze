@@ -15,6 +15,20 @@ export function learningHref(activityId: string, gate: number, gateColor: string
   return `${LEARNING_HREF}${activityId}/${gate}${color}`;
 }
 
+/**
+ * Phase 22: a mission post rides the same pipeline with an `m` before its number, e.g.
+ * `wwm-learning:compare-groups/m1#e5a810` (the engine draws it like a gate, in its own colour).
+ */
+export function missionHref(activityId: string, mission: number, color: string): string {
+  return learningHref(activityId, mission, color).replace(/\/(\d+)/, '/m$1');
+}
+
+/** A gate or a mission post, with its 1-based number, or null for any other href. */
+export function parseLearningHref(href: string): { kind: 'gate' | 'post'; n: number } | null {
+  const m = /^wwm-learning:[a-z][a-z0-9-]*\/(m?)(\d+)(?:#[0-9a-f]{6})?$/i.exec(href);
+  return m ? { kind: m[1] ? 'post' : 'gate', n: Number(m[2]) } : null;
+}
+
 /** The gate number (1-based) of a learning href, or null. */
 export function gateNumber(href: string): number | null {
   const m = /^wwm-learning:[a-z][a-z0-9-]*\/(\d+)(?:#[0-9a-f]{6})?$/i.exec(href);

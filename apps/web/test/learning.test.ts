@@ -8,14 +8,7 @@ import { LEARNING_HREF as ENGINE_HREF, isLearningHref as engineIsLearning, porta
 import { baselinePath, initialState, type LearningPath, learningScript, lineId, step } from '@wwm/learning';
 import { type StageData, validateStage } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
-import {
-  choiceForDigit,
-  gatesFor,
-  LearningGates,
-  moveCursor,
-  openStep,
-  TiltStepper,
-} from '../src/learning/gates.ts';
+import { choiceForDigit, LearningGates, moveCursor, openStep, TiltStepper } from '../src/learning/gates.ts';
 import { gateNumber, isLearningHref, LEARNING_HREF, learningHref } from '../src/learning/href.ts';
 import {
   LessonLoadError,
@@ -135,7 +128,7 @@ describe('learning hrefs', () => {
 });
 
 describe('gates → the lesson state machine', () => {
-  test('the first gate starts the lesson, a solved round moves on, an unsolved one is asked again', () => {
+  test('the stage-start fallback starts the lesson; an unsolved round is asked again', () => {
     let state = initialState(compare);
     const first = openStep(compare, state);
     expect(first.state.phase).toBe('round');
@@ -148,30 +141,17 @@ describe('gates → the lesson state machine', () => {
     state = first.state;
     // skipped: the next gate asks the same round again
     expect(openStep(compare, state)).toMatchObject({ state, say: [lineId.prompt(compare.id, 'r1')] });
-    state = step(compare, state, { type: 'answer', choice: 'b' }).state;
-    expect(state.solved).toBe(true);
-    const second = openStep(compare, state);
-    expect(second.state.index).toBe(1);
-    expect(second.say).toEqual([lineId.prompt(compare.id, 'r2'), lineId.callout(compare.id, 'r2')]);
   });
 
-  test('after the main rounds a gate offers the bonus, and after that it only rolls on', () => {
+  test('after the last main round a gate offers the bonus, and after that it only rolls on', () => {
     let state = initialState(compare);
+    state = step(compare, state, { type: 'play', roundId: 'r4' }).state;
+    state = step(compare, state, { type: 'answer', choice: 'same' }).state;
     state = openStep(compare, state).state;
-    for (const answer of ['b', 'a', 'b', 'same']) {
-      state = step(compare, state, { type: 'answer', choice: answer }).state;
-      state = openStep(compare, state).state;
-    }
     expect(state.phase).toBe('bonus-offer');
     state = step(compare, state, { type: 'bonus', accept: false }).state;
     expect(state.phase).toBe('done');
     expect(openStep(compare, state).say).toEqual([lineId.rollOn]);
-  });
-
-  test('gates per stage: the main path plus the trick follow-up, capped', () => {
-    expect(gatesFor(compare)).toBe(5);
-    const one = baselinePath.activities.find((a) => a.id === 'count-three');
-    expect(one && gatesFor(one)).toBe(1);
   });
 
   test('cursor, number keys and tilt stepping', () => {
@@ -206,18 +186,22 @@ describe('the session (LearningGates)', () => {
     sourceFor: () => 'silent' as const,
   });
 
-  function session() {
+  function session(level = 'explore', device = { keyboard: true, tilt: false }) {
     const closed: [number, string][] = [];
     const g = new LearningGates({
       muted: () => true,
       onClose: (id, how) => closed.push([id, how]),
       voice: silent,
+      seed: () => 0,
+      device: () => device,
     });
     g.use(lessonFromBaseline('compare-groups'));
+    g.setLevel(level);
+    g.stageReady(g.decorate(HANDMADE));
     return { g, closed };
   }
 
-  test('decorates a stage: link portals become numbered Pip gates', () => {
+  test('decorates a stage: link portals become numbered Pip gates, one per step of the level', () => {
     const { g } = session();
     const stage = g.decorate({
       ...HANDMADE,
@@ -226,15 +210,15 @@ describe('the session (LearningGates)', () => {
       ],
     });
     const portals = stage.portals ?? [];
-    expect(portals.length).toBe(5);
+    expect(portals.length).toBe(4);
     expect(portals.every((p) => isLearningHref(p.href))).toBe(true);
-    expect(portals.map((p) => gateNumber(p.href))).toEqual([1, 2, 3, 4, 5]);
+    expect(portals.map((p) => gateNumber(p.href))).toEqual([1, 2, 3, 4]);
     expect(portals[0]?.label).toBe('Pip gate 1');
   });
 
-  test('wrong answer climbs the hints, a right one locks, roll on closes; the state lasts across gates', () => {
+  test('explore (Phase 20): wrong answer climbs the hints, a right one locks, roll on closes; any gate asks the next round', () => {
     const { g, closed } = session();
-    g.open(0, 1, 0);
+    g.open(0, 0);
     expect(g.getView().gate?.round.id).toBe('r1');
     g.move(-1); // leftmost: island A (wrong)
     g.confirm();
@@ -249,17 +233,17 @@ describe('the session (LearningGates)', () => {
     g.confirm(); // roll on
     expect(g.isOpen).toBe(false);
     expect(closed).toEqual([[0, 'rolled-on']]);
-    g.open(1, 2, 1000);
+    g.open(1, 1000);
     expect(g.getView().gate?.round.id).toBe('r2');
     g.skip();
     expect(closed[1]).toEqual([1, 'skipped']);
-    g.open(2, 3, 2000);
+    g.open(2, 2000);
     expect(g.getView().gate?.round.id).toBe('r2'); // still waiting at r2, no penalty
   });
 
   test('phone tilt moves the cursor; JUMP confirms only after a release and a moment', () => {
-    const { g } = session();
-    g.open(0, 1, 0);
+    const { g } = session('explore', { keyboard: false, tilt: true });
+    g.open(0, 0);
     g.input(0.8, true, 'phone', 50); // tipped right with JUMP still held from rolling in
     expect(g.getView().gate?.cursor).toBe(1);
     g.input(0.8, false, 'phone', 100);

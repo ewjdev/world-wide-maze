@@ -424,12 +424,179 @@
   flex: 1;
 }
 
+/* ── Phase 22: levels, grown-ups, missions, locks ─────────────────────── */
+
+.wwm-lpanel__level {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.wwm-lpanel__levelname {
+  color: var(--ink);
+}
+.wwm-lpanel__levels {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 2px;
+  padding: 8px 10px 10px;
+  border: 0;
+  background: rgba(79, 159, 214, 0.08);
+  box-shadow: inset 0 0 0 1.5px rgba(79, 159, 214, 0.35);
+}
+.wwm-lpanel__levels legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 2px;
+  font: 700 12px / 1.2 var(--ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.wwm-lpanel__levels .wwm-btn {
+  justify-self: start;
+}
+.wwm-lpanel__choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.wwm-lpanel__choice input {
+  margin-top: 3px;
+}
+.wwm-lpanel__desc {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.wwm-lpanel__level .wwm-lpanel__desc {
+  display: inline;
+}
+
+/* press and hold: the fill grows while held */
+.wwm-hold-btn {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.wwm-hold-btn__fill {
+  position: absolute;
+  inset: 0;
+  background: rgba(79, 159, 214, 0.28);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.wwm-hold-btn.is-holding .wwm-hold-btn__fill {
+  transform: scaleX(1);
+  transition: transform var(--hold-ms, 2s) linear;
+}
+.wwm-hold-btn__label {
+  position: relative;
+}
+.wwm-hold-btn__hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wwm-lhud__bridge span.is-mission {
+  width: 11px;
+  height: 11px;
+  transform: rotate(45deg) scale(0.85);
+}
+.wwm-lhud__bridge span.is-mission.is-built {
+  background: var(--teal);
+}
+
+.wwm-lmission {
+  position: absolute;
+  /* bottom centre: the post's and gates' floating labels fill the top of the chase view */
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 7px 14px;
+  background: var(--paper);
+  border-left: 5px solid var(--teal);
+  font: 700 15px / 1.2 var(--ui);
+  white-space: nowrap;
+  filter: var(--shadow);
+  animation: wwm-fade 400ms var(--ease) both;
+}
+.wwm-lmission__title {
+  font: 700 11px / 1 var(--ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.wwm-lmission__gems {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.wwm-lbanner {
+  /* below the ball: the gate's padlock and card stand above it in the chase view */
+  top: auto;
+  bottom: 13%;
+  border-left: 6px solid var(--yellow);
+  /* long enough for a child to read (the flash keyframes: in, hold, out) */
+  animation-duration: 4.5s;
+}
+.wwm-lpanel:has(.wwm-lpanel__levels) {
+  align-items: start;
+}
+
+.wwm-lgate__invite {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 4px 10px;
+  font: 700 clamp(13px, 1.7vh, 17px) / 1.2 var(--ui);
+  color: var(--ink);
+  background: rgba(229, 168, 16, 0.22);
+}
+.wwm-lgate__keys--badges {
+  color: var(--ink);
+}
+
+.wwm-loverride {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--line);
+}
+.wwm-loverride__done {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--go);
+}
+
+.wwm-result__learning {
+  font-weight: 700;
+  color: var(--go);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wwm-lgate,
   .wwm-lgate__frame,
   .wwm-lgate__say,
   .wwm-lgate__pip,
-  .wwm-lhud {
+  .wwm-lhud,
+  .wwm-lmission,
+  .wwm-hold-btn__fill {
     animation: none !important;
     transition: none !important;
   }
