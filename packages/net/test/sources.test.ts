@@ -215,6 +215,40 @@ describe('KeyboardInputSource', () => {
     target.dispatchEvent(key('keydown', 'ArrowUp'));
     expect(src.sample(2000).power).toBe(false);
   });
+
+  test('repeat keydowns and releases after reset cannot re-arm held controls', () => {
+    const target = new EventTarget();
+    const src = new KeyboardInputSource({ target, now: () => 100 });
+    for (const code of ['ArrowRight', 'ShiftLeft', 'Space']) target.dispatchEvent(key('keydown', code));
+    src.reset();
+    expect(src.sample(100)).toMatchObject({ tiltX: 0, tiltZ: 0, power: false, jump: false });
+    for (const code of ['ArrowRight', 'ShiftLeft', 'Space'])
+      target.dispatchEvent(key('keydown', code, { repeat: true }));
+    expect(src.sample(200)).toMatchObject({ tiltX: 0, tiltZ: 0, power: false, jump: false });
+    for (const code of ['ArrowRight', 'ShiftLeft', 'Space']) target.dispatchEvent(key('keyup', code));
+    expect(src.sample(201)).toMatchObject({ tiltX: 0, tiltZ: 0, power: false, jump: false });
+    target.dispatchEvent(key('keydown', 'ArrowRight'));
+    target.dispatchEvent(key('keydown', 'Space'));
+    expect(src.sample(300)).toMatchObject({ power: true, jump: true });
+    expect(src.sample(400).tiltX).toBeGreaterThan(0);
+    src.dispose();
+  });
+
+  test('visibility reset clears held tilt, release grace and a jump latched between samples', () => {
+    const { target, src, at } = kbRig();
+    src.sample(0);
+    target.dispatchEvent(key('keydown', 'ArrowUp'));
+    target.dispatchEvent(key('keydown', 'ShiftLeft'));
+    expect(src.sample(500).tiltZ).toBeGreaterThan(0);
+    target.dispatchEvent(key('keydown', 'Space'));
+    target.dispatchEvent(key('keyup', 'Space'));
+    at(500);
+    target.dispatchEvent(key('keyup', 'ArrowUp'));
+    src.reset();
+    expect(src.sample(501)).toEqual({ tiltX: 0, tiltZ: 0, frameYaw: 0, power: false, jump: false });
+    target.dispatchEvent(key('keydown', 'Space'));
+    expect(src.sample(502).jump).toBe(true);
+  });
 });
 
 // ── Gamepad ─────────────────────────────────────────────────────────────────────────────────────────
