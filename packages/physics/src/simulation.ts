@@ -368,6 +368,8 @@ export class RapierSimulation implements LockableSimulation {
 
     this.tick = 0;
     this.goalReached = false;
+    this.groundedNow = false;
+    this.prevJump = false;
     this.reset();
     this.lastIslandId = -1; // first contact (the start island) emits an 'island' event
   }

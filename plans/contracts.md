@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.2`** (G0, 2026-09-25). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.3`** (Race additive controller CCR, 2026-09-26). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -474,3 +474,12 @@ The separate `wwm-learning/0.4` Bridge Builders document and semantic binding ma
 - Route lessons later need departure/arrival corridor observations with monotonic traversal IDs. Energy is committed only after the trusted adapter validates both endpoints and direction. Cancellation on fall, reset or corridor exit returns the ball to its last committed safe spawn.
 
 No simulation, renderer or worker implementation is claimed here. The proposed shape must be reconciled with their actual interfaces and tested against a physical stage before enabling the sampler.
+
+
+### Phase 24 Race contract (implemented; straight-course release)
+
+The lead accepted the controller CCR: `StateMessage.race?: RaceState` and two additive control messages, `{t:'capabilities-request'}` and `{t:'capabilities', raceVersion:1}`. `RaceState` version 1 carries host-authoritative phase (`loading|ready|countdown|racing|paused|finished`), elapsedTicks, simHz, sector, totalSectors, practice, and optional splitDeltaTicks. The existing relay passes the payload unchanged. New phones advertise only after a request; legacy hosts retain their existing flow. Race waits for capability and calibration, with refresh/keyboard fallback on failure. Ready maps to the legacy intro phase for the outer message; the Race payload is authoritative for a compatible controller.
+
+Race course/attempt/input schemas live in `@wwm/race`; see its README for exact bounded buffers and compatibility. Course gates are world metres, with unit horizontal forward normals. Input samples retain the shared format. Tick zero is the loaded pose; sample index zero produces completed tick one. `LockstepDriver.advance` accepts an optional post-step observer: sample input, capture current pre-step pose (after a queued recovery), step physics, increment tick, dispatch events, observe Race gates. Returning true halts catch-up immediately. Replay uses this same Race reducer independently of Original goal events. Recoveries apply before their recorded tick; teleports never become gate sweeps.
+
+Retries reload the cached stage into a fresh Rapier world. The shared load path now resets grounded/jump-edge history to match a newly created simulation; normal fresh-run physics parameters and version remain unchanged. Race itself owns pause/eligibility, finish, local history and ghosts, and never submits Original scores or Education progress. StageData, straight-ramp physics and standard engine rendering contracts remain unchanged; curved-ramp schema work is deferred.

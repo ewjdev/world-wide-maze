@@ -200,7 +200,9 @@ export class ControllerSession {
         this.#patch({ rttP50: s.p50, rttP95: s.p95 });
       }),
       c.on('message', (m) => {
-        if (m.t === 'state') {
+        if (m.t === 'capabilities-request') {
+          c.send({ t: 'capabilities', raceVersion: 1 });
+        } else if (m.t === 'state') {
           this.#patch({ host: m });
           if (m.phase === 'calibrate' && this.#view.screen === 'play') this.#sendCalibrated();
         } else if (m.t === 'haptic') this.#haptic(m.pattern);

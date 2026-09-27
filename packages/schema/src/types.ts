@@ -335,7 +335,26 @@ export interface StateMessage {
   score: number;
   balls: number;
   timeLeft: number;
+  race?: RaceState;
 } // host → controller
+/** Race clocks are authoritative on the host; older controllers ignore this optional extension. */
+export interface RaceState {
+  version: 1;
+  phase: 'loading' | 'ready' | 'countdown' | 'racing' | 'paused' | 'finished';
+  elapsedTicks: number;
+  simHz: number;
+  sector: number;
+  totalSectors: number;
+  practice: boolean;
+  splitDeltaTicks?: number;
+}
+export interface CapabilityRequestMessage {
+  t: 'capabilities-request';
+}
+export interface CapabilitiesMessage {
+  t: 'capabilities';
+  raceVersion: 1;
+}
 export interface HapticMessage {
   t: 'haptic';
   pattern: HapticPattern;
@@ -369,6 +388,8 @@ export interface PongMessage {
 
 /** Every JSON text frame on the room socket. */
 export type ControlMessage =
+  | CapabilityRequestMessage
+  | CapabilitiesMessage
   | PeerMessage
   | StateMessage
   | HapticMessage

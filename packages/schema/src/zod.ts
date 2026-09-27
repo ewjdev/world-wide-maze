@@ -229,9 +229,29 @@ export const GamePhaseSchema = z.enum([
 export const RoomRoleSchema = z.enum(['host', 'controller']);
 export const HapticPatternSchema = z.enum(['item', 'large', 'fall', 'goal']);
 
+export const RaceStateSchema = z.object({
+  version: z.literal(1),
+  phase: z.enum(['loading', 'ready', 'countdown', 'racing', 'paused', 'finished']),
+  elapsedTicks: z.number().int().nonnegative(),
+  simHz: z.number().finite().positive(),
+  sector: z.number().int().nonnegative(),
+  totalSectors: z.number().int().nonnegative(),
+  practice: z.boolean(),
+  splitDeltaTicks: z.number().int().optional(),
+});
+
 export const ControlMessageSchema = z.discriminatedUnion('t', [
   z.object({ t: z.literal('peer'), role: RoomRoleSchema, connected: z.boolean() }),
-  z.object({ t: z.literal('state'), phase: GamePhaseSchema, score: finite, balls: finite, timeLeft: finite }),
+  z.object({
+    t: z.literal('state'),
+    phase: GamePhaseSchema,
+    score: finite,
+    balls: finite,
+    timeLeft: finite,
+    race: RaceStateSchema.optional(),
+  }),
+  z.object({ t: z.literal('capabilities-request') }),
+  z.object({ t: z.literal('capabilities'), raceVersion: z.literal(1) }),
   z.object({ t: z.literal('haptic'), pattern: HapticPatternSchema }),
   z.object({ t: z.literal('pos'), x: finite, y: finite, heading: finite }),
   z.object({ t: z.literal('text'), field: z.enum(['url', 'name']), value: z.string().max(2048) }),

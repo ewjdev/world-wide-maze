@@ -1,0 +1,106 @@
+{
+  "method": "Headed Chromium with --use-gl=angle --use-angle=metal, brought to front for each sample,1440x1000 DPR1,fixed high quality,tier0. One full course warmup before0/1/2ghost samples. Identical solver inputs,timeScale1 during15-second samples,first10frames removed. Accelerated only after sample. Desktop native rendering evidence, not physical-phone/human-flow acceptance.",
+  "device": {
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Unspecified Version)",
+    "vendor": "Google Inc. (Apple)",
+    "gpuInfo": {
+      "vendor": "apple",
+      "architecture": "metal-3",
+      "device": "",
+      "description": ""
+    },
+    "backend": "webgpu",
+    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36"
+  },
+  "runs": [
+    {
+      "ghosts": "off",
+      "ghostCount": 0,
+      "ghostError": false,
+      "samples": 890,
+      "simTick": 1799,
+      "focused": true,
+      "visibility": "visible",
+      "meanMs": 16.66640449438202,
+      "p95Ms": 17.600000000000364,
+      "p99Ms": 17.700000000000728,
+      "engine": {
+        "fps": 59.99495840685739,
+        "drawCalls": 97,
+        "triangles": 28552,
+        "tier": 0,
+        "sceneDrawCalls": 71,
+        "envDrawCalls": 12,
+        "postDrawCalls": 14,
+        "backend": "webgpu",
+        "memory": {
+          "geometries": 17,
+          "textures": 24,
+          "programs": 78,
+          "renderTargets": 15
+        },
+        "tierLog": []
+      }
+    },
+    {
+      "ghosts": "best",
+      "ghostCount": 1,
+      "ghostError": false,
+      "samples": 890,
+      "simTick": 1800,
+      "focused": true,
+      "visibility": "visible",
+      "meanMs": 16.666629213483144,
+      "p95Ms": 17.600000000002183,
+      "p99Ms": 17.700000000000728,
+      "engine": {
+        "fps": 60.00300015000834,
+        "drawCalls": 98,
+        "triangles": 29072,
+        "tier": 0,
+        "sceneDrawCalls": 72,
+        "envDrawCalls": 12,
+        "postDrawCalls": 14,
+        "backend": "webgpu",
+        "memory": {
+          "geometries": 18,
+          "textures": 24,
+          "programs": 78,
+          "renderTargets": 15
+        },
+        "tierLog": []
+      }
+    },
+    {
+      "ghosts": "both",
+      "ghostCount": 2,
+      "ghostError": false,
+      "samples": 878,
+      "simTick": 1776,
+      "focused": true,
+      "visibility": "visible",
+      "meanMs": 16.666742596810934,
+      "p95Ms": 17.599999999998545,
+      "p99Ms": 17.69999999999709,
+      "engine": {
+        "fps": 59.99798326106787,
+        "drawCalls": 96,
+        "triangles": 29048,
+        "tier": 0,
+        "sceneDrawCalls": 70,
+        "envDrawCalls": 12,
+        "postDrawCalls": 14,
+        "backend": "webgpu",
+        "memory": {
+          "geometries": 19,
+          "textures": 24,
+          "programs": 78,
+          "renderTargets": 15
+        },
+        "tierLog": []
+      }
+    }
+  ],
+  "errors": [],
+  "p95RegressionPct": [1.0325074129013956e-11, -1.0336176359260207e-11]
+}

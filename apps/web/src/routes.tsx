@@ -94,6 +94,10 @@ const pageRoutes: RouteObject[] = [
   { path: '/', lazy: homeRoute },
   { path: '/play/:stageId', lazy: playRoute },
   { path: '/p/:code', lazy: joinRoute },
+  {
+    path: '/race/:courseId?',
+    lazy: async () => ({ Component: (await import('./race/RacePage.tsx')).default }),
+  },
   // The phone controller renders without the desktop layout.
   {
     path: '/c/:code',

@@ -66,6 +66,13 @@
   font-size: 18px;
   margin-left: 4px;
 }
+.wwmc-hud-race {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
 
 .wwmc-main {
   flex: 1;

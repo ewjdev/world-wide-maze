@@ -1,0 +1,89 @@
+{
+  "method": "Headless Chromium, isolated fresh profile, 1440x1000 DPR1, fixed low quality (tier3, consistent across samples), identical solver inputs, timeScale1 during each15-second sample, first10frames removed. Accelerated only after sample to seed next personal ghost. Samples are development-browser evidence, not physical-device60fps acceptance.",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+  "runs": [
+    {
+      "ghosts": "off",
+      "ghostCount": 0,
+      "ghostError": false,
+      "samples": 129,
+      "simTick": 1217,
+      "meanMs": 98.18759689922481,
+      "p95Ms": 250,
+      "p99Ms": 316.6000000000022,
+      "engine": {
+        "fps": 18.656716417910474,
+        "drawCalls": 18,
+        "triangles": 27904,
+        "tier": 3,
+        "sceneDrawCalls": 17,
+        "envDrawCalls": 0,
+        "postDrawCalls": 1,
+        "backend": "webgl2",
+        "memory": {
+          "geometries": 17,
+          "textures": 11,
+          "programs": 67,
+          "renderTargets": 3
+        },
+        "tierLog": []
+      }
+    },
+    {
+      "ghosts": "best",
+      "ghostCount": 1,
+      "ghostError": false,
+      "samples": 205,
+      "simTick": 1471,
+      "meanMs": 70.2409756097561,
+      "p95Ms": 200,
+      "p99Ms": 283.40000000000146,
+      "engine": {
+        "fps": 17.949638442997045,
+        "drawCalls": 17,
+        "triangles": 28400,
+        "tier": 3,
+        "sceneDrawCalls": 16,
+        "envDrawCalls": 0,
+        "postDrawCalls": 1,
+        "backend": "webgl2",
+        "memory": {
+          "geometries": 18,
+          "textures": 11,
+          "programs": 67,
+          "renderTargets": 3
+        },
+        "tierLog": []
+      }
+    },
+    {
+      "ghosts": "both",
+      "ghostCount": 2,
+      "ghostError": false,
+      "samples": 420,
+      "simTick": 1763,
+      "meanMs": 34.79999999999998,
+      "p95Ms": 50,
+      "p99Ms": 50.10000000000582,
+      "engine": {
+        "fps": 32.00160008000396,
+        "drawCalls": 72,
+        "triangles": 30088,
+        "tier": 3,
+        "sceneDrawCalls": 71,
+        "envDrawCalls": 0,
+        "postDrawCalls": 1,
+        "backend": "webgl2",
+        "memory": {
+          "geometries": 19,
+          "textures": 11,
+          "programs": 67,
+          "renderTargets": 3
+        },
+        "tierLog": []
+      }
+    }
+  ],
+  "errors": [],
+  "p95RegressionPct": [-19.999999999999996, -80]
+}

@@ -2,6 +2,11 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.3 (2026-09-26, Race)
+- Optional `StateMessage.race` version-1 timer, sector, phase, practice and split payload.
+- Additive `capabilities-request` / `capabilities { raceVersion: 1 }` controller handshake. Old messages still parse; Race requires support before GO and can fall back to keyboard.
+- Stage geometry, standard input samples and Original/Education state semantics unchanged.
+
 ## 0.3.2 (2026-09-26, analytics)
 - Added the shared versioned telemetry event/context/envelope schemas with closed categories and bounded numeric fields.
 - Visit and optional consented browser identity, attempt correlation, active-time deltas and provider deduplication IDs.

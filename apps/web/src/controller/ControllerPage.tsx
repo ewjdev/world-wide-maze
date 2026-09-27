@@ -140,6 +140,36 @@ function HostHud({ view }: { view: ControllerView }) {
   const t = strings();
   const h = view.host;
   if (!h) return null;
+  if (h.race) {
+    const race = h.race;
+    const seconds = race.elapsedTicks / race.simHz;
+    const split = race.splitDeltaTicks;
+    return (
+      <section className="wwmc-hud wwmc-hud-race" data-testid="race-host-hud" aria-label="Race status">
+        <span>
+          {race.practice ? 'Practice' : 'Race'} <b>{race.phase}</b>
+        </span>
+        <span>
+          {t.time} <b>{seconds.toFixed(2)}s</b>
+        </span>
+        <span>
+          Sector{' '}
+          <b>
+            {Math.min(race.sector + 1, race.totalSectors)}/{race.totalSectors}
+          </b>
+        </span>
+        {split !== undefined && (
+          <span>
+            Split{' '}
+            <b>
+              {split > 0 ? '+' : ''}
+              {(split / race.simHz).toFixed(2)}s
+            </b>
+          </span>
+        )}
+      </section>
+    );
+  }
   return (
     <div className="wwmc-hud" data-testid="host-hud">
       <span>
