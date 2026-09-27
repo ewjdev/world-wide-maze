@@ -158,6 +158,8 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
       element.onended = () => finish(true);
       element.onerror = () => {
         failed.add(clip.hash);
+        // play() may already have rejected and fallen back to speech: never speak a line twice
+        if (settled) return;
         settled = true;
         cancelAnimationFrame(frame);
         void playSpeech(line).then(resolve);

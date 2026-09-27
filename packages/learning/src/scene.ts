@@ -302,7 +302,7 @@ const STYLE = `.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-
 .wwm-scene .check{opacity:0;transition:opacity .2s}
 .wwm-scene .mark.is-callout .halo{opacity:1;stroke:var(--wwm-focus);stroke-dasharray:none}
 .wwm-scene .mark.is-callout{animation:wwm-pulse .45s ease-in-out 1}
-.wwm-scene .key-badge{opacity:0;transition:opacity .2s,transform .2s}
+.wwm-scene .key-badge{opacity:0;transition:opacity .2s,transform .2s;transform-box:fill-box;transform-origin:center}
 .wwm-scene.show-keys .key-badge{opacity:1}
 .wwm-scene .key-badge.is-callout{transform:scale(1.25)}
 .wwm-scene .pip{transition:transform .9s cubic-bezier(.3,.8,.3,1)}
