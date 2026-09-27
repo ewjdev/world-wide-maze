@@ -241,69 +241,120 @@ test.skipIf(!available)(
 test.skipIf(!available)(
   'late network response cannot replace a newer same-stage ghost',
   async () => {
-    const ctx = await browser.newContext();
-    await browserEnv(ctx);
-    await ctx.addInitScript((hooks) => {
-      localStorage.setItem('wwm.analytics.preference', 'off');
-      localStorage.setItem('wwm.howtoSeen', '1');
-      localStorage.setItem('wwm.tutorialDone', '1');
-      window.__WWM_TEST__ = { ...hooks, skipIntro: true, noAutoPause: true, timeScale: 2 };
-    }, CI_HOOKS);
-    let releaseFirst: () => void = () => {};
-    const first = new Promise<void>((resolve) => {
-      releaseFirst = resolve;
-    });
-    let calls = 0;
-    await ctx.route('**/api/**', async (route) => {
-      const path = new URL(route.request().url()).pathname;
-      if (path.endsWith('/texture')) return route.fulfill({ contentType: 'image/png', body: png });
-      if (path.startsWith('/api/stages/'))
+    // Exercise both a valid obsolete replay and an incompatible obsolete response:
+    // neither may publish over the ready replacement, including its status.
+    for (const oldPhysicsVersion of [PHYSICS_VERSION, 'obsolete-test-version']) {
+      const ctx = await browser.newContext();
+      await browserEnv(ctx);
+      await ctx.addInitScript((hooks) => {
+        localStorage.setItem('wwm.analytics.preference', 'off');
+        localStorage.setItem('wwm.howtoSeen', '1');
+        localStorage.setItem('wwm.tutorialDone', '1');
+        window.__WWM_TEST__ = { ...hooks, skipIntro: true, noAutoPause: true, timeScale: 2 };
+        const probe = { held: false, consumed: false, workers: 0, release: () => {} };
+        Object.assign(window, { lateGhost: probe });
+        const NativeWorker = Worker;
+        window.Worker = class extends NativeWorker {
+          constructor(url: string | URL, options?: WorkerOptions) {
+            super(url, options);
+            if (String(url).includes('ghost-worker')) probe.workers++;
+          }
+        };
+        const nativeFetch = window.fetch.bind(window);
+        let ghostRequests = 0;
+        window.fetch = async (input, init) => {
+          const url = input instanceof Request ? input.url : String(input);
+          const hold = url.endsWith('/ghost') && ++ghostRequests === 1;
+          const response = await nativeFetch(input, init);
+          if (!hold) return response;
+          // Complete the real HTTP body first, then delay a detached transport result.
+          // This test transport deliberately ignores later aborts: a six-second HTTP
+          // timeout must not turn stale-publication coverage into an absent response.
+          const detached = new Response(await response.arrayBuffer(), {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers,
+          });
+          probe.held = true;
+          await new Promise<void>((resolve) => {
+            probe.release = resolve;
+          });
+          const json = detached.json.bind(detached);
+          detached.json = async () => {
+            const body = await json();
+            probe.consumed = true;
+            return body;
+          };
+          return detached;
+        };
+      }, CI_HOOKS);
+      let calls = 0;
+      await ctx.route('**/api/**', async (route) => {
+        const path = new URL(route.request().url()).pathname;
+        if (path.endsWith('/texture')) return route.fulfill({ contentType: 'image/png', body: png });
+        if (path.startsWith('/api/stages/'))
+          return route.fulfill({
+            json: {
+              ...stage,
+              texture: { ...stage.texture, path: `${base}api/stages/${stage.stageId}/texture` },
+            },
+          });
+        if (path.startsWith('/api/runs/'))
+          return route.fulfill({
+            json: { runId: 'test', title: 'Ghost test', url: stage.source.url, stageIds: [stage.stageId] },
+          });
+        if (path.endsWith('/ghost')) {
+          const call = ++calls;
+          return route.fulfill({
+            json: {
+              name: `ghost_${call}`,
+              score: 1484,
+              timeMs: 45_000,
+              physicsVersion: call === 1 ? oldPhysicsVersion : PHYSICS_VERSION,
+              inputs,
+            },
+          });
+        }
         return route.fulfill({
-          json: {
-            ...stage,
-            texture: { ...stage.texture, path: `${base}api/stages/${stage.stageId}/texture` },
-          },
+          json: { entries: [{ name: 'ghost', score: 1484, at: new Date().toISOString() }] },
         });
-      if (path.startsWith('/api/runs/'))
-        return route.fulfill({
-          json: { runId: 'test', title: 'Ghost test', url: stage.source.url, stageIds: [stage.stageId] },
+      });
+      try {
+        const page = await ctx.newPage();
+        const errors: string[] = [];
+        page.on('pageerror', (error) => errors.push(error.message));
+        await page.goto(`${base}play/${stage.stageId}`);
+        await page.waitForFunction(() => window.__wwmGame?.debugState().phase === 'play');
+        await page.waitForFunction(
+          () => (window as unknown as { lateGhost: { held: boolean } }).lateGhost.held,
+        );
+        expect(calls).toBe(1);
+        await page.evaluate(() => {
+          window.__wwmGame?.menu();
+          window.__wwmGame?.retryStage();
         });
-      if (path.endsWith('/ghost')) {
-        const call = ++calls;
-        if (call === 1) await first;
-        return route.fulfill({
-          json: {
-            name: `ghost_${call}`,
-            score: 1484,
-            timeMs: 45_000,
-            physicsVersion: PHYSICS_VERSION,
-            inputs,
-          },
-        });
+        await page.waitForFunction(() => window.__wwmGame?.debugState().ghost.loaded);
+        expect(await page.evaluate(() => window.__wwmGame?.debugState().ghost.run?.name)).toBe('ghost_2');
+        expect(calls).toBe(2);
+        await page.evaluate(() =>
+          (window as unknown as { lateGhost: { release: () => void } }).lateGhost.release(),
+        );
+        // Observe actual JSON consumption, then inspect the subsequent browser task;
+        // the fetch/board/game promise chain has drained, without a fixed sleep.
+        await page.waitForFunction(
+          () => (window as unknown as { lateGhost: { consumed: boolean } }).lateGhost.consumed,
+        );
+        expect(
+          await page.evaluate(() => ({
+            name: window.__wwmGame?.debugState().ghost.run?.name,
+            status: window.__wwmGame?.debugState().ghost.status,
+            workers: (window as unknown as { lateGhost: { workers: number } }).lateGhost.workers,
+          })),
+        ).toEqual({ name: 'ghost_2', status: 'ready', workers: 1 });
+        expect(errors).toEqual([]);
+      } finally {
+        await ctx.close();
       }
-      return route.fulfill({
-        json: { entries: [{ name: 'ghost', score: 1484, at: new Date().toISOString() }] },
-      });
-    });
-    try {
-      const page = await ctx.newPage();
-      await page.goto(`${base}play/${stage.stageId}`);
-      await page.waitForFunction(() => window.__wwmGame?.debugState().phase === 'play');
-      expect(calls).toBe(1);
-      await page.evaluate(() => {
-        window.__wwmGame?.menu();
-        window.__wwmGame?.retryStage();
-      });
-      await page.waitForFunction(() => window.__wwmGame?.debugState().ghost.loaded);
-      expect(await page.evaluate(() => window.__wwmGame?.debugState().ghost.run?.name)).toBe('ghost_2');
-      const delivered = page.waitForResponse((r) => r.url().endsWith('/ghost'));
-      releaseFirst();
-      await delivered;
-      await page.waitForTimeout(500);
-      expect(await page.evaluate(() => window.__wwmGame?.debugState().ghost.run?.name)).toBe('ghost_2');
-    } finally {
-      releaseFirst();
-      await ctx.close();
     }
   },
   90_000,
