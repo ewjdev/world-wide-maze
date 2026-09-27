@@ -1,5 +1,13 @@
 # Learning HTML, experimental v0.2
 
+## Phase 23 experimental 0.4 reader (in progress)
+
+`packages/learning/src/lesson-v04.ts` defines a separate strict `wwm-learning/0.4` document. The 0.1–0.3 reader and the six `little-discoveries` activities remain unchanged. `normalizeLearningDocument` identifies old paths as `legacy-linear` and preserves their original normalized 0.3 data; it identifies the experimental path as `v04`. `readLearningHtmlAny` reads one inert script, applies the same 200 KB JSON bound and rejects unsupported formats. A 0.4 export is not promised to old consumers.
+
+The first executable 0.4 contract is `bridge-builders`. It declares exact inventory, unique pickup IDs, four encounters, deposit totals and connector IDs. Its authored fixture lives at `fixtures/learning/bridge-builders/`. The separate binding manifest names targets and stage connector IDs, with a full stage-content hash. Neither the document nor imported HTML contains a world path, media origin, or executable code. The current `apps/web/src/learning/world.ts` binder rejects missing references, a changed stage and unsafe or overlapping placements. Graph reachability under every authored state and physical collision traversal remain acceptance work.
+
+The pure reducer in `packages/learning/src/bridge-runtime.ts` accepts a lesson revision, session, attempt, node, event ID and strict sequence. Pickups and exact Confirm are deduplicated, tentative transfers can be returned, and Confirm alone opens a connector. `apps/web/src/learning/storage.ts` provides an IndexedDB compare-and-commit boundary for Bridge Builders. The game must commit before projecting the world or acknowledging an action. The sampler is currently draft and is not linked or offered by the game or education app.
+
 This is an original experimental convention, not an established HTML standard. The implementation authority is `packages/learning/src/schema.ts` (`wwm-learning/0.2`, CCR-EDU-02). Existing game contracts remain in `@wwm/schema`.
 
 ## One document, several readers

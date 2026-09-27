@@ -463,3 +463,14 @@ setLock(id: number, open: boolean): void;                          // worker pro
 - **`goal`:** while closed, the goal sensor emits `locked` and doesn't latch; opening re-arms it.
 - **Determinism:** with no locks (every ranked run), the behaviour is byte-identical to v0.3.2.
 - **Scores:** runs with locks are **unranked**. They are never submitted, because server replay verification knows nothing about locks.
+
+### Phase 23 proposed runtime overlay contract (not yet implemented)
+
+The separate `wwm-learning/0.4` Bridge Builders document and semantic binding manifest are implemented without changing `StageData`. Before a playable game adapter lands, the learning-only simulation/renderer protocol needs these additions:
+
+- `SimLoadOptions.lessonObjects?: { id: string; islandId: number; pos: Vec2; radius: number; role: 'pickup' | 'deposit' | 'destination' | 'key' | 'safe-post' }[]`. The IDs are namespaced away from ordinary score gems. The engine shows each object's label and state from a projection of committed lesson progress.
+- `SimEvent` gains `{ type: 'lesson-object'; id: string }` when the ball enters a dedicated sensor. These events are observations only. They cannot mutate inventory or score.
+- A worker message and renderer method set lesson object visibility by ID, idempotently. Existing `setLock(id, open)` projects committed connector state; no new persisted stage field is needed.
+- Route lessons later need departure/arrival corridor observations with monotonic traversal IDs. Energy is committed only after the trusted adapter validates both endpoints and direction. Cancellation on fall, reset or corridor exit returns the ball to its last committed safe spawn.
+
+No simulation, renderer or worker implementation is claimed here. The proposed shape must be reconciled with their actual interfaces and tested against a physical stage before enabling the sampler.

@@ -1,0 +1,459 @@
+{
+  "schema": "wwm.stage/2",
+  "stageId": "9468488a89ba1662f537b0decdc9c52a369908e6c564aac1faaa1c025d11e569",
+  "builderVersion": "0.0.0-learning-poc",
+  "seed": 1,
+  "difficulty": "easy",
+  "source": {
+    "url": "wwm:fixture/bridge-builders",
+    "title": "Bridge Builders experimental fixture",
+    "captureId": "bridge-builders",
+    "pageWidth": 640,
+    "pageHeight": 800,
+    "slice": {
+      "index": 0,
+      "count": 1,
+      "y": 0,
+      "height": 800
+    }
+  },
+  "size": {
+    "width": 640,
+    "height": 800
+  },
+  "texture": {
+    "path": "../../stages/handmade-simple.png",
+    "width": 1280,
+    "height": 1600,
+    "scale": 2
+  },
+  "timeLimitSec": 300,
+  "islands": [
+    {
+      "id": 0,
+      "contour": [
+        [
+          40,
+          40
+        ],
+        [
+          280,
+          40
+        ],
+        [
+          280,
+          300
+        ],
+        [
+          40,
+          300
+        ]
+      ],
+      "holes": [],
+      "level": 0,
+      "guardrails": [
+        [
+          [
+            280,
+            110
+          ],
+          [
+            280,
+            146
+          ]
+        ],
+        [
+          [
+            280,
+            194
+          ],
+          [
+            280,
+            230
+          ]
+        ],
+        [
+          [
+            280,
+            270
+          ],
+          [
+            280,
+            300
+          ],
+          [
+            40,
+            300
+          ],
+          [
+            40,
+            40
+          ],
+          [
+            280,
+            40
+          ],
+          [
+            280,
+            70
+          ]
+        ]
+      ],
+      "restartPoints": [
+        [
+          60,
+          60
+        ],
+        [
+          60,
+          280
+        ]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 1,
+      "contour": [
+        [
+          360,
+          40
+        ],
+        [
+          600,
+          40
+        ],
+        [
+          600,
+          300
+        ],
+        [
+          360,
+          300
+        ]
+      ],
+      "holes": [],
+      "level": 0,
+      "guardrails": [
+        [
+          [
+            456,
+            300
+          ],
+          [
+            360,
+            300
+          ],
+          [
+            360,
+            270
+          ]
+        ],
+        [
+          [
+            360,
+            230
+          ],
+          [
+            360,
+            194
+          ]
+        ],
+        [
+          [
+            360,
+            146
+          ],
+          [
+            360,
+            110
+          ]
+        ],
+        [
+          [
+            360,
+            70
+          ],
+          [
+            360,
+            40
+          ],
+          [
+            600,
+            40
+          ],
+          [
+            600,
+            300
+          ],
+          [
+            504,
+            300
+          ]
+        ]
+      ],
+      "restartPoints": [
+        [
+          580,
+          60
+        ],
+        [
+          580,
+          280
+        ]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 2,
+      "contour": [
+        [
+          360,
+          460
+        ],
+        [
+          600,
+          460
+        ],
+        [
+          600,
+          620
+        ],
+        [
+          360,
+          620
+        ]
+      ],
+      "holes": [],
+      "level": 1.5,
+      "guardrails": [
+        [
+          [
+            504,
+            460
+          ],
+          [
+            600,
+            460
+          ],
+          [
+            600,
+            620
+          ],
+          [
+            360,
+            620
+          ],
+          [
+            360,
+            564
+          ]
+        ],
+        [
+          [
+            360,
+            516
+          ],
+          [
+            360,
+            460
+          ],
+          [
+            456,
+            460
+          ]
+        ]
+      ],
+      "restartPoints": [
+        [
+          380,
+          600
+        ],
+        [
+          580,
+          600
+        ]
+      ],
+      "sourceElementIds": []
+    },
+    {
+      "id": 3,
+      "contour": [
+        [
+          40,
+          400
+        ],
+        [
+          344,
+          400
+        ],
+        [
+          344,
+          760
+        ],
+        [
+          40,
+          760
+        ]
+      ],
+      "holes": [],
+      "level": 4,
+      "guardrails": [
+        [
+          [
+            344,
+            564
+          ],
+          [
+            344,
+            760
+          ],
+          [
+            40,
+            760
+          ],
+          [
+            40,
+            400
+          ],
+          [
+            344,
+            400
+          ],
+          [
+            344,
+            516
+          ]
+        ]
+      ],
+      "restartPoints": [
+        [
+          60,
+          420
+        ],
+        [
+          320,
+          740
+        ]
+      ],
+      "sourceElementIds": []
+    }
+  ],
+  "bridges": [
+    {
+      "id": 0,
+      "from": 0,
+      "to": 1,
+      "a": [
+        280,
+        90
+      ],
+      "b": [
+        360,
+        90
+      ],
+      "width": 40,
+      "type": "flat",
+      "levelA": 0,
+      "levelB": 0
+    },
+    {
+      "id": 1,
+      "from": 0,
+      "to": 1,
+      "a": [
+        280,
+        170
+      ],
+      "b": [
+        360,
+        170
+      ],
+      "width": 48,
+      "type": "flat",
+      "levelA": 0,
+      "levelB": 0
+    },
+    {
+      "id": 2,
+      "from": 0,
+      "to": 1,
+      "a": [
+        280,
+        250
+      ],
+      "b": [
+        360,
+        250
+      ],
+      "width": 40,
+      "type": "flat",
+      "levelA": 0,
+      "levelB": 0
+    },
+    {
+      "id": 3,
+      "from": 1,
+      "to": 2,
+      "a": [
+        480,
+        300
+      ],
+      "b": [
+        480,
+        460
+      ],
+      "width": 48,
+      "type": "ramp",
+      "levelA": 0,
+      "levelB": 1.5
+    }
+  ],
+  "elevators": [
+    {
+      "id": 0,
+      "islandFrom": 2,
+      "islandTo": 3,
+      "a": [
+        360,
+        540
+      ],
+      "b": [
+        344,
+        540
+      ],
+      "width": 48,
+      "levelLow": 1.5,
+      "levelHigh": 4,
+      "travelSec": 1.405,
+      "cooldownSec": 2
+    }
+  ],
+  "items": [],
+  "start": {
+    "pos": [
+      100,
+      170
+    ],
+    "islandId": 0
+  },
+  "goal": {
+    "pos": [
+      190,
+      690
+    ],
+    "islandId": 3,
+    "radius": 12.501000000000001
+  },
+  "provenance": {
+    "keptElementIds": [],
+    "dropped": [],
+    "notes": [
+      "Hand-authored fixture (Phase 02b, contract v0.2), generated by tools/fixture-capture/src/handmade.ts; not built from a capture.",
+      "Stage 640x800 px at 13.5 px/m (1 m = 1 ball diameter). Paths are relative to this JSON file. Texture: handmade-simple.png (1280x1600, scale 2).",
+      "Ramp b3 rises 1.5 m over 160 px (11.85 m): slope 0.127 <= MAX_RAMP_SLOPE.",
+      "Elevator e0 spans the 16 px gap between C (level 1.5, lower platform at a) and D (level 4, upper at b); rails are open at both mouths.",
+      "Item / restart clearance >= BALL_RADIUS_PX (6.75 px).",
+      "Lesson overlay test fixture; collision traversal and visual acceptance pending."
+    ]
+  }
+}
