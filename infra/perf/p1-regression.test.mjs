@@ -99,6 +99,44 @@ test('larger/new retry leaks cannot be waived under P2', () => {
   });
   assert.equal(compareEvidence(baseline, other).exitCode, 1);
 });
+test('P2 strict plateau rejects even reduced historical retry leakage', () => {
+  const baseline = fixture();
+  baseline.lifecycle.retries.forEach((r, i) => {
+    r.game.rendererMemory.attributesSize += i * 44800;
+    r.game.rendererMemory.attributes += i * 2;
+  });
+  for (const bytes of [1, 128, 44800]) {
+    const candidate = fixture();
+    candidate.lifecycle.retries.forEach((r, i) => {
+      r.game.rendererMemory.attributesSize += i * bytes;
+    });
+    const result = compareEvidence(baseline, candidate, undefined, { strictResourcePlateau: true });
+    assert.equal(result.exitCode, 1);
+    assert.equal(result.gates.find((g) => g.id === 'memory:retry-attributes').status, 'fail');
+  }
+  assert.equal(compareEvidence(baseline, fixture(), undefined, { strictResourcePlateau: true }).exitCode, 0);
+});
+test('strict plateau rejects matching non-attribute growth and transient retained peaks', () => {
+  const baseline = fixture();
+  baseline.lifecycle.retries.forEach((r, i) => {
+    r.game.rendererMemory.textures += i;
+  });
+  assert.equal(
+    compareEvidence(baseline, structuredClone(baseline), undefined, { strictResourcePlateau: true }).exitCode,
+    1,
+  );
+  for (const counter of ['attributes', 'attributesSize', 'textures', 'texturesSize']) {
+    const candidate = fixture();
+    candidate.lifecycle.retries[2].game.rendererMemory[counter] += 1;
+    const report = compareEvidence(fixture(), candidate, undefined, { strictResourcePlateau: true });
+    assert.equal(report.gates.find((g) => g.id === `memory:plateau-${counter}`).status, 'fail');
+  }
+});
+test('strict plateau rejects a missing middle checkpoint even when endpoints match', () => {
+  const candidate = fixture();
+  delete candidate.lifecycle.retries[2].game.rendererMemory.texturesSize;
+  assert.equal(compareEvidence(fixture(), candidate, undefined, { strictResourcePlateau: true }).exitCode, 2);
+});
 test('missing frame scenarios and invalid samples cannot pass', () => {
   const candidate = fixture();
   candidate.frames.runs = [];

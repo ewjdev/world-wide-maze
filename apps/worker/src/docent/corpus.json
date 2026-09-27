@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "581d011ac2e6bfdc",
+  "hash": "4c9bf8bb69dfbca9",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -11,6 +11,7 @@
     "docs/build-log/performance-p1-staging.md",
     "docs/build-log/performance-regression-p1.md",
     "docs/build-log/performance-render-p1.md",
+    "docs/build-log/performance-startup-p2.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
     "docs/build-log/phase-03.md",
@@ -472,6 +473,14 @@
       "url": "/log#performance-render-p1",
       "kind": "build-log",
       "text": "## Rejected experiments and validation discipline\nAll raw intermediate evidence remains. `graphics-*` freed bloom/pass but missed FXAA's implicit RTT (156 MiB lowered versus 61 fresh). `final-*` disposed FXAA too but exposed a genuine unused default framebuffer (96.7 versus 61 MiB; `final-inspect` recorded its 2880×1800 dimensions after shrinking the canvas). `accepted-*` is a rejected intermediate despite its provisional label: premature async MRT restoration produced console validation errors. `verified-*` preceded the manual-compile guard. `release-*` fixed resource convergence and errors but failed cyclic program growth. Reusing a stable MRT identity fixes that last issue in `qualified-*`. None of these rejected candidates was committed or admitted.\n\nAn independent renderer review by the ghost sub-agent verified installed Three source semantics, identified async builder state dependence and traced program growth to MRT/context cache identity. Measured gates were retained through every iteration.\n\n## Reproduction\nUse `node infra/perf/render-p1.mjs <mode>` against production preview port 4321, with a unique `PERF_LABEL` and optional `PERF_BACKEND=webgl2`. `PERF_REQUIRE_IMPROVEMENT=1` makes `gpu` reject failure to converge to fresh-low targets/textures or a >2 MiB gap, and makes `transitions` reject growing resource totals/counts. `compile-race` checks pending precompile mutation; `recovery` invokes a synthetic loss callback and verifies WebGL2 fallback. `PERF_REPLAY_THROTTLES=6` selects the final stress replay. Other modes include `tiers`, `visibility`, `stall`, `frames`, and diagnostic `inspect`. Every frame wrapper forwards all arguments."
+    },
+    {
+      "id": "docs/build-log/performance-startup-p2.md",
+      "title": "Performance P2 startup research and resource gate",
+      "path": "docs/build-log/performance-startup-p2.md",
+      "url": "/log#performance-startup-p2",
+      "kind": "build-log",
+      "text": "September 27, 2026. Continues epic #19, research #30 and regression tooling #28 on the performance worktree.\n\n- Captured 18 source-bound production startup/first-input traces: native and 6× page stress, cold/warm HTTP cache, explicit slow network, practice and learning. First audio unlock includes context creation, synthesis, buffer copy and resume. Native median 46.3 ms and stressed medians 341.1/369.1 ms; all raw profiles and outliers retained. No product audio changes.\n- Compared exact synthesis on main versus a fresh worker in 12 diagnostic runs. All 18 cues/2,273,788 PCM bytes match. Native rAF gaps 32.2–35.3 → 16.7–18.7 ms, with slower total worker preparation. Page-only CPU stress is not device emulation. See [report](../launch/performance-startup-p2.md).\n- Added opt-in strict resource plateau mode: every post-warmup allocation checkpoint must remain at or below its warm value; missing samples fail. Historical P1 leak waiver remains available only for reproducing old results. Current P2 staging will require strict mode.\n- Validation: 25 regression-gate tests pass, including deliberately injected small leaks, intermediate peaks, historical non-attribute growth and missing samples. Collector syntax/Biome and peer review passed. No browser errors in startup or synthesis runs. Combined staging checks and physical device acceptance are recorded separately."
     },
     {
       "id": "docs/build-log/phase-01.md",

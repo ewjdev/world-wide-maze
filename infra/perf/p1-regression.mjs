@@ -14,6 +14,23 @@ const sameViewport = (a, b) =>
   (a?.deviceScaleFactor ?? 1) === (b?.deviceScaleFactor ?? 1);
 const key = (run) =>
   JSON.stringify(run.spec ?? { quality: run.quality, throttle: run.throttle, name: run.name });
+const otherResourceCounters = [
+  'textures',
+  'texturesSize',
+  'renderTargets',
+  'geometries',
+  'programs',
+  'storageAttributes',
+  'storageAttributesSize',
+  'readbackBuffers',
+  'readbackBuffersSize',
+  'indirectStorageAttributes',
+  'indirectStorageAttributesSize',
+  'indexAttributes',
+  'indexAttributesSize',
+  'uniformBuffers',
+  'uniformBuffersSize',
+];
 
 const gpuIdentity = (report) => {
   const gpu = report.system?.gpu;
@@ -27,7 +44,7 @@ const gpuIdentity = (report) => {
   });
 };
 
-export function compareEvidence(baseline, candidate, currentFingerprint) {
+export function compareEvidence(baseline, candidate, currentFingerprint, options = {}) {
   const gates = [];
   const add = (id, status, details) => gates.push({ id, status, ...details });
   // Include supplemental modes too: an error cannot disappear because a mode has no timing gate.
@@ -223,43 +240,27 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
         bytesPerRetry > Math.max(0, baselineBytesPerRetry) ||
         attributesPerRetry > Math.max(0, baselineAttributesPerRetry);
       const growth = bytesPerRetry > 0 || attributesPerRetry > 0;
-      add(
-        'memory:retry-attributes',
-        worse || (growth && !knownBound) ? 'fail' : growth ? 'known-failure' : 'pass',
-        {
-          issue: '#24',
-          bytesPerRetry,
-          baselineBytesPerRetry,
-          attributesPerRetry,
-          baselineAttributesPerRetry,
-          growthBytes: bytesPerRetry * (retries.length - 2),
-          retriesAfterWarmup: retries.length - 2,
-          message:
-            worse || (growth && !knownBound)
+      const rejectedGrowth = growth && (options.strictResourcePlateau || !knownBound);
+      add('memory:retry-attributes', worse || rejectedGrowth ? 'fail' : growth ? 'known-failure' : 'pass', {
+        issue: '#24',
+        bytesPerRetry,
+        baselineBytesPerRetry,
+        attributesPerRetry,
+        baselineAttributesPerRetry,
+        growthBytes: bytesPerRetry * (retries.length - 2),
+        retriesAfterWarmup: retries.length - 2,
+        strictResourcePlateau: options.strictResourcePlateau === true,
+        message:
+          growth && options.strictResourcePlateau
+            ? 'P2 requires a flat retained resource set; the historical #24 leak waiver is disabled.'
+            : worse || rejectedGrowth
               ? 'New or worse attribute retention fails the P1 gate; it is not waived as P2.'
               : growth
                 ? 'Existing P2 retention remains failing within the measured baseline bound. Memory acceptance remains open.'
                 : 'No post-warmup attribute growth.',
-        },
-      );
+      });
     }
-    for (const allocation of [
-      'textures',
-      'texturesSize',
-      'renderTargets',
-      'geometries',
-      'programs',
-      'storageAttributes',
-      'storageAttributesSize',
-      'readbackBuffers',
-      'readbackBuffersSize',
-      'indirectStorageAttributes',
-      'indirectStorageAttributesSize',
-      'indexAttributes',
-      'indexAttributesSize',
-      'uniformBuffers',
-      'uniformBuffersSize',
-    ]) {
+    for (const allocation of otherResourceCounters) {
       const before = slope(oldRetries, allocation);
       const after = slope(retries, allocation);
       if (finite(before) && !finite(after))
@@ -270,6 +271,24 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
           candidatePerRetry: after,
           message: 'New/worse allocation growth is not covered by known P2 attribute retention.',
         });
+    }
+    if (options.strictResourcePlateau) {
+      for (const allocation of ['attributes', 'attributesSize', ...otherResourceCounters]) {
+        const values = retries.slice(1).map((r) => r.game?.rendererMemory?.[allocation]);
+        const existed = oldRetries.some((r) => finite(r.game?.rendererMemory?.[allocation]));
+        if (!existed && values.every((value) => value === undefined)) continue;
+        const valid = values.every(finite);
+        const aboveWarmup = valid && values.some((value) => value > values[0]);
+        add(`memory:plateau-${allocation}`, !valid ? 'missing' : aboveWarmup ? 'fail' : 'pass', {
+          warmup: values[0],
+          checkpoints: values,
+          message: !valid
+            ? 'Every post-warmup resource checkpoint is required.'
+            : aboveWarmup
+              ? 'A resource checkpoint exceeds the warm retained set; endpoint recovery or historical growth cannot waive it.'
+              : 'Every checkpoint remains within the warm retained set.',
+        });
+      }
     }
   }
 
@@ -310,6 +329,7 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
           : 0;
   return {
     schemaVersion: 1,
+    policy: { strictResourcePlateau: options.strictResourcePlateau === true },
     generatedAt: new Date().toISOString(),
     exitCode,
     status: ['pass', 'failed', 'incomplete', 'known-p2-failure', 'timing-review'][exitCode],
@@ -341,10 +361,14 @@ export function readEvidence(directory) {
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
   const [baseline, candidate, output] = process.argv.slice(2);
   if (!baseline || !candidate || !output) {
-    console.error('Usage: node infra/perf/p1-regression.mjs BASELINE_DIR CANDIDATE_DIR OUTPUT_JSON');
+    console.error(
+      'Usage: node infra/perf/p1-regression.mjs BASELINE_DIR CANDIDATE_DIR OUTPUT_JSON [--strict-resource-plateau]',
+    );
     process.exitCode = 2;
   } else {
-    const report = compareEvidence(readEvidence(baseline), readEvidence(candidate), runtimeFingerprint());
+    const report = compareEvidence(readEvidence(baseline), readEvidence(candidate), runtimeFingerprint(), {
+      strictResourcePlateau: process.argv.includes('--strict-resource-plateau'),
+    });
     writeFileSync(resolve(output), `${JSON.stringify(report, null, 2)}\n`);
     console.log(
       JSON.stringify(
