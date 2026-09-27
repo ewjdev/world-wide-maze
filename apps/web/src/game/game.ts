@@ -52,6 +52,7 @@ import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from 
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
+import { RenderCadence } from './render-cadence.ts';
 import {
   addScore,
   countItems,
@@ -303,6 +304,8 @@ export class Game {
   #raf = 0;
   #lastFrame = 0;
   #qualityWasActive = false;
+  #renderCadence = new RenderCadence();
+  #inputNeedsRelease = false;
   /** Game clock (seconds, advances only while not held). */
   #clock = 0;
   #timers: Timer[] = [];
@@ -519,7 +522,25 @@ export class Game {
     const onBlur = () => this.#autoPause();
     const onVis = () => {
       this.#qualityWasActive = false;
-      if (document.visibilityState === 'hidden') this.#autoPause();
+      this.#lastFrame = performance.now();
+      this.#renderCadence.reset();
+      if (document.visibilityState === 'hidden') {
+        cancelAnimationFrame(this.#raf);
+        this.#raf = 0;
+        this.#autoPause();
+        this.#driver?.setPaused(true);
+        this.#keyboard?.reset();
+        this.#inputNeedsRelease = true;
+        this.#lastSample = neutralSample(this.#yaw());
+        this.#prevJump = false;
+        this.audio.setRoll(0, false);
+      } else {
+        const v = this.#view;
+        this.#driver?.setPaused(
+          this.learning.isOpen || !!v.portal || !!v.travel || (v.phase !== 'play' && v.phase !== 'falling'),
+        );
+        if (this.#engine && !this.#raf && !this.#disposed) this.#raf = requestAnimationFrame(this.#frame);
+      }
     };
     const onResize = () => this.#resize();
     const onGesture = () => {
@@ -567,7 +588,7 @@ export class Game {
     this.#resize();
     this.#set({ engineReady: true });
     this.#lastFrame = performance.now();
-    this.#raf = requestAnimationFrame(this.#frame);
+    if (document.visibilityState === 'visible') this.#raf = requestAnimationFrame(this.#frame);
 
     if (this.#opts.roomCode) void this.#ensureRoom();
     if (this.#opts.localRun) {
@@ -2081,6 +2102,7 @@ export class Game {
   }
 
   #onMenuKey(): void {
+    if (this.#inputNeedsRelease || document.visibilityState !== 'visible') return;
     const p = this.#view.phase;
     if (this.learning.isOpen) {
       this.learning.skip();
@@ -2113,6 +2135,17 @@ export class Game {
     const gp = this.#gamepad?.sample(now) ?? neutralSample(yaw);
     const ph = this.#phone?.sample(now) ?? null;
     const active = (s: InputSample) => s.power || s.jump || s.tiltX !== 0 || s.tiltZ !== 0;
+    if (this.#inputNeedsRelease) {
+      // Poll physical controls normally, but require a release after returning from
+      // another tab. Phone gravity may be nonzero at rest; only its buttons arm input.
+      const phoneHeld =
+        this.#view.inputMode === 'phone' &&
+        this.#phone &&
+        (!this.#phone.connected || this.#phone.debug(now).stale || ph?.power || ph?.jump);
+      const held = active(kb) || active(gp) || phoneHeld;
+      if (!held) this.#inputNeedsRelease = false;
+      return neutralSample(yaw);
+    }
     let s: InputSample;
     if (active(kb)) {
       s = kb;
@@ -2188,7 +2221,8 @@ export class Game {
   // ── frame ─────────────────────────────────────────────────────────────────────────────────────────────
 
   #frame = (now: number): void => {
-    if (this.#disposed) return;
+    this.#raf = 0;
+    if (this.#disposed || document.visibilityState !== 'visible') return;
     this.#raf = requestAnimationFrame(this.#frame);
     const e = this.#engine;
     const d = this.#driver;
@@ -2282,7 +2316,8 @@ export class Game {
     // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
     // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
     const qualityActive = stepping && document.visibilityState === 'visible';
-    e.frame(gdt, qualityActive && this.#qualityWasActive ? renderDt : null);
+    const animationDt = this.#renderCadence.advance(now, gdt, this.#view.phase);
+    if (animationDt !== null) e.frame(animationDt, qualityActive && this.#qualityWasActive ? renderDt : null);
     this.#qualityWasActive = qualityActive;
     this.#syncController(false);
   };
