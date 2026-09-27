@@ -10,7 +10,7 @@ const mazeSchema = z
     textureDataUrl: z
       .string()
       .max(3 * 1024 * 1024)
-      .regex(/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/)
+      .regex(/^data:image\/(?:webp|jpeg);base64,[A-Za-z0-9+/=]+$/)
       .optional(),
   })
   .strict();

@@ -6,14 +6,26 @@ import type { Plugin } from 'vite';
 import { Archive } from './archive.ts';
 import { JevService } from './service.ts';
 
-async function body(req: IncomingMessage, limit = 65536) {
-  let text = '';
-  for await (const chunk of req) {
-    text += chunk;
-    if (Buffer.byteLength(text) > limit) throw new Error('Request too large');
+export async function body(req: IncomingMessage, limit = 65536) {
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of req as AsyncIterable<Buffer>) {
+    size += chunk.length;
+    if (size > limit) throw new Error('Request too large');
+    chunks.push(chunk);
   }
-  return JSON.parse(text);
+  // Decode once so multi-byte characters split across chunks survive.
+  return JSON.parse(Buffer.concat(chunks).toString('utf8'));
 }
+// Vite replaces (not merges) `server.fs.deny`, so restate its defaults (Vite 8).
+const VITE_FS_DENY = [
+  '.env',
+  '.env.*',
+  '*.{crt,pem,key,p12,pfx,cer,der}',
+  '.npmrc',
+  '.yarnrc.yml',
+  '**/.git/**',
+];
 const send = (res: ServerResponse, status: number, data: unknown) => {
   if (res.destroyed) return;
   res.writeHead(status, {
@@ -71,7 +83,7 @@ export function jevPlugin(root: string): Plugin {
       return {
         define: { 'import.meta.env.VITE_JEV_PILOT': JSON.stringify(enabled) },
         server: {
-          fs: { deny: ['**/.env', '**/.env.*', '**/.dev.vars', '**/local/jev/**'] },
+          fs: { deny: [...VITE_FS_DENY, '**/.env', '**/.env.*', '**/.dev.vars', '**/local/jev/**'] },
           ...(enabled
             ? {
                 host: '127.0.0.1',

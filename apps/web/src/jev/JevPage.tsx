@@ -64,6 +64,11 @@ function texture(maze: string | MazeFixture) {
   }
   return canvas;
 }
+// Safari can't encode WebP and silently returns PNG; fall back to JPEG (textures are opaque).
+function encodeTexture(canvas: HTMLCanvasElement) {
+  const webp = canvas.toDataURL('image/webp', 0.8);
+  return webp.startsWith('data:image/webp') ? webp : canvas.toDataURL('image/jpeg', 0.85);
+}
 export default function JevPage() {
   const canvas = useRef<HTMLDivElement>(null);
   const engine = useRef<Engine | null>(null);
@@ -261,7 +266,7 @@ export default function JevPage() {
         bitmap.height = loaded.image.height;
         bitmap.getContext('2d')!.drawImage(loaded.image, 0, 0);
         loaded.image.close();
-        f = mazeFromStage(loaded.stage, bitmap.toDataURL('image/webp', 0.8));
+        f = mazeFromStage(loaded.stage, encodeTexture(bitmap));
         f.title = `${entry.title}${source.sliceCount() > 1 ? ` · section ${index + 1}` : ''}`;
         setSliceCount(source.sliceCount());
       } else {
@@ -294,10 +299,7 @@ export default function JevPage() {
       setSelected(0);
       setFollow(true);
       await showStage(maze);
-      const playing = mazeFromStage(
-        maze.stage,
-        maze.textureDataUrl ?? texture(maze).toDataURL('image/webp', 0.8),
-      );
+      const playing = mazeFromStage(maze.stage, maze.textureDataUrl ?? encodeTexture(texture(maze)));
       const s = new Session(api, playing.id, policy, 0, playing, true);
       live.current = s;
       s.onChange = refresh;

@@ -363,7 +363,7 @@ export class ReplaySession {
     const snapshot = detail.events[0]?.data.maze as { stage: unknown; textureDataUrl?: string } | undefined;
     if (
       snapshot?.textureDataUrl &&
-      (!/^data:image\/webp;base64,[A-Za-z0-9+/=]+$/.test(snapshot.textureDataUrl) ||
+      (!/^data:image\/(?:webp|jpeg);base64,[A-Za-z0-9+/=]+$/.test(snapshot.textureDataUrl) ||
         snapshot.textureDataUrl.length > 3 * 1024 * 1024)
     )
       throw new Error('Invalid recording texture');
