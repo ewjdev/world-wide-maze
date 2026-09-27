@@ -1,0 +1,68 @@
+{
+  "date": "2026-09-27T23:46:36.949Z",
+  "browser": "153.0.8010.12",
+  "method": "Headless Chromium real React ControllerPage; mock relay, synthetic120Hz orientation. Real page rAF cadence is browser-dependent. No physical phone latency/thermal evidence.",
+  "before": {
+    "diag": {
+      "code": "123456",
+      "screen": "play",
+      "paired": "code",
+      "permission": "granted",
+      "connection": "open",
+      "hostConnected": true,
+      "rtt": {
+        "count": 1,
+        "last": 0.20000004768371582,
+        "p50": 0.20000004768371582,
+        "p95": 0.20000004768371582,
+        "min": 0.20000004768371582,
+        "max": 0.20000004768371582
+      },
+      "send": {
+        "frames": 109,
+        "ratePerSec": 60,
+        "intervalP50": 16.699999809265137,
+        "intervalP95": 16.90000009536743,
+        "jitterMs": 1.6488013639035168,
+        "lost": 0,
+        "bursts": 0
+      },
+      "sensor": {
+        "frames": 231,
+        "ratePerSec": 120,
+        "intervalP50": 7.900000095367432,
+        "intervalP95": 10.100000143051147,
+        "jitterMs": 1.3923441366875993,
+        "lost": 0,
+        "bursts": 0
+      },
+      "framesSent": 110,
+      "framesSkipped": 0,
+      "calibratedSent": 1,
+      "zero": [0, -0.7071067811865475, -0.7071067811865476],
+      "tiltDeg": {
+        "x": 8,
+        "z": -5
+      },
+      "landscape": false,
+      "lastHaptic": null
+    },
+    "publications": 57
+  },
+  "hidden": {
+    "buttons": {
+      "power": false,
+      "jump": false,
+      "menu": false
+    },
+    "sends": 114
+  },
+  "errors": [],
+  "checks": [
+    "auto calibration",
+    "power edges",
+    "disconnect/reconnect",
+    "hidden releases and suspends sends",
+    "visible resumes sends"
+  ]
+}

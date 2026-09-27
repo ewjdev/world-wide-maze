@@ -330,4 +330,31 @@ describe('ControllerSession', () => {
     expect(d).toMatchObject({ code: '123456', screen: 'play', permission: 'granted', calibratedSent: 1 });
     expect((d.tiltDeg as { z: number }).z).toBeCloseTo(-10, 1);
   });
+  test('120 Hz presentation is bounded while button edges use the latest sampled tilt', async () => {
+    const r = rig({ stored: '[0,0,-1]' });
+    r.sock().open();
+    r.s.enableTilt();
+    await flush();
+    r.orient(0, 0);
+    r.s.step();
+    const displayed = r.s.getView().tilt;
+    r.tick(8);
+    r.orient(0, 10);
+    r.s.step();
+    expect(r.s.getView().tilt).toBe(displayed);
+    r.s.setButton('power', true);
+    expect(r.sock().frames().at(-1)?.tiltX).toBeGreaterThan(0.1);
+    expect(r.s.getView().buttons.power).toBe(true);
+    let publications = 0;
+    const off = r.s.subscribe(() => publications++);
+    for (let i = 0; i < 120; i++) {
+      r.tick(1000 / 120);
+      r.orient(0, 10 + i / 100);
+      r.s.step();
+    }
+    expect(publications).toBeGreaterThanOrEqual(59);
+    expect(publications).toBeLessThanOrEqual(66); // 60 visual frames + at most four rate changes
+    off();
+    r.s.dispose();
+  });
 });
