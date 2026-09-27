@@ -193,19 +193,45 @@ test.skipIf(!available)(
     expect(await page.evaluate(() => (window as unknown as { ghostJobs: unknown[] }).ghostJobs.length)).toBe(
       1,
     );
-    await page.evaluate(() => {
-      history.pushState({}, '', '/about');
-      window.dispatchEvent(new PopStateEvent('popstate'));
+    // Navigation starts before the lazy About route is ready. Keep its module pending
+    // to prove URL changes alone do not establish the GameApp unmount boundary.
+    let releaseAbout = () => {};
+    const aboutReady = new Promise<void>((resolve) => {
+      releaseAbout = resolve;
     });
-    await expect
-      .poll(() =>
-        page.evaluate(() =>
-          (window as unknown as { ghostJobs: { terminated: boolean }[] }).ghostJobs.every(
-            (j) => j.terminated,
+    await page.route('**/src/pages/about/AboutPage.tsx*', async (route) => {
+      await aboutReady;
+      await route.continue();
+    });
+    const aboutRequested = page.waitForRequest('**/src/pages/about/AboutPage.tsx*');
+    try {
+      await page.evaluate(() => {
+        history.pushState({}, '', '/about');
+        window.dispatchEvent(new PopStateEvent('popstate'));
+      });
+      await aboutRequested;
+      expect(
+        await page.evaluate(() => ({
+          mounted: !!window.__wwmGame,
+          terminated: (window as unknown as { ghostJobs: { terminated: boolean }[] }).ghostJobs.map(
+            (job) => job.terminated,
+          ),
+        })),
+      ).toEqual({ mounted: true, terminated: [false] });
+      releaseAbout();
+      // GameApp clears this handle after its synchronous dispose cleanup. Wait for
+      // that actual lifecycle boundary, then require termination without polling.
+      await page.waitForFunction(() => window.__wwmGame === undefined);
+      expect(
+        await page.evaluate(() =>
+          (window as unknown as { ghostJobs: { terminated: boolean }[] }).ghostJobs.map(
+            (job) => job.terminated,
           ),
         ),
-      )
-      .toBe(true);
+      ).toEqual([true]);
+    } finally {
+      releaseAbout();
+    }
     expect(errors).toEqual([]);
     await ctx.close();
   },
