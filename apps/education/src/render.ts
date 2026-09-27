@@ -6,13 +6,18 @@
 import {
   type Activity,
   choicesInOrder,
+  defaultLevelId,
+  describeLevel,
   type GemGroup,
+  type InputPolicy,
   type LearningPath,
   learningScript,
+  levelsFor,
   neutralLabels,
   type Orientation,
   type Round,
   requiredRounds,
+  resolveLevel,
   sceneLayout,
   sceneSvg,
   spriteMarkup,
@@ -124,6 +129,40 @@ export function roundCheck(activity: Activity, round: Round, index: number): str
   return `${title}: ${what}${when}`;
 }
 
+// ── game levels and answering, for grown-ups (Phase 22) ─────────────────────────────────────────────────
+
+/** "In the game: Gated. Bridges and lifts stay locked…": the level this lesson plays at, in plain words. */
+export function gameLevelText(path: Pick<LearningPath, 'family'>, activity: Activity): string {
+  const level = resolveLevel(path, activity);
+  const recommended = level.id === defaultLevelId(activity) ? ' (recommended by the lesson)' : '';
+  const tap = path.family?.tapOnly ? ' Answering: tapping only.' : '';
+  return `In the game: ${level.label}${recommended}. ${describeLevel(activity, level)}${tap}`;
+}
+
+/**
+ * The line under the question when a round invites keys or arrows: "Press A or B", "Type the number: 2, 3 or
+ * 4", "Use ← →, then Enter". Keys come in on-screen order. Empty when tapping is what's invited.
+ */
+export function inputHintHtml(
+  round: Round,
+  policy: InputPolicy,
+  keys: Record<string, string>,
+  orientation: Orientation,
+): string {
+  const kbd = (key: string) => `<kbd>${escapeHtml(key)}</kbd>`;
+  const list = (items: string[]) =>
+    items.length <= 1 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} or ${items.at(-1)}`;
+  const ordered = choicesInOrder(round, orientation)
+    .map((id) => keys[id])
+    .filter((key): key is string => key !== undefined);
+  if (policy.badges && policy.invited.includes('number-key') && round.kind === 'difference')
+    return `Type the number: ${list(ordered.map(kbd))}`;
+  if (policy.badges) return `Press ${list(ordered.map(kbd))}`;
+  if (policy.promptLine && policy.invited.includes('arrows'))
+    return `Use ${kbd('←')} ${kbd('→')}, then ${kbd('Enter')}`;
+  return '';
+}
+
 /** How the path list describes an activity's length. */
 export function roundSummary(activity: Activity): string {
   const total = requiredRounds(activity) + (activity.rounds.some((round) => round.optional) ? 1 : 0);
@@ -137,32 +176,42 @@ const pct = (value: number, total: number) => `${Math.round((value / total) * 10
 
 /**
  * The themed SVG with real, transparent answer buttons over each choice (the SVG itself is decorative). The
- * buttons follow on-screen order and are disabled until the page's script takes over.
+ * buttons follow on-screen order and are disabled until the page's script takes over. With `keys`, the key
+ * badges show on the drawing and each button's name ends with its key ("Island A: 3 gems, spread out. Key A").
  */
 export function sceneBlock(
   theme: Theme,
   activity: Activity,
   round: Round,
-  options: { orientation: Orientation; built: number; enabled: boolean; preview?: boolean },
+  options: {
+    orientation: Orientation;
+    built: number;
+    enabled: boolean;
+    preview?: boolean;
+    keys?: Record<string, string>;
+  },
 ): string {
   const planks = requiredRounds(activity);
   const neutral = neutralLabels(activity);
   const layout = sceneLayout(round, options.orientation, planks, neutral);
   const byId = new Map(layout.choices.map((choice) => [choice.id, choice]));
+  const keys = options.preview ? undefined : options.keys;
   const buttons = choicesInOrder(round, options.orientation)
     .map((id) => byId.get(id))
     .filter((choice) => choice !== undefined)
-    .map(
-      (choice) =>
-        `<button class="choice-hit" type="button" data-answer="${escapeHtml(choice.id)}" aria-label="${escapeHtml(choice.ariaLabel)}" style="left:${pct(choice.box.x, layout.width)};top:${pct(choice.box.y, layout.height)};width:${pct(choice.box.w, layout.width)};height:${pct(choice.box.h, layout.height)}"${options.enabled && !options.preview ? '' : ' disabled'}></button>`,
-    )
+    .map((choice) => {
+      const key = keys?.[choice.id];
+      const label = key ? `${choice.ariaLabel}. Key ${key}` : choice.ariaLabel;
+      return `<button class="choice-hit" type="button" data-answer="${escapeHtml(choice.id)}" aria-label="${escapeHtml(label)}" style="left:${pct(choice.box.x, layout.width)};top:${pct(choice.box.y, layout.height)};width:${pct(choice.box.w, layout.width)};height:${pct(choice.box.h, layout.height)}"${options.enabled && !options.preview ? '' : ' disabled'}></button>`;
+    })
     .join('');
-  const svg = sceneSvg(theme, round, {
+  let svg = sceneSvg(theme, round, {
     orientation: options.orientation,
     planks,
     built: options.built,
     neutral,
   });
+  if (keys) svg = svg.replace('<svg class="wwm-scene"', '<svg class="wwm-scene show-keys"');
   const ratio = Math.round((layout.width / layout.height) * 10000) / 10000;
   return `<div class="scene${options.preview ? ' is-preview' : ''}" id="scene" data-orientation="${options.orientation}" style="--ratio:${ratio};aspect-ratio:${layout.width} / ${layout.height}">${svg}<div class="scene-choices" role="group" aria-label="Answers">${buttons}</div></div>`;
 }
@@ -220,6 +269,42 @@ ${learningScript(path)}
 </body></html>`;
 }
 
+/** "Gated (recommended by the lesson)" or "Missions (your choice)": a lesson's level at a glance. */
+export function levelChoiceText(path: Pick<LearningPath, 'family'>, activity: Activity): string {
+  const level = resolveLevel(path, activity);
+  return `${level.label} ${level.id === defaultLevelId(activity) ? '(recommended by the lesson)' : '(your choice)'}`;
+}
+
+/**
+ * The parent area's Game settings: per lesson, its own levels (each described from its configuration, the
+ * author's default marked), a reset to the recommendations, and the tap-only switch. Rendered with the path's
+ * current choices; the home script re-checks them from this browser's saved settings.
+ */
+export function gameSettingsHtml(path: LearningPath): string {
+  const lessons = path.activities
+    .map((activity, index) => {
+      const chosen = resolveLevel(path, activity).id;
+      const recommended = defaultLevelId(activity);
+      const options = levelsFor(activity)
+        .map((level) => {
+          const id = `level-${activity.id}-${level.id}`;
+          return `<label class="level-option" for="${id}"><input type="radio" id="${id}" name="level-${activity.id}" value="${escapeHtml(level.id)}"${level.id === chosen ? ' checked' : ''}><span><strong>${escapeHtml(level.label)}</strong>${level.id === recommended ? ' <span class="recommended">(recommended by the lesson)</span>' : ''}<span class="level-description">${escapeHtml(describeLevel(activity, level))}</span></span></label>`;
+        })
+        .join('');
+      return `<details class="level-choice" data-activity="${escapeHtml(activity.id)}"><summary><span class="stop-number" aria-hidden="true">${index + 1}</span><span class="level-title"><strong>${escapeHtml(activity.title)}</strong><span class="level-current" data-level-current>${escapeHtml(levelChoiceText(path, activity))}</span></span></summary><fieldset><legend class="visually-hidden">Game level for “${escapeHtml(activity.title)}”</legend>${options}</fieldset></details>`;
+    })
+    .join('');
+  return `<section id="game-settings" class="parent-workspace game-settings" aria-labelledby="game-settings-heading">
+    <div class="section-intro"><h2 id="game-settings-heading">Game settings</h2><p>How each lesson plays in the World Wide Maze game. Every lesson recommends a level; pick another if it suits your child better.</p><p class="small">Open a lesson to see its levels, described in plain words. Pip’s gates and locks never cost a life or a score. Your choices stay in this browser and travel in the learning HTML you download. Restoring the original path keeps them.</p></div>
+    <div class="parent-controls">
+      <p id="settings-state" class="save-state" role="status">Every lesson uses its recommended level.</p>
+      <div class="tap-only"><label class="switch" for="tap-only"><input type="checkbox" id="tap-only" role="switch" aria-describedby="tap-only-help"${path.family?.tapOnly ? ' checked' : ''}><span class="switch-track" aria-hidden="true"></span><span>Answer by tapping only</span></label><p class="field-help" id="tap-only-help">For children who find keys or tilting hard: Pip never asks for a key, and every tap counts.</p></div>
+      <div class="level-list">${lessons}</div>
+      <div class="saved-actions"><button class="secondary" type="button" id="recommended-levels">Use the lesson’s recommendation for every lesson</button><button class="secondary" type="button" id="reset-settings">Reset game settings</button></div>
+    </div>
+  </section>`;
+}
+
 export function homePage(path: LearningPath): string {
   const theme = path.theme;
   return shell(
@@ -247,6 +332,7 @@ export function homePage(path: LearningPath): string {
       <p class="small">Your accepted version stays in this browser. Download a backup to keep it; there is no account or cloud sync yet.</p>
     </div>
   </section>
+  ${gameSettingsHtml(path)}
   <section class="transparency"><h2>See what’s being learned.</h2><p>Every activity includes its goal, what each round checks, hints, the answer explained, and an idea to try away from the screen. The same information, and the ${escapeHtml(theme.name)} pictures, are embedded in the page for compatible games to read.</p><details><summary>About this starter material</summary><p>This is an early-math starter path, not a complete curriculum for ages 4–6. Activities are original examples informed by <a href="https://headstart.gov/school-readiness/article/math-preschool">Head Start’s preschool math guidance</a> and <a href="https://www.naeyc.org/node/2631">NAEYC’s playful math ideas</a>. Neither organization has reviewed or endorsed these activities. A six-year-old may need more challenge; choose by what your child is ready to explore.</p><p>${escapeHtml(theme.guide.name)}’s voice is generated ahead of time from our own script; nothing your child says or taps leaves this device. When a recording is unavailable, your browser’s voice reads the line instead.</p></details></section>`,
     path,
     '/src/home.ts',
@@ -254,10 +340,11 @@ export function homePage(path: LearningPath): string {
 }
 
 /** Grown-up notes: goal, interpretation, what every round checks (with its prompt, hints and answer). */
-function parentNotesHtml(activity: Activity): string {
+function parentNotesHtml(path: LearningPath, activity: Activity): string {
   return `<details class="parent-notes" id="parent-notes"><summary>For grown-ups: what this teaches</summary>
       <h2>The learning goal</h2><p data-learning-field="objective">${escapeHtml(activity.objective)}</p>
       <h3>What to notice</h3><p>${escapeHtml(activity.parentNote)}</p>
+      <h3>In the game</h3><p id="game-level">${escapeHtml(gameLevelText(path, activity))}</p><p class="small"><a href="/#game-settings">Change the game level or answering</a></p>
       <h3>What each round checks</h3>
       <ol class="round-checks">${activity.rounds
         .map(
@@ -291,6 +378,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
     </section>
     <section class="stage" id="stage" data-learning-round="${first.id}" data-learning-kind="${first.kind}" aria-labelledby="prompt" hidden>
       <div class="prompt-row"><button class="pip-replay" id="replay" type="button" aria-label="Hear it again" title="Hear it again" disabled>${spriteMarkup(theme, 'pip', 44, 'pip-sprite')}</button><h2 class="prompt" id="prompt" tabindex="-1" data-learning-field="prompt">${spokenHtml(first.prompt)}</h2></div>
+      <p class="input-hint" id="input-hint" hidden></p>
       ${sceneBlock(theme, activity, first, { orientation: 'wide', built: 0, enabled: false })}
       <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
       <div class="controls" id="controls">
@@ -310,7 +398,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
     </section>
   </article>
   <p id="lesson-version" class="small lesson-version">Original learning path</p>
-  ${parentNotesHtml(activity)}
+  ${parentNotesHtml(path, activity)}
   <nav class="lesson-nav" aria-label="Activity navigation"><a class="secondary" href="/">Choose another activity</a>${next ? `<a class="secondary" href="/lessons/${next.id}/">Skip to the next activity →</a>` : ''}</nav>
   <noscript><p class="small">Pip’s voice and the answer buttons need JavaScript. You can still read the question, look at the islands together, and open the grown-up notes.</p></noscript>
 </div>`,
@@ -353,5 +441,18 @@ export function portablePage(path: LearningPath, acceptedAt?: string): string {
       return `<article data-learning-activity="${activity.id}"><h2>${escapeHtml(activity.title)}</h2><p data-learning-field="introduction">${escapeHtml(activity.introduction)}</p><p><strong>Objective:</strong> <span data-learning-field="objective">${escapeHtml(activity.objective)}</span></p>${rounds}<p><strong>${escapeHtml(theme.guide.name)}:</strong> ${escapeHtml(activity.finale)}</p><details><summary>Parent notes</summary><p>${escapeHtml(activity.parentNote)}</p><p><strong>Away from the screen:</strong> ${escapeHtml(activity.offlineActivity)}</p><p>One play-through is practice, not an assessment of mastery.</p></details></article>`;
     })
     .join('');
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(path.title)}</title><style>${style}</style></head><body>${header}${articles}${learningScript(path)}</body></html>`;
+  const chosen = path.family
+    ? 'Chosen by a grown-up for this family.'
+    : 'Each activity’s recommended level. A grown-up can change these in the parent area.';
+  const levels = path.activities
+    .map(
+      (activity) =>
+        `<li><strong>${escapeHtml(activity.title)}:</strong> ${escapeHtml(gameLevelText(path, activity).replace(/^In the game: /, ''))}</li>`,
+    )
+    .join('');
+  const answering = path.family?.tapOnly
+    ? 'Answering: tapping only (a grown-up setting).'
+    : 'Answering: as each round invites (tapping, a key or tilting). A tap is always accepted after two gentle reminders.';
+  const settings = `<section class="game-settings"><h2>Game settings</h2><p class="meta">How each activity plays in a compatible game. ${chosen}</p><ul>${levels}</ul><p>${escapeHtml(answering)}</p></section>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(path.title)}</title><style>${style}</style></head><body>${header}${settings}${articles}${learningScript(path)}</body></html>`;
 }

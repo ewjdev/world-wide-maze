@@ -5,19 +5,55 @@ import {
   applyDraft,
   baselinePath,
   createPersonalizationPrompt,
+  defaultLevelId,
+  type FamilySettings,
   learningScript,
   type PersonalizationDraft,
   parseDraft,
+  resolveLevel,
 } from '@wwm/learning';
-import { escapeHtml, portablePage } from './render.ts';
-import { download, element, FORK_KEY, readFork } from './storage.ts';
+import { escapeHtml, levelChoiceText, portablePage } from './render.ts';
+import { download, element, FORK_KEY, readFamily, writeSettings } from './storage.ts';
 
-let current = readFork(baselinePath);
+let current = readFamily(baselinePath);
 let pending: PersonalizationDraft | undefined;
 const feedback = element('#parent-feedback');
+const settingsState = element('#settings-state');
+const tapOnly = element<HTMLInputElement>('#tap-only');
 
-function refresh(): void {
-  current = readFork(baselinePath);
+/** The Game settings block, from what this browser has saved (or the lessons' recommendations). */
+function showSettings(message?: string): void {
+  for (const activity of current.path.activities) {
+    const chosen = resolveLevel(current.path, activity).id;
+    for (const input of document.querySelectorAll<HTMLInputElement>(
+      `input[name="level-${CSS.escape(activity.id)}"]`,
+    ))
+      input.checked = input.value === chosen;
+    const summary = document.querySelector(
+      `[data-activity="${CSS.escape(activity.id)}"] [data-level-current]`,
+    );
+    if (summary) summary.textContent = levelChoiceText(current.path, activity);
+  }
+  tapOnly.checked = current.settings?.tapOnly ?? false;
+  element('#reset-settings').hidden = !current.settings && !current.settingsWarning;
+  if (message) {
+    settingsState.textContent = message;
+    return;
+  }
+  if (current.settingsWarning) {
+    settingsState.textContent = current.settingsWarning;
+    return;
+  }
+  const changed = Object.keys(current.settings?.levels ?? {}).length;
+  const levels =
+    changed === 0
+      ? 'Every lesson uses its recommended level.'
+      : `${changed} ${changed === 1 ? 'lesson plays' : 'lessons play'} at a level you chose.`;
+  settingsState.textContent = `${levels}${current.settings?.tapOnly ? ' Answering by tapping only.' : ''}`;
+}
+
+function refresh(settingsMessage?: string): void {
+  current = readFamily(baselinePath);
   element('[data-path-title]').textContent = current.path.title;
   element('[data-path-description]').textContent = current.path.description;
   element('#saved-state').textContent =
@@ -26,8 +62,55 @@ function refresh(): void {
   element('#reset-fork').hidden = !current.fork && !current.warning;
   element('#download-fork').hidden = !current.fork;
   element('#wwm-learning').outerHTML = learningScript(current.path);
+  showSettings(settingsMessage);
 }
 refresh();
+
+// ── game settings (Phase 22): stored apart from the family version, so restoring the original keeps them ───
+
+function saveSettings(settings: FamilySettings | null, message: string): void {
+  try {
+    // nothing left to remember: forget the record rather than store the recommendations
+    writeSettings(settings && (Object.keys(settings.levels).length || settings.tapOnly) ? settings : null);
+    refresh(message);
+  } catch {
+    showSettings('This browser could not save your game settings. Try allowing browser storage.');
+  }
+}
+
+element('.level-list').addEventListener('change', (event) => {
+  const input = event.target as HTMLInputElement;
+  const activity = current.path.activities.find((candidate) => input.name === `level-${candidate.id}`);
+  if (!activity || !input.checked) return;
+  const levels = { ...(current.settings?.levels ?? {}) };
+  if (input.value === defaultLevelId(activity)) delete levels[activity.id];
+  else levels[activity.id] = input.value;
+  const label = input.closest('label')?.querySelector('strong')?.textContent ?? input.value;
+  saveSettings(
+    { levels, tapOnly: current.settings?.tapOnly ?? false },
+    `Saved. “${activity.title}” plays at ${label} in the game.`,
+  );
+});
+tapOnly.addEventListener('change', () => {
+  saveSettings(
+    { levels: { ...(current.settings?.levels ?? {}) }, tapOnly: tapOnly.checked },
+    tapOnly.checked
+      ? 'Saved. Every lesson is answered by tapping; Pip won’t ask for keys.'
+      : 'Saved. Pip may invite a key or the arrows again in some rounds.',
+  );
+});
+element('#recommended-levels').addEventListener('click', () => {
+  saveSettings(
+    { levels: {}, tapOnly: current.settings?.tapOnly ?? false },
+    'Every lesson now uses its recommended level.',
+  );
+});
+element('#reset-settings').addEventListener('click', () => {
+  saveSettings(
+    null,
+    'Game settings reset. Every lesson uses its recommended level, with every way to answer.',
+  );
+});
 
 element<HTMLFormElement>('#prompt-form').addEventListener('submit', (event) => {
   event.preventDefault();

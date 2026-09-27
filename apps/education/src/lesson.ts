@@ -1,6 +1,10 @@
 /**
  * Enhances a generated lesson page: the shared state machine (`step`) decides what happens, Pip's voice plays
- * the lines it returns, and word cues light gems and draw match lines on the trusted scene SVG.
+ * the lines it returns, and word cues light gems, draw match lines and pulse the choices Pip names on the
+ * trusted scene SVG.
+ *
+ * Phase 22: each play-through shuffles answer positions from its own seed, and each round invites a way to
+ * answer (tap, a letter or number key, the arrows) with gentle nudges, unless a grown-up chose tapping only.
  */
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
@@ -8,34 +12,50 @@ import './style.css';
 import {
   type Activity,
   type Cue,
+  choiceKeys,
+  choicesInOrder,
   createVoicePlayer,
   currentRound,
   DEFAULT_AUDIO_BASE,
+  type DeviceInputs,
+  type InputMode,
+  type InputPolicy,
   initialState,
+  inputPolicy,
+  judgeInput,
+  keyToChoice,
   type LessonEvent,
   type LessonState,
   learningScript,
   lineId,
+  nudgeLine,
   type Orientation,
   pairUp,
   type Round,
+  randomSeed,
   readLearningDocument,
   requiredRounds,
   type ScriptLine,
   type Show,
   sceneLayout,
   scriptIndex,
+  sessionScript,
   step,
 } from '@wwm/learning';
-import { planksBuilt, sceneBlock, spokenHtml } from './render.ts';
-import { element, readFork } from './storage.ts';
+import { gameLevelText, inputHintHtml, planksBuilt, sceneBlock, spokenHtml } from './render.ts';
+import { element, readFamily } from './storage.ts';
 
 const MUTE_KEY = 'wwm-learning.muted';
+const KEYBOARD_KEY = 'wwm-learning.keyboard';
+/** How long a named choice stays lit while Pip says it. */
+const CALLOUT_MS = 600;
+const NUDGE_MS = 900;
 
 const baseline = readLearningDocument(document);
-const current = readFork(baseline);
+const current = readFamily(baseline);
 const path = current.path;
-const activityId = element('[data-learning-activity]').dataset.learningActivity;
+const article = element('[data-learning-activity]');
+const activityId = article.dataset.learningActivity;
 const found = path.activities.find((candidate) => candidate.id === activityId);
 if (!found) throw new Error('Activity not found in the learning document.');
 const lesson: Activity = found;
@@ -44,18 +64,36 @@ element('[data-learning-field="introduction"]').textContent = lesson.introductio
 element('#lesson-version').textContent =
   current.warning ??
   (current.fork ? 'Your family version · saved in this browser' : 'Original learning path');
+element('#game-level').textContent = [current.settingsWarning, gameLevelText(path, lesson)]
+  .filter(Boolean)
+  .join(' ');
 
-const script = scriptIndex(path);
+const allLines = scriptIndex(path);
 const planks = requiredRounds(lesson);
 const narrow = window.matchMedia('(max-width: 640px)');
 let orientation: Orientation = narrow.matches ? 'tall' : 'wide';
-let state: LessonState = initialState(lesson);
+
+/** `?seed=` replays a play-through exactly (0 shows the rounds as written); otherwise every visit is new. */
+function seedFromUrl(): number | null {
+  const raw = new URLSearchParams(window.location.search).get('seed');
+  if (raw === null || !/^\d{1,10}$/.test(raw)) return null;
+  const seed = Number(raw);
+  return seed <= 0xffffffff ? seed : null;
+}
+function newPlayThrough(seed: number): LessonState {
+  article.dataset.seed = String(seed);
+  return initialState(lesson, { seed, shuffle: path.play?.shuffle ?? 'positions' });
+}
+let state: LessonState = newPlayThrough(seedFromUrl() ?? randomSeed());
+/** This moment's lines: the current round as shown (count lines and callouts follow the shuffle). */
+let script = sessionScript(allLines, lesson, state);
 let muted = readMuted();
 
 const intro = element('#intro');
 const stage = element('#stage');
 const end = element('#end');
 const prompt = element('#prompt');
+const inputHint = element('#input-hint');
 const feedback = element('#feedback');
 const nextButton = element<HTMLButtonElement>('#next');
 const hintButton = element<HTMLButtonElement>('#hint');
@@ -65,6 +103,55 @@ const bonusSkip = element<HTMLButtonElement>('#bonus-skip');
 const replay = element<HTMLButtonElement>('#replay');
 const mute = element<HTMLButtonElement>('#mute');
 const pipStart = element<HTMLButtonElement>('#pip-start');
+
+// ── how the child may answer ──────────────────────────────────────────────────────────────────────────────
+
+const finePointer = window.matchMedia('(any-pointer: fine)');
+let keyPressed = readFlag(KEYBOARD_KEY);
+
+/** A keyboard is assumed with a fine pointer, or as soon as any key is pressed this session. */
+function device(): DeviceInputs {
+  return { tap: true, keyboard: finePointer.matches || keyPressed, tilt: false };
+}
+
+let policy: InputPolicy = roundPolicy();
+/** Nudges towards the invited input this round (after two, any answer is accepted). */
+let nudges = 0;
+/** The arrow-key cursor: an index into the choices in on-screen order (-1: none yet). */
+let cursor = -1;
+
+function roundPolicy(): InputPolicy {
+  return inputPolicy(path, lesson, currentRound(lesson, state), device());
+}
+
+/** Key badges are shown while a round invites letter or number keys. */
+function shownKeys(): Record<string, string> | undefined {
+  return state.phase === 'round' && !state.solved && policy.badges
+    ? choiceKeys(currentRound(lesson, state))
+    : undefined;
+}
+
+function renderInputHint(): void {
+  const html =
+    state.phase === 'round' && !state.solved
+      ? inputHintHtml(
+          currentRound(lesson, state),
+          policy,
+          choiceKeys(currentRound(lesson, state)),
+          orientation,
+        )
+      : '';
+  inputHint.innerHTML = html;
+  inputHint.hidden = !html;
+}
+
+/** A new round (or a new play-through): fresh input policy, nudges and cursor, and the lines as shown. */
+function enterRound(): void {
+  script = sessionScript(allLines, lesson, state);
+  policy = roundPolicy();
+  nudges = 0;
+  cursor = -1;
+}
 
 // ── marks: classes on scene elements, remembered so a re-render (new plank, rotation) keeps them ──────────
 
@@ -96,6 +183,29 @@ function flash(selector: string, className: string): void {
   }
 }
 
+/**
+ * A class held for a fixed time (not remembered, and independent of animations, so it still shows with
+ * reduced motion). Re-applying restarts it.
+ */
+const held = new Map<Element, ReturnType<typeof setTimeout>>();
+function hold(nodes: Iterable<Element>, className: string, ms: number): void {
+  for (const node of nodes) {
+    clearTimeout(held.get(node));
+    if (node.classList.contains(className)) {
+      node.classList.remove(className);
+      void node.getBoundingClientRect();
+    }
+    node.classList.add(className);
+    held.set(
+      node,
+      setTimeout(() => {
+        node.classList.remove(className);
+        held.delete(node);
+      }, ms),
+    );
+  }
+}
+
 // ── the voice ─────────────────────────────────────────────────────────────────────────────────────────────
 
 let spokenTarget: HTMLElement | null = null;
@@ -124,7 +234,15 @@ function applyCue(cue: Cue): void {
   if (state.phase === 'done') return;
   if (cue.type === 'light') mark(`[data-gem="${cue.island}-${cue.index}"]`, 'is-lit');
   else if (cue.type === 'pair') mark(`[data-pair="${cue.index}"]`, 'is-shown');
-  else for (const selector of leftoverSelectors(currentRound(lesson, state))) mark(selector, 'is-leftover');
+  else if (cue.type === 'choice') {
+    // Pip names a choice: it pulses, and its key badge grows, while the word is spoken
+    const id = CSS.escape(cue.id);
+    hold(
+      scene().querySelectorAll(`[data-choice-mark="${id}"], [data-key-badge="${id}"]`),
+      'is-callout',
+      CALLOUT_MS,
+    );
+  } else for (const selector of leftoverSelectors(currentRound(lesson, state))) mark(selector, 'is-leftover');
 }
 
 const playing: { lines: ScriptLine[]; index: number } = { lines: [], index: -1 };
@@ -160,6 +278,14 @@ function say(ids: readonly string[]): void {
   void voice.play(lines);
 }
 
+/** The input line ("Press the letter!") follows the round's callout whenever Pip opens a round. */
+function withInputLine(ids: readonly string[]): string[] {
+  if (state.phase !== 'round' || !policy.promptLine) return [...ids];
+  const callout = lineId.callout(lesson.id, currentRound(lesson, state).id);
+  const at = ids.indexOf(callout);
+  return at < 0 ? [...ids] : [...ids.slice(0, at + 1), policy.promptLine, ...ids.slice(at + 1)];
+}
+
 // ── what the page shows ───────────────────────────────────────────────────────────────────────────────────
 
 function promptLineId(): string {
@@ -168,11 +294,14 @@ function promptLineId(): string {
   return lineId.prompt(lesson.id, currentRound(lesson, state).id);
 }
 
-/** The spoken lines of a step, written out (prompts are already on screen as the question). */
+/**
+ * The spoken lines of a step, written out. The prompt is already on screen as the question, and the input
+ * line as the "Press A or B" hint under it.
+ */
 function setFeedback(ids: readonly string[], success: boolean): void {
   const promptId = promptLineId();
   const lines = ids
-    .filter((id) => id !== promptId || state.phase === 'bonus-offer')
+    .filter((id) => (id !== promptId || state.phase === 'bonus-offer') && id !== policy.promptLine)
     .map((id) => script.get(id))
     .filter((line): line is ScriptLine => line !== undefined);
   if (!lines.length && !success) {
@@ -209,11 +338,13 @@ function fitScene(): void {
 function renderScene(): void {
   const round = currentRound(lesson, state);
   const built = planksBuilt(lesson, state.index, state.solved);
+  const keys = shownKeys();
   scene().outerHTML = sceneBlock(path.theme, lesson, round, {
     orientation,
     built,
     enabled: true,
     preview: state.phase === 'bonus-offer',
+    ...(keys ? { keys } : {}),
   });
   fitScene();
   for (const [selector, classes] of marks)
@@ -231,6 +362,7 @@ function renderStage(): void {
   stage.dataset.learningRound = round.id;
   stage.dataset.learningKind = round.kind;
   prompt.innerHTML = state.phase === 'bonus-offer' ? spokenHtml('Bonus round!') : spokenHtml(round.prompt);
+  renderInputHint();
   renderScene();
 }
 
@@ -319,7 +451,10 @@ function dispatch(event: LessonEvent): void {
   if (result.state === before) return; // ignored: e.g. a tap on a locked (solved) round
   state = result.state;
   const moved = before.index !== state.index || before.phase !== state.phase;
-  if (moved) marks.clear();
+  if (moved) {
+    marks.clear();
+    enterRound();
+  }
   updateControls();
 
   if (state.phase === 'done') {
@@ -337,16 +472,19 @@ function dispatch(event: LessonEvent): void {
   if (result.show === 'celebrate') {
     unmark('is-retry');
     unmark('is-glow');
+    unmark('is-focus');
     for (const button of scene().querySelectorAll<HTMLButtonElement>('[data-answer]'))
       delete button.dataset.result;
     mark(`[data-choice-mark="${state.choice}"]`, 'is-correct');
     const builtBefore = planksBuilt(lesson, state.index, false);
+    renderInputHint();
     renderScene();
     celebrate(builtBefore);
   } else applyShow(result.show, event);
 
-  setFeedback(result.say, state.result === 'correct');
-  say(result.say);
+  const lines = withInputLine(result.say);
+  setFeedback(lines, state.result === 'correct');
+  say(lines);
 
   if (result.show === 'celebrate') {
     nextButton.focus({ preventScroll: true });
@@ -360,18 +498,101 @@ function dispatch(event: LessonEvent): void {
   }
 }
 
+/**
+ * Every answer passes the round's input policy. An answer in a way the round doesn't invite (a tap in a
+ * letter-key round) gets a nudge instead: Pip says which way to try and the key badges flash. After two
+ * nudges the answer is accepted, so no child is ever blocked.
+ */
+function answer(choice: string, mode: InputMode): void {
+  if (state.phase !== 'round' || state.solved) return;
+  if (judgeInput(policy, mode, nudges) === 'accept') {
+    dispatch({ type: 'answer', choice });
+    return;
+  }
+  nudges++;
+  const ids = [nudgeLine(policy), lineId.callout(lesson.id, currentRound(lesson, state).id)];
+  setFeedback(ids, false);
+  say(ids);
+  hold(scene().querySelectorAll('[data-key-badge]'), 'is-nudge', NUDGE_MS);
+  hold([inputHint], 'is-nudge', NUDGE_MS);
+}
+
 // Answer buttons are re-rendered with the scene: listen on the stage.
 stage.addEventListener('click', (event) => {
   const button = (event.target as Element).closest<HTMLButtonElement>('[data-answer]');
   const choice = button?.dataset.answer;
   if (!button || !choice || button.disabled || state.solved) return;
-  dispatch({ type: 'answer', choice });
+  // A button pressed from the keyboard or by assistive technology (no pointer: detail 0) always answers:
+  // screen readers and switch users answer with the buttons, never through a nudge.
+  if (event.detail === 0) dispatch({ type: 'answer', choice });
+  else answer(choice, 'tap');
 });
+
+function moveCursor(by: number): void {
+  const order = choicesInOrder(currentRound(lesson, state), orientation);
+  if (!order.length) return;
+  cursor =
+    cursor < 0 ? (by > 0 ? 0 : order.length - 1) : Math.max(0, Math.min(order.length - 1, cursor + by));
+  unmark('is-focus');
+  mark(`[data-choice-mark="${CSS.escape(order[cursor] as string)}"]`, 'is-focus');
+}
+
+const ARROWS: Record<string, number> = { ArrowLeft: -1, ArrowUp: -1, ArrowRight: 1, ArrowDown: 1 };
+
+document.addEventListener('keydown', (event) => {
+  if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+  if (!keyPressed) {
+    keyPressed = true;
+    writeFlag(KEYBOARD_KEY);
+    // a keyboard turned up: this round may now invite keys after all
+    if (state.phase === 'round' && !state.solved && !nudges) {
+      const next = roundPolicy();
+      if (next.badges !== policy.badges || next.promptLine !== policy.promptLine) {
+        policy = next;
+        renderInputHint();
+        renderScene();
+      }
+    }
+  }
+  if (state.phase !== 'round' || state.solved) return;
+  const target = event.target as Element | null;
+  // keys belong to the lesson only while focus is on the page or in the stage (not in the grown-up notes)
+  if (target && target !== document.body && target !== document.documentElement && !stage.contains(target))
+    return;
+  const onControl = !!target?.closest('button, a, input, textarea, select, summary');
+  const round = currentRound(lesson, state);
+  const move = ARROWS[event.key];
+  if (move !== undefined) {
+    event.preventDefault();
+    moveCursor(move);
+    return;
+  }
+  if (event.key === 'Enter') {
+    // a focused button answers or helps by itself; Enter answers the arrow cursor only
+    if (onControl || cursor < 0) return;
+    event.preventDefault();
+    const choice = choicesInOrder(round, orientation)[cursor];
+    if (choice) answer(choice, 'arrows');
+    return;
+  }
+  if (event.key.length !== 1 || !policy.badges) return;
+  const choice = keyToChoice(round, event.key);
+  if (!choice) return;
+  event.preventDefault();
+  answer(choice, /\d/.test(event.key) ? 'number-key' : 'letter-key');
+});
+
 pipStart.addEventListener('click', () => {
   voice.unlock();
   dispatch({ type: 'start' });
 });
-replay.addEventListener('click', () => say([promptLineId()]));
+replay.addEventListener('click', () => {
+  if (state.phase !== 'round') {
+    say([promptLineId()]);
+    return;
+  }
+  say(withInputLine([promptLineId(), lineId.callout(lesson.id, currentRound(lesson, state).id)]));
+});
 hintButton.addEventListener('click', () => dispatch({ type: 'hint' }));
 matchButton?.addEventListener('click', () => dispatch({ type: 'match' }));
 nextButton.addEventListener('click', () => dispatch({ type: 'next' }));
@@ -379,20 +600,36 @@ bonusPlay.addEventListener('click', () => dispatch({ type: 'bonus', accept: true
 bonusSkip.addEventListener('click', () => dispatch({ type: 'bonus', accept: false }));
 element('#again').addEventListener('click', () => {
   voice.stop();
-  state = initialState(lesson);
+  // a new play-through: new positions
+  state = newPlayThrough(randomSeed());
+  enterRound();
   marks.clear();
   feedback.textContent = '';
   renderStage();
   dispatch({ type: 'start' });
 });
 
-// ── mute (remembered) ─────────────────────────────────────────────────────────────────────────────────────
+// ── remembered flags (mute, keyboard seen) ────────────────────────────────────────────────────────────────
 
 function readMuted(): boolean {
   try {
     return localStorage.getItem(MUTE_KEY) === '1';
   } catch {
     return false;
+  }
+}
+function readFlag(key: string): boolean {
+  try {
+    return sessionStorage.getItem(key) === '1';
+  } catch {
+    return false;
+  }
+}
+function writeFlag(key: string): void {
+  try {
+    sessionStorage.setItem(key, '1');
+  } catch {
+    // storage unavailable: remembered for this page only
   }
 }
 function showMuted(): void {
@@ -419,7 +656,12 @@ mute.addEventListener('click', () => {
 
 narrow.addEventListener('change', () => {
   orientation = narrow.matches ? 'tall' : 'wide';
-  if (state.phase === 'round' || state.phase === 'bonus-offer') renderScene();
+  cursor = -1;
+  unmark('is-focus');
+  if (state.phase === 'round' || state.phase === 'bonus-offer') {
+    renderInputHint();
+    renderScene();
+  }
 });
 
 window.addEventListener('resize', fitScene);

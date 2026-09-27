@@ -1,21 +1,32 @@
 import {
   applyDraft,
+  applyFamilySettings,
   baselinePath,
+  choiceKeys,
+  describeLevel,
+  inputPolicy,
   type LearningPath,
   learningScript,
+  levelsFor,
+  type Round,
   readLearningHtml,
   requiredRounds,
 } from '@wwm/learning';
 import { describe, expect, it } from 'vitest';
 import {
   escapeHtml,
+  gameLevelText,
   homePage,
+  inputHintHtml,
   lessonPage,
+  levelChoiceText,
   planksBuilt,
   portablePage,
   roundCheck,
+  sceneBlock,
   spokenHtml,
 } from '../src/render.ts';
+import { parseSettings } from '../src/storage.ts';
 
 const compare = baselinePath.activities.find((activity) => activity.id === 'compare-groups');
 if (!compare) throw new Error('compare-groups missing');
@@ -132,5 +143,135 @@ describe('portable download', () => {
     invariants(html);
     expect(html).toContain('Family introductions accepted 2026-09-26T12:00:00.000Z.');
     expect(readLearningHtml(html)).toEqual(fork);
+  });
+});
+
+describe('answering: key badges and the input hint (Phase 22)', () => {
+  const round = (id: string) => compare.rounds.find((candidate) => candidate.id === id) as Round;
+  const desktop = { tap: true, keyboard: true, tilt: false };
+
+  it('shows key badges only when asked, and names each key after the visible label', () => {
+    const r2 = round('r2');
+    const plain = sceneBlock(baselinePath.theme, compare, r2, {
+      orientation: 'wide',
+      built: 1,
+      enabled: true,
+    });
+    expect(plain).not.toContain('class="wwm-scene show-keys"');
+    expect(plain).toContain('aria-label="Island A: 5 gems"');
+    const keyed = sceneBlock(baselinePath.theme, compare, r2, {
+      orientation: 'wide',
+      built: 1,
+      enabled: true,
+      keys: choiceKeys(r2),
+    });
+    expect(keyed).toContain('<svg class="wwm-scene show-keys"');
+    expect(keyed).toContain('aria-label="Island A: 5 gems. Key A"');
+    expect(keyed).toContain('aria-label="Island B: 4 gems. Key B"');
+    // a preview (the bonus offer) never shows keys
+    expect(
+      sceneBlock(baselinePath.theme, compare, r2, {
+        orientation: 'wide',
+        built: 1,
+        enabled: true,
+        preview: true,
+        keys: choiceKeys(r2),
+      }),
+    ).not.toContain('class="wwm-scene show-keys"');
+  });
+
+  it('writes the input hint from the round’s policy, keys in on-screen order', () => {
+    const hint = (
+      id: string,
+      device = desktop,
+      path: Pick<LearningPath, 'play' | 'family'> = baselinePath,
+    ) => {
+      const r = round(id);
+      return inputHintHtml(r, inputPolicy(path, compare, r, device), choiceKeys(r), 'wide');
+    };
+    expect(hint('r1')).toBe('');
+    expect(hint('r2')).toBe('Press <kbd>A</kbd> or <kbd>B</kbd>');
+    expect(hint('r4')).toBe('Press <kbd>A</kbd>, <kbd>S</kbd> or <kbd>B</kbd>');
+    expect(hint('r3b')).toBe('Use <kbd>←</kbd> <kbd>→</kbd>, then <kbd>Enter</kbd>');
+    expect(hint('r5b')).toBe('Type the number: <kbd>2</kbd>, <kbd>3</kbd> or <kbd>4</kbd>');
+    // a touch-only device and the tap-only setting both fall back to tapping: no hint
+    expect(hint('r2', { tap: true, keyboard: false, tilt: false })).toBe('');
+    expect(hint('r5b', desktop, { ...baselinePath, family: { levels: {}, tapOnly: true } })).toBe('');
+  });
+});
+
+describe('game settings (Phase 22)', () => {
+  const chosen = applyFamilySettings(baselinePath, {
+    levels: { 'compare-groups': 'mission' },
+    tapOnly: true,
+  });
+
+  it('lists every lesson’s own levels, described, with the author’s default marked', () => {
+    const html = homePage(baselinePath);
+    expect(html).toContain('id="game-settings"');
+    expect(html).toContain('Answer by tapping only');
+    expect(html).toContain('For children who find keys or tilting hard');
+    expect(html).toContain('Use the lesson’s recommendation for every lesson');
+    expect(html).toContain('Reset game settings');
+    for (const activity of baselinePath.activities)
+      for (const level of levelsFor(activity)) {
+        expect(html).toContain(`id="level-${activity.id}-${level.id}"`);
+        expect(html).toContain(escapeHtml(describeLevel(activity, level)));
+      }
+    expect(html.match(/\(recommended by the lesson\)<\/span><span class="level-description">/g)).toHaveLength(
+      baselinePath.activities.length,
+    );
+    expect(html).toMatch(/id="level-compare-groups-gated" name="level-compare-groups" value="gated" checked/);
+    // with a family choice the page is rendered with it checked
+    expect(homePage(chosen)).toMatch(
+      /id="level-compare-groups-mission" name="level-compare-groups" value="mission" checked/,
+    );
+    expect(levelChoiceText(chosen, compare)).toBe('Missions (your choice)');
+    expect(levelChoiceText(baselinePath, compare)).toBe('Gated (recommended by the lesson)');
+  });
+
+  it('names the level in the lesson’s grown-up notes', () => {
+    const gated = levelsFor(compare).find((level) => level.id === 'gated');
+    if (!gated) throw new Error('gated missing');
+    expect(gameLevelText(baselinePath, compare)).toBe(
+      `In the game: Gated (recommended by the lesson). ${describeLevel(compare, gated)}`,
+    );
+    expect(lessonPage(baselinePath, compare)).toContain(escapeHtml(gameLevelText(baselinePath, compare)));
+    expect(gameLevelText(chosen, compare)).toMatch(/^In the game: Missions\. .* Answering: tapping only\.$/);
+  });
+
+  it('exports the grown-up’s choices: `family` in the JSON and a readable Game settings section', () => {
+    const html = portablePage(chosen);
+    expect(html.match(/<script/g)).toHaveLength(1);
+    expect(html).not.toContain('src=');
+    expect(readLearningHtml(html)).toEqual(chosen);
+    expect(readLearningHtml(html).family).toEqual({ levels: { 'compare-groups': 'mission' }, tapOnly: true });
+    expect(html).toContain('<h2>Game settings</h2>');
+    expect(html).toContain('Chosen by a grown-up for this family.');
+    expect(html).toContain('<strong>Which has more?:</strong> Missions.');
+    expect(html).toContain('Answering: tapping only (a grown-up setting).');
+    // the baseline lists the recommendations
+    const original = portablePage(baselinePath);
+    expect(original).toContain('<strong>Which has more?:</strong> Gated (recommended by the lesson).');
+    expect(original).toContain('A tap is always accepted after two gentle reminders.');
+  });
+
+  it('accepts only valid stored settings (fail closed, like applyFamilySettings)', () => {
+    const valid = { levels: { 'compare-groups': 'explore' }, tapOnly: false };
+    expect(parseSettings(valid, baselinePath)).toEqual(valid);
+    expect(parseSettings({ levels: {}, tapOnly: true }, baselinePath)).toEqual({ levels: {}, tapOnly: true });
+    for (const bad of [
+      null,
+      'x',
+      [],
+      { levels: {} },
+      { levels: {}, tapOnly: 'yes' },
+      { levels: [], tapOnly: false },
+      { levels: { 'compare-groups': 3 }, tapOnly: false },
+      { levels: { 'compare-groups': 'no-such-level' }, tapOnly: false },
+      { levels: { 'no-such-lesson': 'gated' }, tapOnly: false },
+      { levels: {}, tapOnly: false, extra: 1 },
+    ])
+      expect(parseSettings(bad, baselinePath), JSON.stringify(bad)).toBeNull();
   });
 });

@@ -282,6 +282,23 @@ It runs along the bottom of every scene: the home island, one dashed plank slot 
 - The bonus offer shows "Bonus round!", a dimmed preview of the bonus islands, and Play the bonus round / Skip.
 - The end card shows "You built the whole bridge!", Pip's finale line, Next activity, Play again, and the offline activity on a Soft Green panel for grown-ups.
 
+### Answering: callouts, key badges and nudges (Phase 22)
+
+- **Callout:** as Pip names each choice ("Island A… or island B?"), that choice gets a solid Focus halo and a small pulse, and its key badge grows, for about 600 ms.
+- **Key badges:** these are small Ink squares with a Paper letter at each choice's top-left corner. The scene draws them, and they show only in rounds that invite letter or number keys.
+  - A hint line under the question repeats them as `<kbd>` chips in the same Ink style ("Press A or B", "Type the number: 2, 3 or 4"). It is 17px, or 15px on phones.
+  - Arrows-only rounds show "Use ← →, then Enter". The arrow cursor is the scene's dotted Focus halo.
+  - Badges and the hint disappear once the round is solved.
+- **Nudge:** a tap in a key round doesn't answer; it gets a nudge instead. The hint line takes the Spoken highlight background, the badges grow with a Glow ring, and the feedback says "Try pressing the letter!" before the callout. The third tap is accepted. With reduced motion, the highlight and the ring still show, without movement.
+
+### Game settings (parent area)
+
+A second parent-workspace section under the personalization controls. It has the same 0.8fr/1.2fr grid, and its introduction is sticky on desktop.
+- **Status strip:** a Soft Green saved-state strip.
+- **Tap only:** a Transparency Blue panel with the "Answer by tapping only" switch. The switch is a 52×30 track, Action Green when on, with the real checkbox covering it. A one-sentence explanation follows.
+- **Levels:** one disclosure per lesson, with a stop-number circle, the title, and the current level in Stop Ink ("Gated (recommended by the lesson)"). Opening it shows radio cards: the level label, the recommended mark, and the generated description in Muted 15px. The checked card is Soft Green.
+- **Actions:** "Use the lesson’s recommendation for every lesson", and "Reset game settings" (shown only when something is saved).
+
 ### Containers and Disclosure
 
 The introduction, transparency section, saved-state strip, and activity canvas are flat surfaces rather than elevated cards. Dividers organize ordered stops, draft changes, and parent disclosure sections. Native details/summary provides optional adult explanation and AI import content, with a minimum 44px summary height.

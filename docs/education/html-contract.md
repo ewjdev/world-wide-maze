@@ -108,3 +108,21 @@ The standalone lesson pages are the first consumer. The WWM game is the second. 
 - **`family = { levels: { [activityId]: levelId }, tapOnly }`:** the grown-up's choices, carried in the exported HTML. `resolveLevel` returns the grown-up's choice, else the author's default.
 
 The document declares **intent, never geometry**. It can't name a bridge, because it doesn't know which website becomes the maze. A game binds the steps to its own world. WWM's binding and runtime locks are described in `plans/phase-22-learning-mechanics.md` §4–5 and in contracts §10.4.
+
+### The lesson page and parent area as a 0.3 consumer (Phase 22 M4)
+
+How `apps/education` applies 0.3. This describes one consumer; it doesn't change the document format.
+
+- **Positions.** Each play-through starts `initialState(activity, { seed: randomSeed(), shuffle: path.play.shuffle })`, and "Play again" draws a new seed. The page renders `currentRound()` (the shuffled round) and speaks from `sessionScript()`, so count lines and callouts match what's shown. The seed is exposed as `data-seed` on the lesson `<article>`. `?seed=<n>` replays a play-through exactly; `?seed=0` shows the rounds as written.
+- **Callouts.** A `choice` cue adds `is-callout` to `[data-choice-mark]` and `[data-key-badge]` for that choice for about 600 ms. The class is held by a timer, not an animation, so it still shows with reduced motion.
+- **Inputs.** The device is `{ tap: true, keyboard: (any-pointer: fine) or a key pressed this tab session, tilt: false }`, and `inputPolicy()` runs per round.
+  - With `badges`, the scene gets `show-keys`, each answer button's name ends with its key ("Island A: 3 gems, spread out. Key A"), and a hint line under the question reads "Press A or B" or "Type the number: 2, 3 or 4". An arrows-only round shows "Use ← →, then Enter".
+  - The input line (`promptLine`) is spoken after the callout and isn't repeated in the written feedback.
+  - Letter and digit keys answer through `keyToChoice` only while badges show. Arrow keys move an `is-focus` cursor in on-screen order, and Enter answers it.
+  - Every pointer answer goes through `judgeInput()`. A nudge says `nudgeLine()` followed by the callout, flashes the badges (`is-nudge`), and doesn't answer. Nudges reset each round.
+  - An answer button activated from the keyboard or by assistive technology (a click with `detail === 0`) always answers. Screen-reader and switch users answer with the buttons and are never nudged.
+- **Game settings.** They're stored under `wwm-learning:settings:v1` as `FamilySettings` (`{ levels, tapOnly }`), apart from the family version (`wwm-learning:family-fork:v1`), so restoring the original path keeps them.
+  - A record that fails `applyFamilySettings` against the current path (unknown lesson or level, wrong types, extra keys) is ignored as a whole, with a visible warning.
+  - Every page reads the path through `applyFamilySettings`, so the page's own `#wwm-learning` JSON and the "Download learning HTML" file carry `family`.
+  - Choosing a lesson's recommended level removes that lesson's entry. With nothing left to remember, the record is removed.
+- **Portable download.** It adds a visible "Game settings" section: each activity's level with its generated description, and the answering setting. It still has exactly one inert JSON script and no `src=`.
