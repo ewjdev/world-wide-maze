@@ -9,6 +9,7 @@
 import '@fontsource-variable/unbounded';
 import '@fontsource-variable/figtree';
 import { isEligible, type RaceCourse } from '@wwm/race';
+import { PX_PER_METER } from '@wwm/schema';
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
@@ -92,6 +93,26 @@ function CourseMap({ course }: { course: RaceCourse }) {
           strokeWidth="2"
         />
       ))}
+      {course.stunts?.launchPads.flatMap((pad) =>
+        pad.landingIslandIds.map((id) => {
+          const island = course.stage.islands.find((item) => item.id === id);
+          if (!island) return null;
+          const x = island.contour.reduce((sum, point) => sum + point[0], 0) / island.contour.length;
+          const y = island.contour.reduce((sum, point) => sum + point[1], 0) / island.contour.length;
+          return (
+            <line
+              key={`${pad.id}-${id}`}
+              x1={pad.gate.center[0] * PX_PER_METER}
+              y1={pad.gate.center[2] * PX_PER_METER}
+              x2={x}
+              y2={y}
+              stroke="#a76616"
+              strokeWidth="7"
+              strokeDasharray="14 10"
+            />
+          );
+        }),
+      )}
       <circle cx={course.stage.start.pos[0]} cy={course.stage.start.pos[1]} r="12" fill="#20262d" />
       <circle cx={course.stage.goal.pos[0]} cy={course.stage.goal.pos[1]} r="13" fill="#2e7a3a" />
     </svg>
@@ -203,7 +224,7 @@ function RaceGame({ course }: { course: RaceCourse }) {
     };
   }, [course]);
   return (
-    <div className="wwm-root race-root">
+    <div className={`wwm-root race-root ${course.stunts ? 'race-root--stunts' : ''}`}>
       <div ref={host} className="wwm-stage-host" />
       {session && <RaceScreens session={session} />}
     </div>
@@ -222,7 +243,10 @@ function RaceScreens({ session }: { session: RaceSession }) {
   const sectors = session.course.gates.filter((gate) => gate.kind === 'sector').length;
   const eligible = v.result && isEligible(v.result);
   const resultTitle = !eligible ? 'race.practiceFinish' : v.newBest ? 'race.newBest' : 'race.finish';
-  const controls = useMemo(() => t('race.controls'), [t]);
+  const controls = useMemo(
+    () => t(session.course.stunts ? 'race.stuntControls' : 'race.controls'),
+    [t, session.course.stunts],
+  );
   return (
     <>
       <header className="race-game-header">
@@ -264,6 +288,46 @@ function RaceScreens({ session }: { session: RaceSession }) {
             )}
             {v.progress.reasons.includes('recording-limit') && <span>{t('race.recordingLimit')}</span>}
           </div>
+          {v.mechanics?.enabled && (
+            <div className="race-boost" data-testid="race-boost">
+              <button
+                type="button"
+                className="race-boost-button"
+                data-testid="race-turbo"
+                disabled={!racing || !v.mechanics.ready}
+                onClick={() => session.turbo()}
+              >
+                <span>
+                  {t(
+                    v.mechanics.turboTicks > 0
+                      ? 'race.turboActive'
+                      : v.mechanics.ready
+                        ? 'race.turboReady'
+                        : 'race.turbo',
+                  )}
+                </span>
+                <kbd>T</kbd>
+              </button>
+              <progress
+                aria-label={t('race.turboCharging')}
+                max={v.mechanics.chargeRequired}
+                value={v.mechanics.ready ? v.mechanics.chargeRequired : v.mechanics.chargeTicks}
+              />
+              <small role="status" data-testid="race-stunt-event">
+                {t(
+                  v.stuntEvent === 'landing'
+                    ? 'race.cleanLanding'
+                    : v.stuntEvent === 'launch'
+                      ? 'race.launched'
+                      : v.mechanics.turboTicks > 0
+                        ? 'race.turboActive'
+                        : v.mechanics.ready
+                          ? 'race.turboReady'
+                          : 'race.turboCharging',
+                )}
+              </small>
+            </div>
+          )}
           <div className="race-play-bottom">
             <p>{controls}</p>
             <button type="button" className="wwm-btn wwm-btn--small" onClick={() => session.pause()}>
@@ -309,8 +373,8 @@ function RaceScreens({ session }: { session: RaceSession }) {
             )}
             {v.phase === 'ready' && (
               <>
-                <h1>{t('race.ready')}</h1>
-                <p>{t('race.readyHint')}</p>
+                <h1>{t(session.course.stunts ? 'race.stuntReady' : 'race.ready')}</h1>
+                <p>{t(session.course.stunts ? 'race.stuntHint' : 'race.readyHint')}</p>
                 <p className="race-best-line">
                   {v.best ? (
                     <>
@@ -378,6 +442,12 @@ function RaceScreens({ session }: { session: RaceSession }) {
                   {raceTime(v.progress.finishTick ?? v.progress.tick)}
                 </strong>
                 <p>{t(eligible ? 'race.resultHint' : 'race.practiceHint')}</p>
+                {v.mechanics?.enabled && (
+                  <p className="race-stunt-result">
+                    {t('race.launchCount')}: {v.mechanics.launches} · {t('race.landingCount')}:{' '}
+                    {v.mechanics.landings}
+                  </p>
+                )}
                 <ol className="race-splits">
                   {v.progress.sectorTicks.map((tick, i) => (
                     <li key={session.course.gates[i]?.id}>

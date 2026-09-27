@@ -1,6 +1,7 @@
 import type { Engine } from '@wwm/engine';
 import type { RaceCourse, RaceGhostTrack } from '@wwm/race';
-import { BoxGeometry, Group, Mesh, MeshBasicMaterial, SphereGeometry } from 'three/webgpu';
+import { LEVEL_HEIGHT_M, PX_PER_METER } from '@wwm/schema';
+import { BoxGeometry, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry } from 'three/webgpu';
 
 /** Race-only decoration. Never creates colliders or changes the simulated world. */
 export function courseMarkers(engine: Engine, course: RaceCourse) {
@@ -11,6 +12,27 @@ export function courseMarkers(engine: Engine, course: RaceCourse) {
   const finishDark = new MeshBasicMaterial({ color: 0x20272d });
   const finishLight = new MeshBasicMaterial({ color: 0xffffff });
   const geometry = new BoxGeometry(1, 1, 1);
+  const jumpMaterial = new MeshBasicMaterial({ color: 0xb77c1e });
+  const landingGeometry = new RingGeometry(1.85, 2, 40);
+  const landingIds = new Set<number>();
+  for (const pad of course.stunts?.launchPads ?? []) {
+    const stripe = new Mesh(geometry, jumpMaterial);
+    stripe.position.set(pad.gate.center[0], pad.gate.center[1] - 0.43, pad.gate.center[2]);
+    stripe.rotation.y = Math.atan2(pad.gate.normal[0], pad.gate.normal[1]);
+    stripe.scale.set(pad.gate.halfWidth * 2, 0.05, 0.4);
+    root.add(stripe);
+    for (const id of pad.landingIslandIds) landingIds.add(id);
+  }
+  for (const id of landingIds) {
+    const island = course.stage.islands.find((item) => item.id === id);
+    if (!island) continue;
+    const x = island.contour.reduce((sum, point) => sum + point[0], 0) / island.contour.length / PX_PER_METER;
+    const z = island.contour.reduce((sum, point) => sum + point[1], 0) / island.contour.length / PX_PER_METER;
+    const ring = new Mesh(landingGeometry, jumpMaterial);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.set(x, island.level * LEVEL_HEIGHT_M + 0.025, z);
+    root.add(ring);
+  }
   const pending = new MeshBasicMaterial({ color: 0x2e7a3a });
   const done = new MeshBasicMaterial({ color: 0x96b6a0, transparent: true, opacity: 0.3 });
   const groups = course.gates.map((gate) => {
@@ -58,6 +80,8 @@ export function courseMarkers(engine: Engine, course: RaceCourse) {
       if (legacyGoal) legacyGoal.visible = legacyVisible ?? true;
       finishDark.dispose();
       finishLight.dispose();
+      jumpMaterial.dispose();
+      landingGeometry.dispose();
       geometry.dispose();
       pending.dispose();
       done.dispose();

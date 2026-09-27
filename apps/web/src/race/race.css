@@ -514,3 +514,60 @@
     font-size: 12px;
   }
 }
+
+.race-boost {
+  position: absolute;
+  right: 28px;
+  bottom: 94px;
+  width: 230px;
+  padding: 12px 14px;
+  background: #fffffff2;
+  color: var(--ink);
+}
+.race-boost-button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 10px;
+  border: 1px solid #b67720;
+  background: #fff3d5;
+  color: #603b0b;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+.race-boost-button:disabled {
+  border-color: var(--line);
+  background: #f3f4f5;
+  color: #56616b;
+  cursor: default;
+}
+.race-boost-button:focus-visible {
+  outline: 3px solid #367fb1;
+  outline-offset: 3px;
+}
+.race-boost progress {
+  display: block;
+  width: 100%;
+  height: 8px;
+  margin: 10px 0 7px;
+  accent-color: #a76616;
+}
+.race-boost small {
+  font-size: 12px;
+}
+.race-stunt-result {
+  font-variant-numeric: tabular-nums;
+}
+@media (max-width: 640px) {
+  .race-boost {
+    right: 12px;
+    bottom: 112px;
+    width: 200px;
+  }
+  .race-root--stunts .race-ghost-key {
+    bottom: 238px;
+  }
+}

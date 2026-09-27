@@ -25,5 +25,6 @@ export {
   type RaceTerrain,
 } from './race.ts';
 export { RACE_ROUTE_WEIGHTS, RaceRouteError, type RaceRouteSearch, searchRaceRoute } from './race-route.ts';
+export { buildIslandLeap } from './race-stunts.ts';
 export { sha256HexSync } from './sha256.ts';
 export { type Dist, dist, type StageStats, stageStats, statsRows } from './stats.ts';

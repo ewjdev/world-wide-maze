@@ -4,12 +4,13 @@ import { validateRecording } from './recording.ts';
 import type { RaceAttempt, RaceCompatibility } from './types.ts';
 
 export const RACE_RULES_VERSION = 'wwm.race-rules/1';
-export function makeCompatibility(courseId: string): RaceCompatibility {
+export const RACE_STUNT_RULES_VERSION = 'wwm.race-rules/2';
+export function makeCompatibility(courseId: string, stuntsEnabled = false): RaceCompatibility {
   return {
     courseId,
     physicsVersion: PHYSICS_VERSION,
     physicsConfig: JSON.stringify(Object.entries(DEFAULT_PARAMS).sort(([a], [b]) => a.localeCompare(b))),
-    rulesVersion: RACE_RULES_VERSION,
+    rulesVersion: stuntsEnabled ? RACE_STUNT_RULES_VERSION : RACE_RULES_VERSION,
     hz: SIM_HZ,
   };
 }
@@ -63,6 +64,8 @@ export function validateAttempt(value: unknown): value is RaceAttempt {
     ) ||
     c.hz !== SIM_HZ
   )
+    return false;
+  if ((c.rulesVersion === RACE_STUNT_RULES_VERSION) !== (a.recording.format === 'wwm.race-input/2'))
     return false;
   if (
     !Number.isSafeInteger(p.tick) ||

@@ -2,6 +2,11 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.4 (2026-09-27, Race jumps and turbo)
+- Optional controller `stuntVersion: 1` capability, `race-turbo` control message, and authoritative Race boost charge/ready/timer payload.
+- Stunt courses require the new capability before phone play; old Race and Original flows retain their protocol.
+- Standard binary inputs and StageData are unchanged. Race-only v2 recording captures turbo in its own bounded format.
+
 ## 0.3.3 (2026-09-26, Race)
 - Optional `StateMessage.race` version-1 timer, sector, phase, practice and split payload.
 - Additive `capabilities-request` / `capabilities { raceVersion: 1 }` controller handshake. Old messages still parse; Race requires support before GO and can fall back to keyboard.

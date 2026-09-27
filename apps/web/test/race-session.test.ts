@@ -90,6 +90,8 @@ vi.mock('../src/controller/race-host.ts', () => ({
       get canStart() {
         return state.phoneReady;
       },
+      discardTurboRequest: () => {},
+      takeTurboRequest: () => false,
       getView: () => ({ raceSupport: state.phoneReady ? 'supported' : 'unsupported' }),
       sample: () => ({ tiltX: 0, tiltZ: 0, frameYaw: 0, power: false, jump: false }),
       subscribe: () => () => {},

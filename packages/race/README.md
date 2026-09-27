@@ -39,3 +39,33 @@ budget, in session memory. Unsupported/malformed records are ignored, never rein
 The web `GhostClient` runs one dedicated worker at a time. Starting another preparation or calling
 `cancel` terminates the previous worker, rejects its promise with `AbortError`, and rejects stale
 completion callbacks. Callers own at most two retained tracks and must dispose ghosts and client on exit.
+
+## Stunt rules v2
+
+Optional `RaceCourse.stunts` opts a course into the shared `createRaceSimulation(course)` wrapper.
+Live play and `replayRace` must use that same wrapper. Without stunts the step result is passed directly
+through from the unchanged physics simulation, and existing rules/input v1 remain compatible.
+
+Use `makeCompatibility(courseId, true)` and `new RaceRecorder(undefined, true)` for stunt courses.
+Input v2 retains the 25-byte layout and uses flag mask 4 for `RaceInputSample.turbo`; masks 1 and 2 remain
+power and jump. Unknown flag bits are rejected. Course content IDs must include all stunt parameters.
+The rules version prevents a v1 ghost from being treated as a v2 best.
+
+Momentum charges on grounded ticks at >=90% of the authored cruise speed, while advancing the previous
+furthest projection toward the next required gate. Slowing, retracing, or a >=3 m/s bump clears unearned
+charge. Airborne ticks pause it. A full charge banks one turbo. A rising-edge turbo applies a horizontal
+velocity delta in the current direction, capped at the authored maximum, and starts a 120-tick recharge
+lockout. A press with no possible impulse retains the banked charge. It never alters angular velocity.
+
+Crossing a designated directional launch gate while touching its approach and above minimum speed
+applies the authored upward velocity floor once per pad per run. First contact after >=0.15s airborne
+and >=2m forward travel awards the modest landing impulse only on a configured island distinct from
+the launch island, with forward heading and no hard bump. Invalid first contacts end that flight's
+provenance. Recovery clears charge and flight provenance but retains consumed pads and progress high
+water; loading a new run resets all mechanics. `getMechanics()` returns a snapshot, with `lastEvent`
+available for precisely one simulation tick; capture it in the per-step UI observer.
+
+`validateStunts` rejects nonfinite/out-of-range tuning, malformed launch gates, duplicate pad IDs and
+unknown landing island IDs before creating Rapier. The additive physics `applyVelocityDelta` API is
+bounded and never resets contact, fall, rotation or position state. Normal race/original physics does
+not invoke it.

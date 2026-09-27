@@ -1,4 +1,4 @@
-import type { BallState, StageData, Vec2 } from '@wwm/schema';
+import type { BallState, InputSample, StageData, Vec2 } from '@wwm/schema';
 
 export interface RaceGate {
   id: string;
@@ -19,6 +19,7 @@ export interface RaceCourse {
   gates: RaceGate[];
   generatorVersion: string;
   seed: number;
+  stunts?: RaceStunts;
 }
 export type PracticeReason =
   | 'fall'
@@ -41,7 +42,7 @@ export interface RaceRecovery {
   reason: 'fall' | 'recovery';
 }
 export interface RaceRecording {
-  format: 'wwm.race-input/1';
+  format: 'wwm.race-input/1' | 'wwm.race-input/2';
   /** 3 little-endian float64 values + one flag byte per sample, exact consumed doubles. */
   data: ArrayBuffer;
   ticks: number;
@@ -81,4 +82,27 @@ export interface RaceStep {
   previous: BallState['pos'];
   current: BallState['pos'];
   fell?: boolean;
+}
+
+export interface RaceInputSample extends InputSample {
+  turbo?: boolean;
+}
+export interface RaceStunts {
+  version: 1;
+  cruiseSpeed: number;
+  chargeTicks: number;
+  turboDeltaV: number;
+  turboMaxSpeed: number;
+  landingDeltaV: number;
+  launchPads: { id: string; gate: RaceGate; upSpeed: number; minSpeed: number; landingIslandIds: number[] }[];
+}
+export interface RaceMechanics {
+  enabled: boolean;
+  chargeTicks: number;
+  chargeRequired: number;
+  ready: boolean;
+  turboTicks: number;
+  launches: number;
+  landings: number;
+  lastEvent: string | null;
 }

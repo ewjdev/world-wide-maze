@@ -21,7 +21,7 @@ const legacy = { t: 'state', phase: 'play', score: 100, balls: 3, timeLeft: 90 }
 beforeEach(() => vi.useFakeTimers());
 afterEach(() => vi.useRealTimers());
 
-function hostRig() {
+function hostRig(requiresStunts = false) {
   const socket = new FakeSocket('wss://test');
   const conn = new HostConnection({
     url: socket.url,
@@ -35,7 +35,7 @@ function hostRig() {
   const onDisconnect = vi.fn();
   const host = new RaceControllerHost(
     { code: '123456', pairToken: 'secret', conn },
-    { origin: 'https://test', frameYaw: () => 1.25, onMenu, onDisconnect },
+    { origin: 'https://test', frameYaw: () => 1.25, onMenu, onDisconnect, requiresStunts },
   );
   return { socket, host, onMenu, onDisconnect };
 }
@@ -68,7 +68,7 @@ describe('Race controller compatibility', () => {
     expect(session.getView().host).toEqual(legacy);
     expect(socket.sentJson().some((m) => m.t === 'capabilities')).toBe(false);
     socket.receive({ t: 'capabilities-request' });
-    expect(socket.sentJson()).toContainEqual({ t: 'capabilities', raceVersion: 1 });
+    expect(socket.sentJson()).toContainEqual({ t: 'capabilities', raceVersion: 1, stuntVersion: 1 });
     socket.receive({ ...legacy, race });
     expect(session.getView().host?.race).toEqual(race);
     socket.receive({ ...legacy, race: { ...race, simHz: 0 } });
@@ -148,5 +148,89 @@ describe('Race controller compatibility', () => {
     vi.advanceTimersByTime(6000);
     expect(socket.sent).toHaveLength(sent);
     expect(socket.readyState).toBe(3);
+  });
+  test('stunt courses require updated capabilities while ordinary Race keeps supporting older phones', () => {
+    for (const requiresStunts of [false, true]) {
+      const { socket, host } = hostRig(requiresStunts);
+      socket.receive({ t: 'peer', role: 'controller', connected: true });
+      socket.receive({ t: 'calibrated' });
+      socket.receive({ t: 'capabilities', raceVersion: 1 });
+      expect(host.canStart).toBe(!requiresStunts);
+      if (requiresStunts) expect(host.getView().error).toContain('Refresh');
+      socket.receive({ t: 'capabilities', raceVersion: 1, stuntVersion: 1 });
+      expect(host.canStart).toBe(true);
+      host.dispose();
+    }
+  });
+
+  test('turbo is latched until a physics tick, deduplicated while pending and cleared by pause or reconnect', () => {
+    const { socket, host } = hostRig(true);
+    const ready = { ...race, boost: { ready: true, chargeTicks: 360, chargeRequired: 360, turboTicks: 0 } };
+    host.sendState(ready);
+    socket.receive({ t: 'race-turbo' });
+    expect(host.takeTurboRequest()).toBe(false);
+    socket.receive({ t: 'peer', role: 'controller', connected: true });
+    socket.receive({ t: 'capabilities', raceVersion: 1, stuntVersion: 1 });
+    socket.receive({ t: 'calibrated' });
+    socket.receive({ t: 'race-turbo' });
+    host.sample(Date.now());
+    host.sample(Date.now());
+    expect(host.takeTurboRequest()).toBe(true);
+    expect(host.takeTurboRequest()).toBe(false);
+    // A consumed request can be retried if physics rejected it while stopped and charge stayed ready.
+    socket.receive({ t: 'race-turbo' });
+    expect(host.takeTurboRequest()).toBe(true);
+    socket.receive({ t: 'race-turbo' });
+    host.discardTurboRequest();
+    expect(host.takeTurboRequest()).toBe(false);
+    host.sendState({ ...ready, phase: 'paused' });
+    socket.receive({ t: 'race-turbo' });
+    expect(host.takeTurboRequest()).toBe(false);
+    host.sendState(ready);
+    socket.receive({ t: 'race-turbo' });
+    host.sendState({ ...ready, phase: 'paused' });
+    expect(host.takeTurboRequest()).toBe(false);
+    host.sendState(ready);
+    socket.receive({ t: 'race-turbo' });
+    socket.receive({ t: 'peer', role: 'controller', connected: false });
+    expect(host.takeTurboRequest()).toBe(false);
+    socket.receive({ t: 'peer', role: 'controller', connected: true });
+    socket.receive({ t: 'calibrated' });
+    expect(host.canStart).toBe(false);
+    socket.receive({ t: 'capabilities', raceVersion: 1, stuntVersion: 1 });
+    expect(host.takeTurboRequest()).toBe(false);
+    host.sendState({ ...ready, boost: { ...ready.boost, ready: false } });
+    socket.receive({ t: 'race-turbo' });
+    expect(host.takeTurboRequest()).toBe(false);
+    host.dispose();
+  });
+
+  test('phone sends turbo only for a connected, calibrated, racing host with charge', () => {
+    const { socket, session, sensorTarget } = phoneRig();
+    const ready = { ...race, boost: { ready: true, chargeTicks: 360, chargeRequired: 360, turboTicks: 0 } };
+    socket.receive({ ...legacy, race: ready });
+    session.turbo();
+    expect(socket.sentJson().filter((m) => m.t === 'race-turbo')).toHaveLength(0);
+    socket.receive({ t: 'peer', role: 'host', connected: true });
+    session.enableTilt();
+    sensorTarget.dispatchEvent(
+      Object.assign(new Event('deviceorientation'), { alpha: 0, beta: 45, gamma: 0 }),
+    );
+    session.calibrateHere();
+    session.turbo();
+    expect(socket.sentJson().filter((m) => m.t === 'race-turbo')).toHaveLength(1);
+    for (const state of [
+      { ...ready, phase: 'paused' },
+      { ...ready, boost: { ...ready.boost, ready: false } },
+      race,
+    ]) {
+      socket.receive({ ...legacy, race: state });
+      session.turbo();
+    }
+    socket.receive({ ...legacy, race: ready });
+    socket.receive({ t: 'peer', role: 'host', connected: false });
+    session.turbo();
+    expect(socket.sentJson().filter((m) => m.t === 'race-turbo')).toHaveLength(1);
+    session.dispose();
   });
 });

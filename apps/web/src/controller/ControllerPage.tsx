@@ -85,7 +85,12 @@ function ControllerForCode({ code }: { code: string }) {
   const debug = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 
   return (
-    <div className="wwmc" data-screen={view.screen} data-testid="controller">
+    <div
+      className="wwmc"
+      data-screen={view.screen}
+      data-stunts={!!view.host?.race?.boost}
+      data-testid="controller"
+    >
       <header className="wwmc-top">
         <HoldButton name="menu" label={t.menu} session={session} view={view} className="wwmc-menu" />
         <Status view={view} />
@@ -95,7 +100,8 @@ function ControllerForCode({ code }: { code: string }) {
         <Body view={view} session={session} />
       </main>
       {view.screen === 'play' && (
-        <footer className="wwmc-bottom">
+        <footer className={`wwmc-bottom ${view.host?.race?.boost ? 'wwmc-bottom-stunts' : ''}`}>
+          {view.host?.race?.boost && <TurboButton session={session} view={view} />}
           <HoldButton name="jump" label={t.jump} session={session} view={view} className="wwmc-jump" />
           <HoldButton name="power" label={t.power} session={session} view={view} className="wwmc-power" />
         </footer>
@@ -274,13 +280,37 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           <p className={`wwmc-warn ${view.tooTilted ? 'on' : ''}`} aria-live="polite">
             {view.tooTilted ? t.tooTilted : ' '}
           </p>
-          <p className="wwmc-hint">{t.powerHint}</p>
+          <p className="wwmc-hint">
+            {view.host?.race?.boost
+              ? 'Hold POWER and tilt to roll. Keep speed for 3 seconds to earn turbo; tap Turbo to launch farther.'
+              : t.powerHint}
+          </p>
           <button type="button" className="wwmc-link" onClick={() => session?.retryCalibration()}>
             {t.recalibrate}
           </button>
         </div>
       );
   }
+}
+
+function TurboButton({ session, view }: { session: ControllerSession | null; view: ControllerView }) {
+  const race = view.host?.race;
+  const boost = race?.boost;
+  if (!boost) return null;
+  const ready = race.phase === 'racing' && boost.ready && view.hostConnected && view.connection === 'open';
+  const charge = Math.min(100, Math.round((100 * boost.chargeTicks) / Math.max(1, boost.chargeRequired)));
+  return (
+    <button
+      type="button"
+      className="wwmc-btn wwmc-turbo"
+      data-testid="btn-turbo"
+      disabled={!ready}
+      onClick={() => session?.turbo()}
+    >
+      <strong>Turbo</strong>
+      <span>{boost.turboTicks > 0 ? 'Active' : boost.ready ? 'Ready · tap' : `${charge}% charged`}</span>
+    </button>
+  );
 }
 
 function HoldButton({

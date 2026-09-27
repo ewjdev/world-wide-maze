@@ -1,19 +1,22 @@
 import { createEngine, type Engine } from '@wwm/engine';
 import { GamepadInputSource, KeyboardInputSource, neutralSample } from '@wwm/net';
-import { createSimulation, type RapierSimulation } from '@wwm/physics';
 import {
   advanceProgress,
   createProgress,
+  createRaceSimulation,
   isEligible,
   makeCompatibility,
   markPractice,
   type PracticeReason,
   type RaceAttempt,
   type RaceCourse,
+  type RaceInputSample,
+  type RaceMechanics,
   type RaceProgress,
   RaceRecorder,
+  type RaceSimulation,
 } from '@wwm/race';
-import { type InputSample, PX_PER_METER, SIM_HZ, type Vec2 } from '@wwm/schema';
+import { PX_PER_METER, SIM_HZ, type Vec2 } from '@wwm/schema';
 import { AudioManager } from '../audio/audio.ts';
 import { RaceControllerHost } from '../controller/race-host.ts';
 import { LockstepDriver, type ObservedStep } from '../game/sim-driver.ts';
@@ -26,6 +29,8 @@ export interface RaceView {
   phase: RacePhase;
   countdown: number;
   progress: RaceProgress;
+  mechanics: RaceMechanics | null;
+  stuntEvent: RaceMechanics['lastEvent'];
   best: RaceAttempt | null;
   comparisonBest: RaceAttempt | null;
   recent: RaceAttempt[];
@@ -42,7 +47,7 @@ export interface RaceView {
   phone: ReturnType<RaceControllerHost['getView']> | null;
 }
 export interface RaceTestHooks {
-  inputs?: InputSample[];
+  inputs?: RaceInputSample[];
   countdownSec?: number;
   noAutoPause?: boolean;
   quality?: 'low' | 'high';
@@ -57,6 +62,8 @@ export class RaceSession {
     phase: 'loading',
     countdown: 3,
     progress: createProgress(),
+    mechanics: null,
+    stuntEvent: null,
     best: null,
     comparisonBest: null,
     recent: [],
@@ -74,7 +81,7 @@ export class RaceSession {
   };
   #listeners = new Set<() => void>();
   #engine: Engine | null = null;
-  #sim: RapierSimulation | null = null;
+  #sim: RaceSimulation | null = null;
   #simReady = false;
   #driver: LockstepDriver | null = null;
   #keyboard: KeyboardInputSource | null = null;
@@ -104,6 +111,8 @@ export class RaceSession {
   #attemptId = '';
   #createdAt = 0;
   #jumpArmed = false;
+  #turboRequested = false;
+  #stuntEventUntil = 0;
   #inputSource: RaceAttempt['inputSource'] = 'keyboard';
   #host: HTMLElement | null = null;
   #cleanups: (() => void)[] = [];
@@ -150,6 +159,10 @@ export class RaceSession {
       else if (document.hasFocus()) focus();
     };
     const key = (event: KeyboardEvent) => {
+      if (event.code === 'KeyT' && !event.repeat && !(event.target instanceof HTMLInputElement)) {
+        this.turbo();
+        event.preventDefault();
+      }
       if (event.code === 'KeyR' && !(event.target instanceof HTMLInputElement)) void this.start();
     };
     window.addEventListener('resize', resize);
@@ -187,7 +200,7 @@ export class RaceSession {
         return;
       }
       this.#texture = texture;
-      const sim = await createSimulation();
+      const sim = await createRaceSimulation(this.course);
       if (this.#disposed) {
         sim.dispose();
         return;
@@ -202,7 +215,7 @@ export class RaceSession {
       engine.setView('map');
       this.#markers = courseMarkers(engine, this.course);
       await this.#readHistory();
-      this.#set({ phase: 'ready', muted: this.audio.muted });
+      this.#set({ phase: 'ready', muted: this.audio.muted, mechanics: sim.getMechanics() });
     } catch (error) {
       this.#set({ phase: 'error', error: error instanceof Error ? error.message : String(error) });
     }
@@ -211,7 +224,7 @@ export class RaceSession {
     const generation = this.#generation;
     const read = ++this.#historyRead;
     try {
-      const result = await this.#history.list(makeCompatibility(this.course.courseId));
+      const result = await this.#history.list(makeCompatibility(this.course.courseId, !!this.course.stunts));
       if (this.#disposed || generation !== this.#generation || read !== this.#historyRead) return;
       this.#set({ best: result.best, recent: result.recent, persistent: result.persistent });
     } catch {
@@ -224,6 +237,7 @@ export class RaceSession {
     try {
       const phone = await RaceControllerHost.create({
         origin: location.origin,
+        requiresStunts: !!this.course.stunts,
         frameYaw: () => this.#engine?.cameraYaw() ?? 0,
         onMenu: () => this.togglePause(),
         onDisconnect: () => {
@@ -248,8 +262,15 @@ export class RaceSession {
   setInput(input: 'keyboard' | 'phone') {
     if (input === 'phone' && !this.#phone?.canStart) return;
     if (this.#view.phase === 'racing') this.pause('pause');
-    if (!this.#saved && input !== this.#view.input) this.#inputSource = 'mixed';
+    if (input !== this.#view.input) {
+      this.#phone?.discardTurboRequest();
+      this.#turboRequested = false;
+      if (!this.#saved) this.#inputSource = 'mixed';
+    }
     this.#set({ input });
+  }
+  turbo() {
+    if (this.#view.phase === 'racing' && this.#sim?.getMechanics().ready) this.#turboRequested = true;
   }
   setGhosts(ghosts: RaceView['ghosts']) {
     this.#set({ ghosts });
@@ -308,6 +329,7 @@ export class RaceSession {
       error: null,
       ghostCount: 0,
       ghostError: false,
+      stuntEvent: null,
       result: null,
       newBest: false,
       split: null,
@@ -317,7 +339,7 @@ export class RaceSession {
       if (this.#disposed || gen !== this.#generation) return;
       this.#progress = createProgress();
       this.#frameTimes = [];
-      this.#recorder = new RaceRecorder();
+      this.#recorder = new RaceRecorder(undefined, !!this.course.stunts);
       this.#saved = false;
       this.#attemptId = crypto.randomUUID();
       this.#createdAt = Date.now();
@@ -326,6 +348,7 @@ export class RaceSession {
       this.#fallAt = null;
       this.#falling = false;
       this.#jumpArmed = false;
+      this.#turboRequested = false;
       this.#markers?.update(0);
       if (this.#sim) engine.setBall(this.#sim.getBallState());
       engine.setView('chase');
@@ -377,6 +400,7 @@ export class RaceSession {
   }
   pause(reason: PracticeReason = 'pause') {
     if (this.#view.phase !== 'racing' && this.#view.phase !== 'countdown') return;
+    this.#turboRequested = false;
     this.#progress = markPractice(this.#progress, reason);
     this.#driver?.setPaused(true);
     this.audio.setRoll(0, false);
@@ -406,7 +430,7 @@ export class RaceSession {
       schema: 'wwm.race-attempt/1',
       id: this.#attemptId,
       createdAt: this.#createdAt,
-      compatibility: makeCompatibility(this.course.courseId),
+      compatibility: makeCompatibility(this.course.courseId, !!this.course.stunts),
       inputSource: this.#inputSource,
       outcome,
       progress: this.#progress,
@@ -433,6 +457,12 @@ export class RaceSession {
       });
   }
   #observe = (step: ObservedStep) => {
+    const mechanics = this.#sim?.getMechanics();
+    if (mechanics?.lastEvent) {
+      this.#stuntEventUntil = step.tick + SIM_HZ;
+      this.#set({ mechanics, stuntEvent: mechanics.lastEvent });
+      this.audio.play('click');
+    } else if (this.#view.stuntEvent && step.tick >= this.#stuntEventUntil) this.#set({ stuntEvent: null });
     const before = this.#progress.nextGate;
     this.#progress = advanceProgress(this.#progress, this.course.gates, {
       tick: step.tick,
@@ -460,7 +490,11 @@ export class RaceSession {
     }
     if (this.#progress.finishTick !== null) {
       this.#driver?.setPaused(true);
-      this.#set({ phase: 'finished', progress: this.#progress });
+      this.#set({
+        phase: 'finished',
+        progress: this.#progress,
+        mechanics: this.#sim?.getMechanics() ?? null,
+      });
       this.#save('finished');
       this.audio.setRoll(0, false);
       this.audio.play('click');
@@ -479,6 +513,7 @@ export class RaceSession {
       sector: this.#progress.sectorTicks.length,
       totalSectors: this.course.gates.filter((gate) => gate.kind === 'sector').length,
       practice: this.#progress.reasons.length > 0,
+      ...(this.course.stunts && this.#sim ? { boost: this.#sim.getMechanics() } : {}),
       ...(this.#view.split === null ? {} : { splitDeltaTicks: this.#view.split }),
     });
   }
@@ -522,6 +557,8 @@ export class RaceSession {
           })
         )
           this.#progress = markPractice(this.#progress, 'recording-limit');
+        this.#turboRequested = false;
+        this.#phone?.discardTurboRequest();
         this.#driver.reset(recovery.at);
         this.#falling = false;
         void this.#engine?.spawnBall(recovery.at, { durationSec: 0.01 });
@@ -529,8 +566,13 @@ export class RaceSession {
       const result = this.#driver.advance(
         dt,
         (tick) => {
-          const input =
-            this.#test.inputs?.[tick] ?? (this.#falling ? neutralSample(sample.frameYaw) : sample);
+          const phoneTurbo = this.#view.input === 'phone' && !!this.#phone?.takeTurboRequest();
+          const turbo = this.#turboRequested || phoneTurbo;
+          this.#turboRequested = false;
+          const input: RaceInputSample = this.#test.inputs?.[tick] ?? {
+            ...(this.#falling ? neutralSample(sample.frameYaw) : sample),
+            ...(this.course.stunts ? { turbo: !this.#falling && turbo } : {}),
+          };
           if (!this.#recorder.record(input)) this.#progress = markPractice(this.#progress, 'recording-limit');
           return input;
         },
@@ -554,7 +596,7 @@ export class RaceSession {
     }
     if (now - this.#publishAt > 80) {
       this.#publishAt = now;
-      this.#set({ progress: this.#progress });
+      this.#set({ progress: this.#progress, mechanics: this.#sim?.getMechanics() ?? null });
       this.#syncPhone();
     }
   };

@@ -168,6 +168,21 @@ export class ControllerSession {
     };
   }
 
+  /** Turbo stays a separate control message; the binary tilt input format is unchanged. */
+  turbo(): void {
+    const race = this.#view.host?.race;
+    if (
+      !this.#disposed &&
+      this.#view.screen === 'play' &&
+      this.#view.connection === 'open' &&
+      this.#view.hostConnected &&
+      race?.phase === 'racing' &&
+      race.boost?.ready
+    ) {
+      this.conn.send({ t: 'race-turbo' });
+    }
+  }
+
   // ── lifecycle ───────────────────────────────────────────────────────────────────────────────────────
 
   start(): void {
@@ -201,7 +216,7 @@ export class ControllerSession {
       }),
       c.on('message', (m) => {
         if (m.t === 'capabilities-request') {
-          c.send({ t: 'capabilities', raceVersion: 1 });
+          c.send({ t: 'capabilities', raceVersion: 1, stuntVersion: 1 });
         } else if (m.t === 'state') {
           this.#patch({ host: m });
           if (m.phase === 'calibrate' && this.#view.screen === 'play') this.#sendCalibrated();

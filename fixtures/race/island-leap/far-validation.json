@@ -1,0 +1,140 @@
+{
+  "route": "far",
+  "courseId": "1aeacba92c35250d3e547a9d86af8e300b26bcb8e218cd6cda94baaeef47a690",
+  "progress": {
+    "tick": 1245,
+    "nextGate": 3,
+    "sectorTicks": [
+      654,
+      1159
+    ],
+    "finishTick": 1245,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 172,
+    "chargeRequired": 360,
+    "ready": false,
+    "turboTicks": 0,
+    "launches": 1,
+    "landings": 1,
+    "lastEvent": null
+  },
+  "events": [
+    {
+      "tick": 1,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 0
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        7.407447338104248,
+        10.507990837097168,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 532,
+      "events": [],
+      "mechanic": "charged",
+      "pos": [
+        47.47351837158203,
+        10.495124816894531,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 899,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 1
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        80.99248504638672,
+        11.988045692443848,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 920,
+      "events": [
+        {
+          "type": "landed",
+          "impact": 3.2889339923858643
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        82.4983139038086,
+        11.994791030883789,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 943,
+      "events": [],
+      "mechanic": "turbo",
+      "pos": [
+        84.3269271850586,
+        11.996552467346191,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 949,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        85.34066009521484,
+        11.995906829833984,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 1052,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 3
+        },
+        {
+          "type": "landed",
+          "impact": 15.765079498291016
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        101.10978698730469,
+        10.4988431930542,
+        19.259260177612305
+      ]
+    },
+    {
+      "tick": 1074,
+      "events": [
+        {
+          "type": "landed",
+          "impact": 3.4918694496154785
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        103.92967987060547,
+        10.496633529663086,
+        19.259260177612305
+      ]
+    }
+  ],
+  "clearedIslandId": 2,
+  "minClearanceM": 2.5031518936157227,
+  "clearanceSamples": 50,
+  "replayVerified": true,
+  "method": "Real fixed-step Rapier player inputs; ordered Race gates; identical-pose second-simulation replay. Automated feasibility, not human difficulty acceptance."
+}

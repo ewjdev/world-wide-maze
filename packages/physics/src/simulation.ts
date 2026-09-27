@@ -893,6 +893,19 @@ export class RapierSimulation implements LockableSimulation {
     this.armPortals();
   }
 
+  /** Add a bounded world-space velocity delta without teleporting or changing spin/contact/fall state. */
+  applyVelocityDelta(delta: readonly [number, number, number]): void {
+    this.need();
+    if (delta.length !== 3 || !delta.every(Number.isFinite) || Math.hypot(...delta) > 100)
+      throw new Error('Invalid velocity delta');
+    if (this.falling || this.riding) return;
+    const ball = this.ball as RigidBody;
+    const v = ball.linvel();
+    const next = { x: v.x + delta[0], y: v.y + delta[1], z: v.z + delta[2] };
+    if (Math.hypot(next.x, next.y, next.z) > 150) throw new Error('Velocity exceeds safety bound');
+    ball.setLinvel(next, true);
+  }
+
   getBallState(): BallState {
     const ball = this.ball as RigidBody;
     this.need();

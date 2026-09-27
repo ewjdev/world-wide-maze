@@ -91,6 +91,7 @@ Education is an additive product track authorized September 26, 2026. [Phase 20]
 | 12 | [phase-12-launch.md](phase-12-launch.md) | Perf and device matrix, load and abuse testing, deploy, observability | 08, 09, 10 | 4 |
 | 21 | [phase-21-url-catalog-and-content-review.md](phase-21-url-catalog-and-content-review.md) | Durable URL catalog, approved-run reuse, content review, and operator controls (proposal) | 07, 10, 14 | pending policy decisions |
 | 24 | [phase-24-race-mode.md](phase-24-race-mode.md) | Race as a third gameplay mode: three authored courses, local personal ghosts, Race route builder; straight-course preview implemented, human/device gates open, curves deferred | 03, 04, 05, 06, 08, 09, 10 | local review |
+| 25 | [phase-25-race-jumps.md](phase-25-race-jumps.md) | Island Leap: automatic ramp launches, earned turbo, safe/near/far routes and deterministic stunt ghosts | 24 | local review |
 
 ### Execution waves
 ```

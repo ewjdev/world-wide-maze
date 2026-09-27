@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.3`** (Race additive controller CCR, 2026-09-26). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.4`** (Race stunt controller CCR, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -483,3 +483,14 @@ The lead accepted the controller CCR: `StateMessage.race?: RaceState` and two ad
 Race course/attempt/input schemas live in `@wwm/race`; see its README for exact bounded buffers and compatibility. Course gates are world metres, with unit horizontal forward normals. Input samples retain the shared format. Tick zero is the loaded pose; sample index zero produces completed tick one. `LockstepDriver.advance` accepts an optional post-step observer: sample input, capture current pre-step pose (after a queued recovery), step physics, increment tick, dispatch events, observe Race gates. Returning true halts catch-up immediately. Replay uses this same Race reducer independently of Original goal events. Recoveries apply before their recorded tick; teleports never become gate sweeps.
 
 Retries reload the cached stage into a fresh Rapier world. The shared load path now resets grounded/jump-edge history to match a newly created simulation; normal fresh-run physics parameters and version remain unchanged. Race itself owns pause/eligibility, finish, local history and ghosts, and never submits Original scores or Education progress. StageData, straight-ramp physics and standard engine rendering contracts remain unchanged; curved-ramp schema work is deferred.
+
+
+### Phase 25 Race stunt contract (implemented experiment)
+
+Lead-approved additive CCR: `CapabilitiesMessage.stuntVersion?:1`, `{t:'race-turbo'}` and optional `RaceState.boost` with `ready`, `chargeTicks`, `chargeRequired`, `turboTicks`. A stunt host requires both Race and stunt capability plus calibration before GO; old-course hosts retain Race-v1 support. Phone presses queue a request consumed once at a host physics tick, and source changes, pause, recovery and disconnect discard pending requests. Host mechanics remain authoritative; no client-supplied velocity or charge is trusted.
+
+The optional `RaceCourse.stunts` contract and `RaceInputSample.turbo` live in `@wwm/race`. Stunt course IDs include resolved tuning, geometry, gates and captured texture identity. Stunt recordings use `wwm.race-input/2`, retaining three exact float64 values and one byte (POWER bit0, JUMP bit1, TURBO bit2). Old courses continue to write v1 and use rules v1. Stunt compatibility uses rules v2; no old ghost is silently remapped.
+
+`createRaceSimulation(course)` wraps the ordinary simulation for both play and replay. It handles three-second forward speed charging, one banked turbo, designated launch crossings and validated first landings. Turbo is applied before a step; launch and landing velocity deltas are applied after the physical step and returned in that step's ball state. Positions are never teleported by a boost. Ordered shared gates are evaluated on the same physical segment in live play and replay; optional islands are not mandatory gates.
+
+`RapierSimulation.applyVelocityDelta` is an additive local API with finite bounded velocity changes, preserving rotation and contact/fall history. No standard physics parameters, step ordering or ordinary colliders changed, so the shared PHYSICS_VERSION is retained; stunt mechanics are versioned separately. Recovery clears charge and flight provenance while retaining consumed launch IDs and progress high-water marks. New runs reset all stunt state. Authored ramps use valid existing straight geometry; the upward launch assist is explicitly a Race mechanic, not a claim of purely passive ramp ballistics.

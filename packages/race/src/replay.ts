@@ -1,7 +1,7 @@
-import { createSimulation } from '@wwm/physics';
 import { compatible, makeCompatibility, validateAttempt } from './attempt.ts';
 import { advanceProgress, createProgress, markPractice, validateGates } from './progress.ts';
 import { inputAt } from './recording.ts';
+import { createRaceSimulation } from './simulation.ts';
 import type { RaceAttempt, RaceCourse, RaceGhostTrack } from './types.ts';
 
 export const MAX_POSE_BYTES = 8 * 1024 * 1024;
@@ -11,7 +11,10 @@ export async function replayRace(
   attempt: RaceAttempt,
   options: { signal?: AbortSignal } = {},
 ): Promise<RaceGhostTrack> {
-  if (!validateAttempt(attempt) || !compatible(attempt.compatibility, makeCompatibility(course.courseId)))
+  if (
+    !validateAttempt(attempt) ||
+    !compatible(attempt.compatibility, makeCompatibility(course.courseId, !!course.stunts))
+  )
     throw new Error('Incompatible or malformed Race attempt');
   const gateErrors = validateGates(course.gates);
   if (gateErrors.length) throw new Error(gateErrors.join('; '));
@@ -20,7 +23,7 @@ export async function replayRace(
   const pos = new Float32Array(count * 3);
   const quat = new Float32Array(count * 4);
   const discontinuities = new Uint8Array(count);
-  const sim = await createSimulation();
+  const sim = await createRaceSimulation(course);
   try {
     await sim.load(course.stage);
     let previous = sim.getBallState();

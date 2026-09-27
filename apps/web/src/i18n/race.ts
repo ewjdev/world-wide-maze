@@ -1,4 +1,16 @@
 export const raceEn = {
+  stuntReady: 'Choose your landing',
+  stuntHint:
+    'Take the safe ramps or launch across the islands. Hold a fast, clean line for 3 seconds to earn turbo. Press T or tap Turbo to spend it. Ramp launches are automatic; clean island landings give a small boost.',
+  stuntControls: 'Arrows / WASD to roll · T for turbo · Space to jump · R to retry',
+  turbo: 'Turbo',
+  turboReady: 'Turbo ready',
+  turboCharging: 'Build speed to charge',
+  turboActive: 'Turbo active',
+  cleanLanding: 'Clean landing',
+  launched: 'Airborne',
+  launchCount: 'Launches',
+  landingCount: 'Clean landings',
   title: 'Race your own shadow.',
   intro: 'Learn the turns. Find your line. Come back a little faster.',
   original: 'Original',
@@ -71,6 +83,18 @@ export const raceEn = {
   bestGhost: 'Best / latest run',
 };
 export const raceJa: Record<keyof typeof raceEn, string> = {
+  stuntReady: '着地点を選ぼう',
+  stuntHint:
+    '安全なスロープを進むか、島を飛び越えよう。速く滑らかな走りを3秒続けるとターボがたまります。Tキーまたはターボボタンで使用。ランプでは自動でジャンプし、きれいな着地で小さく加速します。',
+  stuntControls: '矢印 / WASDで移動 · Tでターボ · Spaceでジャンプ · Rで再挑戦',
+  turbo: 'ターボ',
+  turboReady: 'ターボ準備完了',
+  turboCharging: 'スピードを上げてチャージ',
+  turboActive: 'ターボ発動中',
+  cleanLanding: 'きれいな着地',
+  launched: 'ジャンプ中',
+  launchCount: 'ランプジャンプ',
+  landingCount: 'きれいな着地',
   title: '自分の影とレース。',
   intro: 'カーブを覚え、走るラインを見つけ、少しずつ速く。',
   original: 'オリジナル',

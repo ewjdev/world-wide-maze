@@ -21,6 +21,7 @@ export interface RaceControllerView {
 export interface RaceControllerOptions {
   origin: string;
   frameYaw?: () => number;
+  requiresStunts?: boolean;
   onMenu?: () => void;
   onDisconnect?: () => void;
 }
@@ -46,6 +47,8 @@ export class RaceControllerHost {
   #capabilityTimer: ReturnType<typeof setTimeout> | null = null;
   #stateTimer: ReturnType<typeof setInterval>;
   #disposed = false;
+  #stuntSupported = false;
+  #turboRequested = false;
 
   static async create(opts: RaceControllerOptions): Promise<RaceControllerHost> {
     const room = await openHostRoom(opts.origin);
@@ -75,7 +78,24 @@ export class RaceControllerHost {
       room.conn.on('message', (m) => {
         if (m.t === 'capabilities' && m.raceVersion === 1 && this.#view.controllerConnected) {
           this.#clearCapabilityTimer();
-          this.#patch({ raceSupport: 'supported', error: null });
+          this.#stuntSupported = m.stuntVersion === 1;
+          const supported = !opts.requiresStunts || this.#stuntSupported;
+          this.#patch({
+            raceSupport: supported ? 'supported' : 'unsupported',
+            error: supported
+              ? null
+              : 'Refresh the phone controller to enable jump-course turbo, or use desktop controls.',
+          });
+        } else if (m.t === 'race-turbo') {
+          if (
+            this.canStart &&
+            this.#stuntSupported &&
+            this.#race?.phase === 'racing' &&
+            this.#race.boost?.ready &&
+            !this.#turboRequested
+          ) {
+            this.#turboRequested = true;
+          }
         } else if (m.t === 'calibrated' && this.#view.controllerConnected) {
           this.#patch({ calibrated: true });
         }
@@ -86,6 +106,8 @@ export class RaceControllerHost {
       }),
       this.#source.on('disconnected', () => {
         this.#clearCapabilityTimer();
+        this.#stuntSupported = false;
+        this.#clearTurbo();
         this.#patch({ controllerConnected: false, calibrated: false, raceSupport: 'pending' });
         opts.onDisconnect?.();
       }),
@@ -124,6 +146,23 @@ export class RaceControllerHost {
   /** Coalesce host updates: never send more than four STATE messages per second. */
   sendState(race: RaceState): void {
     this.#race = race;
+    if (race.phase !== 'racing' || !race.boost?.ready) this.#clearTurbo();
+  }
+
+  /** Consume once at the physics input boundary, never while polling render frames. */
+  takeTurboRequest(): boolean {
+    const requested = this.#turboRequested && this.canStart && this.#race?.phase === 'racing';
+    this.#turboRequested = false;
+    return requested;
+  }
+
+  /** Discard queued control on input-source changes or recovery. */
+  discardTurboRequest(): void {
+    this.#clearTurbo();
+  }
+
+  #clearTurbo(): void {
+    this.#turboRequested = false;
   }
 
   #flushState(): void {
@@ -137,10 +176,12 @@ export class RaceControllerHost {
 
   #negotiate(): void {
     this.#clearCapabilityTimer();
+    this.#stuntSupported = false;
+    this.#clearTurbo();
     this.#patch({ raceSupport: 'pending' });
     this.#conn.send({ t: 'capabilities-request' });
     // A synchronous test transport can answer during send().
-    if (this.#view.raceSupport === 'supported') return;
+    if (this.#view.raceSupport !== 'pending') return;
     this.#capabilityTimer = setTimeout(() => {
       this.#capabilityTimer = null;
       this.#patch({

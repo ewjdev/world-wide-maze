@@ -1,5 +1,4 @@
-import type { InputSample } from '@wwm/schema';
-import type { RaceRecording, RaceRecovery } from './types.ts';
+import type { RaceInputSample, RaceRecording, RaceRecovery } from './types.ts';
 
 export const RACE_INPUT_BYTES = 25;
 export const MAX_RECORDING_TICKS = 72_000;
@@ -14,7 +13,11 @@ export class RaceRecorder {
   private count = 0;
   private capped = false;
   private recoveryEvents: RaceRecovery[] = [];
-  constructor(private limits = { ticks: MAX_RECORDING_TICKS, bytes: MAX_RECORDING_BYTES }) {
+  private limits: { ticks: number; bytes: number };
+  private stunts: boolean;
+  constructor(limits = { ticks: MAX_RECORDING_TICKS, bytes: MAX_RECORDING_BYTES }, stunts = false) {
+    this.limits = limits;
+    this.stunts = stunts;
     if (
       !Number.isInteger(limits.ticks) ||
       limits.ticks < 0 ||
@@ -38,7 +41,7 @@ export class RaceRecorder {
       events <= MAX_RECOVERIES
     );
   }
-  record(input: InputSample): boolean {
+  record(input: RaceInputSample): boolean {
     if (this.capped) return false;
     if (!this.fits(this.count + 1, this.recoveryEvents.length)) {
       this.capped = true;
@@ -56,7 +59,7 @@ export class RaceRecorder {
     view.setFloat64(0, input.tiltX, true);
     view.setFloat64(8, input.tiltZ, true);
     view.setFloat64(16, input.frameYaw, true);
-    view.setUint8(24, Number(input.power) | (Number(input.jump) << 1));
+    view.setUint8(24, Number(input.power) | (Number(input.jump) << 1) | (this.stunts && input.turbo ? 4 : 0));
     this.count++;
     return true;
   }
@@ -83,7 +86,7 @@ export class RaceRecorder {
       offset += length;
     }
     return {
-      format: 'wwm.race-input/1',
+      format: this.stunts ? 'wwm.race-input/2' : 'wwm.race-input/1',
       data: bytes.buffer,
       ticks: this.count,
       truncated: this.capped,
@@ -93,7 +96,7 @@ export class RaceRecorder {
     };
   }
 }
-export function inputAt(recording: RaceRecording, index: number): InputSample {
+export function inputAt(recording: RaceRecording, index: number): RaceInputSample {
   if (!Number.isInteger(index) || index < 0 || index >= recording.ticks)
     throw new Error('Input index out of bounds');
   const v = new DataView(recording.data, index * RACE_INPUT_BYTES, RACE_INPUT_BYTES);
@@ -104,13 +107,14 @@ export function inputAt(recording: RaceRecording, index: number): InputSample {
     frameYaw: v.getFloat64(16, true),
     power: !!(flags & 1),
     jump: !!(flags & 2),
+    ...(recording.format === 'wwm.race-input/2' ? { turbo: !!(flags & 4) } : {}),
   };
 }
 export function validateRecording(value: unknown): value is RaceRecording {
   if (!value || typeof value !== 'object') return false;
   const r = value as RaceRecording;
   if (
-    r.format !== 'wwm.race-input/1' ||
+    !['wwm.race-input/1', 'wwm.race-input/2'].includes(r.format) ||
     !(r.data instanceof ArrayBuffer) ||
     !Number.isInteger(r.ticks) ||
     r.ticks < 0 ||
@@ -141,7 +145,7 @@ export function validateRecording(value: unknown): value is RaceRecording {
     const input = inputAt(r, i);
     if (
       ![input.tiltX, input.tiltZ, input.frameYaw].every(Number.isFinite) ||
-      new DataView(r.data).getUint8(i * RACE_INPUT_BYTES + 24) > 3
+      new DataView(r.data).getUint8(i * RACE_INPUT_BYTES + 24) > (r.format === 'wwm.race-input/2' ? 7 : 3)
     )
       return false;
   }

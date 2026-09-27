@@ -347,6 +347,7 @@ export interface RaceState {
   totalSectors: number;
   practice: boolean;
   splitDeltaTicks?: number;
+  boost?: { ready: boolean; chargeTicks: number; chargeRequired: number; turboTicks: number };
 }
 export interface CapabilityRequestMessage {
   t: 'capabilities-request';
@@ -354,6 +355,10 @@ export interface CapabilityRequestMessage {
 export interface CapabilitiesMessage {
   t: 'capabilities';
   raceVersion: 1;
+  stuntVersion?: 1;
+}
+export interface RaceTurboMessage {
+  t: 'race-turbo';
 }
 export interface HapticMessage {
   t: 'haptic';
@@ -390,6 +395,7 @@ export interface PongMessage {
 export type ControlMessage =
   | CapabilityRequestMessage
   | CapabilitiesMessage
+  | RaceTurboMessage
   | PeerMessage
   | StateMessage
   | HapticMessage

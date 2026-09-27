@@ -1,4 +1,4 @@
-import { type RaceCourse, validateGates } from '@wwm/race';
+import { type RaceCourse, validateGates, validateStunts } from '@wwm/race';
 import { parseStage, validateStage } from '@wwm/schema';
 
 export interface RaceCourseSummary {
@@ -40,6 +40,15 @@ export const RACE_COURSES: readonly RaceCourseSummary[] = [
     previewUrl: '/race/longline/texture.png',
     courseUrl: '/race/longline/course.json',
   },
+  {
+    slug: 'island-leap',
+    courseId: '1aeacba92c35250d3e547a9d86af8e300b26bcb8e218cd6cda94baaeef47a690',
+    title: 'Island Leap',
+    description: 'Earn turbo, launch from the ramp, and clear an island. A safe route stays open.',
+    islands: 6,
+    previewUrl: '/race/island-leap/texture.png',
+    courseUrl: '/race/island-leap/course.json',
+  },
 ];
 
 export async function loadRaceCourse(slugOrId: string, signal?: AbortSignal): Promise<RaceCourse> {
@@ -55,7 +64,7 @@ export async function loadRaceCourse(slugOrId: string, signal?: AbortSignal): Pr
   )
     throw new Error('Course identity does not match its frozen release');
   course.stage = parseStage(course.stage);
-  if (!validateStage(course.stage).ok || validateGates(course.gates).length)
+  if (!validateStage(course.stage).ok || validateGates(course.gates).length || validateStunts(course).length)
     throw new Error('Course geometry failed validation');
   if (course.stage.elevators.length || course.stage.items.length || course.stage.portals?.length)
     throw new Error('Course contains unsupported Race objects');

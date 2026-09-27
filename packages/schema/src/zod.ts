@@ -238,6 +238,14 @@ export const RaceStateSchema = z.object({
   totalSectors: z.number().int().nonnegative(),
   practice: z.boolean(),
   splitDeltaTicks: z.number().int().optional(),
+  boost: z
+    .object({
+      ready: z.boolean(),
+      chargeTicks: z.number().int().nonnegative(),
+      chargeRequired: z.number().int().positive(),
+      turboTicks: z.number().int().nonnegative(),
+    })
+    .optional(),
 });
 
 export const ControlMessageSchema = z.discriminatedUnion('t', [
@@ -251,7 +259,12 @@ export const ControlMessageSchema = z.discriminatedUnion('t', [
     race: RaceStateSchema.optional(),
   }),
   z.object({ t: z.literal('capabilities-request') }),
-  z.object({ t: z.literal('capabilities'), raceVersion: z.literal(1) }),
+  z.object({
+    t: z.literal('capabilities'),
+    raceVersion: z.literal(1),
+    stuntVersion: z.literal(1).optional(),
+  }),
+  z.object({ t: z.literal('race-turbo') }),
   z.object({ t: z.literal('haptic'), pattern: HapticPatternSchema }),
   z.object({ t: z.literal('pos'), x: finite, y: finite, heading: finite }),
   z.object({ t: z.literal('text'), field: z.enum(['url', 'name']), value: z.string().max(2048) }),
