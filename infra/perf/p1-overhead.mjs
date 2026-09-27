@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { verifyServedBuild } from './p1-build.mjs';
 import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
@@ -11,6 +12,7 @@ const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const out = resolve(process.env.AUDIT_OUT ?? 'docs/launch/evidence/performance-p1-staging');
 mkdirSync(out, { recursive: true });
 const headless = !!process.env.CI || process.env.AUDIT_HEADLESS === '1';
+const servedBuild = await verifyServedBuild(base);
 const browser = await chromium.launch({
   headless,
   args:
@@ -19,6 +21,7 @@ const browser = await chromium.launch({
 const report = {
   date: new Date().toISOString(),
   runtimeFingerprint: runtimeFingerprint(),
+  servedBuild,
   base,
   browser: browser.version(),
   headless,

@@ -8,12 +8,17 @@ const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 const state = (run) => run?.after?.game?.state;
 const memory = (run) => run?.after?.game?.rendererMemory;
 const backend = (run) => state(run)?.engine?.backend;
+const sameViewport = (a, b) =>
+  a?.width === b?.width &&
+  a?.height === b?.height &&
+  (a?.deviceScaleFactor ?? 1) === (b?.deviceScaleFactor ?? 1);
 const key = (run) =>
   JSON.stringify(run.spec ?? { quality: run.quality, throttle: run.throttle, name: run.name });
 
 const gpuIdentity = (report) => {
   const gpu = report.system?.gpu;
-  if (!gpu) return null;
+  if (!gpu || !Array.isArray(gpu.devices) || gpu.devices.length === 0 || !gpu.auxAttributes?.glRenderer)
+    return null;
   return JSON.stringify({
     devices: gpu.devices,
     renderer: gpu.auxAttributes?.glRenderer,
@@ -38,7 +43,8 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
       a.browser === b.browser &&
       a.headless === b.headless &&
       gpuIdentity(a) !== null &&
-      gpuIdentity(a) === gpuIdentity(b);
+      gpuIdentity(a) === gpuIdentity(b) &&
+      sameViewport(a.viewport ?? { width: 1440, height: 900 }, b.viewport);
     if (!b.runtimeFingerprint?.sha256)
       add(`source:${mode}`, 'missing', { message: 'Candidate runtime content fingerprint required.' });
     else if (currentFingerprint && b.runtimeFingerprint.sha256 !== currentFingerprint.sha256)
@@ -51,6 +57,15 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
       add(`source:${mode}`, 'pass', {
         measured: b.runtimeFingerprint,
         checkedAgainstCurrentTree: !!currentFingerprint,
+      });
+    if (
+      b.servedBuild?.verified !== true ||
+      b.servedBuild?.runtimeFingerprint?.sha256 !== b.runtimeFingerprint?.sha256 ||
+      !b.servedBuild?.manifestSHA256 ||
+      !b.servedBuild?.assets?.length
+    )
+      add(`served-build:${mode}`, 'missing', {
+        message: 'Native evidence requires a source-bound build manifest and verified served asset hashes.',
       });
     add(`environment:${mode}`, sameHost ? 'pass' : 'review', {
       baseline: {
@@ -80,9 +95,25 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
     for (const old of a.runs ?? []) {
       if (old.error || old.errors?.length || !finite(old.frame?.p95)) continue;
       const run = b.runs?.find((r) => key(r) === key(old));
-      if (!run || !finite(run.frame?.p95) || !finite(run.frame?.n) || run.frame.n < 1 || !backend(run))
+      if (
+        !run ||
+        !finite(run.frame?.p95) ||
+        run.frame.p95 <= 0 ||
+        !finite(run.frame?.mean) ||
+        run.frame.mean <= 0 ||
+        !finite(run.frame?.n) ||
+        run.frame.n < 30 ||
+        !finite(run.fps) ||
+        run.fps <= 0 ||
+        !finite(run.elapsedMs) ||
+        run.elapsedMs < old.elapsedMs * 0.8 ||
+        run.frame.n * run.frame.mean < run.elapsedMs * 0.8 ||
+        run.frame.n * run.frame.mean > run.elapsedMs * 1.2 ||
+        !backend(run)
+      )
         add(`scenario:${mode}:${key(old)}`, 'missing', {
-          message: 'Successful baseline scenario requires valid candidate frame samples and backend.',
+          message:
+            'Successful baseline scenario requires positive frame metrics, at least 30 samples covering the measurement window, at least 80% of baseline duration, and backend metadata.',
         });
     }
     if (mode === 'frames' && !(a.runs ?? []).some((r) => finite(r.frame?.p95) && !r.error))
@@ -182,10 +213,10 @@ export function compareEvidence(baseline, candidate, currentFingerprint) {
       });
     else {
       const knownBound =
-        baselineBytesPerRetry > 0 && baselineBytesPerRetry <= 44800 + 256 && baselineAttributesPerRetry <= 2;
+        baselineBytesPerRetry > 0 && baselineBytesPerRetry <= 44800 && baselineAttributesPerRetry <= 2;
       const worse =
-        bytesPerRetry > Math.max(0, baselineBytesPerRetry) + 256 ||
-        attributesPerRetry > Math.max(0, baselineAttributesPerRetry) + 0.01;
+        bytesPerRetry > Math.max(0, baselineBytesPerRetry) ||
+        attributesPerRetry > Math.max(0, baselineAttributesPerRetry);
       const growth = bytesPerRetry > 0 || attributesPerRetry > 0;
       add(
         'memory:retry-attributes',

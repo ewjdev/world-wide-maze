@@ -16,6 +16,18 @@ export function runtimeFingerprint(root = fileURLToPath(new URL('../../', import
       '--exclude-standard',
       '--',
       'apps/web/src',
+      'apps/web/index.html',
+      'apps/web/.env.production',
+      'apps/web/public',
+      'tools/jev-runtime/src',
+      'apps/web/tsconfig.json',
+      'pnpm-workspace.yaml',
+      'infra/cloudflare.config.json',
+      'apps/extension/src',
+      'apps/extension/scripts',
+      'apps/extension/static',
+      'apps/extension/package.json',
+      'apps/extension/tsconfig.json',
       'packages',
       'fixtures',
       'pnpm-lock.yaml',
@@ -41,5 +53,5 @@ export function runtimeFingerprint(root = fileURLToPath(new URL('../../', import
     hash.update(readFileSync(resolve(root, path)));
     hash.update('\0');
   }
-  return { version: 1, algorithm: 'sha256', sha256: hash.digest('hex'), files: new Set(paths).size };
+  return { version: 2, algorithm: 'sha256', sha256: hash.digest('hex'), files: new Set(paths).size };
 }
