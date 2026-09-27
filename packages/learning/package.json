@@ -5,10 +5,12 @@
   "type": "module",
   "description": "Game-independent learning documents, baseline activities, and reviewed family forks.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./scene.css": "./src/scene.css"
   },
   "scripts": {
-    "typecheck": "tsc -p tsconfig.json"
+    "typecheck": "tsc -p tsconfig.json",
+    "scene-css": "node scripts/scene-css.ts"
   },
   "dependencies": {
     "zod": "^4.6.5"

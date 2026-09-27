@@ -16,6 +16,7 @@
  * keys, the scene shows its key badges (`show-keys`); an answer through an input the round didn't invite gets a
  * gentle nudge (twice, then it's accepted) and the badges flash.
  */
+import '@wwm/learning/scene.css';
 import {
   type Cue,
   type InputMode,

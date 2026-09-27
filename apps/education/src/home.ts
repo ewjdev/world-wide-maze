@@ -1,5 +1,6 @@
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
+import '@wwm/learning/scene.css';
 import './style.css';
 import {
   applyDraft,

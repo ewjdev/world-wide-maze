@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
   type Activity,
@@ -40,6 +41,7 @@ import {
   resolveLevel,
   resolveLocks,
   roundScript,
+  SCENE_CSS,
   sceneLayout,
   sceneSvg,
   skyIslands,
@@ -195,6 +197,13 @@ describe('theme data is declarative and safe', () => {
       built: 2,
     });
     expect(svg).not.toMatch(/<script|href=|url\(|on[a-z]+=/i);
+    // CSP-safe: no <style> element and no style attribute (a strict style-src would block both)
+    expect(svg).not.toMatch(/<style|\sstyle=/i);
+    const file = readFileSync(new URL('../src/scene.css', import.meta.url), 'utf8');
+    expect(
+      file.trim(),
+      'scene.css is generated from SCENE_CSS: run `pnpm --filter @wwm/learning scene-css`',
+    ).toBe(SCENE_CSS);
     expect(svg.match(/data-gem="a-/g)).toHaveLength(2);
     expect(svg.match(/data-gem="b-/g)).toHaveLength(4);
     expect(svg.match(/data-pair=/g)).toHaveLength(2);

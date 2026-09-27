@@ -283,24 +283,30 @@ function tokenRow(theme: Theme, tokens: Token[], box: Box, maxSize: number): str
     .join('');
 }
 
-const STYLE = `.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-serif}
+/**
+ * The scene's stylesheet. It ships as a real file (`@wwm/learning/scene.css`, kept identical by a test) because a
+ * strict Content Security Policy (`style-src 'self'`, as the WWM game serves) blocks `<style>` inside injected SVG
+ * and inline `style` attributes. The scene itself uses only presentation attributes. The focus colour comes from
+ * the svg's `color` attribute (`currentColor`).
+ */
+export const SCENE_CSS = `.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-serif}
 .wwm-scene .gem,.wwm-scene .pip,.wwm-scene .mark{transform-box:fill-box;transform-origin:center}
 .wwm-scene .gem{transition:transform .22s ease}
 .wwm-scene .gem.is-lit{transform:scale(1.28)}
 .wwm-scene .ring{opacity:0;transition:opacity .2s}
 .wwm-scene .gem.is-lit .ring,.wwm-scene .gem.is-leftover .ring{opacity:1}
 .wwm-scene .gem.is-leftover{animation:wwm-bob 1s ease-in-out infinite}
-.wwm-scene .pair{opacity:0;stroke-dasharray:var(--len);stroke-dashoffset:var(--len);transition:stroke-dashoffset .35s ease,opacity .1s}
+.wwm-scene .pair{opacity:0;transition:stroke-dashoffset .35s ease,opacity .1s}
 .wwm-scene .pair.is-shown{opacity:1;stroke-dashoffset:0}
 .wwm-scene .mark .halo{opacity:0;transition:opacity .2s}
 .wwm-scene .mark.is-correct .halo,.wwm-scene .mark.is-retry .halo,.wwm-scene .mark.is-glow .halo,.wwm-scene .mark.is-focus .halo{opacity:1}
 .wwm-scene .mark.is-retry .halo{stroke-dasharray:14 10}
-.wwm-scene .mark.is-focus:not(.is-correct):not(.is-retry):not(.is-glow) .halo{stroke:var(--wwm-focus);stroke-dasharray:2 16;stroke-width:12}
+.wwm-scene .mark.is-focus:not(.is-correct):not(.is-retry):not(.is-glow) .halo{stroke:currentColor;stroke-dasharray:2 16;stroke-width:12}
 .wwm-scene .mark.is-glow .halo{animation:wwm-glow 1s ease-in-out infinite}
 .wwm-scene .mark.is-pulse{animation:wwm-pulse .7s ease-in-out 2}
 .wwm-scene .mark.is-correct .check{opacity:1}
 .wwm-scene .check{opacity:0;transition:opacity .2s}
-.wwm-scene .mark.is-callout .halo{opacity:1;stroke:var(--wwm-focus);stroke-dasharray:none}
+.wwm-scene .mark.is-callout .halo{opacity:1;stroke:currentColor;stroke-dasharray:none}
 .wwm-scene .mark.is-callout{animation:wwm-pulse .45s ease-in-out 1}
 .wwm-scene .key-badge{opacity:0;transition:opacity .2s,transform .2s;transform-box:fill-box;transform-origin:center}
 .wwm-scene.show-keys .key-badge{opacity:1}
@@ -331,8 +337,7 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
   const { width, height } = layout;
   const out: string[] = [];
   out.push(
-    `<svg class="wwm-scene" viewBox="0 0 ${width} ${height}" width="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg"><style>${STYLE}</style>`,
-    `<style>.wwm-scene{--wwm-focus:${p.ballSeam}}</style>`,
+    `<svg class="wwm-scene" viewBox="0 0 ${width} ${height}" width="100%" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false" color="${p.ballSeam}" xmlns="http://www.w3.org/2000/svg">`,
   );
   out.push(`<rect width="${width}" height="${height}" rx="28" fill="${p.sky}"/>`);
   // scenery stays faint and still
@@ -378,7 +383,7 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
         const [x2, y2] = b.points[ib] as [number, number];
         const len = Math.hypot(x2 - x1, y2 - y1);
         out.push(
-          `<line class="pair" data-pair="${k}" x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="${p.glow}" stroke-width="8" stroke-linecap="round" style="--len:${n(len)}"/>`,
+          `<line class="pair" data-pair="${k}" x1="${n(x1)}" y1="${n(y1)}" x2="${n(x2)}" y2="${n(y2)}" stroke="${p.glow}" stroke-width="8" stroke-linecap="round" stroke-dasharray="${n(len)}" stroke-dashoffset="${n(len)}"/>`,
         );
       });
     }

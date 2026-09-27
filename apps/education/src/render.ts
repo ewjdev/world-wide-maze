@@ -18,6 +18,7 @@ import {
   type Round,
   requiredRounds,
   resolveLevel,
+  SCENE_CSS,
   sceneLayout,
   sceneSvg,
   spriteMarkup,
@@ -454,5 +455,5 @@ export function portablePage(path: LearningPath, acceptedAt?: string): string {
     ? 'Answering: tapping only (a grown-up setting).'
     : 'Answering: as each round invites (tapping, a key or tilting). A tap is always accepted after two gentle reminders.';
   const settings = `<section class="game-settings"><h2>Game settings</h2><p class="meta">How each activity plays in a compatible game. ${chosen}</p><ul>${levels}</ul><p>${escapeHtml(answering)}</p></section>`;
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(path.title)}</title><style>${style}</style></head><body>${header}${settings}${articles}${learningScript(path)}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(path.title)}</title><style>${style}${SCENE_CSS}</style></head><body>${header}${settings}${articles}${learningScript(path)}</body></html>`;
 }
