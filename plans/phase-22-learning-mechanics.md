@@ -17,12 +17,13 @@ Make the maze the lesson. A learning page declares **how progress works**: which
 | E2 | Who picks difficulty | **The grown-up in the parent area**; the **lesson author's default** applies until they do |
 | E3 | Locks | **Visible locked bridges (and elevators) are a must-have**, with an indication at the bridge that another task must come first |
 | E4 | Architecture | Mechanics live in the **learning API**. The learning HTML declares the semantics; the maze logic follows them |
+| E5 | Lock configuration | **Locking is configurable per level, as part of the lesson.** Each level carries its own `locks` block: what can lock, what waits, how it's signalled, and whether a grown-up may override. Individual steps can override the level's lock rule |
 
 ## Principles
-1. **Declare intent, not geometry.** A lesson never names a bridge; it can't know which website becomes its maze. It declares ordered **steps** (rounds, missions) and a **gating** rule. The game binds those to the stage's island graph at load time.
-2. **Explicit capability.** A game declares the mechanics it supports (`supports: ['gates.block', 'mission.collect', …]`). A level that requires something unsupported is not offered, the same fail-closed rule as round kinds today.
+1. **Declare intent, not geometry.** A lesson never names a bridge; it can't know which website becomes its maze. It declares ordered **steps** (rounds, missions) and, per level, a **lock configuration** (E5). The game binds those to the stage's island graph at load time.
+2. **Explicit capability.** A game declares the mechanics it supports (`supports: ['locks.goal', 'locks.path.bridge', 'locks.path.elevator', 'mission.collect', …]`). A level whose lock configuration or steps require something unsupported is not offered, the same fail-closed rule as round kinds today.
 3. **A lock is never a punishment.** Wrong answers cost nothing: no lives, no score, and the timer stays paused at gates. The hint ladder always ends in a worked example. Steering skill is not a learning signal.
-4. **Grown-ups choose.** The level is a grown-up setting (parent area, or the game's loader strip behind a grown-ups control). The child never has a "skip" in gated levels; a **grown-up override** can open a lock.
+4. **Grown-ups choose.** The level is a grown-up setting (parent area, or the game's loader strip behind a grown-ups control). The child never has a "skip" on a locked step; a **grown-up override** can open a lock when the level's configuration allows it.
 5. **Learning runs are unranked.** Locks change physics, so these runs can't be verified by the server replay (`apps/worker/src/routes/scores.ts:77`). They never submit scores or ghosts, and the result screen says "Learning run".
 
 ## Design
@@ -62,50 +63,98 @@ Make the maze the lesson. A learning page declares **how progress works**: which
   - bonus r5 `tap`, r5b `number-key`
 - **Grown-up accessibility setting:** "Answer by tapping only" disables the variety for children who need it.
 
-### 3. Levels, steps, and gating (E2, E3, E4): `play` in `wwm-learning/0.3`
+### 3. Levels, steps, and per-level lock configuration (E2, E3, E4, E5): `play` in `wwm-learning/0.3`
+Each level is a self-contained recipe: which steps, in what order, and **how that level locks**. The lesson author writes it, the grown-up picks one, and the game obeys it.
+
 ```jsonc
 "play": {
   "defaultLevel": "gated",                       // the lesson author's default (E2)
   "shuffle": "positions",
   "input": { "default": ["tap", "arrows", "tilt"] },
   "levels": [
-    { "id": "explore", "gating": "none",      "steps": "rounds" },
-    { "id": "gated",   "gating": "lock-path", "steps": "rounds" },
-    { "id": "mission", "gating": "lock-path",
-      "steps": [ { "round": "r1" }, { "round": "r2" },
-                 { "mission": "collect", "count": 4 },
-                 { "round": "r3" }, { "round": "r3b" },
-                 { "mission": "reach", "island": "most-gems" },
-                 { "round": "r4" } ] }
+    { "id": "explore", "label": "Explore",
+      "steps": "rounds",
+      "locks": { "mode": "none" } },
+
+    { "id": "goal-only", "label": "Answer before the finish",
+      "steps": "rounds",
+      "locks": { "mode": "goal" } },
+
+    { "id": "gated", "label": "Gated",
+      "steps": "rounds",
+      "locks": {
+        "mode": "path",                          // none | goal | path
+        "connectors": ["bridge", "elevator"],    // what may be locked on the way
+        "goal": true,                            // the finish also waits for every locking step
+        "signals": { "banner": true, "voice": true, "beacon": true, "mapPadlocks": true },
+        "override": "grown-up"                   // grown-up | none
+      } },
+
+    { "id": "mission", "label": "Missions",
+      "steps": [
+        { "round": "r1" },
+        { "round": "r2", "lock": "none" },       // a warm-up that doesn't block anything
+        { "mission": "collect", "count": 4 },
+        { "round": "r3" },
+        { "mission": "reach", "island": "most-gems", "lock": "goal" },  // counts only for the finish
+        { "round": "r4" }
+      ],
+      "locks": { "mode": "path", "connectors": ["bridge"], "goal": true,
+                 "signals": { "banner": true, "voice": true, "beacon": false, "mapPadlocks": true },
+                 "override": "grown-up" } }
   ]
 }
 ```
-- **Level ids are standard** (`explore`, `gated`, `mission`), so the parent picker is one control for the whole path.
-- **Missing levels are generated.** An activity without `play` gets `explore`, plus `gated` (all required rounds).
-- **`steps: "rounds"`** means the required rounds in order. The conditional follow-up (r3b) and bonus rounds stay optional and never lock anything.
-- **Gating:**
-  - `none`: today's behaviour. Gates are optional, and the goal is always open.
-  - `lock-path`: each step locks the way forward until it is done, and the goal stays locked until every step is done.
+
+**Lock configuration (per level):**
+
+| Field | Values | Meaning |
+|---|---|---|
+| `mode` | `none` | Nothing locks. Gates and posts are optional stops (Phase 20 behaviour) |
+| | `goal` | Nothing on the way locks; the **finish** waits until every locking step is done |
+| | `path` | Each locking step closes the way forward until it's done (visible barriers, E3) |
+| `connectors` | subset of `bridge`, `elevator` | What `path` may lock. Bridges only suits young children, since lifts are harder to read as "closed". Required and non-empty when `mode` is `path` |
+| `goal` | boolean, default `true` for `goal` and `path` | Whether the finish also waits. `mode: goal` forces it true |
+| `signals` | `banner`, `voice`, `beacon`, `mapPadlocks` (booleans, all default `true`) | How a lock explains itself at the bridge. Authors of harder levels can turn off the beacon so the child has to find the gate |
+| `override` | `grown-up` (default) or `none` | Whether the press-and-hold grown-up control may open a lock in this level |
+
+**Per-step lock rule** (`lock` on a step overrides the level's default):
+
+| Value | Meaning |
+|---|---|
+| `path` | The default when the level is `path`: the step closes the way forward |
+| `goal` | The step doesn't block the way but must be done before the finish |
+| `none` | Optional: a stop along the way that blocks nothing |
+
+**Semantics:**
+- **Level ids** are author-chosen (`^[a-z][a-z0-9-]*$`), each with a `label`. The parent picker lists the levels of the lesson and describes each one from its configuration, for example: "Bridges stay locked until Pip's question is answered. The finish waits too. Grown-ups can open a lock."
+- **Missing play block:** the game generates `explore` (`mode: none`) and `gated` (`mode: path`, bridges and elevators, `goal: true`), with `gated` as the default.
+- **`steps: "rounds"`** means the required rounds in order, each with the level's default lock. The conditional follow-up (r3b) and bonus rounds are always `lock: none`: they appear when triggered or offered, and never block.
 - **Missions (v1):**
   - `collect { count: 1–10 }`: gems picked up after the mission starts count. Pip counts each pickup aloud ("One!", "Two!", …) and the HUD shows the progress in gem icons. This is counting by doing.
   - `reach { island: 'most-gems' | 'fewest-gems' | { letter: 'C' } }`: roll to that island. The maze labels its islands with letters. "Most gems" is comparison in 3D. The target is fixed when the mission starts; ties fall back to a letter target.
   - **If the stage can't satisfy a mission as written** (fewer reachable gems than `count`), the game lowers the count to what's available. The count lines are templated number words, so the voice still matches. The substitution is recorded in the debug state.
-- **Validation:**
-  - steps reference existing required rounds, in authored order;
+- **Validation (fail closed):**
+  - level ids are unique, and `defaultLevel` is one of them;
+  - steps reference existing rounds in authored order, and each required round appears at most once;
+  - `lock: 'path'` on a step requires the level's `mode` to be `path`; `lock: 'goal'` requires `goal` to be true;
+  - `connectors` is non-empty exactly when `mode` is `path`;
   - mission counts are 1–10;
-  - `defaultLevel` must be one of the levels.
-- **The family version records the grown-up's choice** as `play.selectedLevel` (plus the tap-only setting). It travels in the exported learning HTML, so the game plays the level the parent chose.
+  - a level whose every step is `lock: none` must have `mode: none` (no locks with nothing to open them).
+- **Capability check:** a game offers a level only if it supports everything the level uses (`locks.goal`, `locks.path.bridge`, `locks.path.elevator`, each mission kind). The WWM adapter will support all of them.
+- **The family version records the grown-up's choice** as `play.selectedLevel` (plus the tap-only setting). It travels in the exported learning HTML, so the game plays the level the parent chose, with exactly the lock configuration the author wrote for it.
+- **Baseline levels:** compare-groups ships `explore`, `goal-only`, `gated` (default) and `mission` as above. The single-round lessons ship `explore` and `gated` (default), plus `mission` for the counting lessons (`collect 3`, `collect 5`).
 
 ### 4. Binding steps to a maze (game)
 The stage already records the island graph: bridges `from`/`to`, elevators `islandFrom`/`islandTo` (`packages/schema/src/types.ts:116-140`). A pure module `apps/web/src/learning/locks.ts`:
-1. **Graph and path.** Build the undirected island graph (bridges and elevators are edges) and the BFS start→goal island path `P`.
-2. **Assign steps to host islands** spread along `P`, reusing Phase 20 gate placement for the gate's spot. Mission steps get a **mission post** (a Pip sign) instead of a gate.
+1. **Graph and path.** Build the undirected island graph (bridges and elevators are edges) and the BFS start→goal island path `P`. Only the level's `connectors` are lockable. Connectors of other kinds can't be cut, so they get infinite capacity in the cut search.
+2. **Assign steps to host islands** spread along `P`, reusing Phase 20 gate placement for the gate's spot. Mission steps get a **mission post** (a Pip sign) instead of a gate. Only steps whose effective lock is `path` need cuts. `goal` steps only add to the finish's checklist, and `none` steps are placed as optional stops.
 3. **Pick a lock cut for each step**, in order: a minimum edge cut between the islands on the start side of the host (host included) and the goal, with earlier cuts treated as open. Unit-capacity max-flow is enough on graphs of about 40 islands.
    - **Invariants,** property-tested:
      - (a) with cuts ≥ j closed, step j's host is reachable;
      - (b) with cut j closed, the goal is unreachable;
      - (c) with all cuts open, every island is reachable.
-   - **If no valid cut exists** (start and goal on one island, or a step's host past the last cut), that step falls back to a **goal lock** only. The goal lock is always present in `lock-path`.
+   - **If no valid cut exists** (start and goal on one island, only non-lockable connectors on the way, or a step's host past the last cut), that step falls back to `lock: goal`. If the level's `goal` is false, the finish is locked for that step anyway, so a locking step is never silently dropped. The fallback is shown in the debug state and the coverage report.
 4. **Region guard (backstop).** A ball that ends up beyond a closed lock by other means (a jump, a drop) is returned to the last allowed restart point, and Pip says "Oops! Pip's gate first." This uses the existing `island` SimEvent, and is logged in the debug state so bypasses can be found and fixed.
 5. **Coverage check** over the batch-eval stage set (`tools/batch-eval`, 800+ stages): report how many stages get physical locks for every step, and how many fall back to goal locks.
 
@@ -115,7 +164,7 @@ The stage already records the island graph: bridges `from`/`to`, elevators `isla
 - **Opening:** `setLock(id, open)`. The worker protocol gains a `lock` message.
 - **Bridge lock:** a static barrier collider across the deck at the apron on the host island's side (the `bridgeSpecs` apron geometry, `geometry.ts:234-284`). It is tall enough that POWER + JUMP can't clear it, and is disabled via `Collider.setEnabled` when opened (the pattern items and elevators already use).
 - **Elevator lock:** the ride trigger (`simulation.ts:593-599`) is ignored while locked, and a barrier sits on the lower-platform entry.
-- **Goal lock:** while closed, the goal sensor doesn't latch `goalReached` (`simulation.ts:553-556`); it emits `locked` instead. Opening re-arms it.
+- **Goal lock** (only when the level's configuration or a step's fallback needs it): while closed, the goal sensor doesn't latch `goalReached` (`simulation.ts:553-556`); it emits `locked` instead. Opening re-arms it.
 - **New SimEvent:** `{ type: 'locked', lockId }`, emitted when the ball touches a closed lock, at most once per second per lock.
 - **Scoring:** lockstep recording is marked inexact for learning runs, and they never submit (Principle 5).
 
@@ -127,6 +176,7 @@ The stage already records the island graph: bridges `from`/`to`, elevators `isla
 - **Map view:** locks show as padlocks on their bridges, with a line to the gate that opens them.
 
 **Messages at the lock** (the E3 "indication"):
+The level's `signals` switch each of these on or off.
 - **Banner:** a `locked` event shows a keyed HUD banner (the `wwm-hud__inst wwm-flash` pattern): "🔒 Solve Pip gate 2 first", or "🔒 Bring Pip 4 gems first. You have 1."
 - **Voice:** Pip says the matching generated line, at most once every 8 s.
 - **Pointer:** the beacon lights the gate or post that opens this lock.
@@ -134,10 +184,12 @@ The stage already records the island graph: bridges `from`/`to`, elevators `isla
 
 ### 6. Parent area and game loader (E2)
 - **Parent area** (`apps/education` home, "For parents"):
-  - A **Game level** control with three options: *Explore* (gates are optional stops), *Gated* (bridges stay locked until Pip's question is answered), *Missions* (gated, plus gem and island missions). The lesson author's default is marked.
+  - A **Game level** control listing **the lesson's own levels** by their labels. Each has a description generated from its lock configuration, e.g. "Bridges stay locked until Pip's question is answered. The finish waits too. Grown-ups can open a lock." The author's default is marked.
+  - Levels are per lesson, since lessons can differ. The control shows one choice per activity, plus a "Use the author's choice everywhere" reset.
   - An **Answer by tapping only** switch.
-  - Saved with the family version (local, like the introductions) and included in "Download learning HTML". Lesson pages show "In the game: Gated" in the grown-ups notes.
-- **Game loader strip:** shows the level from the document. A **Grown-ups** control (press and hold for 2 s) changes it for this session. The grown-up **override** to open a lock lives in the pause menu, behind the same hold.
+  - Saved with the family version (local, like the introductions) and included in "Download learning HTML". Lesson pages show "In the game: Gated. Bridges stay locked…" in the grown-ups notes.
+  - Grown-ups pick among the author's levels; they don't edit lock rules. Authoring new configurations is lesson-author work.
+- **Game loader strip:** shows the level from the document (the parent's choice, else the author's default) with its generated description. A **Grown-ups** control (press and hold for 2 s) switches between the lesson's levels for this session. The grown-up **override** to open a lock lives in the pause menu, behind the same hold, and appears only when the level's `override` is `grown-up`.
 
 ### 7. Voice
 - **New generated lines:** callouts, input prompts, lock messages (per gate number and per mission), mission lines (templated counts 1–10: "Bring Pip four gems!", "Three!", "That's four! The bridge is open!"), unlock lines, and level intros. Roughly +90 lines and about 3,500 characters. All go through `pnpm learning:voice --write` (AI Gateway `wwm` → ElevenLabs), with the clips in R2.
@@ -165,7 +217,7 @@ Not touched: the worker (except that learning runs never reach the scores endpoi
 | M | Work | Size | Exit check |
 |---|---|---|---|
 | **M0** Spike | (1) A barrier collider across one fixture bridge mouth stops the ball at top speed with POWER + JUMP. (2) Measure jump and drop bypasses on 50 batch-eval stages. (3) Prototype the cut-based lock placement and report coverage | S | Barrier holds; bypass rate known; coverage ≥ 80% physical locks for `gated` |
-| **M1** Contracts | `wwm-learning/0.3`: `play` levels, steps and missions, `input`, `shuffle`, `presentRound`, callout and cue types, clip lookup by text, `selectedLevel`. CCR-GAME-01: `SimEvent.locked`, `LockSpec`. Migration 0.2 → 0.3 | M | Unit tests; 0.2 documents and family forks still load |
+| **M1** Contracts | `wwm-learning/0.3`: `play` levels with **per-level `locks` configuration** and per-step `lock` overrides, steps and missions, validation and capability matching, generated level descriptions (`describeLevel`), `input`, `shuffle`, `presentRound`, callout and cue types, clip lookup by text, `selectedLevel`. CCR-GAME-01: `SimEvent.locked`, `LockSpec`. Migration 0.2 → 0.3 | M | Unit tests; 0.2 documents and family forks still load |
 | **M2** Physics and engine locks (L1) | `load({locks})`, `setLock`, the `locked` event, goal re-arm, elevator lock; barrier mesh, bridge dimming, beacon, map padlocks, unlock animation | L | Physics unit tests (a closed lock blocks, an open lock passes, determinism with locks); engine screenshot at 1280×720 |
 | **M3** Game adapter (L2) | `locks.ts` (graph, path, cuts, region guard), steps → gates and posts, missions (collect, reach) with HUD and voice, lock banner and beacon, level from the document plus the grown-ups control, unranked learning runs, input modes and shuffling in the gate card | L | Property tests of the invariants on the fixture and batch-eval stages; e2e: blocked at a lock → message → solve the gate → the lock opens → cross |
 | **M4** Page and parent area (L3) | Callout animations, shuffled positions, input modes with key badges and nudges, tap-only setting, Game level control, export | M | e2e on 390×844 and 1440×900; exported HTML carries `selectedLevel` |
@@ -181,7 +233,16 @@ M2 and M4 run in parallel after M1. M3 starts after M1, against the M2 API as sp
   - Answer positions differ between play-throughs, but a replay of the same session is identical.
   - Letter-key and number-key rounds work with a keyboard, nudge a tapper twice, then accept the tap. On a touch-only device they fall back to tap.
   - "Tap only" turns the variety off.
-- **Parent area:** the level control defaults to the author's level; the choice persists and is exported.
+- **Parent area:** the level control lists each lesson's own levels with generated descriptions and defaults to the author's level; the choice persists and is exported, and the game plays that level's exact configuration.
+- **Lock configuration is honoured exactly** (tested per field on the practice stage and in unit tests of the binding):
+  - `mode: none` locks nothing;
+  - `mode: goal` locks only the finish;
+  - `mode: path` with `connectors: ["bridge"]` never locks an elevator;
+  - a step with `lock: none` blocks nothing, and one with `lock: goal` only blocks the finish;
+  - `goal: false` leaves the finish open when every locking step got a physical lock;
+  - `signals` off really removes that signal;
+  - `override: none` hides the grown-up override.
+- **Rejected configurations:** invalid ones (a path lock under `mode: goal`, empty connectors, a level of locks with no locking steps) fail validation with a readable message.
 - **Game, `explore` level:** behaves exactly like Phase 20.
 - **Game, `gated` level:**
   - Every step has a visible lock on the practice stage.
