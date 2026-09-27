@@ -5,6 +5,8 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { verifyServedBuild } from './p1-build.mjs';
+import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
@@ -14,14 +16,24 @@ const out = process.env.AUDIT_OUT
   : new URL('../../docs/launch/evidence/audit-2026-09-27/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const mode = process.argv[2] ?? 'frames';
+const servedBuild = await verifyServedBuild(base);
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
 const root = await browser.newBrowserCDPSession();
 const report = {
   date: new Date().toISOString(),
+  runtimeFingerprint: runtimeFingerprint(),
+  servedBuild,
   base,
   mode,
   browser: browser.version(),
   headless: false,
+  viewport: { width: 1440, height: 900 },
+  instrumentation: {
+    optIn: true,
+    phaseSamplesEveryMs: 1000,
+    maximumRunSeconds: 60,
+    gpuTimestampQueries: mode === 'gpu',
+  },
   commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   hardware: execFileSync('sysctl', ['-n', 'machdep.cpu.brand_string', 'hw.memsize'], {
     encoding: 'utf8',
