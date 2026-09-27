@@ -13,6 +13,8 @@ import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
 import { GameBoards } from '../game/leaderboard.ts';
 import type { RunSource } from '../game/stages.ts';
 import { createI18n } from '../i18n/index.ts';
+import { learnParam } from '../learning/LearningPanel.tsx';
+import { lessonFromBaseline } from '../learning/load.ts';
 import { readChallenge } from '../ranking/share.ts';
 import { observeGame } from '../telemetry/observe-game.ts';
 import { Screens } from './Screens.tsx';
@@ -77,6 +79,36 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
       },
     });
     window.__wwmGame = g;
+    // Phase 20 M4b: `?learn=<activityId>` plays that lesson of the built-in path through Pip gates
+    g.learning.label = (n) => i18n.t('learning.gate.label', { n });
+    // Phase 22: mission posts and lock cards in the maze
+    g.learning.labels = {
+      ...g.learning.labels,
+      post: (s, count) =>
+        s.mission.kind === 'collect'
+          ? i18n.t('learning.maze.post', { count })
+          : typeof s.mission.island === 'object'
+            ? i18n.t('learning.maze.postLetter', { letter: s.mission.island.letter })
+            : i18n.t(
+                s.mission.island === 'most-gems' ? 'learning.maze.postMost' : 'learning.maze.postFewest',
+              ),
+      lock: (owner) =>
+        !owner
+          ? i18n.t('learning.maze.lockFinish')
+          : owner.step.kind === 'round'
+            ? i18n.t('learning.gate.label', { n: owner.number })
+            : owner.step.mission.kind === 'collect'
+              ? i18n.t('learning.maze.lockGems', { count: owner.step.mission.count })
+              : i18n.t('learning.maze.lockMission'),
+    };
+    const learn = learnParam();
+    if (learn) {
+      try {
+        g.learning.use(lessonFromBaseline(learn));
+      } catch (err) {
+        g.learning.fail(err);
+      }
+    }
     setGame(g);
     let alive = true;
     let stopFunnel = () => {};

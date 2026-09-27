@@ -1,0 +1,23 @@
+{
+  "name": "@wwm/education",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone, readable learning pages for ages 4–6 and a parent customization workspace.",
+  "scripts": {
+    "generate": "node --experimental-strip-types scripts/generate.ts",
+    "dev": "pnpm generate && vite --host 127.0.0.1 --port 5174",
+    "build": "pnpm generate && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4174",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource-variable/unbounded": "^5.3.0",
+    "@wwm/learning": "workspace:*"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1",
+    "playwright": "^1.63.0"
+  }
+}

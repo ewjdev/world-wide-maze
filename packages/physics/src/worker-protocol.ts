@@ -1,15 +1,17 @@
 /** Messages between `createWorkerSimulation()` (main thread) and `worker.ts`. Internal to @wwm/physics. */
-import type { BallState, InputSample, SimEvent, StageData, Vec2 } from '@wwm/schema';
+import type { BallState, InputSample, SimEvent, SimLoadOptions, StageData, Vec2 } from '@wwm/schema';
 import type { PhysicsParams } from './params.ts';
 import type { RapierBuild } from './rapier.ts';
 import type { ReplayResult } from './replay.ts';
 
 export type ToWorker =
   | { t: 'init'; params?: Partial<PhysicsParams>; rapier?: RapierBuild }
-  | { t: 'load'; id: number; stage: StageData }
+  | { t: 'load'; id: number; stage: StageData; options?: SimLoadOptions }
   /** Latest input; `jumps` = rising jump edges seen on the main thread since the previous message. */
   | { t: 'input'; input: InputSample; jumps: number }
   | { t: 'reset'; to?: Vec2 }
+  /** contracts §10.4: open / close a runtime lock (applied before the worker's next tick). */
+  | { t: 'lock'; lockId: number; open: boolean }
   | { t: 'pause'; paused: boolean }
   | { t: 'replay'; id: number; stage: StageData; inputs: InputSample[] }
   | { t: 'debug'; id: number };

@@ -57,6 +57,10 @@ packages/ai/              Phase 11
 tools/fixture-capture/    Phase 02
 tools/stage-debugger/     Phase 03
 tools/batch-eval/         Phase 09
+apps/education/          Phase 19 (education app and parent workspace)
+packages/learning/       Phase 19 (independent learning contract and starter content); Phase 20 (0.2 contract)
+tools/learning-voice/    Phase 20 (build-time Pip voice → R2)
+apps/web/src/learning/   Phase 20 (Pip gates: learning rounds in the maze)
 fixtures/                 Phase 02 creates; others ADD files in their own subfolder only
 docs/reference/           Phase 01
 docs/build-log/           every agent appends ONE entry file; orchestrator curates
@@ -64,6 +68,8 @@ reference/                gitignored, downloaded third-party material (never com
 ```
 
 ## 4. Phases
+
+Education is an additive product track authorized September 26, 2026. [Phase 20](phase-20-guided-lessons.md) (guided lessons: rounds, Pip, Sky Islands theme, ElevenLabs voice via AI Gateway, R2 audio, and Pip gates in the maze) builds on it. Phase 19 owns `apps/education`, `packages/learning`, and `docs/education`, plus root documentation/scripts and CI wiring. See [Phase 19](phase-19-education.md). Existing game contracts remain unchanged; the independent learning domain imports from `@wwm/learning`.
 
 | # | Plan | Summary | Depends on | Wave |
 |---|---|---|---|---|
@@ -251,3 +257,9 @@ Launch sooner rather than on the anniversary. Runtime AI goes through Cloudflare
     - The legal placeholders (operator, contact, jurisdiction, date, address).
     - Running the bake-off once keys exist.
 | 18 | merged + deployed | main | — | dynamic OG share cards (invite, high score, run rank, journey) rendered in the Worker, R2-cached; draft PR → launch/config-legal-story |
+
+### Education track (2026-09-26)
+| Phase | Status | Branch | Notes |
+|---|---|---|---|
+| 19 | PR #9 | feat/education-phase-19 | standalone learning pages, `wwm-learning/0.1`, parent AI draft review |
+| 20 | built, PR open | feat/guided-lessons-phase-20 | `wwm-learning/0.2` (rounds, theme, voice); Pip voice: 97 clips via AI Gateway → ElevenLabs `eleven_v3`, in R2 `wwm-learning-audio` (learning-audio.ewj.dev); Pip gates in the game; issue #10 (voice for personalized intros) deferred |

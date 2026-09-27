@@ -122,6 +122,14 @@ export function ResultScreen() {
             {r.sliceCount > 1 && (
               <> · {t('result.stageOf', { index: r.sliceIndex + 1, count: r.sliceCount })}</>
             )}
+            {v.learningRun && (
+              <>
+                {' · '}
+                <span className="wwm-result__learning" data-testid="learning-run">
+                  {t('learning.result.tag')}
+                </span>
+              </>
+            )}
           </p>
         </header>
         <dl className="wwm-tally">
@@ -286,7 +294,12 @@ export function RankingScreen() {
         <p className="wwm-ranking__total" data-testid="rank-total">
           {r.total}
         </p>
-        {!done && r.source !== null && (
+        {v.learningRun && (
+          <p className="wwm-muted" role="note" data-testid="learning-unranked">
+            {t('learning.result.tag')}: {t('learning.result.unranked')}
+          </p>
+        )}
+        {!done && r.source !== null && !v.learningRun && (
           <NameEntry
             tone="game"
             score={r.total}

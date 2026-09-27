@@ -6,7 +6,15 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/fixtures/**/*.json", "!**/worker-configuration.d.ts", "!plans", "!research"]
+    "includes": [
+      "**",
+      "!**/fixtures/**/*.json",
+      "!**/worker-configuration.d.ts",
+      "!packages/learning/src/voice-manifest.json",
+      "!packages/learning/src/scene.css",
+      "!plans",
+      "!research"
+    ]
   },
   "formatter": {
     "enabled": true,

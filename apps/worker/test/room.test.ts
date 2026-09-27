@@ -335,9 +335,12 @@ describe('Room DO relay', { timeout: TEST_MS }, () => {
     await until(() => host.frames.length >= stats.input.frames);
     expect(host.frames.length).toBe(stats.input.frames);
     // Burst 300, plus whatever the bucket refilled (150/s) while the frames were arriving. Bound the upper limit by
-    // the measured elapsed time so a loaded machine doesn't make this flaky; the rest must have been dropped.
+    // the measured elapsed time so a loaded machine doesn't make this flaky; the rest must have been dropped. (A
+    // fixed "≤ 499" cap was wrong: on a slow CI runner the 500 sends take > 1.3 s and the refill admits them all.)
+    const cap = 300 + Math.ceil(150 * elapsedSec) + 10;
     expect(host.frames.length).toBeGreaterThanOrEqual(300);
-    expect(host.frames.length).toBeLessThanOrEqual(Math.min(499, 300 + Math.ceil(150 * elapsedSec) + 10));
+    expect(host.frames.length).toBeLessThanOrEqual(Math.min(500, cap));
+    if (cap < 500) expect(stats.dropped.rate).toBeGreaterThan(0);
     expect(stats.dropped.rate).toBe(500 - host.frames.length);
     ctl.ws.close(1000);
     host.ws.close(1000);

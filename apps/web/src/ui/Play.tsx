@@ -10,6 +10,8 @@ import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
+import { LearningGateCard } from '../learning/LearningGateCard.tsx';
+import { LearningHud, LearningOverride } from '../learning/LearningPanel.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyHud, PortalPromptCard, TravelIris } from './Journey.tsx';
 import { BallIcon, GemIcon, Glyphs, Icon, TiltRing, useSiteTitle } from './parts.tsx';
@@ -46,8 +48,10 @@ export function PlayLayer() {
       )}
       {hudVisible && <Hud />}
       {hudVisible && <JourneyHud />}
+      {hudVisible && <LearningHud />}
       {v.phase === 'play' && v.portal && !v.travel && <PortalPromptCard prompt={v.portal} />}
       {v.phase === 'play' && v.travel && <TravelIris host={v.travel.host} />}
+      {(v.phase === 'play' || v.phase === 'intro') && <LearningGateCard />}
       {v.countdown !== null && v.countdown >= 0 && <Countdown n={v.countdown} />}
       {v.phase === 'paused' && <MapMenu />}
       {v.sign && <Sign kind={v.sign} />}
@@ -275,6 +279,7 @@ function MapMenu() {
                 <Icon name="exit" /> {t('map.quit')}
               </button>
             </div>
+            <LearningOverride /> {/* Phase 22: grown-ups may open the next lock (level permitting) */}
           </>
         ) : (
           <div role="alertdialog" aria-labelledby="confirm-h" className="wwm-confirm">

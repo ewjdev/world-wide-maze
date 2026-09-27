@@ -98,8 +98,23 @@ function hash(s: string): number {
   return h >>> 0;
 }
 
+/**
+ * Phase 20 (N): a "Pip gate" (a learning checkpoint, apps/web/src/learning) rides the portal pipeline with a
+ * `wwm-learning:<activity>/<n>#<rrggbb>` href: it is drawn in the lesson theme's gate colour, with Pip's face for
+ * a monogram and no host line. The web app keeps the same prefix (apps/web/src/learning/href.ts, parity-tested).
+ */
+export const LEARNING_HREF = 'wwm-learning:';
+
+export function isLearningHref(href: string): boolean {
+  return href.startsWith(LEARNING_HREF);
+}
+
 /** The portal colour for a target host (stable across stages, so a site keeps its colour). */
 export function portalColor(href: string): string {
+  if (isLearningHref(href)) {
+    const m = /#([0-9a-f]{6})$/i.exec(href);
+    return m ? `#${(m[1] as string).toLowerCase()}` : (PORTAL_COLORS[0] as string);
+  }
   return PORTAL_COLORS[hash(hostOf(href)) % PORTAL_COLORS.length] as string;
 }
 
@@ -420,7 +435,34 @@ function wrap2(ctx: CanvasRenderingContext2D, text: string, max: number): string
   return rest ? [fit(ctx, first, max), fit(ctx, rest, max)] : [fit(ctx, first, max)];
 }
 
-const SANS = '"Figtree Variable", Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif';
+/** Pip for a Pip gate's monogram: the chrome ball with its blue seam and two eyes. */
+export function drawPip(ctx: CanvasRenderingContext2D, cx: number, cy: number, r: number): void {
+  const b = r * 0.78;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, b, 0, Math.PI * 2);
+  ctx.fillStyle = '#dfe3e6';
+  ctx.fill();
+  ctx.lineWidth = r * 0.08;
+  ctx.strokeStyle = '#20262d';
+  ctx.stroke();
+  ctx.clip();
+  ctx.beginPath();
+  ctx.moveTo(cx - b, cy + b * 0.28);
+  ctx.bezierCurveTo(cx - b * 0.4, cy + b * 0.05, cx + b * 0.4, cy + b * 0.05, cx + b, cy + b * 0.28);
+  ctx.lineWidth = r * 0.12;
+  ctx.strokeStyle = '#456e93';
+  ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle = '#20262d';
+  for (const dx of [-0.3, 0.3]) {
+    ctx.beginPath();
+    ctx.ellipse(cx + dx * b, cy - b * 0.22, b * 0.11, b * 0.16, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+export const SANS = '"Figtree Variable", Figtree, "Helvetica Neue", Helvetica, Arial, sans-serif';
 const DISPLAY = '"Unbounded Variable", Unbounded, "Helvetica Neue", Helvetica, Arial, sans-serif';
 
 /** One 1024 × 256 row per portal: a rounded card with a monogram tile, the link text and the target host. */
@@ -456,12 +498,16 @@ function makeAtlas(items: { label: string; href: string }[]): CanvasTexture {
     ctx.arc(cx, cy, mr, 0, Math.PI * 2);
     ctx.fillStyle = col;
     ctx.fill();
-    ctx.fillStyle = col === '#e5a810' ? '#20262d' : '#ffffff';
-    ctx.font = `700 ${Math.round(mr * 1.15)}px ${DISPLAY}`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    const letter = (host.replace(/^(en|ja|de|fr|m|mobile|blog|news|www\d?)\./, '')[0] ?? '?').toUpperCase();
-    ctx.fillText(letter, cx, cy + 4);
+    const learning = isLearningHref(it.href);
+    if (learning) drawPip(ctx, cx, cy, mr);
+    else {
+      ctx.fillStyle = col === '#e5a810' ? '#20262d' : '#ffffff';
+      ctx.font = `700 ${Math.round(mr * 1.15)}px ${DISPLAY}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      const letter = (host.replace(/^(en|ja|de|fr|m|mobile|blog|news|www\d?)\./, '')[0] ?? '?').toUpperCase();
+      ctx.fillText(letter, cx, cy + 4);
+    }
     // text
     const tx = cx + mr + 30;
     const tw = x + w - tx - 44;
@@ -477,16 +523,19 @@ function makeAtlas(items: { label: string; href: string }[]): CanvasTexture {
       lh = 60;
       lines = wrap2(ctx, it.label, tw);
     }
-    const hostSize = 44;
-    const block = lines.length * lh + 12 + hostSize;
+    // a Pip gate has no host line: its label stands alone, centred
+    const hostSize = learning ? 0 : 44;
+    const block = lines.length * lh + (learning ? 0 : 12) + hostSize;
     let by = cy - block / 2 + lh * 0.8;
     for (const l of lines) {
       ctx.fillText(l, tx, by);
       by += lh;
     }
-    ctx.fillStyle = '#5b6570';
-    ctx.font = `600 ${hostSize}px ${SANS}`;
-    ctx.fillText(fit(ctx, `${host}  ↗`, tw), tx, by + 4);
+    if (!learning) {
+      ctx.fillStyle = '#5b6570';
+      ctx.font = `600 ${hostSize}px ${SANS}`;
+      ctx.fillText(fit(ctx, `${host}  ↗`, tw), tx, by + 4);
+    }
   }
   const tex = new CanvasTexture(cv as never);
   tex.colorSpace = SRGBColorSpace;

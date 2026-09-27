@@ -5,12 +5,14 @@
   "type": "module",
   "description": "Rapier 3D simulation (Web Worker + headless) implementing the contract `Simulation` interface.",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./locks": "./src/locks.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "replay:make": "node scripts/make-replay.ts",
-    "bench:builds": "node scripts/bench-builds.ts"
+    "bench:builds": "node scripts/bench-builds.ts",
+    "spike:locks": "node scripts/lock-spike.ts && node scripts/jump-envelope.ts && node scripts/bypass-spike.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-deterministic-compat": "0.20.0",
@@ -19,6 +21,7 @@
   },
   "devDependencies": {
     "@dimforge/rapier3d-compat": "0.20.0",
+    "@wwm/stage-builder": "workspace:*",
     "playwright": "^1.63.0",
     "vite": "8.3.1"
   }

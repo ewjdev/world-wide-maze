@@ -1,0 +1,31 @@
+.wwm-scene{font-family:"Figtree Variable",Figtree,system-ui,sans-serif}
+.wwm-scene .gem,.wwm-scene .pip,.wwm-scene .mark{transform-box:fill-box;transform-origin:center}
+.wwm-scene .gem{transition:transform .22s ease}
+.wwm-scene .gem.is-lit{transform:scale(1.28)}
+.wwm-scene .ring{opacity:0;transition:opacity .2s}
+.wwm-scene .gem.is-lit .ring,.wwm-scene .gem.is-leftover .ring{opacity:1}
+.wwm-scene .gem.is-leftover{animation:wwm-bob 1s ease-in-out infinite}
+.wwm-scene .pair{opacity:0;transition:stroke-dashoffset .35s ease,opacity .1s}
+.wwm-scene .pair.is-shown{opacity:1;stroke-dashoffset:0}
+.wwm-scene .mark .halo{opacity:0;transition:opacity .2s}
+.wwm-scene .mark.is-correct .halo,.wwm-scene .mark.is-retry .halo,.wwm-scene .mark.is-glow .halo,.wwm-scene .mark.is-focus .halo{opacity:1}
+.wwm-scene .mark.is-retry .halo{stroke-dasharray:14 10}
+.wwm-scene .mark.is-focus:not(.is-correct):not(.is-retry):not(.is-glow) .halo{stroke:currentColor;stroke-dasharray:2 16;stroke-width:12}
+.wwm-scene .mark.is-glow .halo{animation:wwm-glow 1s ease-in-out infinite}
+.wwm-scene .mark.is-pulse{animation:wwm-pulse .7s ease-in-out 2}
+.wwm-scene .mark.is-correct .check{opacity:1}
+.wwm-scene .check{opacity:0;transition:opacity .2s}
+.wwm-scene .mark.is-callout .halo{opacity:1;stroke:currentColor;stroke-dasharray:none}
+.wwm-scene .mark.is-callout{animation:wwm-pulse .45s ease-in-out 1}
+.wwm-scene .key-badge{opacity:0;transition:opacity .2s,transform .2s;transform-box:fill-box;transform-origin:center}
+.wwm-scene.show-keys .key-badge{opacity:1}
+.wwm-scene .key-badge.is-callout{transform:scale(1.25)}
+.wwm-scene .pip{transition:transform .9s cubic-bezier(.3,.8,.3,1)}
+.wwm-scene .pip.is-happy{animation:wwm-hop .5s ease-in-out 2}
+.wwm-scene .plank.is-new{animation:wwm-drop .5s ease-out}
+@keyframes wwm-pulse{50%{transform:scale(1.035)}}
+@keyframes wwm-glow{50%{opacity:.35}}
+@keyframes wwm-bob{50%{transform:translateY(-6px)}}
+@keyframes wwm-hop{50%{transform:translateY(-22px)}}
+@keyframes wwm-drop{from{transform:translateY(-30px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.wwm-scene *{animation:none!important;transition:none!important}}

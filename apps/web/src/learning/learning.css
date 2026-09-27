@@ -1,0 +1,603 @@
+/* biome-ignore-all lint/complexity/noImportantStyles: reduced motion must beat every component animation */
+/*
+ * Phase 20 M4b (N): Pip gates. Same language as the game shell (game.css): white chamfered plates on the fog-white
+ * sky, the 2013 colour roles, Unbounded for display, Figtree for UI. The gate card is sized in viewport units so a
+ * round reads from across the room on a TV (1920×1080) and still fits a 1280×720 window.
+ * `--pc` is the lesson theme's gate colour (from the document, validated hex).
+ */
+
+/* ── the gate card ─────────────────────────────────────────────────────── */
+
+.wwm-lgate {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  padding: 2vh 2vw;
+  background: radial-gradient(ellipse at 50% 55%, rgba(248, 248, 248, 0.5), rgba(248, 248, 248, 0.82));
+  backdrop-filter: blur(2px);
+  pointer-events: auto;
+  animation: wwm-fade 300ms var(--ease) both;
+}
+.wwm-lgate__frame {
+  max-width: 100%;
+  max-height: 100%;
+  filter: var(--shadow);
+  animation: wwm-lgate-in 460ms var(--ease) both;
+}
+.wwm-lgate__card {
+  --cut: clamp(14px, 2.2vh, 24px);
+  position: relative;
+  display: grid;
+  gap: clamp(12px, 2vh, 22px);
+  /* as wide as the scene and the side column: a long prompt wraps instead of widening the card */
+  width: min-content;
+  max-width: 96vw;
+  max-height: 96vh;
+  overflow: auto;
+  padding: clamp(16px, 2.6vh, 32px) clamp(18px, 2.2vw, 40px) clamp(16px, 2.6vh, 32px);
+  background:
+    linear-gradient(90deg, var(--pc) 0 38%, var(--yellow) 38% 52%, var(--green) 52% 70%, var(--teal) 70%) top
+    / 100% 6px no-repeat,
+    var(--paper);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+  outline: none;
+}
+
+.wwm-lgate__head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: clamp(12px, 1.6vw, 24px);
+}
+.wwm-lgate__pip {
+  appearance: none;
+  border: 0;
+  padding: 0;
+  background: none;
+  width: clamp(56px, 9vh, 96px);
+  height: clamp(56px, 9vh, 96px);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: transform 180ms var(--ease);
+}
+.wwm-lgate__pip svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  overflow: visible;
+}
+.wwm-lgate__pip:hover {
+  transform: translateY(-2px) rotate(-6deg);
+}
+.wwm-lgate__pip:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 4px;
+}
+.wwm-lgate__pip.is-speaking {
+  animation: wwm-lgate-talk 700ms ease-in-out infinite;
+}
+.wwm-lgate__titles {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.wwm-lgate__eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font: 700 clamp(13px, 1.8vh, 19px) / 1.2 var(--ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.wwm-lgate__eyebrow::before {
+  content: "";
+  width: 0.8em;
+  height: 0.8em;
+  flex: none;
+  background: var(--pc);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+.wwm-lgate__prompt {
+  margin: 0;
+  font: 800 clamp(24px, 4.6vh, 52px) / 1.1 var(--display);
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  color: var(--ink);
+}
+.wwm-lgate__bridge {
+  align-self: start;
+  font: 700 clamp(12px, 1.6vh, 17px) / 1 var(--ui);
+  color: var(--go);
+  background: #eaf5ec;
+  padding: 8px 12px;
+  white-space: nowrap;
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+
+.wwm-lgate__main {
+  display: grid;
+  grid-template-columns: auto clamp(240px, 22vw, 400px);
+  gap: clamp(14px, 1.8vw, 32px);
+  align-items: stretch;
+}
+.wwm-lgate__scene {
+  position: relative;
+  width: min(calc(60vh * 1000 / 640), 64vw);
+  aspect-ratio: 1000 / 640;
+}
+.wwm-lgate__svg,
+.wwm-lgate__svg > .wwm-scene {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.wwm-lgate__choice {
+  position: absolute;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: clamp(10px, 2.4vh, 24px);
+}
+.wwm-lgate__choice:hover {
+  background: rgba(79, 159, 214, 0.07);
+}
+.wwm-lgate__choice:focus-visible {
+  outline: 4px solid var(--blue);
+  outline-offset: 6px;
+}
+.wwm-lgate__card[data-solved="true"] .wwm-lgate__choice {
+  cursor: default;
+  background: transparent;
+}
+
+.wwm-lgate__side {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2vh, 22px);
+  min-width: 0;
+}
+.wwm-lgate__say {
+  position: relative;
+  margin: 0;
+  padding: clamp(12px, 1.8vh, 20px) clamp(14px, 1.4vw, 22px);
+  font: 600 clamp(17px, 2.6vh, 30px) / 1.3 var(--ui);
+  color: var(--ink);
+  background: #f1f5f8;
+  border-left: 6px solid var(--pc);
+  text-wrap: pretty;
+  animation: wwm-lgate-say 360ms var(--ease) both;
+}
+.wwm-lgate__say[hidden] {
+  display: none;
+}
+.wwm-lgate__say.is-success {
+  background: #eaf5ec;
+  border-left-color: var(--green);
+  font-weight: 700;
+}
+.wwm-lgate__say--wide {
+  max-width: 44ch;
+}
+.wwm-lgate__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+.wwm-lgate__actions--side {
+  flex-direction: column;
+  align-items: stretch;
+  margin-top: auto;
+}
+.wwm-lgate .wwm-btn {
+  min-height: clamp(46px, 6.6vh, 68px);
+  font-size: clamp(16px, 2.2vh, 23px);
+  padding: 0 clamp(16px, 1.4vw, 26px);
+}
+.wwm-lgate .wwm-btn--small.wwm-lgate__skip {
+  min-height: clamp(38px, 5vh, 52px);
+  font-size: clamp(14px, 1.8vh, 19px);
+  align-self: center;
+}
+.wwm-lgate__go {
+  font-family: var(--display) !important;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.wwm-lgate__keys {
+  font-size: clamp(12px, 1.6vh, 16px);
+  font-weight: 600;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* bonus offer / all done: no scene, a short plate */
+.wwm-lgate--compact .wwm-lgate__card {
+  width: min(820px, 92vw);
+}
+
+@keyframes wwm-lgate-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+}
+@keyframes wwm-lgate-say {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes wwm-lgate-talk {
+  50% {
+    transform: translateY(-4px) scale(1.03);
+  }
+}
+
+@media (max-width: 760px), (max-aspect-ratio: 1 / 1) {
+  .wwm-lgate__card {
+    width: 96vw;
+  }
+  .wwm-lgate__main {
+    grid-template-columns: 1fr;
+  }
+  .wwm-lgate__scene {
+    width: min(100%, calc(52vh * 1000 / 640));
+    justify-self: center;
+  }
+  .wwm-lgate__head {
+    grid-template-columns: auto 1fr;
+  }
+  .wwm-lgate__bridge {
+    display: none;
+  }
+}
+
+/* ── the loader on site select: one plate under the address bar ───────── */
+
+.wwm-lpanel {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 10px 12px 10px 14px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: inset 0 0 0 1.5px var(--line);
+  clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+}
+.wwm-lpanel[data-on="true"] {
+  background:
+    linear-gradient(90deg, var(--blue) 0 38%, var(--yellow) 38% 52%, var(--green) 52% 70%, var(--teal) 70%)
+    top / 100% 4px no-repeat,
+    var(--paper);
+  box-shadow: inset 0 0 0 1.5px rgba(46, 122, 58, 0.35);
+}
+.wwm-lpanel__text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.wwm-lpanel__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font: 700 15px / 1.2 var(--display);
+  letter-spacing: -0.01em;
+}
+.wwm-lpanel__pip {
+  display: inline-grid;
+  flex: none;
+}
+.wwm-lpanel__pip svg {
+  display: block;
+}
+.wwm-lpanel__pip--empty {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 18%, #dfe3e6 19%);
+  box-shadow: inset 0 0 0 2.5px var(--ink);
+}
+.wwm-lpanel__tag {
+  font: 700 11px / 1 var(--ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--go);
+  padding: 4px 7px;
+}
+.wwm-lpanel__body,
+.wwm-lpanel__lesson {
+  font-size: 14px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.wwm-lpanel__lesson {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 10px;
+  align-items: baseline;
+}
+.wwm-lpanel__name {
+  font: 700 16px / 1.2 var(--ui);
+  color: var(--ink);
+}
+.wwm-lpanel__note {
+  font-size: 12px;
+  color: var(--ink-3);
+  font-weight: 500;
+}
+.wwm-lpanel__error {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--red-deep);
+}
+.wwm-lpanel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.wwm-lpanel__file {
+  display: none;
+}
+@media (max-width: 760px) {
+  .wwm-lpanel {
+    grid-template-columns: auto 1fr;
+  }
+  .wwm-lpanel__actions {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+}
+
+/* ── HUD chip and the "not loaded" notice ─────────────────────────────── */
+
+.wwm-lhud {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 6px 14px 6px 8px;
+  background: rgba(255, 255, 255, 0.88);
+  font: 700 14px / 1 var(--ui);
+  white-space: nowrap;
+  clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+  animation: wwm-fade 500ms var(--ease) both;
+}
+.wwm-lhud__title {
+  max-width: 26ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wwm-lhud__bridge {
+  display: inline-flex;
+  gap: 3px;
+}
+.wwm-lhud__bridge span {
+  width: 16px;
+  height: 9px;
+  box-shadow: inset 0 0 0 1.5px #9fb3c2;
+}
+.wwm-lhud__bridge span.is-built {
+  background: var(--green);
+  box-shadow: none;
+}
+
+.wwm-lnotice {
+  position: absolute;
+  top: 76px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: min(640px, calc(100vw - 32px));
+  padding: 12px 12px 12px 18px;
+  background: var(--paper);
+  border-left: 6px solid var(--red);
+  font-size: 15px;
+  filter: var(--shadow);
+  pointer-events: auto;
+}
+.wwm-lnotice p {
+  flex: 1;
+}
+
+/* ── Phase 22: levels, grown-ups, missions, locks ─────────────────────── */
+
+.wwm-lpanel__level {
+  font-size: 13px;
+  color: var(--ink-2);
+  font-weight: 500;
+  line-height: 1.4;
+}
+.wwm-lpanel__levelname {
+  color: var(--ink);
+}
+.wwm-lpanel__levels {
+  display: grid;
+  gap: 6px;
+  margin: 6px 0 2px;
+  padding: 8px 10px 10px;
+  border: 0;
+  background: rgba(79, 159, 214, 0.08);
+  box-shadow: inset 0 0 0 1.5px rgba(79, 159, 214, 0.35);
+}
+.wwm-lpanel__levels legend {
+  float: left;
+  width: 100%;
+  margin-bottom: 2px;
+  font: 700 12px / 1.2 var(--ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.wwm-lpanel__levels .wwm-btn {
+  justify-self: start;
+}
+.wwm-lpanel__choice {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: start;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.wwm-lpanel__choice input {
+  margin-top: 3px;
+}
+.wwm-lpanel__desc {
+  display: block;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  font-weight: 500;
+}
+.wwm-lpanel__level .wwm-lpanel__desc {
+  display: inline;
+}
+
+/* press and hold: the fill grows while held */
+.wwm-hold-btn {
+  position: relative;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.wwm-hold-btn__fill {
+  position: absolute;
+  inset: 0;
+  background: rgba(79, 159, 214, 0.28);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.wwm-hold-btn.is-holding .wwm-hold-btn__fill {
+  transform: scaleX(1);
+  transition: transform var(--hold-ms, 2s) linear;
+}
+.wwm-hold-btn__label {
+  position: relative;
+}
+.wwm-hold-btn__hint {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.wwm-lhud__bridge span.is-mission {
+  width: 11px;
+  height: 11px;
+  transform: rotate(45deg) scale(0.85);
+}
+.wwm-lhud__bridge span.is-mission.is-built {
+  background: var(--teal);
+}
+
+.wwm-lmission {
+  position: absolute;
+  /* bottom centre: the post's and gates' floating labels fill the top of the chase view */
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  padding: 7px 14px;
+  background: var(--paper);
+  border-left: 5px solid var(--teal);
+  font: 700 15px / 1.2 var(--ui);
+  white-space: nowrap;
+  filter: var(--shadow);
+  animation: wwm-fade 400ms var(--ease) both;
+}
+.wwm-lmission__title {
+  font: 700 11px / 1 var(--ui);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.wwm-lmission__gems {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.wwm-lbanner {
+  /* below the ball: the gate's padlock and card stand above it in the chase view */
+  top: auto;
+  bottom: 13%;
+  border-left: 6px solid var(--yellow);
+  /* long enough for a child to read (the flash keyframes: in, hold, out) */
+  animation-duration: 4.5s;
+}
+.wwm-lpanel:has(.wwm-lpanel__levels) {
+  align-items: start;
+}
+
+.wwm-lgate__invite {
+  justify-self: start;
+  margin-top: 6px;
+  padding: 4px 10px;
+  font: 700 clamp(13px, 1.7vh, 17px) / 1.2 var(--ui);
+  color: var(--ink);
+  background: rgba(229, 168, 16, 0.22);
+}
+.wwm-lgate__keys--badges {
+  color: var(--ink);
+}
+
+.wwm-loverride {
+  display: grid;
+  gap: 6px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1.5px solid var(--line);
+}
+.wwm-loverride__done {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--go);
+}
+
+.wwm-result__learning {
+  font-weight: 700;
+  color: var(--go);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wwm-lgate,
+  .wwm-lgate__frame,
+  .wwm-lgate__say,
+  .wwm-lgate__pip,
+  .wwm-lhud,
+  .wwm-lmission,
+  .wwm-hold-btn__fill {
+    animation: none !important;
+    transition: none !important;
+  }
+}
