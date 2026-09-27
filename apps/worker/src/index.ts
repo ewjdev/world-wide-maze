@@ -1,9 +1,9 @@
 /**
  * Worker entry. Phase 07 owns the API, capture and storage; Phase 06 owns src/room.ts.
  */
-import { authenticateAdmin } from './admin-auth.ts';
 import { createServices } from './config.ts';
 import { createApp } from './router.ts';
+import { serveAdminPage } from './routes/admin-page.ts';
 import { handleRooms } from './routes/rooms.ts';
 import { sweepCards } from './routes/share.ts';
 import { withSecurityHeaders } from './security.ts';
@@ -18,24 +18,9 @@ const app = createApp();
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     let res: Response;
-    const path = new URL(request.url).pathname;
-    if (path === '/admin' || path.startsWith('/admin/')) {
-      if (!(await authenticateAdmin(request, env)))
-        return withSecurityHeaders(
-          request,
-          new Response('Operator authentication required', {
-            status: 401,
-            headers: { 'Cache-Control': 'private, no-store' },
-          }),
-        );
-      if (!env.ASSETS) return new Response('Admin app assets unavailable', { status: 503 });
-      const shell = await env.ASSETS.fetch(request);
-      const headers = new Headers(shell.headers);
-      headers.set('Cache-Control', 'private, no-store');
-      return withSecurityHeaders(request, new Response(shell.body, { status: shell.status, headers }));
-    }
     try {
       res =
+        (await serveAdminPage(request, env)) ??
         (await handleRooms(request, env)) ?? // Phase 06: /api/rooms/*
         (await app.fetch(request, env, ctx));
     } catch (err) {

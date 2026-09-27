@@ -179,6 +179,15 @@ describe('deploy config (wrangler.jsonc)', () => {
   });
   test('production serves the web app with the API first', () => {
     // Phase 18: + score permalinks (/r/*) and the app routes with their own link-preview card (/, /log, /j/*)
-    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*', '/r/*', '/j/*', '/', '/log']);
+    expect(prod?.assets.run_worker_first).toEqual([
+      '/api/*',
+      '/s/*',
+      '/r/*',
+      '/j/*',
+      '/',
+      '/log',
+      '/admin',
+      '/admin/*',
+    ]);
   });
 });
