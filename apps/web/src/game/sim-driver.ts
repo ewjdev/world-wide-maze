@@ -9,13 +9,18 @@
  *
  * `advance()` returns how much *simulated* time passed, which is what the game timer consumes.
  */
-import { createSimulation, createWorkerSimulation, type WorkerSimulation } from '@wwm/physics';
+import {
+  createSimulation,
+  createWorkerSimulation,
+  type LockableSimulation,
+  type WorkerSimulation,
+} from '@wwm/physics';
 import {
   type BallState,
   type InputSample,
   SIM_HZ,
   type SimEvent,
-  type Simulation,
+  type SimLoadOptions,
   type StageData,
   type Vec2,
 } from '@wwm/schema';
@@ -40,7 +45,10 @@ export type EventFn = (e: SimEvent) => boolean;
 
 export interface SimDriver {
   readonly kind: 'worker' | 'lockstep';
-  load(stage: StageData): Promise<void>;
+  /** `options.locks` (contracts §10.4, learning runs only) are placed closed. */
+  load(stage: StageData, options?: SimLoadOptions): Promise<void>;
+  /** contracts §10.4: open / close a runtime lock before the next tick. */
+  setLock(id: number, open: boolean): void;
   /** Step the sim for a render frame of `dt` seconds. */
   advance(dt: number, input: InputFn, onEvent: EventFn): AdvanceResult;
   reset(to?: Vec2): void;
@@ -64,11 +72,14 @@ export class WorkerDriver implements SimDriver {
   get tick() {
     return Math.round(this.#t * SIM_HZ);
   }
-  async load(stage: StageData) {
+  async load(stage: StageData, options?: SimLoadOptions) {
     this.#sim.setPaused(true);
     this.#paused = true;
-    await this.#sim.load(stage);
+    await this.#sim.load(stage, options);
     this.#t = 0;
+  }
+  setLock(id: number, open: boolean) {
+    this.#sim.setLock(id, open);
   }
   advance(dt: number, input: InputFn, onEvent: EventFn): AdvanceResult {
     if (this.#paused) return { ball: null, elevators: [], simDt: 0 };
@@ -92,19 +103,19 @@ export class WorkerDriver implements SimDriver {
 
 export class LockstepDriver implements SimDriver {
   readonly kind = 'lockstep' as const;
-  #sim: Simulation;
+  #sim: LockableSimulation;
   #acc = 0;
   #tick = 0;
   #paused = true;
   #last: { ball: BallState; elevators: { id: number; y: number }[] } | null = null;
-  constructor(sim: Simulation) {
+  constructor(sim: LockableSimulation) {
     this.#sim = sim;
   }
   get tick() {
     return this.#tick;
   }
-  async load(stage: StageData) {
-    await this.#sim.load(stage);
+  async load(stage: StageData, options?: SimLoadOptions) {
+    await this.#sim.load(stage, options);
     this.#acc = 0;
     this.#tick = 0;
     this.#last = null;
@@ -135,6 +146,9 @@ export class LockstepDriver implements SimDriver {
       elevators: this.#last?.elevators ?? [],
       simDt: steps * H,
     };
+  }
+  setLock(id: number, open: boolean) {
+    this.#sim.setLock(id, open);
   }
   reset(to?: Vec2) {
     this.#sim.reset(to);

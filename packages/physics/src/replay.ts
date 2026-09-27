@@ -3,8 +3,16 @@
  * stream (tagged with the tick it happened on) plus the final state. Deterministic: the same build + the
  * same StageData + the same inputs give the same result.
  */
-import type { BallState, InputSample, SimEvent, SimStepResult, Simulation, StageData } from '@wwm/schema';
-import { createSimulation, type SimulationOptions } from './simulation.ts';
+import type {
+  BallState,
+  InputSample,
+  LockSpec,
+  SimEvent,
+  SimStepResult,
+  Simulation,
+  StageData,
+} from '@wwm/schema';
+import { createSimulation, type LockableSimulation, type SimulationOptions } from './simulation.ts';
 
 export interface TickedEvent {
   tick: number; // 1-based step index the event was emitted on
@@ -26,6 +34,17 @@ export interface ReplayOptions extends SimulationOptions {
   stopAtGoal?: boolean;
   /** Apply the contract's restart flow: on 'lost', `reset(restartAt)` (default true). */
   autoRestart?: boolean;
+  /** contracts §10.4: runtime locks placed (closed) at load. Omit for every ranked replay. */
+  locks?: LockSpec[];
+  /** `setLock` calls, each applied right before step `tick` (1-based, like TickedEvent.tick). */
+  lockTimeline?: LockChange[];
+}
+
+/** A scheduled `setLock(lockId, open)`, applied before step `tick`. */
+export interface LockChange {
+  tick: number;
+  lockId: number;
+  open: boolean;
 }
 
 /** Run `inputs` against a fresh simulation of `stage`. */
@@ -36,7 +55,7 @@ export async function replay(
 ): Promise<ReplayResult> {
   const sim = await createSimulation(opts);
   try {
-    await sim.load(stage);
+    await sim.load(stage, opts.locks ? { locks: opts.locks } : undefined);
     return runInputs(sim, inputs, opts);
   } finally {
     sim.dispose();
@@ -54,8 +73,15 @@ export function runInputs(
   let last: SimStepResult | null = null;
   let restartAt: [number, number] | null = null;
   let tick = 0;
+  const changes = opts.lockTimeline ? [...opts.lockTimeline].sort((a, b) => a.tick - b.tick) : [];
+  if (changes.length > 0 && !('setLock' in sim)) throw new Error('replay: lockTimeline needs a lockable sim');
+  let ci = 0;
   for (const input of inputs) {
     tick++;
+    while (ci < changes.length && (changes[ci] as LockChange).tick <= tick) {
+      const c = changes[ci++] as LockChange;
+      (sim as LockableSimulation).setLock(c.lockId, c.open);
+    }
     const r = sim.step(input);
     last = r;
     for (const event of r.events) {

@@ -26,7 +26,9 @@ export type ColliderRole =
   | { type: 'island'; islandId: number }
   | { type: 'bridge'; bridgeId: number }
   | { type: 'rail'; islandId: number }
-  | { type: 'bridge-rail'; bridgeId: number };
+  | { type: 'bridge-rail'; bridgeId: number }
+  /** Phase 22 (contracts §10.4): a closed runtime lock's gate or fence (see locks.ts). */
+  | { type: 'lock'; lockId: number };
 
 export interface TrimeshSpec {
   shape: 'trimesh';
@@ -105,7 +107,7 @@ export function basisToQuat(x: Vec3, y: Vec3, z: Vec3): Quat {
 }
 
 /** Rotation about +Y that maps local +X onto the horizontal unit direction (ux, 0, uz). */
-function yawQuat(ux: number, uz: number): Quat {
+export function yawQuat(ux: number, uz: number): Quat {
   const x: Vec3 = [ux, 0, uz];
   const y: Vec3 = [0, 1, 0];
   return basisToQuat(x, y, cross(x, y));
@@ -193,7 +195,7 @@ export function islandTrimesh(
 }
 
 /** Distance (px) to step from `p` along `dir` until inside `island` (0 if already inside), capped. */
-function gapIntoIsland(p: Vec2, dir: Vec2, island: Island | undefined, capPx: number): number {
+export function gapIntoIsland(p: Vec2, dir: Vec2, island: Island | undefined, capPx: number): number {
   if (!island) return 0;
   for (let s = 0; s <= capPx; s += 1) {
     if (pointInPolygon([p[0] + dir[0] * s, p[1] + dir[1] * s], island.contour, island.holes)) return s;

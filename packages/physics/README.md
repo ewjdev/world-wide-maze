@@ -35,6 +35,31 @@ const r = await replay(stage, inputs);            // { final, events: {tick, eve
   - `fell` fires once. `lost` follows 3 s later.
 - **Elevators:** entering a platform footprint at either level (an edge trigger, outside the cooldown) starts a ride. The ball becomes kinematic and rides with the platform, and its velocity is zeroed at both ends. The partner platform's colliders are disabled during the ride. After a ride down they come back only once the ball is out of their volume, and on a ride down with a rise under 1.463 D the ball is eased along the platform, clear of the upper island's slab (0.2.0, BI-3: before, such lifts wedged the ball). The builder no longer makes lifts under 3.7 D.
 
+## Runtime locks (Phase 22, N; contracts §10.4, CCR-GAME-01)
+Learning runs place locks over a stage at load time; ranked runs pass none and take exactly the pre-Phase-22 code path.
+
+```ts
+await sim.load(stage, { locks: [{ id: 1, kind: 'bridge', targetId: 3, islandId: 0 }] }); // all start closed
+sim.setLock(1, true);                     // applied before the next step (worker: a `lock` message)
+barrierPose(stage, lock)                  // @wwm/physics/locks: where the gate stands (the engine draws it there)
+replay(stage, inputs, { locks, lockTimeline: [{ tick, lockId, open }] })
+```
+- **bridge:** a static gate across the deck, its island-facing face on the edge of `islandId`, 4.5 m tall, plus two
+  side fences along the deck (so the ball can't hop around the gate's ends onto the deck). Disabled when open.
+- **elevator:** the ride trigger is ignored while closed; the same gate + fences stand just before the platform's entry
+  end on `islandId`. Opening re-arms the trigger, so a ball already on the platform rides.
+- **goal:** while closed the goal sensor doesn't latch; it emits `locked` instead. Opening re-arms it.
+- **`locked` event:** touching a closed gate/fence, entering a locked lift's trigger or the locked goal emits
+  `{ type: 'locked', lockId }`, at most once per second of sim time per lock.
+- **No wall climbing:** contacts with a lock never ground the ball or re-arm the jump (any other contact does, so the
+  ball could otherwise climb a wall by jumping repeatedly against it).
+- `load` throws on a spec that doesn't match the stage (unknown target, or `islandId` not one of its islands) and on
+  duplicate ids. `LockableSimulation` is the contract `Simulation` plus these two methods (the schema interface
+  doesn't declare them yet; see the Phase 22 build log).
+- M0 spike scripts: `scripts/lock-spike.ts` (ram a gate at full speed), `scripts/jump-envelope.ts` (max jump height and
+  reach), `scripts/bypass-spike.ts` (how often islands can be crossed without a connector). `pnpm --filter
+  @wwm/physics spike:locks` runs all three. Results: `docs/build-log/phase-22-locks.md`.
+
 ## Model (E = evidenced by the 2013 build, R = reconstructed, N = new)
 All tunables live in `src/params.ts`, each labelled. Tilt **rotates gravity** (E). The smoothed tilt is applied in the `frameYaw` frame only while POWER is held (τ 0.18 s, E). Angular damping is 1.20/s with POWER and 4.61/s without (E). Jump gives +16.7 m/s and needs a contact within 100 ms (E). Falls trigger 9 m below the lowest island; after that, input is off and gravity doubles over 1 s. `lost` comes 3 s later (E). Friction and restitution use the 2013 values with Multiply combine (E). Rails are solid boxes 0.556 m tall, placed **just outside** the edge line (R/N: 2013 used zero-thickness ribbons at the edge, and this keeps 1 D-wide text strips walkable).
 

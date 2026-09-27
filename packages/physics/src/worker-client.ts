@@ -11,8 +11,8 @@ import type {
   BallState,
   InputSample,
   SimEvent,
+  SimLoadOptions,
   SimStepResult,
-  Simulation,
   StageData,
   Vec2,
 } from '@wwm/schema';
@@ -20,6 +20,7 @@ import { levelToWorldY } from '@wwm/schema/space';
 import type { PhysicsParams } from './params.ts';
 import type { RapierBuild } from './rapier.ts';
 import type { ReplayResult } from './replay.ts';
+import type { LockableSimulation } from './simulation.ts';
 import type { FromWorker, StateSnapshot, ToWorker } from './worker-protocol.ts';
 
 export interface WorkerSimulationOptions {
@@ -31,7 +32,7 @@ export interface WorkerSimulationOptions {
   worker?: Worker;
 }
 
-export interface WorkerSimulation extends Simulation {
+export interface WorkerSimulation extends LockableSimulation {
   /** Map view / pause: stop the worker clock (the stall guard also stops it if `step` isn't called). */
   setPaused(paused: boolean): void;
   /** Run a replay deterministically inside the worker (same code path as Node `replay`). */
@@ -157,10 +158,14 @@ export async function createWorkerSimulation(opts: WorkerSimulationOptions = {})
   let lastStage: StageData | null = null;
 
   return {
-    async load(stage: StageData) {
+    async load(stage: StageData, options?: SimLoadOptions) {
       lastStage = stage;
       events = [];
-      await request((id) => ({ t: 'load', id, stage }));
+      await request((id) => (options ? { t: 'load', id, stage, options } : { t: 'load', id, stage }));
+    },
+    setLock(lockId: number, open: boolean) {
+      if (disposed) return;
+      send({ t: 'lock', lockId, open });
     },
     step(input: InputSample): SimStepResult {
       if (disposed) throw new Error('@wwm/physics: disposed');

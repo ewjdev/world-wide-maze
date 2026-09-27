@@ -9,6 +9,11 @@
  * - Jump: +16.7 m/s up if any contact within the last 100 ms; POWER not required.
  * - Falls: 'fell' below (lowest island top − 9 m) → input ignored, gravity ×2 over 1 s, 'lost' 3 s later.
  * - Elevators: trigger-activated two-platform lifts, ball velocity zeroed and carried during the ride.
+ * - Runtime locks (Phase 22, contracts §10.4, `load(stage, { locks })` + `setLock`): a closed bridge/elevator lock
+ *   is a static gate + fences (locks.ts), a closed elevator lock ignores the ride trigger, a closed goal lock
+ *   doesn't latch the goal. Touching a closed lock emits `locked` (≤ 1 per second of sim time per lock). Wall
+ *   contacts with a lock never count for the jump grace or `grounded`, so the ball can't climb a gate. With no
+ *   locks every code path is the pre-Phase-22 one (same colliders, same step order).
  *
  * frameYaw convention (CCR-05-1): yaw 0 ⇒ forward (+tiltZ) = world −Z (page up) and right (+tiltX) = +X;
  * yaw increases counter-clockwise seen from above (right-handed about +Y), i.e. three.js `camera.rotation.y`
@@ -22,9 +27,11 @@ import {
   type InputSample,
   type Island,
   type Item,
+  type LockSpec,
   PORTAL_RADIUS_M,
   pointInPolygon,
   type SimEvent,
+  type SimLoadOptions,
   type SimStepResult,
   type Simulation,
   type StageData,
@@ -41,6 +48,7 @@ import {
   type StaticSpec,
   staticSpecs,
 } from './geometry.ts';
+import { lockBoxes, lockMatchesStage } from './locks.ts';
 import { type PhysicsParams, resolveParams } from './params.ts';
 import { loadRapier, type Rapier, type RapierBuild } from './rapier.ts';
 
@@ -56,6 +64,25 @@ export interface SimulationOptions {
 }
 
 type Role = ColliderRole | { type: 'elevator'; elevatorId: number };
+
+/**
+ * contracts §10.4 (CCR-GAME-01): the contract `Simulation` plus runtime locks. The schema's `Simulation` interface
+ * does not declare these yet (a CCR is filed); every physics implementation provides them.
+ */
+export interface LockableSimulation extends Simulation {
+  /** Load a stage; `options.locks` are placed closed. Throws if a lock doesn't match the stage. */
+  load(stage: StageData, options?: SimLoadOptions): Promise<void>;
+  /** Open or close lock `id` before the next step. Unknown ids are ignored. */
+  setLock(id: number, open: boolean): void;
+}
+
+interface LockRt {
+  spec: LockSpec;
+  open: boolean;
+  /** Gate + fences (bridge / elevator locks); none for goal locks. */
+  cols: Collider[];
+  lastLockedTick: number;
+}
 
 interface ElevatorRt {
   def: Elevator;
@@ -105,7 +132,7 @@ function clamp(v: number, lim: number): number {
   return v > lim ? lim : v < -lim ? -lim : v;
 }
 
-export class RapierSimulation implements Simulation {
+export class RapierSimulation implements LockableSimulation {
   readonly params: PhysicsParams;
   private readonly R: Rapier;
   private world: World | null = null;
@@ -118,6 +145,10 @@ export class RapierSimulation implements Simulation {
   /** contracts §10.1: portal sensors (geometric, no collider: nothing in the Rapier world changes). */
   private portals: { id: number; x: number; z: number; top: number; inside: boolean }[] = [];
   private elevators: ElevatorRt[] = [];
+  /** Phase 22: runtime locks of the current load (empty on every ranked run). */
+  private locks = new Map<number, LockRt>();
+  private goalLocks: LockRt[] = [];
+  private elevatorLocks = new Map<number, LockRt[]>();
   private islandsById = new Map<number, Island>();
   private lowestTop = 0;
   private triangles = 0;
@@ -164,7 +195,7 @@ export class RapierSimulation implements Simulation {
 
   // ───────────────────────────────────────── load ─────────────────────────────────────────
 
-  async load(stage: StageData): Promise<void> {
+  async load(stage: StageData, options?: SimLoadOptions): Promise<void> {
     this.freeWorld();
     const R = this.R;
     const p = this.params;
@@ -305,6 +336,35 @@ export class RapierSimulation implements Simulation {
       ball,
     );
     this.ball = ball;
+
+    // Runtime locks (Phase 22): created last, so a load without locks builds exactly the same world as before.
+    for (const spec of options?.locks ?? []) {
+      if (this.locks.has(spec.id)) throw new Error(`@wwm/physics: duplicate lock id ${spec.id}`);
+      if (!lockMatchesStage(stage, spec))
+        throw new Error(
+          `@wwm/physics: lock ${spec.id} (${spec.kind} ${spec.targetId} on island ${spec.islandId}) does not match the stage`,
+        );
+      const cols = lockBoxes(stage, spec, p).map((s) => {
+        const col = world.createCollider(
+          floor(
+            R.ColliderDesc.cuboid(s.half[0], s.half[1], s.half[2])
+              .setTranslation(s.center[0], s.center[1], s.center[2])
+              .setRotation({ x: s.rot[0], y: s.rot[1], z: s.rot[2], w: s.rot[3] }),
+            true,
+          ),
+        );
+        this.roles.set(col.handle, s.role);
+        return col;
+      });
+      const rt: LockRt = { spec: { ...spec }, open: false, cols, lastLockedTick: NEG_INF_TICK };
+      this.locks.set(spec.id, rt);
+      if (spec.kind === 'goal') this.goalLocks.push(rt);
+      if (spec.kind === 'elevator') {
+        const list = this.elevatorLocks.get(spec.targetId) ?? [];
+        list.push(rt);
+        this.elevatorLocks.set(spec.targetId, list);
+      }
+    }
 
     this.tick = 0;
     this.goalReached = false;
@@ -480,6 +540,8 @@ export class RapierSimulation implements Simulation {
   }
 
   private groundedNow = false;
+  /** scratch: locks the ball touched this step */
+  private readonly lockTouch: number[] = [];
 
   private processContacts(tick: number, pos: RapierNS.Vector, events: SimEvent[]): void {
     const world = this.world as World;
@@ -487,8 +549,11 @@ export class RapierSimulation implements Simulation {
     const p = this.params;
     const touching = new Set<number>();
     let grounded = false;
+    let floorContact = false;
     let landImpact = 0;
     let bumpImpact = 0;
+    const lockIds = this.lockTouch;
+    lockIds.length = 0;
     const v0 = this.v0;
     world.contactPairsWith(ballCol, (other) => {
       const role = this.roles.get(other.handle);
@@ -507,7 +572,12 @@ export class RapierSimulation implements Simulation {
         const nz = n.z * s;
         const approach = -(v0.x * nx + v0.y * ny + v0.z * nz);
         touching.add(other.handle);
-        if (ny > p.groundNormalY) {
+        // a lock's gate is a wall you can't climb: it never grounds the ball nor re-arms the jump
+        const lock = role.type === 'lock';
+        if (lock) {
+          if (!lockIds.includes(role.lockId)) lockIds.push(role.lockId);
+        } else floorContact = true;
+        if (ny > p.groundNormalY && !lock) {
           grounded = true;
           if (approach > landImpact) landImpact = approach;
         } else if (!this.prevTouching.has(other.handle) && approach > bumpImpact) {
@@ -520,12 +590,18 @@ export class RapierSimulation implements Simulation {
         if (role.type === 'island') this.lastIslandPos = worldToPage([pos.x, pos.y, pos.z]);
       });
     });
-    const any = touching.size > 0;
     if (grounded && tick - 1 - this.lastTouchTick >= this.landedAirTicks && landImpact >= p.impactMinSpeed) {
       events.push({ type: 'landed', impact: landImpact });
     }
     if (bumpImpact >= p.impactMinSpeed) events.push({ type: 'bump', impact: bumpImpact });
-    if (any || this.riding) {
+    if (lockIds.length > 0) {
+      lockIds.sort((a, b) => a - b);
+      for (const id of lockIds) {
+        const l = this.locks.get(id);
+        if (l && !l.open) this.emitLocked(l, events);
+      }
+    }
+    if (floorContact || this.riding) {
       this.lastContactTick = tick;
       this.lastTouchTick = tick;
     }
@@ -551,9 +627,48 @@ export class RapierSimulation implements Simulation {
       events.push({ type: 'item', itemId: h.item.id, kind: h.item.kind });
     }
     if (goal && !this.goalReached) {
-      this.goalReached = true;
-      events.push({ type: 'goal' });
+      // a closed goal lock doesn't latch: the goal stays armed and fires once every goal lock is open
+      let closed = false;
+      for (const l of this.goalLocks) {
+        if (l.open) continue;
+        closed = true;
+        this.emitLocked(l, events);
+      }
+      if (!closed) {
+        this.goalReached = true;
+        events.push({ type: 'goal' });
+      }
     }
+  }
+
+  /** `locked` for lock `l`, at most once per second of sim time. */
+  private emitLocked(l: LockRt, events: SimEvent[]): void {
+    if (this.tick - l.lastLockedTick < this.params.simHz) return;
+    l.lastLockedTick = this.tick;
+    events.push({ type: 'locked', lockId: l.spec.id });
+  }
+
+  /**
+   * contracts §10.4: open (or close again) lock `id`; it takes effect on the next step. Opening an elevator lock
+   * re-arms its trigger, so a ball already standing on the platform rides.
+   */
+  setLock(id: number, open: boolean): void {
+    const l = this.locks.get(id);
+    if (!l || l.open === open) return;
+    l.open = open;
+    for (const c of l.cols) c.setEnabled(!open);
+    if (open && l.spec.kind === 'elevator') {
+      const e = this.elevators.find((x) => x.def.id === l.spec.targetId);
+      if (e) {
+        e.wasInLow = false;
+        e.wasInHigh = false;
+      }
+    }
+  }
+
+  /** Current lock states (debug / tests). */
+  lockStates(): { id: number; kind: LockSpec['kind']; open: boolean }[] {
+    return [...this.locks.values()].map((l) => ({ id: l.spec.id, kind: l.spec.kind, open: l.open }));
   }
 
   // ───────────────────────────────────────── elevators ─────────────────────────────────────────
@@ -597,6 +712,11 @@ export class RapierSimulation implements Simulation {
       e.wasInLow = inLow;
       e.wasInHigh = inHigh;
       if (!entered || tick < e.cooldownUntil || this.riding) continue;
+      const locks = this.elevatorLocks.size > 0 ? this.elevatorLocks.get(e.def.id) : undefined;
+      if (locks?.some((l) => !l.open)) {
+        for (const l of locks) if (!l.open) this.emitLocked(l, events);
+        continue;
+      }
       const from = inLow ? e.low : e.high;
       const to = inLow ? e.high : e.low;
       const carrier: 0 | 1 = Math.abs(e.y[0] - from) <= Math.abs(e.y[1] - from) ? 0 : 1;
@@ -740,6 +860,9 @@ export class RapierSimulation implements Simulation {
     this.itemsByHandle.clear();
     this.portals = [];
     this.elevators = [];
+    this.locks.clear();
+    this.goalLocks = [];
+    this.elevatorLocks.clear();
     this.riding = null;
   }
 
