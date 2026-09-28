@@ -1,0 +1,39 @@
+
+ RUN  v5.0.1 /Users/ewj/.codex/worktrees/performance-ghost/wwm
+
+ ❯ |@wwm/web| test/portal.e2e.test.ts (3 tests | 1 failed | 2 skipped) 9017ms
+   ❯ link portals e2e (Chromium, mocked /api) (3)
+     × declining a portal lets the ball roll through it again without interrupting play 8833ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |@wwm/web| test/portal.e2e.test.ts > link portals e2e (Chromium, mocked /api) > declining a portal lets the ball roll through it again without interrupting play
+AssertionError: expected { id: +0, …(4) } to be null
+
+- Expected:
+null
+
++ Received:
+{
+  "host": "second.example",
+  "href": "https://second.example/page",
+  "id": 0,
+  "label": "The second site",
+  "offline": false,
+}
+
+ ❯ test/portal.e2e.test.ts:342:42
+    340|       });
+    341|       expect((await state(page)).phase).toBe('play');
+    342|       expect((await state(page)).portal).toBeNull();
+       |                                          ^
+    343|       expect(await page.locator('[data-testid="portal-prompt"]').count…
+    344|       expect(observed.portalEntries).toBeGreaterThanOrEqual(2);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  17:20:28
+   Duration  9.32s (tests 97%, import 2%)

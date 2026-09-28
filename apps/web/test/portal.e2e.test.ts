@@ -28,6 +28,21 @@ const HANDMADE = JSON.parse(
 ) as StageData;
 const PNG = readFileSync(new URL('../../../fixtures/stages/handmade-simple.png', import.meta.url));
 
+interface PortalObservation {
+  steps: number;
+  portalEntries: number;
+  secondEntryTick: number | null;
+  innerTick: number | null;
+  exitTick: number | null;
+  minimumReturnDistance: number | null;
+}
+declare global {
+  interface Window {
+    __portalSimulation?: typeof import('../../../packages/physics/src/simulation.ts').RapierSimulation;
+    __portalObservation?: PortalObservation & { restore(): void };
+  }
+}
+
 const A = 'a1'.repeat(32);
 const B = 'b2'.repeat(32);
 const [sx, sy] = HANDMADE.start.pos;
@@ -246,27 +261,99 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
 
   test('declining a portal lets the ball roll through it again without interrupting play', async () => {
     const { page, ctx } = await open(true);
-    expect(await roll(page)).toBe(true);
-    await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
-    await page.click('[data-testid="portal-stay"]');
-    await page.waitForSelector('[data-testid="portal-prompt"]', { state: 'detached' });
-
-    const portal = STAGE_A.portals?.[0];
-    const island = HANDMADE.islands.find((i) => i.id === portal?.islandId);
-    const [px, , pz] = pageToWorld(portal?.pos ?? [0, 0], island?.level ?? 0);
-    const distance = async () => {
-      const { ball } = await state(page);
-      return Math.hypot(ball[0] - px, ball[2] - pz);
-    };
-    await expect.poll(distance, { timeout: 15_000 }).toBeGreaterThan(PORTAL_RADIUS_M + 0.2);
-    await page.keyboard.down('ArrowDown');
-    await expect.poll(distance, { timeout: 15_000 }).toBeLessThan(PORTAL_RADIUS_M * 0.5);
-    await expect.poll(distance, { timeout: 15_000 }).toBeGreaterThan(PORTAL_RADIUS_M + 0.2);
-    await page.keyboard.up('ArrowDown');
-    expect((await state(page)).phase).toBe('play');
-    expect((await state(page)).portal).toBeNull();
-    expect(await page.locator('[data-testid="portal-prompt"]').count()).toBe(0);
-    await ctx.close();
+    try {
+      const portal = STAGE_A.portals?.[0];
+      const island = HANDMADE.islands.find((i) => i.id === portal?.islandId);
+      const [px, , pz] = pageToWorld(portal?.pos ?? [0, 0], island?.level ?? 0);
+      // Import in a real page module: Vitest rewrites imports inside evaluate callbacks for SSR.
+      // Observe every actual physics tick so remote polling cannot miss a brief return crossing.
+      const simulationUrl = `/@fs${fileURLToPath(new URL('../../../packages/physics/src/simulation.ts', import.meta.url))}`;
+      await page.addScriptTag({
+        type: 'module',
+        content: `import { RapierSimulation } from ${JSON.stringify(simulationUrl)}; window.__portalSimulation = RapierSimulation;`,
+      });
+      await page.waitForFunction(() => '__portalSimulation' in window);
+      await page.evaluate(
+        ({ px, pz, radius }) => {
+          const Simulation = window.__portalSimulation;
+          if (!Simulation) throw new Error('Physics observer module not loaded');
+          const original = Simulation.prototype.step;
+          const observed: PortalObservation & { restore(): void } = {
+            steps: 0,
+            portalEntries: 0,
+            secondEntryTick: null,
+            innerTick: null,
+            exitTick: null,
+            minimumReturnDistance: null,
+            restore() {
+              Simulation.prototype.step = original;
+            },
+          };
+          window.__portalObservation = observed;
+          Simulation.prototype.step = function (input) {
+            const result = original.call(this, input);
+            const tick = this.stats().tick;
+            observed.steps++;
+            for (const event of result.events) {
+              if (event.type === 'portal' && event.portalId === 0) {
+                observed.portalEntries++;
+                if (observed.portalEntries === 2) observed.secondEntryTick = tick;
+              }
+            }
+            if (observed.secondEntryTick !== null) {
+              const distance = Math.hypot(result.ball.pos[0] - px, result.ball.pos[2] - pz);
+              observed.minimumReturnDistance = Math.min(observed.minimumReturnDistance ?? Infinity, distance);
+              if (distance < radius * 0.5) observed.innerTick ??= tick;
+              if (observed.innerTick !== null && distance > radius + 0.2) observed.exitTick ??= tick;
+            }
+            return result;
+          };
+        },
+        { px, pz, radius: PORTAL_RADIUS_M },
+      );
+      expect(await roll(page)).toBe(true);
+      await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
+      await page.click('[data-testid="portal-stay"]');
+      await page.waitForSelector('[data-testid="portal-prompt"]', { state: 'detached' });
+      const distance = async () => {
+        const { ball } = await state(page);
+        return Math.hypot(ball[0] - px, ball[2] - pz);
+      };
+      await expect.poll(distance, { timeout: 15_000 }).toBeGreaterThan(PORTAL_RADIUS_M + 0.2);
+      await page.keyboard.down('ArrowDown');
+      // Retain the same inner/outer thresholds and real return input. A renewed prompt is an
+      // immediate failure; a successful traversal requires sensor entry, inner crossing, then exit.
+      await page.waitForFunction(
+        () => {
+          const o = window.__portalObservation;
+          return !!o && (o.exitTick !== null || window.__wwmGame?.debugState().portal !== null);
+        },
+        undefined,
+        { timeout: 15_000 },
+      );
+      await page.keyboard.up('ArrowDown');
+      const observed = await page.evaluate(() => {
+        const o = window.__portalObservation;
+        if (!o) throw new Error('Physics observer missing');
+        const { restore: _restore, ...facts } = o;
+        return facts;
+      });
+      expect((await state(page)).phase).toBe('play');
+      expect((await state(page)).portal).toBeNull();
+      expect(await page.locator('[data-testid="portal-prompt"]').count()).toBe(0);
+      expect(observed.portalEntries).toBeGreaterThanOrEqual(2);
+      expect(observed.secondEntryTick).not.toBeNull();
+      expect(observed.innerTick).toBeGreaterThan(observed.secondEntryTick ?? Infinity);
+      expect(observed.minimumReturnDistance).toBeLessThan(PORTAL_RADIUS_M * 0.5);
+      expect(observed.exitTick).toBeGreaterThan(observed.innerTick ?? Infinity);
+      console.log('[portal return crossing]', JSON.stringify(observed));
+    } finally {
+      try {
+        await page.evaluate(() => window.__portalObservation?.restore());
+      } finally {
+        await ctx.close();
+      }
+    }
   }, 120_000);
 
   test('offline: the portal needs the online service and travel is refused', async () => {
