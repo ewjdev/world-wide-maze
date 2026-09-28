@@ -1,11 +1,12 @@
 {
   "format": 2,
-  "hash": "b1114caaf0875183",
+  "hash": "8ba6f4ff7b38f4ac",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
     "docs/build-log/performance-audit-2026-09-27.md",
     "docs/build-log/performance-cache-p1.md",
+    "docs/build-log/performance-device-harness.md",
     "docs/build-log/performance-ghost-ci-repair.md",
     "docs/build-log/performance-ghost-p1.md",
     "docs/build-log/performance-idle-p2.md",
@@ -323,6 +324,40 @@
       "url": "/log#performance-cache-p1",
       "kind": "build-log",
       "text": "## Repository validation\n`pnpm check` completed September 27, 2026 at approximately 21:08 UTC. Typecheck and lint passed (32 existing warnings, four informational diagnostics). All **1,348 test assertions passed**, with 32 skipped. The command exited nonzero because the unrelated `apps/worker/test/cards.integration.test.ts` afterAll harness disposal hook exceeded 60 seconds; its 40 assertions passed. Do not call this a fully green repository check. Targeted cleanup rerun and combined staging CI remain required before final acceptance. The parent released this agent's heavy host window to the renderer rather than overlapping a retry with its measurements.\n\nAn earlier full-check attempt stopped at a test-only TypeScript mismatch (`StageImage` assigned to `ImageBitmap` in the controlled rejection test). The observation type was narrowed to its required readonly width property; the subsequent full typecheck passed. No runtime source changed for that correction."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md",
+      "title": "Portable physical-device evidence harness (#27/#28)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "The existing native probes require desktop Playwright/CDP/Metal. Added a separate opt-in local preview and browser collector for repeatable exports on desktop or phone, plus a validator that refuses to certify hardware or auto-pass incomplete metrics. No production module, telemetry path, device floor or runtime performance claim changed.\n\nThe server verifies a source-bound build, pins all bytes, discloses the instrumented HTML hash separately and defaults to loopback with API disabled. The collector stores bounded numeric frame streams and existing game/controller diagnostics locally, then serializes/downloads after measurement. It distinguishes browser callbacks, engine submissions, retained resource counters and unavailable CPU/GPU/input-to-photon metrics. Validator checks source/tool identity, temporal coverage, exact intervals, scenario/visibility observations, errors, missing counters, and physical-claim contradictions. Structurally complete data still returns `review-required` (exit3), never physical acceptance.\n\nRead-only device inventory found a paired physical iPhone 17 Pro with its tunnel unavailable; all other entries were explicitly simulated. No reconnect, provisioning, installation, signing, remote browser control or user-device data access was attempted. No private device identifiers are stored here. Actual iOS/Safari, Android and lower-tier physical acceptance remain open.\n\nDedicated Node tests cover invalid/missing device evidence, stale/tampered assets, pinned immutable serving, API disabled by default, malformed optional manifests, scenario/visibility contradictions and sustained gaps. Browser smoke and full repository validation are recorded below after execution. See [the operator guide](../launch/performance-device-capture.md) for commands and measurement limits."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md~2",
+      "title": "Portable physical-device evidence harness (#27/#28) (continued)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "Peer reviews found no source blocker in audio worker preparation/gesture-resume/disposal or compact recorder ownership/export semantics; their measured qualification belongs to their separate evidence. Read-only investigation of another branch's full-suite failures found an existing absolute 100 ms cachedPOST assertion (observed 120.97 ms versus 4.97 s cold, structural cache hit passed) and unchanged Wrangler harness `close()` 60 s timeout. Main `1947496` changes cards cache polling to an acknowledged R2 write; that is not proof of resolving the observed teardown timeout. No budgets or teardown code were changed here."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md#validation-and-limits",
+      "title": "Portable physical-device evidence harness (#27/#28) › Validation and limits",
+      "path": "docs/build-log/performance-device-harness.md",
+      "anchor": "validation-and-limits",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "## Validation and limits\n- `node --test infra/perf/device-data.test.mjs infra/perf/device-server.test.mjs`: **20 passed**, including a negative control for one second of play per minute masquerading as a thermal workload. Thermal review requires 15 visible minutes, play in each full minute, and at least 90% of visible snapshots in play; this is workload coverage, not a hardware performance budget.\n- Source-bound production build: **382 verified assets**, unchanged runtime `36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669`, base `2629523`. Every artifact identifies the instrumented collector revision separately.\n- Automated Chromium portable-path smoke: **passed 10.55 s**, then **passed 10.66 s** after strengthening the test to read the actual downloaded JSON and assert exact frame/provenance contents. Both capture 150 engine calls, 301 browser callbacks and seven resource snapshots in approximately five seconds, with no page errors. The long-task API was deliberately unavailable; its data remains null. The original engine method is restored. Both datasets correctly validate as **incomplete physical evidence**.\n- An initial smoke used nonexistent title route `/play` and timed out waiting for the game. The corrected actual title route is `/`. This harness mistake and its raw failure are preserved; no product code was changed.\n- Lightweight overhead diagnostic compares sequential five-second title windows: baseline/capture page task time **307.8/270.9 ms**, and **458.0/311.3 ms** on the strengthened repeat. Capture includes endpoint JSON serialization. Order, warm-up and scheduling confound these samples: they do **not** demonstrate a speedup, zero observer overhead, a device budget, or GPU utilization. Compare actual device candidates using identical instrumentation and account for typed-buffer growth.\n- Full `pnpm check`: **typecheck and lint pass; 118 test files and 1,383 tests pass, 32 tests skipped**, 149.01 seconds. No budget relaxation or unrelated test fix. Browser and local server closed; host released before final documentation/commit.\n- Final Biome and Docent checks pass. Physical iOS/Safari, Android, controller sensor permissions and phone HTTPS/relay operation remain untested here. No physical acceptance is inferred from Chromium portability smoke or self-reported metadata."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md#validation-and-limits~2",
+      "title": "Portable physical-device evidence harness (#27/#28) › Validation and limits (continued)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "anchor": "validation-and-limits",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "[Raw logs, immutable build manifest and compressed capture JSON](../launch/evidence/device-harness/) preserve both successful samples and the rejected wrong-route attempt. Decompress `performance-build.json.gz` and the matching smoke report for inspection; these automated artifacts are examples of correctly incomplete evidence, not a proposed supported-device floor."
     },
     {
       "id": "docs/build-log/performance-ghost-ci-repair.md",
