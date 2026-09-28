@@ -1,0 +1,8 @@
+{
+  "name": "jev-runtime-test",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "durable_objects": { "bindings": [{ "name": "JEV_CONTROL", "class_name": "JevControl" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["JevControl"] }]
+}

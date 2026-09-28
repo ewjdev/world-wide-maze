@@ -2,12 +2,15 @@ import type { Difficulty, ModerationStatus } from '@wwm/schema';
 import { Hono } from 'hono';
 import { type AdminAuthConfig, authenticateAdmin } from '../admin-auth.ts';
 import type { AppEnv } from '../app-env.ts';
+import { budget } from '../budget-client.ts';
+import type { BudgetKind } from '../budget-policy.ts';
 import { Catalog, CatalogInputError } from '../catalog.ts';
 import { runCacheKey } from '../ids.ts';
 import { checkUrl } from '../policy/url-policy.ts';
 import { BodyTooLargeError, readJsonCapped } from '../security.ts';
+import { jevAdminRoutes } from './admin-jev.ts';
 
-type AdminEnv = {
+export type AdminEnv = {
   Bindings: AppEnv['Bindings'] & AdminAuthConfig;
   Variables: AppEnv['Variables'] & { adminEmail: string };
 };
@@ -45,6 +48,28 @@ function reason(value: unknown): string {
     throw new CatalogInputError('A reason of 1–1000 characters is required');
   return value.trim();
 }
+adminRoutes.get('/budget', async (c) => c.json(await budget(c.env).snapshot()));
+adminRoutes.post('/budget', async (c) => {
+  const input = await body(c.req.raw);
+  try {
+    await budget(c.env).configure(
+      input as {
+        spentMicros?: number;
+        storedBytes?: number;
+        disabled?: BudgetKind[];
+        staticOnly?: boolean;
+        telemetryReady?: boolean;
+      },
+      c.get('adminEmail'),
+    );
+    return c.json(await budget(c.env).snapshot());
+  } catch {
+    return c.json(
+      { error: 'Invalid reconciliation. Include non-decreasing spend and measured storage.' },
+      400,
+    );
+  }
+});
 adminRoutes.get('/session', (c) => c.json({ email: c.get('adminEmail') }));
 adminRoutes.get('/catalog', async (c) =>
   c.json(
@@ -196,3 +221,5 @@ adminRoutes.post('/runs/:runId/refresh', async (c) => {
     throw err;
   }
 });
+
+adminRoutes.route('/jev', jevAdminRoutes);

@@ -86,6 +86,13 @@ const devRoutes: RouteObject[] = import.meta.env.DEV
   : [];
 
 const pageRoutes: RouteObject[] = [
+  ...(import.meta.env.DEV && import.meta.env.VITE_JEV_PILOT
+    ? [{ path: '/dev/jev', lazy: async () => ({ Component: (await import('./jev/JevPage.tsx')).default }) }]
+    : []),
+  {
+    path: '/admin/jev',
+    lazy: async () => ({ Component: (await import('./admin/AdminJevPage.tsx')).default }),
+  },
   {
     path: '/admin',
     lazy: async () => ({ Component: (await import('./admin/AdminPage.tsx')).default }),

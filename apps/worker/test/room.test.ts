@@ -30,6 +30,7 @@ beforeAll(async () => {
     bindings: {
       ROOM_IDLE_EXPIRY_MS: { type: 'plain_text', value: String(IDLE_MS) },
       ROOM_KEEPALIVE_MS: { type: 'plain_text', value: '250' },
+      ROOM_HEARTBEAT_TIMEOUT_MS: { type: 'plain_text', value: '5000' },
     },
   } as Parameters<typeof unstable_startWorker>[0]);
   await worker.ready;
@@ -369,6 +370,15 @@ describe('Room DO relay', { timeout: TEST_MS }, () => {
     ctl.ws.close(1000);
     host.ws.close(1000);
   });
+
+  test('abandoned open sockets expire even though relay pings continue', async () => {
+    const room = await newRoom();
+    const host = await connect(room.code, 'host', room.hostToken, false);
+    await untilAsync(async () => !((await statsOf(room.code)) as RoomStats & { host: boolean }).host, 20_000);
+    const closed = await host.closed;
+    expect(closed.code).toBe(4404);
+    expect(closed.reason).toContain('timed out');
+  }, 30_000);
 
   test('rooms expire after the idle window with no sockets (code becomes free)', {
     timeout: 45_000,

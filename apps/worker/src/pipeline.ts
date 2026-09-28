@@ -263,6 +263,8 @@ export async function runBuildJob(
 
     /** Build + validate one slice with one seed. Builder errors and invalid stages are fatal (BUILD_FAILED). */
     const buildWithSeed = async (i: number, seed: number): Promise<StageData> => {
+      if (Date.now() - t0 > 240_000)
+        throw new ServiceError('CAPTURE_TIMEOUT', 'The build time budget was reached.');
       const tB = Date.now();
       let stage: StageData;
       try {

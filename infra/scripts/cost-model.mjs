@@ -4,6 +4,34 @@
  * nothing here is a measured bill. Edit ASSUMPTIONS and re-run: `node infra/scripts/cost-model.mjs [--md]`.
  * Prices: Cloudflare docs, Workers Paid, fetched 2026-09-25 (see cost-model.md for links).
  */
+import { BASE_RESERVE, POLICIES, STOP_AT, USD } from '../../apps/worker/src/budget-policy.ts';
+
+if (process.argv.includes('--protected')) {
+  console.log('Admission allowances (not invoice caps). Shared free tiers assumed exhausted.');
+  console.log(
+    `Target $50; fixed/prior-spend reserve at least $${BASE_RESERVE / USD}; stop $${STOP_AT / USD}; contingency $10.`,
+  );
+  console.log('| Operation | Reservation USD/unit | Daily units | Monthly units | Slots |');
+  console.log('| --- | ---: | ---: | ---: | ---: |');
+  for (const [kind, p] of Object.entries(POLICIES))
+    console.log(`| ${kind} | ${(p.cost / USD).toFixed(6)} | ${p.day} | ${p.month} | ${p.concurrent} |`);
+  console.log(
+    'AI/build/room pools each $10; other $5. Pool and $35 reduction can stop work before unit caps.',
+  );
+  console.log(
+    'At $0.0005 per room-minute the $10 pool admits at most 20,000 minutes, below the 50,000 unit ceiling.',
+  );
+  console.log('Example denied-request flood, Worker only, 1ms CPU/request, no free allowance:');
+  for (const count of [1e6, 10e6, 100e6])
+    console.log(
+      `${count.toLocaleString('en-US')} denied requests: $${((count / 1e6) * (0.3 + 0.02)).toFixed(2)}, plus DO enforcement/logs. Edge protection required.`,
+    );
+  console.log(
+    'AI, storage, logs, provider fees, cleanup, previews and manual voice calls require reconciliation; this does not model an exact total invoice.',
+  );
+  process.exit(0);
+}
+
 const PRICE = {
   base: 5, // Workers Paid subscription, $/month
   workers: { reqIncl: 10e6, reqPerM: 0.3, cpuInclMs: 30e6, cpuPerMms: 0.02 },

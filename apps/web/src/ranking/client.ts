@@ -10,6 +10,7 @@ import type {
   SubmitStageScoreRequest,
   VersionedReplay,
 } from '@wwm/schema';
+import { serviceFetch } from '../service-mode.ts';
 
 /** contracts §9 v0.2.5 (CCR-10-1): replays travel with the physics version they were recorded on. */
 export type { VersionedReplay };
@@ -124,7 +125,7 @@ async function toResult(res: Response): Promise<SubmitResult> {
 
 export function createRankingClient(opts: HttpRankingOptions = {}): RankingClient {
   const base = opts.baseUrl ?? '';
-  const raw = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
+  const raw = opts.fetch ?? serviceFetch;
   const f: typeof fetch = (input, init) =>
     opts.timeoutMs ? raw(input, { ...init, signal: AbortSignal.timeout(opts.timeoutMs) }) : raw(input, init);
   const post = async (body: unknown): Promise<SubmitResult> => {

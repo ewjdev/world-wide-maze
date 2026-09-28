@@ -397,3 +397,34 @@
     scroll-behavior: auto;
   }
 }
+
+.admin-jev {
+  border: 1px solid var(--sc-line, #c9d2d4);
+  padding: clamp(16px, 3vw, 28px);
+  margin: 24px 0 32px;
+}
+.admin-jev .admin-filters {
+  margin: 20px 0;
+}
+.admin-jev input[type="number"] {
+  max-width: 180px;
+}
+.admin-jev .admin-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.admin-jev .admin-check input {
+  flex: 0 0 auto;
+}
+@media (max-width: 640px) {
+  .admin-jev .admin-filters {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+  .admin-jev input[type="number"] {
+    max-width: none;
+  }
+}

@@ -377,6 +377,12 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
   if (missingVars.length) problems.push(`${where}.vars missing ${missingVars.join(', ')} (not inherited)`);
   const wantEnv = target === 'production' ? 'production' : 'preview';
   if (vars.WWM_ENV !== wantEnv) problems.push(`${where}.vars.WWM_ENV must be "${wantEnv}"`);
+  if (vars.COST_CONTROLS !== '1') problems.push(`${where}.vars.COST_CONTROLS must be "1"`);
+  if (
+    target === 'previews' &&
+    (vars.CAPTURE_ENABLED !== '0' || vars.DOCENT_PROVIDER !== 'mock' || vars.MODERATION_MODE !== 'manual')
+  )
+    problems.push(`${where}: previews must disable captures and real AI`);
   if (vars.ROOM_STATS !== '0') problems.push(`${where}.vars.ROOM_STATS must be "0" (dev-only relay stats)`);
   if (vars.DEV_ALLOWED_HOSTS) problems.push(`${where}.vars.DEV_ALLOWED_HOSTS must be empty`);
   if (vars.CAPTURE_BACKEND !== 'browser-run')
@@ -407,8 +413,8 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
     problems.push(`${where}: R2 STAGES is ${r2.bucket_name}, config says ${c.r2}`);
   if (obj.browser?.binding !== 'BROWSER') problems.push(`${where}: no browser binding BROWSER`);
   const doNames = (obj.durable_objects?.bindings ?? []).map((b) => b.name).sort();
-  if (doNames.join() !== 'BUILD_JOB,LIMITER,ROOM')
-    problems.push(`${where}: DO bindings must be ROOM, BUILD_JOB, LIMITER`);
+  if (doNames.join() !== 'BUDGET,BUILD_JOB,JEV_CONTROL,LIMITER,ROOM')
+    problems.push(`${where}: DO bindings must be BUDGET, ROOM, BUILD_JOB, LIMITER, JEV_CONTROL`);
   for (const rl of RATE_LIMITERS) {
     const b = (obj.ratelimits ?? []).find((x) => x.name === rl);
     if (!b) problems.push(`${where}: no rate limit binding ${rl}`);

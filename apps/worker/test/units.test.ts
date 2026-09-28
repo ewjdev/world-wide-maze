@@ -273,6 +273,15 @@ describe('job event stream', () => {
     );
   });
 
+  test('bounds concurrent live watchers and frees them on terminal completion', async () => {
+    const hub = new JobEventHub();
+    const readers = Array.from({ length: 4 }, () => hub.stream().text());
+    expect(hub.stream().status).toBe(429);
+    hub.push({ type: 'error', code: 'BUILD_FAILED', message: 'stopped' });
+    await Promise.all(readers);
+    expect(hub.stream().status).toBe(200);
+  });
+
   test('late subscribers get a replay; streams end after the terminal event; one terminal only', async () => {
     const hub = new JobEventHub([progress('queued', 0)]);
     const live = hub.stream().text();

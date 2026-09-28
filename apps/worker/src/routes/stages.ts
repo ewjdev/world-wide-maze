@@ -151,29 +151,37 @@ stagesRoutes.get('/jobs/:jobId', async (c) => {
   return c.env.BUILD_JOB.get(c.env.BUILD_JOB.idFromName(jobId)).fetch(c.req.raw);
 });
 
-stagesRoutes.get('/stages/:stageId', async (c) => {
-  const id = c.req.param('stageId');
-  if (!HEX64.test(id)) return notFound('stage');
-  const obj = await c.get('services').store.getStage(id);
-  if (!obj) return notFound('stage');
-  return new Response(obj.body, {
-    headers: { 'content-type': 'application/json', 'cache-control': REVOCABLE, etag: obj.httpEtag },
-  });
-});
-
-stagesRoutes.get('/stages/:stageId/texture', async (c) => {
-  const id = c.req.param('stageId');
-  if (!HEX64.test(id)) return notFound('texture');
-  const obj = await c.get('services').store.getTexture(id);
-  if (!obj) return notFound('texture');
-  return new Response(obj.body, {
-    headers: {
-      'content-type': obj.httpMetadata?.contentType ?? 'image/webp',
-      'cache-control': REVOCABLE,
+/** Cache only the immutable artifact behind a fresh catalog authorization on every request.
+ * Never expose a public cache header: takedown/review changes must apply to warm entries too.
+ */
+for (const texture of [false, true]) {
+  stagesRoutes.get(texture ? '/stages/:stageId/texture' : '/stages/:stageId', async (c) => {
+    const id = c.req.param('stageId');
+    const store = c.get('services').store;
+    if (!HEX64.test(id) || !(await store.catalog.canServeStage(id))) return notFound('stage');
+    const key = new Request(new URL(`/__artifact-cache/v1/${id}${texture ? '/texture' : ''}`, c.req.url));
+    const cache = await caches.open('wwm-artifacts-v1');
+    const hit = await cache.match(key);
+    if (hit) {
+      const headers = new Headers(hit.headers);
+      headers.set('cache-control', REVOCABLE);
+      headers.set('x-artifact-cache', 'hit');
+      return new Response(hit.body, { headers });
+    }
+    const obj = texture ? await store.getTexture(id) : await store.getStage(id);
+    if (!obj) return notFound('stage');
+    const headers = {
+      'content-type': texture ? (obj.httpMetadata?.contentType ?? 'image/webp') : 'application/json',
+      'cache-control': 'public, max-age=86400',
       etag: obj.httpEtag,
-    },
+    };
+    const response = new Response(obj.body, { headers });
+    c.executionCtx.waitUntil(cache.put(key, response.clone()).catch(() => {}));
+    response.headers.set('cache-control', REVOCABLE);
+    response.headers.set('x-artifact-cache', 'miss');
+    return response;
   });
-});
+}
 
 stagesRoutes.get('/runs/:runId', async (c) => {
   const id = c.req.param('runId');

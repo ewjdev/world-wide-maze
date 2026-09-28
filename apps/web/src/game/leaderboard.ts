@@ -23,6 +23,7 @@ import {
   type StageSubmission,
   type SubmitResult,
 } from '../ranking/client.ts';
+import { serviceFetch } from '../service-mode.ts';
 
 export type BoardSource = 'server' | 'device';
 
@@ -154,7 +155,7 @@ export class GameBoards {
 
   constructor(opts: GameBoardsOptions = {}) {
     this.#origin = opts.origin ?? '';
-    this.#fetch = opts.fetch ?? ((...a: Parameters<typeof fetch>) => fetch(...a));
+    this.#fetch = opts.fetch ?? serviceFetch;
     this.#timeout = opts.timeoutMs ?? 6000;
     this.#cool = opts.offlineCoolMs ?? 30_000;
     this.device = new LocalRankingClient(opts.store, opts.now);

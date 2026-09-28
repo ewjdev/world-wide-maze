@@ -25,6 +25,16 @@ const args = new Set(process.argv.slice(2));
 const write = args.has('--write');
 const audition = args.has('--audition');
 const verify = args.has('--verify');
+// Explicit opt-in for operator-only paid generation; never retry an ambiguous paid response.
+const maxCharacters = Number(process.env.WWM_VOICE_MAX_CHARACTERS ?? 0);
+if (
+  (write || audition) &&
+  (!Number.isSafeInteger(maxCharacters) || maxCharacters < 1 || maxCharacters > 10_000)
+)
+  throw new Error(
+    'Set WWM_VOICE_MAX_CHARACTERS=1..10000 after reviewing the dry run and provider allowance.',
+  );
+let attemptedCharacters = 0;
 
 interface Config extends VoiceConfig {
   voiceName: string;
@@ -76,7 +86,10 @@ function stopProxy(): void {
 }
 
 async function tts(base: string, text: string, voiceId: string, key: string): Promise<Alignment> {
-  for (let attempt = 1; ; attempt++) {
+  attemptedCharacters += text.length;
+  if (attemptedCharacters > maxCharacters)
+    throw new Error('Voice character allowance exhausted. No further requests sent.');
+  {
     const response = await fetch(`${base}/tts`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
@@ -91,15 +104,6 @@ async function tts(base: string, text: string, voiceId: string, key: string): Pr
     });
     if (response.ok) return ((await response.json()) as { alignment: Alignment }).alignment;
     const detail = await response.text();
-    // AI Gateway `wwm` rate-limits per minute: wait out a 429 rather than give up
-    if (response.status === 429 && attempt < 8) {
-      await new Promise((resolve) => setTimeout(resolve, 20_000));
-      continue;
-    }
-    if (response.status >= 500 && attempt < 5) {
-      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
-      continue;
-    }
     throw new Error(
       `ElevenLabs via AI Gateway failed (${response.status}) for "${text}": ${detail.slice(0, 400)}`,
     );

@@ -143,7 +143,7 @@ jobs:
         id: smoke
         env:
           URL: ${{ steps.preview.outputs.url }}
-        run: node infra/scripts/smoke.mjs "$URL"
+        run: node infra/scripts/smoke.mjs "$URL" --expect-static
 
       - name: Sticky PR comment
         if: always() && steps.preview.outputs.url != ''
@@ -163,8 +163,8 @@ jobs:
             "**$URL**" \
             "" \
             "- Commit: $SHA · smoke test: **$SMOKE**" \
-            "- HTTPS, so phones can pair: open the URL on a computer and scan the pairing QR code; iOS tilt works (motion sensors need a secure origin)." \
-            "- Separate from production: preview D1/R2/KV, own Durable Objects (rooms, jobs), \`ROOM_STATS=0\`, telemetry off, lower build caps. Deleted when the PR closes.")"
+            "- Static practice: $URL/play/practice?offline=1. Dynamic APIs and phone pairing are deliberately disabled in previews to avoid separate spending allowances." \
+            "- Separate from production: preview D1/R2/KV, own Durable Objects (rooms, jobs), \`ROOM_STATS=0\`, telemetry and paid operations off. Deleted when the PR closes.")"
           id="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
             --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | tail -n 1)"
           if [ -n "$id" ]; then

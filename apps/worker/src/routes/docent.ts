@@ -10,10 +10,11 @@
 import { type DocentEvent, DocentRequestSchema } from '@wwm/schema';
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { releaseCost, reserveCost } from '../budget-client.ts';
 import { createProvider, type DocentVars, docentSettings } from '../docent/config.ts';
 import { answerDocent, type DocentRun, prepareDocent } from '../docent/engine.ts';
 import { normalizeQuestion } from '../docent/guard.ts';
-import { PROMPT_VERSION } from '../docent/prompt.ts';
+import { buildMessages, PROMPT_VERSION, SYSTEM_PROMPT } from '../docent/prompt.ts';
 import { INDEX, searcher } from '../docent/retrieve.ts';
 import { sseLive, sseOnce } from '../docent/sse.ts';
 import { BodyTooLargeError, readJsonCapped, tooLarge } from '../security.ts';
@@ -78,7 +79,7 @@ docentRoutes.post('/docent', async (c) => {
   if (p.rejected) {
     log.info('docent rejected', { injection: p.injection, chars: body.data.question.length });
     const events: DocentEvent[] = [];
-    await answerDocent(p, { provider, maxTokens: s.maxTokens }, (e) => events.push(e));
+    await answerDocent(p, { provider, maxTokens: Math.min(600, s.maxTokens) }, (e) => events.push(e));
     return sseOnce(events);
   }
 
@@ -118,9 +119,20 @@ docentRoutes.post('/docent', async (c) => {
     return sseOnce([{ type: 'error', code: 'DOCENT_UNAVAILABLE', message: DAILY_CAP }], 503);
   }
 
+  const bytes = () =>
+    new TextEncoder().encode(SYSTEM_PROMPT + JSON.stringify(buildMessages(p.question, p.excerpts, p.history)))
+      .byteLength;
+  while (bytes() > 5500 && p.history.length) p.history.shift();
+  while (bytes() > 5500 && p.excerpts.length > 1) p.excerpts.pop();
+  if (s.mode !== 'mock' && (bytes() > 5500 || !/^claude-haiku-4-5(?:-20251001)?$/.test(s.model)))
+    return sseOnce([{ type: 'error', code: 'DOCENT_UNAVAILABLE', message: UNAVAILABLE }], 503);
+  const reservation = s.mode === 'mock' ? null : await reserveCost(env, 'docent');
+  if (reservation && !reservation.ok)
+    return sseOnce([{ type: 'error', code: 'DOCENT_UNAVAILABLE', message: UNAVAILABLE }], 503);
+
   const { response, done } = sseLive<DocentRun>(async (emit, signal) => {
     try {
-      const run = await answerDocent(p, { provider, maxTokens: s.maxTokens, signal }, emit);
+      const run = await answerDocent(p, { provider, maxTokens: Math.min(600, s.maxTokens), signal }, emit);
       // Token counts per answer (Workers Logs); no question text, no IP.
       log.info('docent answer', {
         provider: provider.name,
@@ -149,6 +161,8 @@ docentRoutes.post('/docent', async (c) => {
     } catch (err) {
       log.error('docent failed', { provider: provider.name, error: String(err), ms: Date.now() - t0 });
       throw err;
+    } finally {
+      if (reservation?.ok) await releaseCost(env, reservation.id);
     }
   }, c.req.raw.signal);
   c.executionCtx.waitUntil(done);

@@ -30,6 +30,7 @@ import {
 } from '@wwm/schema';
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { paidOperation } from '../budget-middleware.ts';
 import type { StageBuilder } from '../builder.ts';
 import type { CaptureOutput, Capturer, SliceTexture } from '../capture/types.ts';
 import { errorResponse, ServiceError } from '../errors.ts';
@@ -308,7 +309,7 @@ export async function uploadCaptureId(
 
 export const uploadRoutes = new Hono<AppEnv>();
 
-uploadRoutes.post('/upload', async (c) => {
+uploadRoutes.post('/upload', paidOperation('build'), async (c) => {
   const t0 = Date.now();
   const services = c.get('services');
   const { settings, log, pipeline } = services;
