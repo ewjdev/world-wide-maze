@@ -1,0 +1,1006 @@
+{
+  "date": "2026-09-27T19:24:48.009Z",
+  "base": "http://127.0.0.1:4318",
+  "mode": "cold",
+  "browser": "153.0.8010.12",
+  "headless": false,
+  "commit": "0b33c14cef45c34905d202bbc760b956cb573362",
+  "hardware": "Apple M5 Max\n137438953472",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4203,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+          "driverVendor": "Apple",
+          "driverVersion": "26.6.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.034986,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_2d_canvas_auto_flush",
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6",
+    "commandLine": "/Users/ewj/Library/Caches/ms-playwright/chromium-1243/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --no-sandbox --enable-gpu --use-angle=metal --user-data-dir=/var/folders/yq/vw6fjyjj2lq060nlzyt2xcr00000gn/T/playwright_chromiumdev_profile-l692Jz --remote-debugging-pipe --no-startup-window --flag-switches-begin --flag-switches-end --enable-unsafe-swiftshader"
+  },
+  "runs": [
+    {
+      "coldThrottle": 1,
+      "loadMs": 4205,
+      "metrics": {
+        "Timestamp": 1715765.902071,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 198,
+        "LayoutObjects": 64,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 188,
+        "LayoutCount": 15,
+        "RecalcStyleCount": 252,
+        "LayoutDuration": 0.006005,
+        "RecalcStyleDuration": 0.02088,
+        "DevToolsCommandDuration": 0.003659,
+        "ScriptDuration": 0.391937,
+        "V8CompileDuration": 0,
+        "TaskDuration": 0.575005,
+        "TaskOtherDuration": 0.152524,
+        "ThreadTime": 0.599859,
+        "ProcessTime": 1.349301,
+        "JSHeapUsedSize": 17779604,
+        "JSHeapTotalSize": 45416448,
+        "FirstMeaningfulPaint": 1715760.373254,
+        "DomContentLoaded": 1715760.233168,
+        "NavigationStart": 1715760.196812
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 198
+      },
+      "heap": {
+        "usedSize": 17779604,
+        "totalSize": 45416448,
+        "embedderHeapUsedSize": 1993240,
+        "backingStorageSize": 4623657
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 37618,
+          "cpuTime": 1.981144,
+          "rssKiB": 229824
+        },
+        {
+          "type": "renderer",
+          "id": 37653,
+          "cpuTime": 0.043302,
+          "rssKiB": 99200
+        },
+        {
+          "type": "renderer",
+          "id": 37654,
+          "cpuTime": 1.349561,
+          "rssKiB": 353088
+        },
+        {
+          "type": "renderer",
+          "id": 37643,
+          "cpuTime": 0.173893,
+          "rssKiB": 190320
+        },
+        {
+          "type": "GPU",
+          "id": 37626,
+          "cpuTime": 1.30234,
+          "rssKiB": 234240
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 37627,
+          "cpuTime": 0.110175,
+          "rssKiB": 108112
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 37628,
+          "cpuTime": 0.034128,
+          "rssKiB": 79744
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 183,
+          "timer": {
+            "remains": 298.4750000000014,
+            "int": 298,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 5.616700000000012,
+          "hold": null,
+          "recording": {
+            "ticks": 183,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.99798326106689,
+            "drawCalls": 45,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 79,
+          "programsSize": 213650,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 15,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 79077351,
+          "uniformBuffers": 79,
+          "uniformBuffersSize": 17600,
+          "total": 80862125
+        },
+        "canvas": {
+          "width": 1440,
+          "height": 900
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "texture-formats-tier1",
+          "bgra8unorm-storage",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "clip-distances",
+          "texture-formats-tier2",
+          "shader-f16",
+          "timestamp-query",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      },
+      "startup": {
+        "longTasks": [],
+        "vitals": {
+          "lcp": 244
+        },
+        "resources": [
+          {
+            "name": "/assets/index-DjdKPFee.js",
+            "encoded": 5076,
+            "decoded": 13282,
+            "duration": 7.400000095367432
+          },
+          {
+            "name": "/assets/rolldown-runtime-hePW80VL.js",
+            "encoded": 716,
+            "decoded": 716,
+            "duration": 6.799999952316284
+          },
+          {
+            "name": "/assets/constants-C2i6L2Gf.js",
+            "encoded": 422,
+            "decoded": 422,
+            "duration": 8
+          },
+          {
+            "name": "/assets/vendor-react-D0LzS09L.js",
+            "encoded": 97161,
+            "decoded": 311504,
+            "duration": 18.5
+          },
+          {
+            "name": "/assets/GameApp-DciM1ieN.js",
+            "encoded": 79138,
+            "decoded": 255524,
+            "duration": 15
+          },
+          {
+            "name": "/assets/ControllerPage-C7C5Q1k9.js",
+            "encoded": 13318,
+            "decoded": 37405,
+            "duration": 8.100000143051147
+          },
+          {
+            "name": "/assets/src-BnqpF4eW.js",
+            "encoded": 29651,
+            "decoded": 102523,
+            "duration": 10.5
+          },
+          {
+            "name": "/assets/ControllerPage-Bv-W9i7u.css",
+            "encoded": 1409,
+            "decoded": 3869,
+            "duration": 8.299999952316284
+          },
+          {
+            "name": "/assets/locks-Ckdc9ll9.js",
+            "encoded": 6689,
+            "decoded": 16218,
+            "duration": 9.700000047683716
+          },
+          {
+            "name": "/assets/src-D63ZfUj8.js",
+            "encoded": 30941,
+            "decoded": 81024,
+            "duration": 11.900000095367432
+          },
+          {
+            "name": "/assets/vendor-three-ohW3K7aO.js",
+            "encoded": 248008,
+            "decoded": 913421,
+            "duration": 36.59999990463257
+          },
+          {
+            "name": "/assets/catalog-ChCMvKt4.css",
+            "encoded": 2482,
+            "decoded": 4655,
+            "duration": 10.400000095367432
+          },
+          {
+            "name": "/assets/catalog-DASvZQpA.js",
+            "encoded": 1014,
+            "decoded": 1014,
+            "duration": 15.700000047683716
+          },
+          {
+            "name": "/assets/src-Dr492XXZ.js",
+            "encoded": 7651,
+            "decoded": 19731,
+            "duration": 15.700000047683716
+          },
+          {
+            "name": "/assets/ids-DY8LDUZw.js",
+            "encoded": 279,
+            "decoded": 279,
+            "duration": 16.100000143051147
+          },
+          {
+            "name": "/assets/stages-C479nhoa.js",
+            "encoded": 3749,
+            "decoded": 13184,
+            "duration": 16.40000009536743
+          },
+          {
+            "name": "/assets/handmade-simple-BFy9jO0N.js",
+            "encoded": 1518,
+            "decoded": 3950,
+            "duration": 17.800000190734863
+          },
+          {
+            "name": "/assets/handmade-simple-BKRg7kgP.js",
+            "encoded": 139,
+            "decoded": 139,
+            "duration": 18.5
+          },
+          {
+            "name": "/assets/useTranslation-BbxvsCok.js",
+            "encoded": 2432,
+            "decoded": 5129,
+            "duration": 18.700000047683716
+          },
+          {
+            "name": "/assets/parts-Cb3fQNK-.js",
+            "encoded": 2970,
+            "decoded": 8007,
+            "duration": 19
+          },
+          {
+            "name": "/assets/i18n-BvLJN0Yy.js",
+            "encoded": 24886,
+            "decoded": 73567,
+            "duration": 21.799999952316284
+          },
+          {
+            "name": "/assets/parts-C0tGgW3u.css",
+            "encoded": 6864,
+            "decoded": 29394,
+            "duration": 11.099999904632568
+          },
+          {
+            "name": "/assets/strings-rumv5AFV.js",
+            "encoded": 8537,
+            "decoded": 20163,
+            "duration": 21.799999952316284
+          },
+          {
+            "name": "/assets/strings-B82DWL6C.css",
+            "encoded": 2523,
+            "decoded": 9056,
+            "duration": 11.200000047683716
+          },
+          {
+            "name": "/assets/I18nextProvider-C34aaXdP.js",
+            "encoded": 318,
+            "decoded": 318,
+            "duration": 20.09999990463257
+          },
+          {
+            "name": "/assets/ghost-8AunuWoE.js",
+            "encoded": 989,
+            "decoded": 1972,
+            "duration": 21.800000190734863
+          },
+          {
+            "name": "/assets/journey-D0G_Sx_2.js",
+            "encoded": 3156,
+            "decoded": 6674,
+            "duration": 21.90000009536743
+          },
+          {
+            "name": "/assets/journey-8hTDFLQx.css",
+            "encoded": 2582,
+            "decoded": 9148,
+            "duration": 11.700000047683716
+          },
+          {
+            "name": "/assets/client-BWkL0OIF.js",
+            "encoded": 1081,
+            "decoded": 2203,
+            "duration": 22
+          },
+          {
+            "name": "/assets/GameApp-BNBVdiDQ.css",
+            "encoded": 6567,
+            "decoded": 27724,
+            "duration": 12.099999904632568
+          },
+          {
+            "name": "/favicon.svg",
+            "encoded": 403,
+            "decoded": 403,
+            "duration": 7.5
+          },
+          {
+            "name": "/assets/figtree-latin-wght-normal-D_ZTVpCC.woff2",
+            "encoded": 20156,
+            "decoded": 20156,
+            "duration": 5.099999904632568
+          },
+          {
+            "name": "/assets/unbounded-latin-wght-normal-D5afBTBx.woff2",
+            "encoded": 50904,
+            "decoded": 50904,
+            "duration": 3.200000047683716
+          },
+          {
+            "name": "/assets/handmade-simple-DJ56GUAN.png",
+            "encoded": 56415,
+            "decoded": 56415,
+            "duration": 9.799999952316284
+          },
+          {
+            "name": "/assets/rapier-BZUIoljZ.js",
+            "encoded": 28959,
+            "decoded": 157637,
+            "duration": 8.799999952316284
+          },
+          {
+            "name": "/assets/rapier_wasm3d_bg-Dd26sXQW.wasm",
+            "encoded": 2048139,
+            "decoded": 2048139,
+            "duration": 4.5
+          }
+        ]
+      }
+    },
+    {
+      "coldThrottle": 6,
+      "loadMs": 4881,
+      "metrics": {
+        "Timestamp": 1715772.450132,
+        "AudioHandlers": 0,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 213,
+        "LayoutObjects": 214,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 297,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 7,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 0,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 1,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 2,
+        "ArrayBufferContents": 188,
+        "LayoutCount": 16,
+        "RecalcStyleCount": 260,
+        "LayoutDuration": 0.037725,
+        "RecalcStyleDuration": 0.129876,
+        "DevToolsCommandDuration": 0.02521,
+        "ScriptDuration": 2.029184,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.913936,
+        "TaskOtherDuration": 0.691941,
+        "ThreadTime": 5.848303,
+        "ProcessTime": 6.591178,
+        "JSHeapUsedSize": 18058088,
+        "JSHeapTotalSize": 34668544,
+        "FirstMeaningfulPaint": 1715766.689914,
+        "DomContentLoaded": 1715766.170881,
+        "NavigationStart": 1715766.069584
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 297,
+        "jsEventListeners": 214
+      },
+      "heap": {
+        "usedSize": 18194408,
+        "totalSize": 34668544,
+        "embedderHeapUsedSize": 6435984,
+        "backingStorageSize": 4623668
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 37618,
+          "cpuTime": 2.210406,
+          "rssKiB": 235312
+        },
+        {
+          "type": "renderer",
+          "id": 37723,
+          "cpuTime": 0.040649,
+          "rssKiB": 98736
+        },
+        {
+          "type": "renderer",
+          "id": 37724,
+          "cpuTime": 6.600347,
+          "rssKiB": 344848
+        },
+        {
+          "type": "renderer",
+          "id": 37722,
+          "cpuTime": 0.143633,
+          "rssKiB": 189408
+        },
+        {
+          "type": "GPU",
+          "id": 37626,
+          "cpuTime": 2.350999,
+          "rssKiB": 245968
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 37627,
+          "cpuTime": 0.145366,
+          "rssKiB": 109568
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 37628,
+          "cpuTime": 0.035672,
+          "rssKiB": 80608
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 183,
+          "timer": {
+            "remains": 298.4750000000014,
+            "int": 298,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 5.61810000000001,
+          "hold": null,
+          "recording": {
+            "ticks": 183,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 57.500000000000064,
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 63,
+          "attributesSize": 1473220,
+          "geometries": 18,
+          "indexAttributes": 6,
+          "indexAttributesSize": 80304,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 79,
+          "programsSize": 213650,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 15,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 79077351,
+          "uniformBuffers": 79,
+          "uniformBuffersSize": 17600,
+          "total": 80862125
+        },
+        "canvas": {
+          "width": 1440,
+          "height": 900
+        },
+        "deviceFeatures": [
+          "depth32float-stencil8",
+          "rg11b10ufloat-renderable",
+          "bgra8unorm-storage",
+          "texture-formats-tier1",
+          "texture-compression-bc",
+          "dual-source-blending",
+          "core-features-and-limits",
+          "float32-filterable",
+          "indirect-first-instance",
+          "texture-compression-astc-sliced-3d",
+          "float32-blendable",
+          "texture-compression-astc",
+          "texture-compression-etc2",
+          "depth-clip-control",
+          "texture-compression-bc-sliced-3d",
+          "shader-f16",
+          "texture-formats-tier2",
+          "timestamp-query",
+          "clip-distances",
+          "subgroups"
+        ],
+        "visibility": "visible"
+      },
+      "startup": {
+        "longTasks": [
+          {
+            "at": 43.200000047683716,
+            "ms": 59
+          },
+          {
+            "at": 175.90000009536743,
+            "ms": 94
+          },
+          {
+            "at": 317.09999990463257,
+            "ms": 53
+          },
+          {
+            "at": 424.09999990463257,
+            "ms": 171
+          },
+          {
+            "at": 647.9000000953674,
+            "ms": 160
+          },
+          {
+            "at": 808.2999999523163,
+            "ms": 246
+          },
+          {
+            "at": 4879.200000047684,
+            "ms": 105
+          }
+        ],
+        "vitals": {
+          "lcp": 1088
+        },
+        "resources": [
+          {
+            "name": "/assets/index-DjdKPFee.js",
+            "encoded": 5076,
+            "decoded": 13282,
+            "duration": 14.899999856948853
+          },
+          {
+            "name": "/assets/rolldown-runtime-hePW80VL.js",
+            "encoded": 716,
+            "decoded": 716,
+            "duration": 14.299999952316284
+          },
+          {
+            "name": "/assets/constants-C2i6L2Gf.js",
+            "encoded": 422,
+            "decoded": 422,
+            "duration": 15.200000047683716
+          },
+          {
+            "name": "/assets/vendor-react-D0LzS09L.js",
+            "encoded": 97161,
+            "decoded": 311504,
+            "duration": 22.90000009536743
+          },
+          {
+            "name": "/assets/GameApp-DciM1ieN.js",
+            "encoded": 79138,
+            "decoded": 255524,
+            "duration": 28.600000143051147
+          },
+          {
+            "name": "/assets/ControllerPage-C7C5Q1k9.js",
+            "encoded": 13318,
+            "decoded": 37405,
+            "duration": 18.399999856948853
+          },
+          {
+            "name": "/assets/src-BnqpF4eW.js",
+            "encoded": 29651,
+            "decoded": 102523,
+            "duration": 19.899999856948853
+          },
+          {
+            "name": "/assets/ControllerPage-Bv-W9i7u.css",
+            "encoded": 1409,
+            "decoded": 3869,
+            "duration": 17.09999990463257
+          },
+          {
+            "name": "/assets/locks-Ckdc9ll9.js",
+            "encoded": 6689,
+            "decoded": 16218,
+            "duration": 17.899999856948853
+          },
+          {
+            "name": "/assets/src-D63ZfUj8.js",
+            "encoded": 30941,
+            "decoded": 81024,
+            "duration": 20.700000047683716
+          },
+          {
+            "name": "/assets/src-Dr492XXZ.js",
+            "encoded": 7651,
+            "decoded": 19731,
+            "duration": 24.200000047683716
+          },
+          {
+            "name": "/assets/vendor-three-ohW3K7aO.js",
+            "encoded": 248008,
+            "decoded": 913421,
+            "duration": 53.59999990463257
+          },
+          {
+            "name": "/assets/catalog-DASvZQpA.js",
+            "encoded": 1014,
+            "decoded": 1014,
+            "duration": 22.700000047683716
+          },
+          {
+            "name": "/assets/catalog-ChCMvKt4.css",
+            "encoded": 2482,
+            "decoded": 4655,
+            "duration": 17.5
+          },
+          {
+            "name": "/assets/stages-C479nhoa.js",
+            "encoded": 3749,
+            "decoded": 13184,
+            "duration": 24.600000143051147
+          },
+          {
+            "name": "/assets/ids-DY8LDUZw.js",
+            "encoded": 279,
+            "decoded": 279,
+            "duration": 23.09999990463257
+          },
+          {
+            "name": "/assets/handmade-simple-BFy9jO0N.js",
+            "encoded": 1518,
+            "decoded": 3950,
+            "duration": 24.899999856948853
+          },
+          {
+            "name": "/assets/handmade-simple-BKRg7kgP.js",
+            "encoded": 139,
+            "decoded": 139,
+            "duration": 26.40000009536743
+          },
+          {
+            "name": "/assets/parts-Cb3fQNK-.js",
+            "encoded": 2970,
+            "decoded": 8007,
+            "duration": 27.799999952316284
+          },
+          {
+            "name": "/assets/useTranslation-BbxvsCok.js",
+            "encoded": 2432,
+            "decoded": 5129,
+            "duration": 27.899999856948853
+          },
+          {
+            "name": "/assets/i18n-BvLJN0Yy.js",
+            "encoded": 24886,
+            "decoded": 73567,
+            "duration": 30.5
+          },
+          {
+            "name": "/assets/parts-C0tGgW3u.css",
+            "encoded": 6864,
+            "decoded": 29394,
+            "duration": 15.599999904632568
+          },
+          {
+            "name": "/assets/strings-B82DWL6C.css",
+            "encoded": 2523,
+            "decoded": 9056,
+            "duration": 16.700000047683716
+          },
+          {
+            "name": "/assets/I18nextProvider-C34aaXdP.js",
+            "encoded": 318,
+            "decoded": 318,
+            "duration": 27
+          },
+          {
+            "name": "/assets/strings-rumv5AFV.js",
+            "encoded": 8537,
+            "decoded": 20163,
+            "duration": 28.100000143051147
+          },
+          {
+            "name": "/assets/ghost-8AunuWoE.js",
+            "encoded": 989,
+            "decoded": 1972,
+            "duration": 29
+          },
+          {
+            "name": "/assets/journey-D0G_Sx_2.js",
+            "encoded": 3156,
+            "decoded": 6674,
+            "duration": 29.5
+          },
+          {
+            "name": "/assets/journey-8hTDFLQx.css",
+            "encoded": 2582,
+            "decoded": 9148,
+            "duration": 18.40000009536743
+          },
+          {
+            "name": "/assets/client-BWkL0OIF.js",
+            "encoded": 1081,
+            "decoded": 2203,
+            "duration": 28.5
+          },
+          {
+            "name": "/assets/GameApp-BNBVdiDQ.css",
+            "encoded": 6567,
+            "decoded": 27724,
+            "duration": 17.5
+          },
+          {
+            "name": "/favicon.svg",
+            "encoded": 403,
+            "decoded": 403,
+            "duration": 2.299999952316284
+          },
+          {
+            "name": "/assets/figtree-latin-wght-normal-D_ZTVpCC.woff2",
+            "encoded": 20156,
+            "decoded": 20156,
+            "duration": 37.69999980926514
+          },
+          {
+            "name": "/assets/unbounded-latin-wght-normal-D5afBTBx.woff2",
+            "encoded": 50904,
+            "decoded": 50904,
+            "duration": 26.100000143051147
+          },
+          {
+            "name": "/assets/handmade-simple-DJ56GUAN.png",
+            "encoded": 56415,
+            "decoded": 56415,
+            "duration": 9.099999904632568
+          },
+          {
+            "name": "/assets/rapier-BZUIoljZ.js",
+            "encoded": 28959,
+            "decoded": 157637,
+            "duration": 3.6000001430511475
+          },
+          {
+            "name": "/assets/rapier_wasm3d_bg-Dd26sXQW.wasm",
+            "encoded": 2048139,
+            "decoded": 2048139,
+            "duration": 3.6000001430511475
+          }
+        ]
+      }
+    }
+  ]
+}

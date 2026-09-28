@@ -1,0 +1,5969 @@
+{
+  "date": "2026-09-27T20:40:18.256Z",
+  "base": "http://127.0.0.1:4321",
+  "mode": "stall",
+  "browser": "153.0.8010.12",
+  "headless": false,
+  "commit": "d88697faed5a2f5791b7bd8ee0b22dd56add95aa",
+  "hardware": "Apple M5 Max\n137438953472",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4203,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+          "driverVendor": "Apple",
+          "driverVersion": "26.6.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.037557,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_2d_canvas_auto_flush",
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6"
+  },
+  "runs": [
+    {
+      "name": "200ms-main-thread-stall",
+      "elapsedMs": 14096,
+      "frame": {
+        "n": 70,
+        "mean": 201.19000000000003,
+        "p50": 200,
+        "p95": 216.59999999999854,
+        "p99": 217.29999999999927,
+        "max": 217.29999999999927,
+        "over25": 70,
+        "over50": 70
+      },
+      "engineCpuMs": {
+        "n": 71,
+        "mean": 200.65915492554785,
+        "p50": 200.40000009536743,
+        "p95": 200.70000004768372,
+        "p99": 217,
+        "max": 217,
+        "over25": 71,
+        "over50": 71
+      },
+      "fps": 4.970425965505243,
+      "taskMs": 14699.266000000001,
+      "mainThreadBusyPct": 104.2796963677639,
+      "samples": [
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 255,
+          "timer": {
+            "remains": 297.87500000000193,
+            "int": 298,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 6.225699999856954,
+          "hold": null,
+          "recording": {
+            "ticks": 255,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 45.00000000000005,
+            "drawCalls": 44,
+            "triangles": 19484,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 11,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": []
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 315,
+          "timer": {
+            "remains": 297.3750000000024,
+            "int": 297,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 6.725699999856952,
+          "hold": null,
+          "recording": {
+            "ticks": 315,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 32.50000000000002,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 375,
+          "timer": {
+            "remains": 296.87500000000284,
+            "int": 297,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 7.225699999856951,
+          "hold": null,
+          "recording": {
+            "ticks": 375,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 19.665187575635343,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 435,
+          "timer": {
+            "remains": 296.3750000000033,
+            "int": 296,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 7.725699999856949,
+          "hold": null,
+          "recording": {
+            "ticks": 435,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 495,
+          "timer": {
+            "remains": 295.87500000000375,
+            "int": 296,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 8.225699999856948,
+          "hold": null,
+          "recording": {
+            "ticks": 495,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 79,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 555,
+          "timer": {
+            "remains": 295.3750000000042,
+            "int": 295,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 8.725699999856946,
+          "hold": null,
+          "recording": {
+            "ticks": 555,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 615,
+          "timer": {
+            "remains": 294.87500000000466,
+            "int": 295,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 9.225699999856944,
+          "hold": null,
+          "recording": {
+            "ticks": 615,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 675,
+          "timer": {
+            "remains": 294.3750000000051,
+            "int": 294,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 9.725699999856943,
+          "hold": null,
+          "recording": {
+            "ticks": 675,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 735,
+          "timer": {
+            "remains": 293.87500000000557,
+            "int": 294,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 10.225699999856941,
+          "hold": null,
+          "recording": {
+            "ticks": 735,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 795,
+          "timer": {
+            "remains": 293.375000000006,
+            "int": 293,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 10.72569999985694,
+          "hold": null,
+          "recording": {
+            "ticks": 795,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 855,
+          "timer": {
+            "remains": 292.8750000000065,
+            "int": 293,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 11.225699999856937,
+          "hold": null,
+          "recording": {
+            "ticks": 855,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 915,
+          "timer": {
+            "remains": 292.37500000000693,
+            "int": 292,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 11.725699999856936,
+          "hold": null,
+          "recording": {
+            "ticks": 915,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 975,
+          "timer": {
+            "remains": 291.8750000000074,
+            "int": 292,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 12.225699999856934,
+          "hold": null,
+          "recording": {
+            "ticks": 975,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1035,
+          "timer": {
+            "remains": 291.37500000000784,
+            "int": 291,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 12.725699999856932,
+          "hold": null,
+          "recording": {
+            "ticks": 1035,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 10,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        }
+      ],
+      "before": {
+        "metrics": {
+          "Timestamp": 1720296.147783,
+          "AudioHandlers": 0,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 214,
+          "LayoutObjects": 214,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 297,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 7,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 2,
+          "ArrayBufferContents": 188,
+          "LayoutCount": 16,
+          "RecalcStyleCount": 251,
+          "LayoutDuration": 0.006774,
+          "RecalcStyleDuration": 0.023337,
+          "DevToolsCommandDuration": 0.003769,
+          "ScriptDuration": 0.406576,
+          "V8CompileDuration": 0,
+          "TaskDuration": 0.629653,
+          "TaskOtherDuration": 0.189197,
+          "ThreadTime": 0.628427,
+          "ProcessTime": 1.364484,
+          "JSHeapUsedSize": 25686612,
+          "JSHeapTotalSize": 44892160,
+          "FirstMeaningfulPaint": 1720290.668335,
+          "DomContentLoaded": 1720290.465584,
+          "NavigationStart": 1720290.409172
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 297,
+          "jsEventListeners": 214
+        },
+        "heap": {
+          "usedSize": 25686612,
+          "totalSize": 44892160,
+          "embedderHeapUsedSize": 6572368,
+          "backingStorageSize": 4623846
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 23403,
+            "cpuTime": 1.891017,
+            "rssKiB": 229968
+          },
+          {
+            "type": "renderer",
+            "id": 23432,
+            "cpuTime": 0.040669,
+            "rssKiB": 98944
+          },
+          {
+            "type": "renderer",
+            "id": 23433,
+            "cpuTime": 1.364596,
+            "rssKiB": 355984
+          },
+          {
+            "type": "renderer",
+            "id": 23431,
+            "cpuTime": 0.143393,
+            "rssKiB": 185776
+          },
+          {
+            "type": "GPU",
+            "id": 23418,
+            "cpuTime": 1.378386,
+            "rssKiB": 239744
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 23419,
+            "cpuTime": 0.09394,
+            "rssKiB": 107920
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 23420,
+            "cpuTime": 0.033666,
+            "rssKiB": 79728
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 183,
+            "timer": {
+              "remains": 298.4750000000014,
+              "int": 298,
+              "running": true
+            },
+            "total": 0,
+            "spares": 3,
+            "small": 0,
+            "large": 0,
+            "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+            "rollLevel": 0,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 5.625699999856956,
+            "hold": null,
+            "recording": {
+              "ticks": 183,
+              "exact": true,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": false,
+              "activityId": null,
+              "level": null,
+              "mode": null,
+              "seed": null,
+              "phase": null,
+              "index": null,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": null,
+              "missions": [],
+              "banner": null,
+              "said": [],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": false,
+            "api": "unknown",
+            "engine": {
+              "fps": 60.003000150007594,
+              "drawCalls": 44,
+              "triangles": 19484,
+              "tier": 0,
+              "sceneDrawCalls": 19,
+              "envDrawCalls": 11,
+              "postDrawCalls": 14,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 18,
+                "textures": 23,
+                "programs": 79,
+                "renderTargets": 15
+              },
+              "tierLog": []
+            }
+          },
+          "rendererMemory": {
+            "attributes": 63,
+            "attributesSize": 1473220,
+            "geometries": 18,
+            "indexAttributes": 6,
+            "indexAttributesSize": 80304,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 79,
+            "programsSize": 213650,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 23,
+            "texturesSize": 79077351,
+            "uniformBuffers": 79,
+            "uniformBuffersSize": 17600,
+            "total": 80862125
+          },
+          "canvas": {
+            "width": 1440,
+            "height": 900
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "texture-formats-tier1",
+            "bgra8unorm-storage",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "clip-distances",
+            "texture-formats-tier2",
+            "shader-f16",
+            "timestamp-query",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "after": {
+        "metrics": {
+          "Timestamp": 1720310.861848,
+          "AudioHandlers": 0,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 201,
+          "LayoutObjects": 64,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 151,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 7,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 0,
+          "ArrayBufferContents": 223,
+          "LayoutCount": 24,
+          "RecalcStyleCount": 324,
+          "LayoutDuration": 0.007562,
+          "RecalcStyleDuration": 0.025702,
+          "DevToolsCommandDuration": 0.0084,
+          "ScriptDuration": 15.078929,
+          "V8CompileDuration": 0,
+          "TaskDuration": 15.328919,
+          "TaskOtherDuration": 0.208326,
+          "ThreadTime": 15.323178,
+          "ProcessTime": 16.20202,
+          "JSHeapUsedSize": 17360316,
+          "JSHeapTotalSize": 49086464,
+          "FirstMeaningfulPaint": 1720290.668335,
+          "DomContentLoaded": 1720290.465584,
+          "NavigationStart": 1720290.409172
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 151,
+          "jsEventListeners": 201
+        },
+        "heap": {
+          "usedSize": 17434012,
+          "totalSize": 49086464,
+          "embedderHeapUsedSize": 2157880,
+          "backingStorageSize": 4665726
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 23403,
+            "cpuTime": 1.999918,
+            "rssKiB": 229840
+          },
+          {
+            "type": "renderer",
+            "id": 23432,
+            "cpuTime": 0.040934,
+            "rssKiB": 99024
+          },
+          {
+            "type": "renderer",
+            "id": 23433,
+            "cpuTime": 16.603056,
+            "rssKiB": 362912
+          },
+          {
+            "type": "renderer",
+            "id": 23431,
+            "cpuTime": 0.144341,
+            "rssKiB": 185856
+          },
+          {
+            "type": "GPU",
+            "id": 23418,
+            "cpuTime": 1.623495,
+            "rssKiB": 233584
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 23419,
+            "cpuTime": 0.101122,
+            "rssKiB": 108000
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 23420,
+            "cpuTime": 0.033708,
+            "rssKiB": 79744
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 1083,
+            "timer": {
+              "remains": 290.9750000000082,
+              "int": 291,
+              "running": true
+            },
+            "total": 0,
+            "spares": 3,
+            "small": 0,
+            "large": 0,
+            "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+            "rollLevel": 0,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 13.12569999985693,
+            "hold": null,
+            "recording": {
+              "ticks": 1083,
+              "exact": true,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": false,
+              "activityId": null,
+              "level": null,
+              "mode": null,
+              "seed": null,
+              "phase": null,
+              "index": null,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": null,
+              "missions": [],
+              "banner": null,
+              "said": [],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": false,
+            "api": "unknown",
+            "engine": {
+              "fps": 10,
+              "drawCalls": 19,
+              "triangles": 16684,
+              "tier": 4,
+              "sceneDrawCalls": 18,
+              "envDrawCalls": 0,
+              "postDrawCalls": 1,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 18,
+                "textures": 23,
+                "programs": 86,
+                "renderTargets": 15
+              },
+              "tierLog": [
+                {
+                  "atSec": 6.325699999856954,
+                  "from": 0,
+                  "to": 1,
+                  "fps": 42.50212510625535
+                },
+                {
+                  "atSec": 8.325699999856948,
+                  "from": 1,
+                  "to": 2,
+                  "fps": 10
+                },
+                {
+                  "atSec": 10.32569999985694,
+                  "from": 2,
+                  "to": 3,
+                  "fps": 10
+                },
+                {
+                  "atSec": 12.325699999856933,
+                  "from": 3,
+                  "to": 4,
+                  "fps": 10
+                }
+              ]
+            }
+          },
+          "rendererMemory": {
+            "attributes": 63,
+            "attributesSize": 1473220,
+            "geometries": 18,
+            "indexAttributes": 6,
+            "indexAttributesSize": 80304,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 86,
+            "programsSize": 241994,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 23,
+            "texturesSize": 60987495,
+            "uniformBuffers": 118,
+            "uniformBuffersSize": 26656,
+            "total": 62809669
+          },
+          "canvas": {
+            "width": 1007,
+            "height": 630
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "texture-formats-tier1",
+            "bgra8unorm-storage",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "clip-distances",
+            "texture-formats-tier2",
+            "shader-f16",
+            "timestamp-query",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "longTasks": [
+        {
+          "at": 6154.900000095367,
+          "ms": 201
+        },
+        {
+          "at": 6356.100000143051,
+          "ms": 201
+        },
+        {
+          "at": 6557.100000143051,
+          "ms": 201
+        },
+        {
+          "at": 6758.200000047684,
+          "ms": 200
+        },
+        {
+          "at": 6959.200000047684,
+          "ms": 201
+        },
+        {
+          "at": 7160.700000047684,
+          "ms": 201
+        },
+        {
+          "at": 7361.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 7562.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 7763.800000190735,
+          "ms": 201
+        },
+        {
+          "at": 7965.400000095367,
+          "ms": 201
+        },
+        {
+          "at": 8166.600000143051,
+          "ms": 201
+        },
+        {
+          "at": 8367.800000190735,
+          "ms": 201
+        },
+        {
+          "at": 8568.900000095367,
+          "ms": 201
+        },
+        {
+          "at": 8770,
+          "ms": 200
+        },
+        {
+          "at": 8970.900000095367,
+          "ms": 201
+        },
+        {
+          "at": 9172.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 9373.200000047684,
+          "ms": 201
+        },
+        {
+          "at": 9574.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 9775.300000190735,
+          "ms": 201
+        },
+        {
+          "at": 9976.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 10178.100000143051,
+          "ms": 201
+        },
+        {
+          "at": 10379.200000047684,
+          "ms": 200
+        },
+        {
+          "at": 10580.200000047684,
+          "ms": 200
+        },
+        {
+          "at": 10781.100000143051,
+          "ms": 200
+        },
+        {
+          "at": 10981.900000095367,
+          "ms": 201
+        },
+        {
+          "at": 11183.200000047684,
+          "ms": 217
+        },
+        {
+          "at": 11401.100000143051,
+          "ms": 201
+        },
+        {
+          "at": 11602.600000143051,
+          "ms": 201
+        },
+        {
+          "at": 11803.800000190735,
+          "ms": 201
+        },
+        {
+          "at": 12005.400000095367,
+          "ms": 200
+        },
+        {
+          "at": 12206.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 12407.700000047684,
+          "ms": 201
+        },
+        {
+          "at": 12608.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 12809.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 13010.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 13212.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 13413.300000190735,
+          "ms": 201
+        },
+        {
+          "at": 13614.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 13815.700000047684,
+          "ms": 203
+        },
+        {
+          "at": 14019.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 14220.5,
+          "ms": 201
+        },
+        {
+          "at": 14422.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 14623.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 14824.600000143051,
+          "ms": 200
+        },
+        {
+          "at": 15025.600000143051,
+          "ms": 200
+        },
+        {
+          "at": 15227.100000143051,
+          "ms": 201
+        },
+        {
+          "at": 15428.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 15629.5,
+          "ms": 200
+        },
+        {
+          "at": 15830.200000047684,
+          "ms": 201
+        },
+        {
+          "at": 16031.200000047684,
+          "ms": 200
+        },
+        {
+          "at": 16232.300000190735,
+          "ms": 200
+        },
+        {
+          "at": 16433.10000014305,
+          "ms": 200
+        },
+        {
+          "at": 16633.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 16834.5,
+          "ms": 200
+        },
+        {
+          "at": 17035.400000095367,
+          "ms": 200
+        },
+        {
+          "at": 17236.5,
+          "ms": 200
+        },
+        {
+          "at": 17437.200000047684,
+          "ms": 200
+        },
+        {
+          "at": 17637.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 17838.700000047684,
+          "ms": 201
+        },
+        {
+          "at": 18039.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 18240.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 18441.700000047684,
+          "ms": 200
+        },
+        {
+          "at": 18642.400000095367,
+          "ms": 200
+        },
+        {
+          "at": 18843.10000014305,
+          "ms": 200
+        },
+        {
+          "at": 19043.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 19244.900000095367,
+          "ms": 200
+        },
+        {
+          "at": 19445.800000190735,
+          "ms": 200
+        },
+        {
+          "at": 19646.5,
+          "ms": 201
+        },
+        {
+          "at": 19848,
+          "ms": 201
+        },
+        {
+          "at": 20049.400000095367,
+          "ms": 200
+        }
+      ],
+      "vitals": {
+        "lcp": 2460
+      }
+    },
+    {
+      "name": "recovery",
+      "elapsedMs": 30101,
+      "frame": {
+        "n": 1805,
+        "mean": 16.666094182825486,
+        "p50": 16.69999999999709,
+        "p95": 17.60000000000582,
+        "p99": 17.700000000000728,
+        "max": 17.80000000000291,
+        "over25": 0,
+        "over50": 0
+      },
+      "engineCpuMs": {
+        "n": 1806,
+        "mean": 0.7109080810483508,
+        "p50": 0.5999999046325684,
+        "p95": 1.4000000953674316,
+        "p99": 1.7000000476837158,
+        "max": 12.299999952316284,
+        "over25": 0,
+        "over50": 0
+      },
+      "fps": 60.002061012622036,
+      "taskMs": 2402.929,
+      "mainThreadBusyPct": 7.982887611707253,
+      "samples": [
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1230,
+          "timer": {
+            "remains": 289.7500000000093,
+            "int": 290,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 14.342399999856923,
+          "hold": null,
+          "recording": {
+            "ticks": 1230,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 36.52110398080029,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1349,
+          "timer": {
+            "remains": 288.75833333334356,
+            "int": 289,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 15.341399999856915,
+          "hold": null,
+          "recording": {
+            "ticks": 1349,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.03001500750365,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1470,
+          "timer": {
+            "remains": 287.75000000001114,
+            "int": 288,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 16.342399999856905,
+          "hold": null,
+          "recording": {
+            "ticks": 1470,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.99798326106672,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1590,
+          "timer": {
+            "remains": 286.75000000001205,
+            "int": 287,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 17.342399999856873,
+          "hold": null,
+          "recording": {
+            "ticks": 1590,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00100842030958,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1712,
+          "timer": {
+            "remains": 285.7333333333463,
+            "int": 286,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 18.359099999856856,
+          "hold": null,
+          "recording": {
+            "ticks": 1712,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.997983261066835,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1832,
+          "timer": {
+            "remains": 284.7333333333472,
+            "int": 285,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 19.359099999856834,
+          "hold": null,
+          "recording": {
+            "ticks": 1832,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.9979832610669,
+            "drawCalls": 19,
+            "triangles": 16684,
+            "tier": 4,
+            "sceneDrawCalls": 18,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 1951,
+          "timer": {
+            "remains": 283.74166666668145,
+            "int": 284,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 20.358999999856795,
+          "hold": null,
+          "recording": {
+            "ticks": 1951,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00300015000773,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2071,
+          "timer": {
+            "remains": 282.74166666668236,
+            "int": 283,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 21.358999999856767,
+          "hold": null,
+          "recording": {
+            "ticks": 2071,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.003000150007836,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2193,
+          "timer": {
+            "remains": 281.7250000000166,
+            "int": 282,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 22.375699999856753,
+          "hold": null,
+          "recording": {
+            "ticks": 2193,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.97983870967766,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2314,
+          "timer": {
+            "remains": 280.7166666666842,
+            "int": 281,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 23.37579999985674,
+          "hold": null,
+          "recording": {
+            "ticks": 2314,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.99798326106702,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2433,
+          "timer": {
+            "remains": 279.72500000001844,
+            "int": 280,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 24.37569999985671,
+          "hold": null,
+          "recording": {
+            "ticks": 2433,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.000000000000185,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2554,
+          "timer": {
+            "remains": 278.716666666686,
+            "int": 279,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 25.37579999985669,
+          "hold": null,
+          "recording": {
+            "ticks": 2554,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000027,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2673,
+          "timer": {
+            "remains": 277.72500000002026,
+            "int": 278,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 26.375699999856675,
+          "hold": null,
+          "recording": {
+            "ticks": 2673,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.000000000000206,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2794,
+          "timer": {
+            "remains": 276.71666666668784,
+            "int": 277,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 27.375799999856646,
+          "hold": null,
+          "recording": {
+            "ticks": 2794,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000031,
+            "drawCalls": 20,
+            "triangles": 19484,
+            "tier": 3,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 1,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 2914,
+          "timer": {
+            "remains": 275.71666666668875,
+            "int": 276,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 28.375799999856632,
+          "hold": null,
+          "recording": {
+            "ticks": 2914,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.9979832610671,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3036,
+          "timer": {
+            "remains": 274.700000000023,
+            "int": 275,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 29.392399999856618,
+          "hold": null,
+          "recording": {
+            "ticks": 3036,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.97077054880837,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3156,
+          "timer": {
+            "remains": 273.7000000000239,
+            "int": 274,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 30.3923999998566,
+          "hold": null,
+          "recording": {
+            "ticks": 3156,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.000000000000306,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3275,
+          "timer": {
+            "remains": 272.70833333335815,
+            "int": 273,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 31.39229999985658,
+          "hold": null,
+          "recording": {
+            "ticks": 3275,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00300015000773,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3396,
+          "timer": {
+            "remains": 271.70000000002574,
+            "int": 272,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 32.39239999985658,
+          "hold": null,
+          "recording": {
+            "ticks": 3396,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000028,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3517,
+          "timer": {
+            "remains": 270.6916666666933,
+            "int": 271,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 33.40899999985663,
+          "hold": null,
+          "recording": {
+            "ticks": 3517,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00000000000029,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3637,
+          "timer": {
+            "remains": 269.69166666669423,
+            "int": 270,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 34.40899999985668,
+          "hold": null,
+          "recording": {
+            "ticks": 3637,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00100842031,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3758,
+          "timer": {
+            "remains": 268.6833333333618,
+            "int": 269,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 35.409099999856736,
+          "hold": null,
+          "recording": {
+            "ticks": 3758,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 59.96774843781543,
+            "drawCalls": 32,
+            "triangles": 19484,
+            "tier": 2,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 13,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 84,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3877,
+          "timer": {
+            "remains": 267.69166666669605,
+            "int": 268,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 36.408299999856794,
+          "hold": null,
+          "recording": {
+            "ticks": 3877,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.02100735257362,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 3997,
+          "timer": {
+            "remains": 266.69166666669696,
+            "int": 267,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 37.40839999985685,
+          "hold": null,
+          "recording": {
+            "ticks": 3997,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.021007352573584,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4119,
+          "timer": {
+            "remains": 265.6750000000312,
+            "int": 266,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 38.42569999985692,
+          "hold": null,
+          "recording": {
+            "ticks": 4119,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00300015000777,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4239,
+          "timer": {
+            "remains": 264.6750000000321,
+            "int": 265,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 39.42569999985697,
+          "hold": null,
+          "recording": {
+            "ticks": 4239,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00100842030983,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4359,
+          "timer": {
+            "remains": 263.67500000003304,
+            "int": 264,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 40.424899999857026,
+          "hold": null,
+          "recording": {
+            "ticks": 4359,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.02400960384196,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4479,
+          "timer": {
+            "remains": 262.67500000003395,
+            "int": 263,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 41.42569999985708,
+          "hold": null,
+          "recording": {
+            "ticks": 4479,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.000000000000384,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4599,
+          "timer": {
+            "remains": 261.67500000003486,
+            "int": 262,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 42.42479999985713,
+          "hold": null,
+          "recording": {
+            "ticks": 4599,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.00300015000785,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        },
+        {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 4721,
+          "timer": {
+            "remains": 260.6583333333691,
+            "int": 261,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+          "clock": 43.44139999985718,
+          "hold": null,
+          "recording": {
+            "ticks": 4721,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "unknown",
+          "engine": {
+            "fps": 60.027012155470395,
+            "drawCalls": 33,
+            "triangles": 19484,
+            "tier": 1,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 0,
+            "postDrawCalls": 14,
+            "backend": "webgpu",
+            "memory": {
+              "geometries": 18,
+              "textures": 23,
+              "programs": 86,
+              "renderTargets": 15
+            },
+            "tierLog": [
+              {
+                "atSec": 6.325699999856954,
+                "from": 0,
+                "to": 1,
+                "fps": 42.50212510625535
+              },
+              {
+                "atSec": 8.325699999856948,
+                "from": 1,
+                "to": 2,
+                "fps": 10
+              },
+              {
+                "atSec": 10.32569999985694,
+                "from": 2,
+                "to": 3,
+                "fps": 10
+              },
+              {
+                "atSec": 12.325699999856933,
+                "from": 3,
+                "to": 4,
+                "fps": 10
+              },
+              {
+                "atSec": 20.3256999998568,
+                "from": 4,
+                "to": 3,
+                "fps": 60.00000000000016
+              },
+              {
+                "atSec": 28.308999999856628,
+                "from": 3,
+                "to": 2,
+                "fps": 59.99495840685687
+              },
+              {
+                "atSec": 36.30909999985679,
+                "from": 2,
+                "to": 1,
+                "fps": 60.00000000000029
+              }
+            ]
+          }
+        }
+      ],
+      "before": {
+        "metrics": {
+          "Timestamp": 1720311.66416,
+          "AudioHandlers": 0,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 201,
+          "LayoutObjects": 64,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 151,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 7,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 0,
+          "ArrayBufferContents": 223,
+          "LayoutCount": 24,
+          "RecalcStyleCount": 329,
+          "LayoutDuration": 0.007562,
+          "RecalcStyleDuration": 0.025837,
+          "DevToolsCommandDuration": 0.008872,
+          "ScriptDuration": 15.879704,
+          "V8CompileDuration": 0,
+          "TaskDuration": 16.131065,
+          "TaskOtherDuration": 0.20909,
+          "ThreadTime": 16.124958,
+          "ProcessTime": 17.006299,
+          "JSHeapUsedSize": 17692432,
+          "JSHeapTotalSize": 49086464,
+          "FirstMeaningfulPaint": 1720290.668335,
+          "DomContentLoaded": 1720290.465584,
+          "NavigationStart": 1720290.409172
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 151,
+          "jsEventListeners": 201
+        },
+        "heap": {
+          "usedSize": 17692432,
+          "totalSize": 49086464,
+          "embedderHeapUsedSize": 2157880,
+          "backingStorageSize": 4666135
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 23403,
+            "cpuTime": 2.00218,
+            "rssKiB": 229840
+          },
+          {
+            "type": "renderer",
+            "id": 23432,
+            "cpuTime": 0.040934,
+            "rssKiB": 99024
+          },
+          {
+            "type": "renderer",
+            "id": 23433,
+            "cpuTime": 17.006566,
+            "rssKiB": 362864
+          },
+          {
+            "type": "renderer",
+            "id": 23431,
+            "cpuTime": 0.144474,
+            "rssKiB": 185872
+          },
+          {
+            "type": "GPU",
+            "id": 23418,
+            "cpuTime": 1.628514,
+            "rssKiB": 229376
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 23419,
+            "cpuTime": 0.101264,
+            "rssKiB": 108000
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 23420,
+            "cpuTime": 0.033708,
+            "rssKiB": 79744
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 1110,
+            "timer": {
+              "remains": 290.7500000000084,
+              "int": 291,
+              "running": true
+            },
+            "total": 0,
+            "spares": 3,
+            "small": 0,
+            "large": 0,
+            "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+            "rollLevel": 0,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 13.34239999985693,
+            "hold": null,
+            "recording": {
+              "ticks": 1110,
+              "exact": true,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": false,
+              "activityId": null,
+              "level": null,
+              "mode": null,
+              "seed": null,
+              "phase": null,
+              "index": null,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": null,
+              "missions": [],
+              "banner": null,
+              "said": [],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": false,
+            "api": "unknown",
+            "engine": {
+              "fps": 10.434601137371521,
+              "drawCalls": 19,
+              "triangles": 16684,
+              "tier": 4,
+              "sceneDrawCalls": 18,
+              "envDrawCalls": 0,
+              "postDrawCalls": 1,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 18,
+                "textures": 23,
+                "programs": 86,
+                "renderTargets": 15
+              },
+              "tierLog": [
+                {
+                  "atSec": 6.325699999856954,
+                  "from": 0,
+                  "to": 1,
+                  "fps": 42.50212510625535
+                },
+                {
+                  "atSec": 8.325699999856948,
+                  "from": 1,
+                  "to": 2,
+                  "fps": 10
+                },
+                {
+                  "atSec": 10.32569999985694,
+                  "from": 2,
+                  "to": 3,
+                  "fps": 10
+                },
+                {
+                  "atSec": 12.325699999856933,
+                  "from": 3,
+                  "to": 4,
+                  "fps": 10
+                }
+              ]
+            }
+          },
+          "rendererMemory": {
+            "attributes": 63,
+            "attributesSize": 1473220,
+            "geometries": 18,
+            "indexAttributes": 6,
+            "indexAttributesSize": 80304,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 86,
+            "programsSize": 241994,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 23,
+            "texturesSize": 60987495,
+            "uniformBuffers": 118,
+            "uniformBuffersSize": 26656,
+            "total": 62809669
+          },
+          "canvas": {
+            "width": 1007,
+            "height": 630
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "texture-formats-tier1",
+            "bgra8unorm-storage",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "clip-distances",
+            "texture-formats-tier2",
+            "shader-f16",
+            "timestamp-query",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "after": {
+        "metrics": {
+          "Timestamp": 1720341.790968,
+          "AudioHandlers": 0,
+          "AudioWorkletProcessors": 0,
+          "Documents": 1,
+          "Frames": 1,
+          "JSEventListeners": 201,
+          "LayoutObjects": 64,
+          "MediaKeySessions": 0,
+          "MediaKeys": 0,
+          "Nodes": 151,
+          "Resources": 29,
+          "ContextLifecycleStateObservers": 7,
+          "V8PerContextDatas": 2,
+          "WorkerGlobalScopes": 0,
+          "UACSSResources": 0,
+          "RTCPeerConnections": 0,
+          "ResourceFetchers": 1,
+          "AdSubframes": 0,
+          "DetachedScriptStates": 0,
+          "ArrayBufferContents": 226,
+          "LayoutCount": 55,
+          "RecalcStyleCount": 2136,
+          "LayoutDuration": 0.012109,
+          "RecalcStyleDuration": 0.106741,
+          "DevToolsCommandDuration": 0.022498,
+          "ScriptDuration": 17.638479,
+          "V8CompileDuration": 0,
+          "TaskDuration": 18.533994,
+          "TaskOtherDuration": 0.754167,
+          "ThreadTime": 18.639571,
+          "ProcessTime": 20.831759,
+          "JSHeapUsedSize": 15046016,
+          "JSHeapTotalSize": 21561344,
+          "FirstMeaningfulPaint": 1720290.668335,
+          "DomContentLoaded": 1720290.465584,
+          "NavigationStart": 1720290.409172
+        },
+        "dom": {
+          "documents": 1,
+          "nodes": 151,
+          "jsEventListeners": 201
+        },
+        "heap": {
+          "usedSize": 15046016,
+          "totalSize": 21561344,
+          "embedderHeapUsedSize": 4210120,
+          "backingStorageSize": 4663797
+        },
+        "processes": [
+          {
+            "type": "browser",
+            "id": 23403,
+            "cpuTime": 2.353224,
+            "rssKiB": 230752
+          },
+          {
+            "type": "renderer",
+            "id": 23432,
+            "cpuTime": 0.04098,
+            "rssKiB": 99024
+          },
+          {
+            "type": "renderer",
+            "id": 23433,
+            "cpuTime": 20.831898,
+            "rssKiB": 337760
+          },
+          {
+            "type": "renderer",
+            "id": 23431,
+            "cpuTime": 0.182082,
+            "rssKiB": 180096
+          },
+          {
+            "type": "GPU",
+            "id": 23418,
+            "cpuTime": 6.500132,
+            "rssKiB": 235104
+          },
+          {
+            "type": "network.mojom.NetworkService",
+            "id": 23419,
+            "cpuTime": 0.112807,
+            "rssKiB": 108512
+          },
+          {
+            "type": "storage.mojom.StorageService",
+            "id": 23420,
+            "cpuTime": 0.033759,
+            "rssKiB": 79744
+          }
+        ],
+        "game": {
+          "state": {
+            "phase": "play",
+            "driver": "lockstep",
+            "tick": 4723,
+            "timer": {
+              "remains": 260.64166666670246,
+              "int": 261,
+              "running": true
+            },
+            "total": 0,
+            "spares": 3,
+            "small": 0,
+            "large": 0,
+            "ball": [7.407407283782959, 0.49967461824417114, 12.592592239379883],
+            "rollLevel": 0,
+            "island": 0,
+            "stageId": "a807534653bab2e45bd943cce2c8c46c0bf548df71d8793b4f9fa0ab88cb92ad",
+            "clock": 43.458199999857186,
+            "hold": null,
+            "recording": {
+              "ticks": 4723,
+              "exact": true,
+              "replays": 0
+            },
+            "ghost": {
+              "run": null,
+              "on": false,
+              "racing": false,
+              "loaded": false,
+              "ticks": 0
+            },
+            "portal": null,
+            "journey": [],
+            "learning": {
+              "active": false,
+              "activityId": null,
+              "level": null,
+              "mode": null,
+              "seed": null,
+              "phase": null,
+              "index": null,
+              "built": 0,
+              "done": [],
+              "overridden": [],
+              "gate": null,
+              "binding": null,
+              "missions": [],
+              "banner": null,
+              "said": [],
+              "guards": 0,
+              "notes": [],
+              "port": {
+                "physics": true,
+                "engine": true
+              }
+            },
+            "learningRun": false,
+            "api": "unknown",
+            "engine": {
+              "fps": 60.01613879362547,
+              "drawCalls": 33,
+              "triangles": 19484,
+              "tier": 1,
+              "sceneDrawCalls": 19,
+              "envDrawCalls": 0,
+              "postDrawCalls": 14,
+              "backend": "webgpu",
+              "memory": {
+                "geometries": 18,
+                "textures": 23,
+                "programs": 86,
+                "renderTargets": 15
+              },
+              "tierLog": [
+                {
+                  "atSec": 6.325699999856954,
+                  "from": 0,
+                  "to": 1,
+                  "fps": 42.50212510625535
+                },
+                {
+                  "atSec": 8.325699999856948,
+                  "from": 1,
+                  "to": 2,
+                  "fps": 10
+                },
+                {
+                  "atSec": 10.32569999985694,
+                  "from": 2,
+                  "to": 3,
+                  "fps": 10
+                },
+                {
+                  "atSec": 12.325699999856933,
+                  "from": 3,
+                  "to": 4,
+                  "fps": 10
+                },
+                {
+                  "atSec": 20.3256999998568,
+                  "from": 4,
+                  "to": 3,
+                  "fps": 60.00000000000016
+                },
+                {
+                  "atSec": 28.308999999856628,
+                  "from": 3,
+                  "to": 2,
+                  "fps": 59.99495840685687
+                },
+                {
+                  "atSec": 36.30909999985679,
+                  "from": 2,
+                  "to": 1,
+                  "fps": 60.00000000000029
+                }
+              ]
+            }
+          },
+          "rendererMemory": {
+            "attributes": 63,
+            "attributesSize": 1473220,
+            "geometries": 18,
+            "indexAttributes": 6,
+            "indexAttributesSize": 80304,
+            "indirectStorageAttributes": 0,
+            "indirectStorageAttributesSize": 0,
+            "programs": 86,
+            "programsSize": 249348,
+            "readbackBuffers": 0,
+            "readbackBuffersSize": 0,
+            "renderTargets": 15,
+            "storageAttributes": 0,
+            "storageAttributesSize": 0,
+            "textures": 23,
+            "texturesSize": 79077351,
+            "uniformBuffers": 120,
+            "uniformBuffersSize": 26768,
+            "total": 80906991
+          },
+          "canvas": {
+            "width": 1440,
+            "height": 900
+          },
+          "deviceFeatures": [
+            "depth32float-stencil8",
+            "rg11b10ufloat-renderable",
+            "texture-formats-tier1",
+            "bgra8unorm-storage",
+            "texture-compression-bc",
+            "dual-source-blending",
+            "core-features-and-limits",
+            "float32-filterable",
+            "indirect-first-instance",
+            "texture-compression-astc-sliced-3d",
+            "float32-blendable",
+            "texture-compression-astc",
+            "texture-compression-etc2",
+            "depth-clip-control",
+            "texture-compression-bc-sliced-3d",
+            "clip-distances",
+            "texture-formats-tier2",
+            "shader-f16",
+            "timestamp-query",
+            "subgroups"
+          ],
+          "visibility": "visible"
+        }
+      },
+      "longTasks": [],
+      "vitals": {
+        "lcp": 2460
+      }
+    }
+  ]
+}

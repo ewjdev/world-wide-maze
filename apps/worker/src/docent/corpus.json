@@ -1,10 +1,29 @@
 {
   "format": 2,
-  "hash": "2243b1952af75746",
+  "hash": "1d5009cf7b25143e",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
     "docs/build-log/cost-controls.md",
+    "docs/build-log/performance-audio-p2.md",
+    "docs/build-log/performance-audit-2026-09-27.md",
+    "docs/build-log/performance-cache-p1.md",
+    "docs/build-log/performance-device-harness.md",
+    "docs/build-log/performance-ghost-ci-repair.md",
+    "docs/build-log/performance-ghost-p1.md",
+    "docs/build-log/performance-idle-p2.md",
+    "docs/build-log/performance-input-p2.md",
+    "docs/build-log/performance-main-integration.md",
+    "docs/build-log/performance-p1-staging.md",
+    "docs/build-log/performance-p2-followup.md",
+    "docs/build-log/performance-p2-staging.md",
+    "docs/build-log/performance-portal-test-repair.md",
+    "docs/build-log/performance-recording-chunks-p2.md",
+    "docs/build-log/performance-regression-p1.md",
+    "docs/build-log/performance-render-p1.md",
+    "docs/build-log/performance-resources-p2.md",
+    "docs/build-log/performance-startup-p2.md",
+    "docs/build-log/performance-test-quarantine.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
     "docs/build-log/phase-03.md",
@@ -276,6 +295,541 @@
       "url": "/log#cost-controls",
       "kind": "build-log",
       "text": "## Live inspection and uncompleted provider gates\nRead-only inspection found production version `94b7a0cd-42db-4ee9-84ac-b40dcd324abb` on the baseline main commit. `ewj.dev` is an active Free Website zone. The current Wrangler OAuth session can read zone/deployment metadata, but AI Gateway configuration and both rate-limit/custom WAF ruleset reads returned 403. The Worker preview-list API returned an empty list; no previews were deleted. Production secret names confirm a gateway token and Typesafe key but do not prove the gateway's billing mode. No secret values were printed or committed, no billing limits were changed and no paid inference was exercised.\n\n[Operator procedure](../launch/cost-controls.md) gives the initialization, monthly reconciliation, shutdown/restore and rollback steps. [Execution checklist](../../plans/cost-controls-execution.md) retains exact owner dashboard steps for Gateway, actual AI payer, PostHog, Cloudflare budget notifications, edge protection and ElevenLabs. Deployment will intentionally pause dynamic service until initial reconciliation. Provider/WAF settings, a preview-inventory recheck at rollout, live billing reconciliation, populated production D1 cost measurements and production acceptance remain explicit rollout gates. Theoretical cleanup capacity (1,200 runs/day) is not measured production throughput.\n\nApplication admission cannot cap denied-request flood charges or the whole shared Cloudflare account. Do not describe the site as fully protected until provider settings and the edge block/restore rehearsal are verified. Merge/deployment and any production acceptance are separate from this PR delivery."
+    },
+    {
+      "id": "docs/build-log/performance-audio-p2.md",
+      "title": "Performance #32 — prepare synthesized audio off the main thread · Implementation and scope",
+      "path": "docs/build-log/performance-audio-p2.md",
+      "url": "/log#performance-audio-p2",
+      "kind": "build-log",
+      "text": "Agent: Codex (GPT-6), local tools; September 27, 2026. Start approximately 18:35 PDT. Base: accepted staging `2629523`. Status: qualified for staging review; measured product, lifecycle and full repository checks passed. Completed approximately 18:58 PDT. No deployment or main merge.\n\nThe user authorized subagents to implement remaining performance work, test each change, and admit only measured improvements to staging. This follows #30's startup investigation without replacing its historical evidence. The recording agent owns independent game recording regions; this change touches only audio implementation and the mount/dispose audio lifecycle hooks.\n\n## Implementation and scope\nA one-shot module worker prepares the unchanged 18 sound effects and rolling loop during game mounting, then transfers their Float32 buffers. It creates no AudioContext. `unlock()` creates/resumes WebAudio synchronously in the user gesture; it never synthesizes PCM. Cues copy into an AudioBuffer lazily once and release the corresponding transferred PCM. Preparation retains approximately 2.45 MB decimal PCM (2,273,788 effect bytes plus 176,400 rolling bytes) before a gesture; this trades bounded early memory and worker activity for a responsive first control. It does not reduce whole-device synthesis CPU.\n\nBefore samples arrive, or when worker construction/loading/messages/timeouts fail, cues receive a short degraded oscillator tone. At most eight fallback tones can be active; each stops after 80 ms. This is deliberate approximate feedback, not sample-exact sound. Nothing queues waiting for worker completion, so old cues never play as a burst. Only cues requested during context resume queue, at most eight with 500 ms expiry; mute, rejection and disposal clear them. Normal prepared audio remains sample-exact.\n\nGame disposal now closes its audio owner, terminates pending synthesis, clears timers/queues and releases samples and nodes. Preparation and disposal are idempotent. No gameplay, scoring, replay, network cadence, analytics or deployment settings change."
+    },
+    {
+      "id": "docs/build-log/performance-audio-p2.md#evidence-and-attempts",
+      "title": "Performance #32 — prepare synthesized audio off the main thread › Evidence and attempts",
+      "path": "docs/build-log/performance-audio-p2.md",
+      "anchor": "evidence-and-attempts",
+      "url": "/log#performance-audio-p2",
+      "kind": "build-log",
+      "text": "## Evidence and attempts\n- Baseline sound-muted diagnostic: 18 exact production runs on accepted runtime `36bcaafb…`, all 382 served assets verified. Uses accepted parent dist while this worktree advances; the report identifies its actual baseline source.\n- Candidate v1 sound-muted diagnostic: 18 runs, zero browser errors. Preserved as intermediate evidence because final source additionally consumes transferred PCM after AudioBuffer copy.\n- Sound-enabled baseline and final candidate: 18 runs each, all paired scenarios complete, zero captured browser errors. Native median first trusted key → next rAF **46.45 → 14.00 ms (69.9% lower)**; 6× practice with 10 Mbit/s/50 ms network **248.55 → 16.20 ms (93.5%)**; 6× learning **250.75 → 17.05 ms (93.2%)**. Corresponding audio unlock medians: **44.5 → 2.85 ms**, **238.2 → 5.30 ms**, **240.2 → 6.65 ms**. Native first-control cold outliers remain **156.2 / 118.8 ms** baseline/candidate; no samples excluded. The collector records `muted:false`; historical baseline source is explicitly bound through its previous verified report and every served asset is rechecked. It never describes dirty candidate source as baseline.\n- Focused tests: 11 passing, including all 18 accepted PCM hashes/2,273,788 bytes and the original 176,400-byte rolling-loop hash, idempotent preparation, no pregesture context, early bounded feedback/no delayed replay, constructor/error/messageerror/timeout failures, resume queue/expiry/rejection, mute, rolling PCM, disposal and music resume. Web typecheck passes."
+    },
+    {
+      "id": "docs/build-log/performance-audio-p2.md#evidence-and-attempts~2",
+      "title": "Performance #32 — prepare synthesized audio off the main thread › Evidence and attempts (continued)",
+      "path": "docs/build-log/performance-audio-p2.md",
+      "anchor": "evidence-and-attempts",
+      "url": "/log#performance-audio-p2",
+      "kind": "build-log",
+      "text": "- Native production browser lifecycle: all five modes passed (prepared, delayed response, constructor failure, actual worker-thrown error, dispose before response), zero errors. The prepared jump schedules its exact 9,702-sample buffer; early/error paths schedule the bounded 660 Hz fallback. A real suspended context resumes on the next trusted key without losing its cue. Ten repeated same-page preparation/gesture/disposal cycles return to zero live workers and zero AudioContexts after `close()` resolves. The real worker transfers exactly 2,450,188 PCM bytes. All 18 cue hashes plus rolling-loop hash match the baseline.\n- Initial lifecycle assertion falsely treated a newly available rolling-loop source as a stale one-shot cue; raw failure is preserved under `candidate-v2/lifecycle-attempt1/`. The corrected gate excludes looping sources while still rejecting any delayed one-shot. No production change was needed. A deliberate delayed-jump negative control validates that rejection separately.\n- Full `pnpm check`: **passed**, 119 files / 1,394 tests; 3 files / 32 tests skipped, 148.76 seconds. Typecheck and lint passed. Its first attempt passed typecheck and stopped on formatting of the derived comparison JSON; only that summary was formatted, the log was retained, and the complete command was restarted. Original raw traces were not rewritten. `pnpm docent:index` was regenerated after the final log and `pnpm docent:index --check` passed.\n\n- Dedicated checks: `pnpm exec vitest run apps/web/test/audio.test.ts`; `AUDIT_MUTED=0 node infra/perf/startup-p2.mjs` with the explicit baseline/candidate directories; `node infra/perf/audio-p2-summary.mjs`; `node infra/perf/audio-p2.mjs`; `AUDIT_NEGATIVE_CONTROL=1 node infra/perf/audio-p2.mjs` exited 1 **as required**, rejecting the deliberately injected delayed jump. The summary JSON is formatted with `pnpm exec biome format --write docs/launch/evidence/audio-p2/comparison.json` before repository lint."
+    },
+    {
+      "id": "docs/build-log/performance-audio-p2.md#reproduce-and-artifact-identity",
+      "title": "Performance #32 — prepare synthesized audio off the main thread › Reproduce and artifact identity",
+      "path": "docs/build-log/performance-audio-p2.md",
+      "anchor": "reproduce-and-artifact-identity",
+      "url": "/log#performance-audio-p2",
+      "kind": "build-log",
+      "text": "## Reproduce and artifact identity\nFrom this worktree, `node infra/perf/p1-build.mjs`, serve the production dist on 4321, then:\n\n```sh\nAUDIT_BASE=http://127.0.0.1:4321 AUDIT_MUTED=0 AUDIT_OUT=/tmp/audio-startup node infra/perf/startup-p2.mjs\nAUDIT_BASE=http://127.0.0.1:4321 AUDIT_OUT=/tmp/audio-lifecycle node infra/perf/audio-p2.mjs\nnode infra/perf/audio-p2-summary.mjs\n```\n\n[Raw evidence](../launch/evidence/audio-p2/) retains both muted preliminary batches, both sound-enabled qualification batches, all profiles/outliers, lifecycle attempts and exact served asset manifests. Candidate v2 is the final runtime, not the superseded v1 bank-retention implementation. Its runtime fingerprint is `75c45a2a78253fdce9b2506dc937efbb651f034228030d641a391fb11fbef59f` (383 verified served assets); per-file source hashes and complete runtime patch are saved under `candidate-v2/`; collection occurred before the qualification commit, so its Git HEAD field identifies base `2629523` and the runtime fingerprint identifies the dirty candidate. The baseline uses accepted runtime `36bcaafb…` from immutable parent dist, whose source fingerprint matches accepted staging despite an earlier build-manifest Git HEAD. No parent files were modified.\n\nThe original #30 diagnostic prototype remains reproducible with the extracted synthesis module; its historical evidence is untouched."
+    },
+    {
+      "id": "docs/build-log/performance-audio-p2.md#limits",
+      "title": "Performance #32 — prepare synthesized audio off the main thread › Limits",
+      "path": "docs/build-log/performance-audio-p2.md",
+      "anchor": "limits",
+      "url": "/log#performance-audio-p2",
+      "kind": "build-log",
+      "text": "## Limits\nNative AudioContext creation still has cold outliers and is not moved outside user gestures. CDP page CPU stress does not throttle synthesis workers and is not a physical mobile forecast. Startup wrappers and CPU sampling add diagnostic overhead; first key to next rAF is not field INP or measured sound/display presentation. Browser node scheduling proves feedback was scheduled, not physical speaker audibility. Physical Safari/Android autoplay, sound and lower-tier-device acceptance remain pending. All timing runs, including outliers, remain in the raw evidence.\n\nNo manual human intervention during implementation. No speedup-of-engineering claim."
+    },
+    {
+      "id": "docs/build-log/performance-audit-2026-09-27.md",
+      "title": "Gameplay performance audit — September 27, 2026 · Request and scope · Deliverables",
+      "path": "docs/build-log/performance-audit-2026-09-27.md",
+      "url": "/log#performance-audit-2026-09-27",
+      "kind": "build-log",
+      "text": "\n\n## Request and scope\nEric requested a full gameplay/rendering/memory/CPU/GPU audit, actionable GitHub issues under a performance epic, and automatic adjustment for lower-tier hardware. He confirmed both desktop and mobile are in scope. Work was isolated in the managed `game-performance-audit` worktree on `codex/game-performance-audit`, based on `0b33c14cef45c34905d202bbc760b956cb573362`.\n\nCodex performed the work using repository inspection, a production Vite preview, Playwright/CDP, native Metal GPU timestamp queries, process counters and GitHub CLI. No delegated agent work, game behavior changes, deployment or production load testing occurred. Local browser traffic had analytics off and API calls stubbed. The original checkout's existing plan edits were preserved.\n\n## Deliverables\n- [Complete audit](../launch/performance-audit-2026-09-27.md), with measured facts, source findings, unproven root-cause candidates and physical acceptance gaps kept distinct.\n- [Diagnostic harness](../../infra/perf/audit-2026-09.mjs) and [raw JSON, CPU profiles and screenshots](../launch/evidence/audit-2026-09-27/).\n- [Performance epic #19](https://github.com/ewjdev/world-wide-maze/issues/19) and 11 native child issues, #20–#30. Each issue has priority, readiness, bounded scope, evidence, acceptance, validation and dependencies. Creation, content and parent relationships were read back from GitHub."
+    },
+    {
+      "id": "docs/build-log/performance-audit-2026-09-27.md#measurement-summary",
+      "title": "Gameplay performance audit — September 27, 2026 › Measurement summary · Validation",
+      "path": "docs/build-log/performance-audit-2026-09-27.md",
+      "anchor": "measurement-summary",
+      "url": "/log#performance-audit-2026-09-27",
+      "kind": "build-log",
+      "text": "## Measurement summary\nOn the available M5 Max/128 GiB/macOS 26.6.2 host, ordinary fixture scenarios rendered near 60 FPS. A 20× CPU stress scenario reached about 36 FPS with p95 frames of 49 ms. Automatic quality misreported a synthetic ~5 FPS stall as 10 FPS; high-to-low quality retained about 126 MiB more renderer-accounted resources than a fresh low-quality start. Retry cycles added two GPU attributes / 44,800 bytes each after the first measured retry. Classic ghost preparation blocked for about 200 ms natively and 1.24 s at 6× CPU stress. All three full reference replays (1×/6×/20×) ended at the same 5,429 ticks and score 1,484.\n\nThe main report contains the definitions and limitations of these measurements. Browser CPU throttling is not weak-GPU or physical-mobile emulation. GPU resource byte estimates are not physical VRAM, GPU-process CPU time is not GPU utilization, and page JS heap excludes worker/native memory.\n\n## Validation\n- Frozen dependency install and production web build passed.\n- All nine measurement modes completed. The initial title case waited for a body attribute absent in initial title state; the harness was corrected to use debug phase and rerun in `idle` mode. The original failure remains visible in raw evidence.\n- Initial `pnpm check` passed typechecking but stopped at formatting of the nine new raw JSON files. Those files were formatted; no game-source lint edits were made.\n- `pnpm check` passed: all workspace typechecks, lint (32 advisory warnings / 4 informational findings), and 108 test files / 1,328 tests passed; 3 files / 32 tests skipped. Suite duration 148.15 seconds. Node 26.0.0 / pnpm 11.5.0 on this host; the repository requires Node ≥22.12 and CI uses Node 24. No pre-existing advisory source findings were changed.\n- Documentation corpus was regenerated after this build log and checked with `pnpm docent:index --check`; `git diff --check` passed. The only existing tracked application file changed is the generated documentation corpus. Validation output is saved as `docs/launch/evidence/audit-2026-09-27/check.txt`."
+    },
+    {
+      "id": "docs/build-log/performance-audit-2026-09-27.md#remaining-acceptance",
+      "title": "Gameplay performance audit — September 27, 2026 › Remaining acceptance",
+      "path": "docs/build-log/performance-audit-2026-09-27.md",
+      "anchor": "remaining-acceptance",
+      "url": "/log#performance-audit-2026-09-27",
+      "kind": "build-log",
+      "text": "## Remaining acceptance\nNamed low-/mid-tier desktops and Android/iOS devices, sustained thermal/battery sessions, direct mobile rendering, actual controller-to-visible-motion latency, slow/production networks, and pending Race PR #17 require their own acceptance. The proposed 60 FPS aim / stable 30 FPS lower-tier fallback and memory ceilings remain calibration decisions. Issues are implementation work; this audit does not claim those changes have shipped."
+    },
+    {
+      "id": "docs/build-log/performance-cache-p1.md",
+      "title": "Bounded screenshot retention and build cancellation — P1 #23",
+      "path": "docs/build-log/performance-cache-p1.md",
+      "url": "/log#performance-cache-p1",
+      "kind": "build-log",
+      "text": "- Agent/tool: Codex (GPT-6), shell, Vitest and Playwright/CDP in isolated `codex/performance-cache-p1` worktree.\n- Started September 27, 2026, approximately 20:35 UTC. Native evidence recorded at the timestamps in `docs/launch/evidence/performance-cache-p1/worker-tour.json`.\n- Instruction: execute P1 performance epic work with subagents, validate each change and integrate only demonstrated improvement into a staging branch. No P2 implementation or deployment."
+    },
+    {
+      "id": "docs/build-log/performance-cache-p1.md#change-and-measured-gain",
+      "title": "Bounded screenshot retention and build cancellation — P1 #23 › Change and measured gain",
+      "path": "docs/build-log/performance-cache-p1.md",
+      "anchor": "change-and-measured-gain",
+      "url": "/log#performance-cache-p1",
+      "kind": "build-log",
+      "text": "## Change and measured gain\nThe game builder retains decoded screenshots in a 32 MiB LRU cache instead of a lifetime-unbounded Map. Retention counts the entire typed-array backing buffer. Builds/decode are serialized so only one image can be active beyond retained cache data. Images larger than the budget are built but never retained. ImageBitmap and temporary canvas storage are released explicitly. Adjacent slices reuse a decoded image when it fits; a revisited evicted page decodes again.\n\nThe real Chromium module-worker probe ran two original/candidate pairs on the same six catalog captures, followed by an adjacent Wikipedia slice, an evicted HN revisit and its repeat, then two builds of a 40 MiB synthetic screenshot. It served the unchanged original worker from base `d88697f` and current worker source through Vite. The page contained only the worker probe. All 44 stage JSON hashes matched across variants, including oversize builds.\n\n| Metric after the six-capture tour | Original, both pairs | Candidate, both pairs |\n|---|---:|---:|\n| Live decoded RGBA bytes, observed with WeakRef after worker GC | 113,843,200 | 30,720,000 |\n| Dedicated worker CDP backing storage bytes | 117,253,017 | 34,140,257 |\n| Same-page next slice | cache hit | cache hit |\n| Live decoded bytes after HN revisit | 113,843,200 | 6,215,680 |\n| Live decoded bytes after repeated oversized screenshot | 155,786,240 | 6,215,680 |"
+    },
+    {
+      "id": "docs/build-log/performance-cache-p1.md#change-and-measured-gain~2",
+      "title": "Bounded screenshot retention and build cancellation — P1 #23 › Change and measured gain (continued)",
+      "path": "docs/build-log/performance-cache-p1.md",
+      "anchor": "change-and-measured-gain",
+      "url": "/log#performance-cache-p1",
+      "kind": "build-log",
+      "text": "Retained decoded image bytes after the normal tour fell by **79.27 MiB / 73.0%**. Counter values agreed exactly with independently observed live buffer bytes. Candidate peak retained RGBA across every tour step was 30,720,000 bytes, below the 33,554,432-byte limit. Oversized images decoded twice and were released each time. Revisit wall time was roughly 141–146 ms in these samples; this change claims a retention improvement, not a CPU-throughput gain. The eviction tradeoff is a fresh decode on returning to old pages.\n\nRaw evidence includes dedicated worker heap/backing storage separately from page heap, and renderer-process RSS only as an aggregate proxy. It records browser/hardware, base/current commit, dirty state and SHA-256 runtime content fingerprint. Host: Apple M5 Max / 128 GiB, Chromium 153, headed native Metal; this is not low-tier mobile or thermal acceptance. The 32 MiB bound covers retained decoded RGBA, not peak decode/bitmap/canvas or total process/GPU memory: one active oversized image can exceed that bound temporarily."
+    },
+    {
+      "id": "docs/build-log/performance-cache-p1.md#correctness-and-lifecycle",
+      "title": "Bounded screenshot retention and build cancellation — P1 #23 › Correctness and lifecycle",
+      "path": "docs/build-log/performance-cache-p1.md",
+      "anchor": "correctness-and-lifecycle",
+      "url": "/log#performance-cache-p1",
+      "kind": "build-log",
+      "text": "## Correctness and lifecycle\n`AbortSignal` now reaches fixture builds and texture fetch/decode. Every pool request settles on abort, disposal, worker error/message error, initialization failure or posting failure. A sole obsolete request terminates its worker immediately, including synchronous builder CPU work. Concurrent surviving requests continue; stale worker messages cannot resolve newer work. Disposed pools reject future builds.\n\nAttract, normal loads and retries share serialized world installation. The registered build token owns publication and delayed BUILT transitions. Both engine/physics loads settle before a failed/aborted install unloads its partial resources and releases the queue. New bitmaps are closed on cancellation; engine-owned retry bitmaps are preserved until replacement.\n\nFocused validation:\n\n- 27 unit checks passed across cache/LRU/oversize, serialized service, pool settlement, texture cancellation and existing stage/catalog tests.\n- 3 browser race checks passed: cancelled fixture load and cancelled retry each hold the new world load for 2.5 seconds and assert the old generation cannot trigger BUILT; final stage matches the new generation. Disposal during a delayed failing world load triggers unload and closes its fresh bitmap.\n- Web typecheck passed. Full repository check result is recorded below after completion.\n- Regression tooling #28 has 14 controlled tests, including source freshness, missing scenarios, GPU identity and new/worse memory retention detection.\n\nPeer review caught an unregistered retry controller and cleanup ordering after rejected asynchronous world loads. Both were fixed and locked down by the browser regressions before acceptance. One initial browser test timed out because its serialized practice catalog entry lost reference identity; the test now switches between distinct fixture entries. No product regression was inferred from that harness error.\n\nNo human intervention, schema/physics/scoring changes, provider actions or deployments. The parent serialized heavyweight test/benchmark windows to keep measurements uncontended. Remaining P2 per-stage GPU attribute retention (#24) is explicitly untouched. Physical desktop/mobile device-floor and thermal calibration remain under #27."
+    },
+    {
+      "id": "docs/build-log/performance-cache-p1.md#repository-validation",
+      "title": "Bounded screenshot retention and build cancellation — P1 #23 › Repository validation",
+      "path": "docs/build-log/performance-cache-p1.md",
+      "anchor": "repository-validation",
+      "url": "/log#performance-cache-p1",
+      "kind": "build-log",
+      "text": "## Repository validation\n`pnpm check` completed September 27, 2026 at approximately 21:08 UTC. Typecheck and lint passed (32 existing warnings, four informational diagnostics). All **1,348 test assertions passed**, with 32 skipped. The command exited nonzero because the unrelated `apps/worker/test/cards.integration.test.ts` afterAll harness disposal hook exceeded 60 seconds; its 40 assertions passed. Do not call this a fully green repository check. Targeted cleanup rerun and combined staging CI remain required before final acceptance. The parent released this agent's heavy host window to the renderer rather than overlapping a retry with its measurements.\n\nAn earlier full-check attempt stopped at a test-only TypeScript mismatch (`StageImage` assigned to `ImageBitmap` in the controlled rejection test). The observation type was narrowed to its required readonly width property; the subsequent full typecheck passed. No runtime source changed for that correction."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md",
+      "title": "Portable physical-device evidence harness (#27/#28)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "The existing native probes require desktop Playwright/CDP/Metal. Added a separate opt-in local preview and browser collector for repeatable exports on desktop or phone, plus a validator that refuses to certify hardware or auto-pass incomplete metrics. No production module, telemetry path, device floor or runtime performance claim changed.\n\nThe server verifies a source-bound build, pins all bytes, discloses the instrumented HTML hash separately and defaults to loopback with API disabled. The collector stores bounded numeric frame streams and existing game/controller diagnostics locally, then serializes/downloads after measurement. It distinguishes browser callbacks, engine submissions, retained resource counters and unavailable CPU/GPU/input-to-photon metrics. Validator checks source/tool identity, temporal coverage, exact intervals, scenario/visibility observations, errors, missing counters, and physical-claim contradictions. Structurally complete data still returns `review-required` (exit3), never physical acceptance.\n\nRead-only device inventory found a paired physical iPhone 17 Pro with its tunnel unavailable; all other entries were explicitly simulated. No reconnect, provisioning, installation, signing, remote browser control or user-device data access was attempted. No private device identifiers are stored here. Actual iOS/Safari, Android and lower-tier physical acceptance remain open.\n\nDedicated Node tests cover invalid/missing device evidence, stale/tampered assets, pinned immutable serving, API disabled by default, malformed optional manifests, scenario/visibility contradictions and sustained gaps. Browser smoke and full repository validation are recorded below after execution. See [the operator guide](../launch/performance-device-capture.md) for commands and measurement limits."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md~2",
+      "title": "Portable physical-device evidence harness (#27/#28) (continued)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "Peer reviews found no source blocker in audio worker preparation/gesture-resume/disposal or compact recorder ownership/export semantics; their measured qualification belongs to their separate evidence. Read-only investigation of another branch's full-suite failures found an existing absolute 100 ms cachedPOST assertion (observed 120.97 ms versus 4.97 s cold, structural cache hit passed) and unchanged Wrangler harness `close()` 60 s timeout. Main `1947496` changes cards cache polling to an acknowledged R2 write; that is not proof of resolving the observed teardown timeout. No budgets or teardown code were changed here."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md#validation-and-limits",
+      "title": "Portable physical-device evidence harness (#27/#28) › Validation and limits",
+      "path": "docs/build-log/performance-device-harness.md",
+      "anchor": "validation-and-limits",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "## Validation and limits\n- `node --test infra/perf/device-data.test.mjs infra/perf/device-server.test.mjs`: **20 passed**, including a negative control for one second of play per minute masquerading as a thermal workload. Thermal review requires 15 visible minutes, play in each full minute, and at least 90% of visible snapshots in play; this is workload coverage, not a hardware performance budget.\n- Source-bound production build: **382 verified assets**, unchanged runtime `36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669`, base `2629523`. Every artifact identifies the instrumented collector revision separately.\n- Automated Chromium portable-path smoke: **passed 10.55 s**, then **passed 10.66 s** after strengthening the test to read the actual downloaded JSON and assert exact frame/provenance contents. Both capture 150 engine calls, 301 browser callbacks and seven resource snapshots in approximately five seconds, with no page errors. The long-task API was deliberately unavailable; its data remains null. The original engine method is restored. Both datasets correctly validate as **incomplete physical evidence**.\n- An initial smoke used nonexistent title route `/play` and timed out waiting for the game. The corrected actual title route is `/`. This harness mistake and its raw failure are preserved; no product code was changed.\n- Lightweight overhead diagnostic compares sequential five-second title windows: baseline/capture page task time **307.8/270.9 ms**, and **458.0/311.3 ms** on the strengthened repeat. Capture includes endpoint JSON serialization. Order, warm-up and scheduling confound these samples: they do **not** demonstrate a speedup, zero observer overhead, a device budget, or GPU utilization. Compare actual device candidates using identical instrumentation and account for typed-buffer growth.\n- Full `pnpm check`: **typecheck and lint pass; 118 test files and 1,383 tests pass, 32 tests skipped**, 149.01 seconds. No budget relaxation or unrelated test fix. Browser and local server closed; host released before final documentation/commit.\n- Final Biome and Docent checks pass. Physical iOS/Safari, Android, controller sensor permissions and phone HTTPS/relay operation remain untested here. No physical acceptance is inferred from Chromium portability smoke or self-reported metadata."
+    },
+    {
+      "id": "docs/build-log/performance-device-harness.md#validation-and-limits~2",
+      "title": "Portable physical-device evidence harness (#27/#28) › Validation and limits (continued)",
+      "path": "docs/build-log/performance-device-harness.md",
+      "anchor": "validation-and-limits",
+      "url": "/log#performance-device-harness",
+      "kind": "build-log",
+      "text": "[Raw logs, immutable build manifest and compressed capture JSON](../launch/evidence/device-harness/) preserve both successful samples and the rejected wrong-route attempt. Decompress `performance-build.json.gz` and the matching smoke report for inspection; these automated artifacts are examples of correctly incomplete evidence, not a proposed supported-device floor."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-ci-repair.md",
+      "title": "Ghost route-unmount regression repair",
+      "path": "docs/build-log/performance-ghost-ci-repair.md",
+      "url": "/log#performance-ghost-ci-repair",
+      "kind": "build-log",
+      "text": "September 27, 2026. Performance epic #19 / ghost preparation #22, on `codex/performance-p1-staging`. This repair changes only the browser regression test and documentation; the measured game runtime is unchanged.\n\nThe first hosted staging check ([run 36353578195](https://github.com/ewjdev/world-wide-maze/actions/runs/36353578195)) passed typecheck and lint, with 1,363 tests passing, 33 skipped and one failing. The new ghost browser case timed out while polling for worker termination immediately after requesting `/about`. That route is lazy: React Router keeps the existing game mounted until the destination module is ready. A URL change is therefore not the disposal boundary. `GameApp` calls `Game.dispose()` synchronously during effect cleanup, then clears `window.__wwmGame`.\n\nThe unmodified case passed in a local `CI=true` headless run (32.43 s). To distinguish a scheduling race from missing cleanup, a temporary negative control delayed only the About route's module response by 1.5 s. The original assertion then reproduced the hosted failure, `expected false to be true` / `Matcher did not succeed in time` (32.88 s). This delay was removed from the final test.\n\nThe repaired test holds the About module with an explicit promise, requests navigation, and verifies the game and its one pending worker remain alive while that module is blocked. It then releases the module and waits for the real cleanup boundary, `window.__wwmGame === undefined`. Worker termination must already be complete at that point: an immediate assertion requires the exact state `[true]`, without another termination poll or a vacuously true empty array. A `finally` releases the held response if an assertion fails. No runtime disposal change or enlarged polling timeout was needed.\n\nValidation:"
+    },
+    {
+      "id": "docs/build-log/performance-ghost-ci-repair.md~2",
+      "title": "Ghost route-unmount regression repair (continued)",
+      "path": "docs/build-log/performance-ghost-ci-repair.md",
+      "url": "/log#performance-ghost-ci-repair",
+      "kind": "build-log",
+      "text": "- `CI=true pnpm exec vitest run --project @wwm/web apps/web/test/ghost.e2e.test.ts apps/web/test/ghost-client.test.ts`: all 14 tests passed in 39.47 s, including real worker/reference parity and stale same-stage response rejection.\n- `pnpm --filter @wwm/web typecheck`, focused Biome and `git diff --check` passed.\n- The runtime content fingerprint remains `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`; existing source-bound native measurements remain applicable.\n\nLocal diagnostic logs are `/tmp/wwm-ghost-ci-before.log`, `/tmp/wwm-ghost-ci-delayed-negative.log`, and `/tmp/wwm-ghost-ci-after.log`. The hosted failure was preserved at `/tmp/wwm-p1-ci-failed.log`. Focused checks establish this repair; the complete hosted staging check must still pass before final handoff. The browser and test server closed, and the shared heavy-work slot was released."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-ci-repair.md#stale-transport-result-repair",
+      "title": "Ghost route-unmount regression repair › Stale transport result repair",
+      "path": "docs/build-log/performance-ghost-ci-repair.md",
+      "anchor": "stale-transport-result-repair",
+      "url": "/log#performance-ghost-ci-repair",
+      "kind": "build-log",
+      "text": "## Stale transport result repair\nThe subsequent hosted check ([run 36354351992](https://github.com/ewjdev/world-wide-maze/actions/runs/36354351992)) passed the repaired unmount case but failed the stale-response case: `page.waitForResponse` exceeded 30 seconds. The run again reported 1,363 passed, 33 skipped and one failed. The response subscription already preceded release of the held request. The actual race was the ranking client's independent six-second HTTP timeout: on a slow runner, the held first request aborted before the replacement ghost finished preparing, so releasing its route could no longer generate a response event.\n\nA deterministic negative control subscribed to that first request's failure before navigation and awaited the real timeout. It observed `net::ERR_ABORTED`, then reproduced the original missing-response failure in 12.15 s (the response-wait deadline was shortened only for this negative control). Log: `/tmp/wwm-ghost-stale-negative.log`. The hosted failure is preserved at `/tmp/wwm-p1-ci-final-failed.log`.\n\nThe final test completes the actual first HTTP response and reads its body, then holds a detached browser transport result. This deliberately ignores later aborts to exercise an obsolete result that really reaches the application. Each scenario establishes a ready replacement before releasing the held result, waits for explicit JSON consumption, and inspects the next browser task after the promise chain has drained. It requires the replacement name, `ready` status and exactly one constructed ghost worker. Both valid and incompatible obsolete payloads are covered. There is no fixed delivery sleep or wait for a response event that may never occur."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-ci-repair.md#stale-transport-result-repair~2",
+      "title": "Ghost route-unmount regression repair › Stale transport result repair (continued)",
+      "path": "docs/build-log/performance-ghost-ci-repair.md",
+      "anchor": "stale-transport-result-repair",
+      "url": "/log#performance-ghost-ci-repair",
+      "kind": "build-log",
+      "text": "Removing the first request-generation guard temporarily makes the repaired test fail: the obsolete incompatible response changes the replacement's status from `ready` to `idle` (13.52 s; `/tmp/wwm-ghost-stale-mutation.log`). This negative mutation demonstrates that the test detects stale publication rather than merely accepting an aborted request. The guard was immediately restored and the runtime file compared byte-for-byte with Git. Worker abort/disposal remains covered by the existing client unit tests and the real-browser retry/unmount case.\n\nAll 14 ghost unit/browser tests passed with `CI=true` in headless Chromium (45.46 s; `/tmp/wwm-ghost-stale-after.log`). Three further focused repetitions, each exercising both stale payloads, passed in 13.48 s, 13.58 s and 13.70 s (`/tmp/wwm-ghost-stale-repeat-{1,2,3}.log`). Web typecheck, focused Biome and whitespace checks passed. The other two new browser cases were reviewed for the same ordering issue: reference parity waits for the completed worker result, and route disposal uses the explicit unmount boundary established above. The runtime fingerprint remains `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`. Final full hosted CI remains required; these focused results do not relabel either failed run as green.\n\nParent review also refreshed the device-matrix reproduction command to use the integrated #28 build wrapper, which emits the required source/asset evidence manifest. A plain production build remains valid for playing the game but cannot supply a source-bound audit."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-p1.md",
+      "title": "P1 classic ghost preparation · Change",
+      "path": "docs/build-log/performance-ghost-p1.md",
+      "url": "/log#performance-ghost-p1",
+      "kind": "build-log",
+      "text": "Issue: [#22](https://github.com/ewjdev/world-wide-maze/issues/22), under [performance epic #19](https://github.com/ewjdev/world-wide-maze/issues/19). Base `d88697faed5a2f5791b7bd8ee0b22dd56add95aa`; branch `codex/performance-ghost-p1`. Worktree `/Users/ewj/.codex/worktrees/performance-ghost/wwm`. Date: September 27, 2026. Implemented with Codex agent tools, pnpm/Vitest, Playwright, Chromium CDP and GitHub CLI.\n\n## Change\nClassic ghosts now prepare in a disposable worker using the one-job/transfer/terminate pattern inspected in pending Race PR #17. The classic deterministic recorder is extracted without changing simulation, restart flow or stop-at-goal semantics. Returned tracks include the physics version; the client rejects mismatches. Pose arrays transfer from the worker. Inputs remain the caller's property. No synchronous fallback runs on worker failure.\n\nCancellation rejects pending promises and terminates synchronous worker simulation. Request identity covers same-stage retries as well as new-stage changes, title/select and route disposal. Late fetches/results cannot attach a superseded ghost. Preparation and failure have accessible English/Japanese status text; gameplay continues while preparation is pending or unavailable.\n\nThis does not implement the Race PR or change scoring/physics contracts. Legacy `recordGhostTrack` remains available for headless/reference and showcase uses. The classic gameplay entry uses the worker client."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-p1.md#verification-and-measured-gain",
+      "title": "P1 classic ghost preparation › Verification and measured gain",
+      "path": "docs/build-log/performance-ghost-p1.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-ghost-p1",
+      "kind": "build-log",
+      "text": "## Verification and measured gain\nPaired evidence: [raw JSON](../launch/evidence/ghost-p1/paired.json). M5 Max, 128 GiB, Chromium 153, native Metal, 1440×900 DPR 1. Three repetitions per mode/condition:\n\n| Condition | Reference main-thread long task | Worker main-thread long tasks | Reference maximum frame gap | Worker maximum frame gap |\n|---|---|---|---|---|\n| Native | 198–212 ms | None observed | 183.3–199.9 ms | 17.5–17.6 ms |\n| 6× main-page CPU stress | 1,180–1,241 ms | None observed | 1,166.1–1,233.4 ms | 17.5–17.8 ms |\n\nA 10 ms main-thread heartbeat's maximum gap dropped from 199.5–213.4 ms to 11.3–11.9 ms natively, and from 1,187.3–1,251.1 ms to 26.4–29.0 ms under main-page stress. Native completion wall time increased from 198.5–212.1 ms to 256.6–263.8 ms because a fresh worker initializes independently. The measured benefit is keeping gameplay responsive, not making total simulation computation faster. The worker receives no assertion of sixfold CPU slowdown.\n\nSHA-256 position/quaternion hashes match for every 36,000-tick trial, with no goal, 1,008,000 pose bytes and physics version 0.2.0. The full reference replay also matches every pose/hash and the exact goal tick 5,429 across worker and reference. The independent real-browser test compares these worker output arrays to the Node headless reference arrays.\n\nValidation: `pnpm check` completed typecheck and lint successfully (32 existing warnings, four informational diagnostics). The full test run reported 1,341 passed, 32 skipped and two failures in 177.91 seconds. The failures were existing extension scroll restoration (`expected 420, received 0`) and the game build-fallback URL button stability timeout. Both passed unchanged in isolated retries (11.84 s and 10.16 s). These are recorded as transient observed failures, not silently counted as a full green check; the combined staging branch still requires its final full check."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-p1.md#verification-and-measured-gain~2",
+      "title": "P1 classic ghost preparation › Verification and measured gain (continued)",
+      "path": "docs/build-log/performance-ghost-p1.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-ghost-p1",
+      "kind": "build-log",
+      "text": "The 11 new unit tests passed. All three new real-browser cases passed across focused runs: complete worker/Node pose parity; preparation, pause, retry, worker failure and route disposal; and a late network result after retrying the same stage. The last added stale-network test initially waited through two countdowns and exceeded the existing six-second HTTP timeout, so the test was corrected to inspect the newly prepared track immediately (and accelerate countdowns only). It passed in 4.39 s. This was a test setup correction, not a product workaround. Browser tests use headless Chromium on CI; local native performance probes are headed.\n\nSee [validation record](../launch/evidence/ghost-p1/validation.json). `pnpm docent:index --check` and `git diff --check` passed after documentation finalization. No deployment or main-branch merge was performed; own preview/browser processes were stopped. Unit tests already cover deterministic reference poses/goal tick, version compatibility, supersession, late callbacks, abort, disposal, worker/error/message/clone failures and absence of a main-thread fallback. Real-browser tests cover worker/headless pose parity, a responsive pause during pending preparation, same-stage retry cancellation and route-unmount termination."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-p1.md#verification-and-measured-gain~3",
+      "title": "P1 classic ghost preparation › Verification and measured gain (continued)",
+      "path": "docs/build-log/performance-ghost-p1.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-ghost-p1",
+      "kind": "build-log",
+      "text": "The paired probe is `infra/perf/ghost-p1.mjs`. It builds a temporary independent entry that exposes the shipped worker client and unchanged synchronous reference recorder. Both run on the same production gameplay page with the same 36,000 neutral inputs, three repetitions in alternating order, native and 6× main-thread CPU stress. It records wall time, long tasks, animation-frame gaps, 10 ms heartbeat gaps and SHA-256 pose hashes separately. The temporary source is removed after build. JS/WASM asset hashes identify the measured production build; the recorded parent commit alone is not claimed as optimized source identity. `AUDIT_OUT` directs an independent staging rerun to a new directory. Measurements use their own evidence folder and never overwrite the original audit.\n\nThe stress ratio applies to the main page and is not a physical mobile or worker CPU speed ratio. Main-thread responsiveness is the integration criterion; reduced worker wall time alone is insufficient. Physical lower-tier device and thermal acceptance remain open in #27."
+    },
+    {
+      "id": "docs/build-log/performance-ghost-p1.md#device-budget-support",
+      "title": "P1 classic ghost preparation › Device-budget support",
+      "path": "docs/build-log/performance-ghost-p1.md",
+      "anchor": "device-budget-support",
+      "url": "/log#performance-ghost-p1",
+      "kind": "build-log",
+      "text": "## Device-budget support\n`docs/launch/performance-device-matrix.md` supports P1 #27 with proposed budgets, exact evidence fields, independent direct-mobile/controller rows and repeatable scenarios. Both desktop and mobile audiences are confirmed; a specific hardware floor and final budgets are not accepted. All lower-tier physical rows remain open. Documentation is not claimed as a runtime optimization."
+    },
+    {
+      "id": "docs/build-log/performance-idle-p2.md",
+      "title": "Performance #25: inactive rendering and sleeping physics worker · Scope",
+      "path": "docs/build-log/performance-idle-p2.md",
+      "url": "/log#performance-idle-p2",
+      "kind": "build-log",
+      "text": "Branch: `codex/performance-idle-p2`, based on final P1 staging `ebd368b`.\n\n## Scope\nThe game keeps its foreground input, UI, timer and simulation scheduling at display cadence. After one second of a phase transition, map view submits scene frames at 15 Hz and title/select/other inactive views at 30 Hz. The first second preserves the existing 0.9-second camera transition. Animation receives the accumulated elapsed time so it does not run slowly. Active play keeps the P1 raw frame timing for adaptive quality and the existing safe simulation delta.\n\nA hidden document cancels the application's animation callback and pauses the physics driver. Visibility resume resets elapsed-time and adaptive-quality history. Keyboard held/latched state is reset, repeat events cannot re-arm it, and late releases cannot restart POWER grace. Gamepad and phone held buttons require neutral input before play accepts a new press; a disconnected or stale phone does not prematurely clear this gate. Existing foreground controller sampling/send cadence is unchanged.\n\nThe optional physics worker now parks with no timeout when unloaded, paused or past its existing 150 ms input-stall guard. A fresh input starts one timer chain; resume waits for that fresh input and clears old jump edges. Active stepping still uses its existing 2 ms timer and 120 Hz simulation clock."
+    },
+    {
+      "id": "docs/build-log/performance-idle-p2.md#verification-and-measured-gain",
+      "title": "Performance #25: inactive rendering and sleeping physics worker › Verification and measured gain",
+      "path": "docs/build-log/performance-idle-p2.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-idle-p2",
+      "kind": "build-log",
+      "text": "## Verification and measured gain\n- 24 initial focused unit tests passed, including cadence, worker fake-clock sleep/wake/catch-up/jump cancellation, existing input sources, and keyboard reset/repeat/release behavior.\n- Final net + physics unit run: **128 passed, 2 skipped** (14 files passed, one skipped), 754 ms. Cadence: **4 passed**, 93 ms.\n- CI headless new lockstep/worker visibility tests plus the existing real-worker deterministic replay/live-clock test: **3 passed**, 17.01 s. The worker replay remains bit-identical to Node; live stepping stays within the existing 100–140 Hz acceptance band.\n- CI headless real phone pairing, new host-hidden held-POWER release, and disconnect/freeze/reconnect tests: **3 passed**, 22.57 s (seven unrelated cases skipped by the focused filter). The new phone test uses consumed input as its release barrier, without a transport delivery sleep.\n- Web, physics and net typechecks passed; changed-file Biome and diff whitespace checks passed. The parent owns the combined staging full suite/CI gate.\n- Cache specialist independently reviewed visibility input/worker lifecycle. OS-repeat and late-release findings were repaired and re-reviewed. Parent independently reviewed the final Game/cadence/worker changes with no blocker.\n\nThe first native attempt was rejected: the newly added pause acknowledgement queried simulation state before any stage was loaded. The normal driver pauses immediately after initialization. `postState` now checks `loaded`; an explicit pre-load-pause regression asserts no world-state publication. The failed source fingerprint `f20e33f6…` and console errors remain in [rejected-initialization.json](../launch/evidence/idle-p2/rejected-initialization.json). These measurements are excluded from the table. Peer review rechecked initialization, pending/rejected loads and wake/cancel lifecycle after the repair."
+    },
+    {
+      "id": "docs/build-log/performance-idle-p2.md#verification-and-measured-gain~2",
+      "title": "Performance #25: inactive rendering and sleeping physics worker › Verification and measured gain (continued)",
+      "path": "docs/build-log/performance-idle-p2.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-idle-p2",
+      "kind": "build-log",
+      "text": "Three clean alternating baseline/candidate pairs are in [paired.json](../launch/evidence/idle-p2/paired.json). Every served asset was verified. Baseline runtime: `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`; accepted candidate runtime: `868e1824d06cc502fde7e11dabf0d0189317c3abcede8568ec8d3419c7609a50`. Native Apple M5 Max, Chromium 153.0.8010.12, WebGPU/Metal, 1440×900 CSS viewport, DPR 2, high quality, four-second windows after identical excluded warm-up. No page/console errors in any accepted window.\n\n| Four-second window, ranges across three pairs | P1 baseline | Candidate |\n| --- | ---: | ---: |\n| Paused scene submissions | 240–241 | 55–56 |\n| Paused main-thread CPU ms | 333–490 | 148–189 |\n| Paused queried GPU ms, sum | 2,361–2,576 | 501–526 |\n| Hidden scene submissions | 240–241 | 0 |\n| Hidden main-thread CPU ms | 327–434 | 36–40 |\n| Hidden queried GPU ms, sum | 2,294–2,634 | 0 |\n| Title scene submissions | 240 | 103–110 |\n| Title main-thread CPU ms | 370–511 | 179–266 |\n| Title queried GPU ms, sum | 2,278–2,482 | 972–1,117 |\n| Inactive physics timeout callbacks | 706–719 | 0 |\n| Active physics ticks | 480–481 | 480–481 |\n| Active scene submissions | 240–241 | 240–241 |\n\nIndependent foreground browser rAF callbacks remained 240–241 during hidden measurements, proving that zero game submission comes from application scheduling, not browser background throttling. The nominal 15/30 Hz caps quantize against display callbacks; observed map/title cadence was about 14/26 Hz. Main-thread median CPU fell 64% in map view, 90% hidden, and 48% on title. The corresponding queried GPU-work sums fell 79%, 100%, and 58%."
+    },
+    {
+      "id": "docs/build-log/performance-idle-p2.md#verification-and-measured-gain~3",
+      "title": "Performance #25: inactive rendering and sleeping physics worker › Verification and measured gain (continued)",
+      "path": "docs/build-log/performance-idle-p2.md",
+      "anchor": "verification-and-measured-gain",
+      "url": "/log#performance-idle-p2",
+      "kind": "build-log",
+      "text": "Active main-thread CPU ranges overlap (baseline 433–476 ms, candidate 429–520 ms); its median increased from 445 to 473 ms, about 6.3%. These short windows do **not** establish an active CPU/FPS improvement, and the inactive gains must not be described as a general gameplay speedup. Active frame counts and actual physics tick rate were preserved. Candidate map/title screenshots were inspected: map controls, platforms, route markers, goal/portal cues and title actions remain legible. Screenshots are saved alongside the paired evidence.\n\nWorker callback CPU excludes message processing. The legacy client can retain a stale nonzero diagnostic steps-per-second value after an input stall; the zero-wakeup claim uses actual instrumented callbacks and ticks, not that displayed statistic. Physical lower-tier desktop/mobile battery, thermals and device acceptance remain open."
+    },
+    {
+      "id": "docs/build-log/performance-idle-p2.md#reproduction",
+      "title": "Performance #25: inactive rendering and sleeping physics worker › Reproduction",
+      "path": "docs/build-log/performance-idle-p2.md",
+      "anchor": "reproduction",
+      "url": "/log#performance-idle-p2",
+      "kind": "build-log",
+      "text": "## Reproduction\nPreserve the entire clean P1 production `apps/web/dist`, including its `performance-build.json`, at `/tmp/wwm-idle-p1-baseline-dist` (or set `IDLE_BASELINE`). Its runtime fingerprint is `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`.\n\n```sh\nnode infra/perf/p1-build.mjs\nAUDIT_OUT=/tmp/wwm-idle-paired node infra/perf/idle-p2.mjs\nCI=true pnpm exec vitest run --project @wwm/web apps/web/test/idle.e2e.test.ts --project @wwm/physics packages/physics/test/worker.browser.test.ts\nCI=true pnpm exec vitest run --project @wwm/web apps/web/test/game.e2e.test.ts -t 'pairing with|host visibility|disconnect →'\npnpm exec vitest run --project @wwm/net --project @wwm/physics --exclude '**/*.browser.test.ts'\n```\n\nThe opt-in probe verifies every served baseline/candidate asset against source-bound build manifests, alternates order across three pairs, and uses the same native GPU, viewport, DPR and pinned high quality. It records main-thread TaskDuration, scene frame submissions, independent foreground browser rAFs, actual worker timeout callbacks/ticks and submitted GPU timestamp-query cost. Synthetic document visibility keeps the browser foreground to demonstrate application-level exclusion independently of browser background throttling. Worker callback CPU excludes message processing; queried GPU milliseconds are submitted work measurements, not device utilization or power consumption. This host does not establish physical lower-tier desktop/mobile acceptance."
+    },
+    {
+      "id": "docs/build-log/performance-input-p2.md",
+      "title": "Performance #26 / #29: input and recording investigation",
+      "path": "docs/build-log/performance-input-p2.md",
+      "url": "/log#performance-input-p2",
+      "kind": "build-log",
+      "text": "Codex agent, September 27, 2026. Parent assigned recording research and isolated controller presentation work on `codex/performance-input-p2`, from P1 staging `ebd368b`. Other agents own engine, main game/physics and startup; those files were not edited. No GitHub mutation, production deployment, physical phone test, input protocol or scoring policy change.\n\n#26 produced synthetic allocation/serialization curves through and beyond 36,000 ticks and a research-only exact typed-storage prototype. The recommendation and overflow decision are documented in `docs/launch/performance-recording-p2.md`. The parent is asking Eric to choose overflow behavior; no recorder was integrated into game.ts. Existing fixture inputs round-trip exactly, with tests for timer offsets, score and unchanged submit-envelope values.\n\n#29 separates input tilt from visual snapshots, bounds periodic presentation to 60 Hz, and computes the displayed rate summaries at 4 Hz. Orientation conversion, calibration detector, tilt warning, sending/keepalive, button edges and host messages retain their original cadence. No sensor filter or send limit changed. Initial synthetic probes exposed floating-point bucket-boundary skipping at exactly 60 Hz; a tiny timestamp rounding tolerance corrects that without changing input timing.\n\nThe initial 45 paired synthetic traces all retained byte-identical wire input and send timestamps. Those first timing results were provisional until the rounding correction's final rerun. The old controller browser suite needs a live API relay stack; a separate real ControllerPage smoke uses explicitly mocked relay/sensors and tests visible controls/reconnect/hidden state without claiming live networking or physical-device acceptance. Session CPU probes exclude React rendering and browser work; external-store publication counts are not React commit counts."
+    },
+    {
+      "id": "docs/build-log/performance-input-p2.md~2",
+      "title": "Performance #26 / #29: input and recording investigation (continued)",
+      "path": "docs/build-log/performance-input-p2.md",
+      "url": "/log#performance-input-p2",
+      "kind": "build-log",
+      "text": "Validation and final evidence are listed in `docs/launch/performance-controller-p2.md`. Parent owns full combined CI after integration; this agent runs focused controller/net correctness and relevant type/lint checks. Physical Android/iOS CPU, battery, thermal and input-to-photon latency remain unmeasured. No productivity multiplier claim.\n\nFinal validation (23:46 UTC): corrected ControllerPage smoke passed with no page/console errors; screenshot inspected and controls legible at 390×844. Final 45 paired traces retained identical wire/timestamp hashes and showed lower median session CPU for all nine scenarios. The measured source hash is recorded in the controller report. Twelve controller + 44 net tests, three research-prototype tests, web typecheck and focused Biome checks passed. Docent corpus regenerated and checked. No full-suite claim for this component: the parent explicitly owns combined full validation; no other agent's full test result is represented as this branch's full test result. Browser/Vite and all probe processes stopped. The only human decision requested is #26 overflow behavior, through the parent; no production recording policy was changed."
+    },
+    {
+      "id": "docs/build-log/performance-main-integration.md",
+      "title": "Requalify PR #34 performance after main integration · Trigger and work",
+      "path": "docs/build-log/performance-main-integration.md",
+      "url": "/log#performance-main-integration",
+      "kind": "build-log",
+      "text": "September 27, 2026. Codex with independent review and a lightweight test agent.\n\n## Trigger and work\nPR #34's `a022bde` CI and preview succeeded; Performance staging failed only at the source-bound audio gate, which correctly rejected pre-merge measurements. Rebuilt the merged source with race enabled like the preview, collected fresh native evidence, and pointed the staging workflow at the new directory. No product runtime or threshold changes.\n\nTwo complete startup attempts were rejected because extra unlocks invalidated first-input attribution. Added harness-only input isolation and privacy-conscious gesture categories; preserved both rejected collections. Rebuilt the original baseline at `7eb2309` in the free performance-render worktree and recollected its audio traces with the same harness instead of comparing incompatible instrumentation. That worktree's prior completed audio branch remains preserved.\n\nA separate agent added seven Node tests against the actual collector instrumentation and interference validation. Independent review checked scope, build flags, source identity, gate coverage and timing-window isolation. [Results and limitations](../launch/performance-main-integration.md)."
+    },
+    {
+      "id": "docs/build-log/performance-main-integration.md#validation",
+      "title": "Requalify PR #34 performance after main integration › Validation",
+      "path": "docs/build-log/performance-main-integration.md",
+      "anchor": "validation",
+      "url": "/log#performance-main-integration",
+      "kind": "build-log",
+      "text": "## Validation\nFresh audio comparison passes with native first-key median 44.90 → 14.75 ms. Core comparison initially returned timing-review for two 20× cases; three alternating old/merged pairs reproduced the timing shift on both builds. Preserved the initial result and all six trials, refreshed all baseline frame/replay scenarios, and retained the documented GPU/lifecycle reference files. The final comparison passes all 51 gates without changed thresholds or substituted candidate samples. All 66 performance-tool tests pass, including seven isolation tests. The first full `CI=true pnpm check` passed typecheck/lint and 1,559 tests but timed out at `learning.e2e.test.ts:377` waiting for the level picker after a 2.3-second Grown-ups hold (47 skipped). The unchanged focused learning suite passed 4/4 in 58.07 seconds. Both outcomes are retained; no learning test assertion, product code or quarantine was changed. The intermittent hold-to-open check is tracked by [P1 #37](https://github.com/ewjdev/world-wide-maze/issues/37) and remains blocking. One unchanged full-suite retry passed typecheck, lint and all 1,560 tests (47 skipped; 144 passing files) in 193.95 seconds. This successful retry does not resolve the intermittent failure in #37. The old measurements and three authorized CI quarantines remain visible. No production merge is part of this work."
+    },
+    {
+      "id": "docs/build-log/performance-p1-staging.md",
+      "title": "Performance P1 staging integration · Request and boundary · Integration discipline",
+      "path": "docs/build-log/performance-p1-staging.md",
+      "url": "/log#performance-p1-staging",
+      "kind": "build-log",
+      "text": "\n\n## Request and boundary\nSeptember 27, 2026. Eric requested subagents to execute performance epic #19's P1 work, test each change, admit only measured improvements, and combine qualified changes in a staging branch before P2. Both desktop and mobile are in scope. Main and production deployment are outside this staging step.\n\nCoordinator: Codex, with isolated rendering/timing, ghost, and cache/regression workers. Base `d88697f` combines current main `433943d` and the original performance audit. Managed worktrees preserve the user's original checkout and its unrelated plan files. Branch: `codex/performance-p1-staging`.\n\n## Integration discipline\n- Browser benchmarks and full suites ran serially on the shared host. Other ordinary host activity was not controlled.\n- Runtime acceptance required a measured benefit and correctness checks. Regression tools and device-matrix documentation support validation; they are not claimed as runtime speedups.\n- Peer review found and repaired stale retry ownership, asynchronous world-install cleanup ordering, incomplete FXAA render-target disposal, and evidence checks that could accept stale builds, missing scenarios or worsening known leaks.\n- Rendering candidates with retained high-tier targets were rejected before staging admission. Final component evidence must demonstrate convergence after lowering quality.\n- The original synchronous ghost audit is retained as a reference; worker responsiveness is measured by the separate paired ghost harness.\n- Native evidence is bound to a runtime source fingerprint and verified served asset hashes. Documentation-only commits do not invalidate the runtime fingerprint.\n- Known P2 #24 attribute retention remains visible. No P2 implementation was started."
+    },
+    {
+      "id": "docs/build-log/performance-p1-staging.md#validation",
+      "title": "Performance P1 staging integration › Validation",
+      "path": "docs/build-log/performance-p1-staging.md",
+      "anchor": "validation",
+      "url": "/log#performance-p1-staging",
+      "kind": "build-log",
+      "text": "## Validation\nQualified branches merged: ghost `ff7eaa3` as `737649c`; cache/tooling through `1cd13a4` as `4882a6f`; renderer `566d9d6` as `b03830a`. Integration preserved both ghost and stage cancellation in Game.dispose and regenerated the documentation corpus. Independent source reviews cleared cache/ghost lifecycle and renderer timing/compile ownership after merge.\n\nThe final production runtime fingerprint is `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`, measured at `b03830af177f54301a67027c0e0c4838885d7a42`. Parent ran the source-bound build, native GPU, all 12 frame cases, replay at 1×/6×/20×, 15 retries plus seven fixture loads, artificial stall/recovery, three instrumentation pairs, two cache A/B tours, and six ghost reference/worker pairs. Raw results and distinctions are in `docs/launch/performance-p1-staging.md` and its evidence directory.\n\nFinal comparator returns exit 3 solely for existing P2 #24: 44,800 bytes and two attributes per retry, identical to baseline. No P1 hard failure, missing evidence or timing-review gate remains. All six ghost pairs retain exact pose parity and improve frame/heartbeat gaps; one throttled worker trial retains a 79 ms long task, explicitly reported. Source/manifest/382-asset integrity and frame/GPU sampling were independently rechecked by the ghost agent.\n\nRenderer full check was green: 1,333 passed, 32 skipped. Ghost/cache component logs retain their earlier isolated full-suite failures and passing focused regressions. Combined full correctness is enforced by the published staging-only GitHub workflow before handoff; its run is linked from the staging report and epic update. The coordinator independently ran 22 controlled gate tests, documentation checks, lint and diff validation. No deployment or main merge, no physical-device/thermal/controller acceptance, and no P2 implementation. Every task-owned browser and preview was stopped after measurement."
+    },
+    {
+      "id": "docs/build-log/performance-p2-followup.md",
+      "title": "Performance follow-up integration",
+      "path": "docs/build-log/performance-p2-followup.md",
+      "url": "/log#performance-p2-followup",
+      "kind": "build-log",
+      "text": "Agent: Codex with three implementation/review agents, local tools. September 27, 2026. User-authorized continuation of epic #19 in isolated worktrees, with individual measurement/test gates and staging integration only. [Result report](../launch/performance-p2-followup.md).\n\nThe previous turn committed the five pending plans as `f362b45` in the original checkout. This continuation reused the audit, audio, recording and device-tooling worktrees. No unrelated plan branch was pushed. Benchmarks, builds and full suites were serialized to avoid competing measurements."
+    },
+    {
+      "id": "docs/build-log/performance-p2-followup.md#qualified-inputs",
+      "title": "Performance follow-up integration › Qualified inputs",
+      "path": "docs/build-log/performance-p2-followup.md",
+      "anchor": "qualified-inputs",
+      "url": "/log#performance-p2-followup",
+      "kind": "build-log",
+      "text": "## Qualified inputs\n- Audio `81cb3a6`: 18 sound-enabled actual-product trials per arm; native first-key to next-rAF median 46.45 → 14 ms. Exact 18 cue/rolling PCM, real worker error, bounded early cues, context resume and ten disposal cycles passed. A deliberately delayed cue failed its negative-control gate. Full check 1,394 passed, 32 skipped. Merged as `93db948`.\n- Device tooling `ec7e53c`: 20 dedicated tests, browser download-content verification, 1,383 passing repository tests. Explicit opt-in server verifies and pins build assets; raw capture is local and cannot certify physical identity. No product runtime change. Merged as `ea4af03`.\n- Recording `44f45dc`: 126 triplets verify exact exported JSON; lossless runs reduce representative 36,000-tick active retention by 59–62%. Full check 1,391 passed, 32 skipped. An initial extension-scroll failure and successful unchanged focused/full retries remain in evidence, with no claimed root-cause fix. Merged as `16e7992`.\n\nIndependent source reviews covered ownership, exact input values, run splitting, completed submission/debug copies, worker preparation, gesture-only context creation and disposal. Initial recorder candidates were rejected for export and idle-memory regressions. The accepted recorder still has explicit short-run and transient-export costs; audio uses 2.45 MB of preparatory PCM and retains cold context-creation outliers.\n\nGenerated docent corpus conflicts were resolved by rebuilding from the merged documentation. Parent changes strengthen the staging workflow with device-tool tests and a current-runtime audio comparison. Independent review found missing-metadata and invalid-timing false positives in the initial audio comparator; explicit provenance validation, recomputed manifest hashes, exact trial coverage and paired timing validation now have 11 negative/positive tests. A stale audio candidate failed the controlled fingerprint test with exit 1 and the expected stale-source message."
+    },
+    {
+      "id": "docs/build-log/performance-p2-followup.md#combined-qualification",
+      "title": "Performance follow-up integration › Combined qualification · Remaining boundaries",
+      "path": "docs/build-log/performance-p2-followup.md",
+      "anchor": "combined-qualification",
+      "url": "/log#performance-p2-followup",
+      "kind": "build-log",
+      "text": "## Combined qualification\nFresh production build: integration commit `16e7992d86ee8507111314753891f4d1eb85fea7`, 383 verified assets, runtime fingerprint `bc217847a194d757e51274653397bc09365f0570b4764390fd61ec73eafebe43`. All six core native modes completed without errors; all 51 strict comparison gates pass. All eighteen combined sound-enabled startup trials pass the strengthened source-bound gate: native first-key median 46.45 → 14.30 ms, 6× practice 248.55 → 17.30 ms, learning 250.75 → 17.15 ms. Cold native maximum is still 114.6 ms. All 59 dedicated tool/research tests pass. Final combined `pnpm check` passed 120 files / 1,402 tests, with three files / 32 tests skipped, in 149.44 seconds. New evidence JSON formatting preserved parsed-value hashes. Published-head CI is checked separately; epic #19 records its exact accepted commit/run, rather than treating the local pass as remote acceptance. The preview and audit browsers were stopped after collection.\n\n## Remaining boundaries\nNo physical lower-tier desktop, Android or iOS acceptance is claimed. The device floor, sustained thermal/battery tests, utilization and input-to-photon evidence remain open. The total recording horizon and overflow policy remain unchanged. Main independently advanced to cost-controls `1947496`; syncing and validating that integration remains a promotion gate. This batch does not deploy or merge to main. No manual device provisioning, production traffic, telemetry addition or engineering-speedup claim."
+    },
+    {
+      "id": "docs/build-log/performance-p2-staging.md",
+      "title": "Performance P2 staging integration · Plans preserved · Integration",
+      "path": "docs/build-log/performance-p2-staging.md",
+      "url": "/log#performance-p2-staging",
+      "kind": "build-log",
+      "text": "September 27, 2026. User authorized committing pending plans, then continuing remaining performance epic work in isolated worktrees with tested, measured agent changes integrated into staging.\n\n## Plans preserved\nCommitted all five pending plan files as `f362b45` on the original `feat/phase-23-lesson-limits` checkout: overview, cost controls, cost-controls execution, extension release and Phase 24 race. Docent index/check and whitespace validation passed; that checkout is clean. This local planning commit was not moved into the unrelated performance branch.\n\n## Integration\n- `8b387ac`: stage-owned GPU attributes and generated bitmap cleanup, individually measured on WebGPU/WebGL2 with full check (1,370 passed).\n- `a6d7aed`: controller presentation cadence with exact paired input/timing traces; recording research only.\n- `02ec024`: idle rendering/worker suspension, three native pairs and keyboard/gamepad/phone visibility, reconnect and worker parity tests.\n- Parent startup research: 18 attributed production runs plus 12 exact-synthesis prototype runs; production audio unchanged.\n- Parent regression tooling: 25 controlled tests and strict post-warmup allocation plateaus. Current CI rejects the historical P1 leak waiver.\n\nMerged the qualified individual branches with explicit merge commits. Generated docent corpus conflicts were resolved by regeneration, preserving every agent's report. No product-source conflict required manual resolution. Independent merged-path review found no blocker between idle cadence and adaptive timing, resource ownership or current controller samples. Runtime source is frozen at `7eb2309`, SHA-256 `36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669`, 382 served assets."
+    },
+    {
+      "id": "docs/build-log/performance-p2-staging.md#combined-validation",
+      "title": "Performance P2 staging integration › Combined validation",
+      "path": "docs/build-log/performance-p2-staging.md",
+      "anchor": "combined-validation",
+      "url": "/log#performance-p2-staging",
+      "kind": "build-log",
+      "text": "## Combined validation\nSix native modes completed with zero captured browser errors. All 51 strict comparison checks pass; all three reference replays finish at 5,429 ticks / score 1,484 / one saved replay, and 15 retries retain exactly 65 attributes / 1,473,380 bytes. The first full check stopped on 11 generated JSON formatting errors; formatting preserved every parsed value. The next full run passed typecheck/lint and 1,382 tests, with one portal return-crossing test failure (distance polling at line 263); the failed output is retained. The agent reproduced a real crossing missed by remote polling and repaired only the test, retaining each physics-step crossing. Disabling decline suppression makes the repaired test fail semantically, and runtime source is unchanged. After merging `dbae737`, final local `pnpm check` passes: 118 files / 1,383 tests, three files / 32 tests skipped, 149.65 seconds. Full output and repair evidence are retained. All 25 gate tests and three recording research tests pass. Published-head CI is also required before handoff and its exact run is recorded on epic #19. The final results are recorded in [P2 staging report](../launch/performance-p2-staging.md). Main/production remain unchanged. No P2 research prototype is presented as a shipped runtime change; physical lower-tier acceptance and recording overflow policy remain open."
+    },
+    {
+      "id": "docs/build-log/performance-portal-test-repair.md",
+      "title": "P2 staging: retain real portal-crossing observations · Diagnosis",
+      "path": "docs/build-log/performance-portal-test-repair.md",
+      "url": "/log#performance-portal-test-repair",
+      "kind": "build-log",
+      "text": "The combined staging `pnpm check` passed typechecking/linting but its full test run ended with 1,382 passing, 32 skipped and one failure after 149.89 seconds: `portal.e2e.test.ts`, “declining a portal lets the ball roll through it again without interrupting play.” The return-crossing assertion expected distance below 0.463 m but eventually observed 32.323 m. No other case failed.\n\n## Diagnosis\nThe original input path and remote poll were reproduced with a read-only observer around the original `RapierSimulation.step`. It failed again (29.982 m at timeout), while the retained real physics trace proved the second portal entry at tick 610, minimum return distance **0.033245 m** at tick 622, and no renewed portal prompt. The below-0.463 m interval lasted ticks 616–627: about 100 ms of simulation, or 50 ms of wall time at the test's existing `timeScale: 2`. Remote polling missed this transient even though movement and decline behavior were correct.\n\nThis test uses lockstep physics and remains in the `play` phase, so optional-worker sleeping and inactive render caps are outside this path. The original trace also confirms fresh ArrowDown input was consumed. [Diagnosis and full raw trace](../launch/evidence/portal-test-repair/diagnosis.json) accompany the [original failed assertion](../launch/evidence/portal-test-repair/original-poll-failure.txt) and [all physics-step samples](../launch/evidence/portal-test-repair/original-physics-trace.json.gz)."
+    },
+    {
+      "id": "docs/build-log/performance-portal-test-repair.md#repair-and-verification",
+      "title": "P2 staging: retain real portal-crossing observations › Repair and verification",
+      "path": "docs/build-log/performance-portal-test-repair.md",
+      "anchor": "repair-and-verification",
+      "url": "/log#performance-portal-test-repair",
+      "kind": "build-log",
+      "text": "## Repair and verification\nOnly the test changes. A page-local observer calls the unchanged real physics step and retains the second portal sensor entry, inner crossing, then outer exit. The test still uses real ArrowDown input and the same 0.5×radius / radius+0.2 thresholds. It asserts continued play and no renewed portal prompt. Observer restoration and browser context closure happen in `finally`, including assertion failures.\n\nAll browser checks used `CI=true` with the repository's headless/software-WebGL convention:\n\n- Entire repaired portal suite: **3 passed**, 33.88 s.\n- Negative control: temporarily omitted the game’s `dismissedPortals.add(portal.id)` in the isolated repair worktree. The repaired test **failed in 9.32 s**, receiving the renewed `second.example` portal instead of `null`; this was a semantic assertion failure, not a timeout. Product source was then restored byte-for-byte.\n- Post-restore focused runs: **1 passed each**, 9.40 s and 9.77 s.\n- Web typecheck, changed-file Biome, and diff whitespace checks passed. Parent will rerun combined full checks and GitHub CI.\n\nEvidence lives in `docs/launch/evidence/portal-test-repair/`. The measured product runtime remains unchanged; the prior native performance evidence is still bound to the same runtime fingerprint. No production behavior, timeout, or acceptance threshold was relaxed.\n\n```sh\nCI=true pnpm exec vitest run --project @wwm/web apps/web/test/portal.e2e.test.ts\n```"
+    },
+    {
+      "id": "docs/build-log/performance-recording-chunks-p2.md",
+      "title": "Performance #33 — exact compact input recording",
+      "path": "docs/build-log/performance-recording-chunks-p2.md",
+      "url": "/log#performance-recording-chunks-p2",
+      "kind": "build-log",
+      "text": "**Date:** 2026-09-27. **Branch:** `codex/performance-recording-p2`, based on accepted P2 `2629523`. Follow-up to #26; no overflow-policy decision assumed.\n\nImplemented lazy typed chunks of consecutive exact input values with Uint32 run lengths, preserving Float64/signed-zero values and the existing replay envelope. Completed attempts retain compact data until first submission, which materializes once and drops compact references. Independent debug snapshots cannot corrupt submitted replays. No change to input sampling, physics, timer/score rules, eligibility, or recording horizon.\n\nThe [measurement report](../launch/performance-recording-chunks-p2.md) describes all 126 paired triplets, raw/retained export checkpoints, append/conversion costs, short-recording allocation floor, and the rejected fixed-width candidates. The final changing-input retention gain is approximately 59–62% at 36,000 ticks; idle runs compress further. Export still allocates the original wire array/JSON and may temporarily increase pre-GC memory. Total long-run growth remains unbounded; #26 policy and #27 physical-device acceptance remain open."
+    },
+    {
+      "id": "docs/build-log/performance-recording-chunks-p2.md#validation",
+      "title": "Performance #33 — exact compact input recording › Validation",
+      "path": "docs/build-log/performance-recording-chunks-p2.md",
+      "anchor": "validation",
+      "url": "/log#performance-recording-chunks-p2",
+      "kind": "build-log",
+      "text": "## Validation\n- Eight focused recorder tests and web typecheck pass. Tests include exact value/flag/signed-zero preservation, source/snapshot isolation, over-72,000-tick availability, count overflow splitting, chunk boundaries, reset, fixture score/timer envelope equivalence, and first/repeated submission ownership.\n- Native Chromium memory probe: all 126 triplets match JSON SHA-256 and report zero browser errors. Source and integration SHA-256 are in the raw report.\n- Existing game E2E passes: reference samples match, deterministic goal/items/score replay matches, actual workerd verifies the 5,429-tick submission. Added assertions prove debug export mutation cannot affect submission and saved compact bytes become zero after submission.\n- Initial fixed-width full check failed an absolute worker cached-POST budget (120.97 ms versus 100 ms) and a cards afterAll harness-close timeout. Both full logs and rejected measurements remain preserved. A focused unchanged retry passed all 53 worker/cards tests in 38.30 seconds; this is not proof of a repaired root cause.\n- Final RLE first full check: typecheck/lint pass; 1,390 tests pass, 32 skipped, one extension capture assertion fails (source-tab scrollY 0 instead of 420). Extension source/test files are unchanged from base; the failing source-page restoration happens before gameplay/recording. Independent review identified several plausible setup/capture restoration paths, but the log does not establish the exact cause. An unchanged focused retry passed 5/5 in 36.11 seconds. Both outcomes are retained.\n- The one unchanged full-suite retry passed: `pnpm check` green, 1,391 tests passed / 32 skipped, 119 files passed / 3 skipped, 150.09 seconds. [Final log](../launch/evidence/recording-chunks-p2/full-check-final.txt). No assertion or timeout was relaxed. The earlier intermittent extension restoration failure remains a test-reliability issue with unresolved exact cause; a green retry does not claim it was fixed.\n- `pnpm docent:index` regenerated the documentation corpus; `pnpm docent:index --check`, owned-file Biome and `git diff --check` pass after final documentation updates."
+    },
+    {
+      "id": "docs/build-log/performance-recording-chunks-p2.md#validation~2",
+      "title": "Performance #33 — exact compact input recording › Validation (continued)",
+      "path": "docs/build-log/performance-recording-chunks-p2.md",
+      "anchor": "validation",
+      "url": "/log#performance-recording-chunks-p2",
+      "kind": "build-log",
+      "text": "Independent source review by the audio agent found no blocker in exact values, chunk/count boundaries, ownership, or debug/submission isolation. Shared-host browser/benchmark/full-suite work ran only in assigned exclusive slots. The probe closes its own browser/server. Parent integration and fresh combined source-bound evidence remain separate gates; this worktree does not merge, push, or deploy."
+    },
+    {
+      "id": "docs/build-log/performance-regression-p1.md",
+      "title": "P1 performance regression tooling — issue #28",
+      "path": "docs/build-log/performance-regression-p1.md",
+      "url": "/log#performance-regression-p1",
+      "kind": "build-log",
+      "text": "- Agent/tool: Codex (GPT-6), isolated `codex/performance-cache-p1` worktree, shell/Node/Vitest/Playwright.\n- Work interval: September 27, 2026, approximately 20:45–21:00 UTC for tooling preparation; integrated native runs are recorded separately on the staging branch.\n- Instruction: support the performance epic with testable, opt-in evidence gates; preserve P2 scope and require measured individual gains before integration. Parent delegated this alongside cache issue #23.\n\nAdded a read-only evidence comparator with hard reference-replay and retained-render-target checks, explicit missing evidence, timing review, and visible known P2 #24 attribute growth. Twenty controlled fixture tests prove score/resource regressions and missing data cannot silently pass. Audit output can go to a distinct `AUDIT_OUT`, wrappers preserve every engine frame argument, and viewport/instrumentation metadata is explicit. The standalone overhead probe prepares three ten-second pairs with minimal measurement versus audit-style observers and CPU wrappers.\n\nThe staging-only workflow installs frozen dependencies with Node 24 and Chromium, runs `pnpm check` and the tooling tests, compares committed native evidence and retains artifacts for 14 days. It cannot deploy, does not request provider credentials, and does not change production CI. Known P2 retention returns nonzero from the comparator and an explicit workflow warning; other incomplete/failing evidence blocks it.\n\nValidation during preparation: `node --test infra/perf/p1-regression.test.mjs` passed 20/20; Node syntax checks and Biome passed. Native overhead and combined staging comparison are intentionally run by the parent after individual measured improvements are integrated, to avoid simultaneous workloads contaminating their measurements. Full repository validation is recorded with the cache handoff and on the staging branch."
+    },
+    {
+      "id": "docs/build-log/performance-regression-p1.md~2",
+      "title": "P1 performance regression tooling — issue #28 (continued)",
+      "path": "docs/build-log/performance-regression-p1.md",
+      "url": "/log#performance-regression-p1",
+      "kind": "build-log",
+      "text": "No production diagnostics or telemetry were added. Disabled product cost is zero by construction; enabled sampling cost is measured by the prepared probe, not assumed to be zero. CPU profiler and GPU timestamp overhead are explicitly outside that comparison. Physical lower-tier desktop/mobile and thermal acceptance remain open under issue #27. No human intervention was needed; parent serialized heavy workload windows.\n\nAdditional peer review closed evidence-integrity gaps before admission: raw current-source hashes could otherwise label stale served builds, viewport/sample coverage could be incomplete, and a tolerance on deterministic byte growth could hide a new leak. The opt-in build wrapper now binds before/after source inputs to actual served asset hashes; collectors refuse missing/stale proof. CSS viewport and DPR are compared independently from intended framebuffer changes; short/empty/zero-timing samples cannot pass. The known P2 byte/count allowance is exact, with no timing-style tolerance. Tests exercise each controlled failure. Parent runs the real wrapper and overhead collection on combined staging; this supporting tooling does not claim standalone runtime optimization.\n\nPre-integration collector follow-up: every page error and unfiltered `console.error` (including GPU validation errors) is now preserved at report level for every audit mode, with scenario context. Shared snapshots and timed records also carry local errors. The comparator hard-fails report-level errors even in supplemental modes, so lifecycle/replay/GPU paths cannot silently pass because their run objects omitted an error list. The new controlled test covers all nine modes; 21 Node tests pass. This was a light tooling correction on staging; no native browser/build or runtime source was changed.\n\nThe coordinator additionally gated shader-program count growth during combined validation and added a controlled regression: 22 Node tests pass. Program source-size estimates vary slightly while program counts remain stable. Inspection of installed Three.js `Info.createProgram()` confirms that counter is `program.code.length`; program counts are gated separately from approximate source-byte counters."
+    },
+    {
+      "id": "docs/build-log/performance-render-p1.md",
+      "title": "Performance P1: real frame timing and graphics resource ownership · Result and scope",
+      "path": "docs/build-log/performance-render-p1.md",
+      "url": "/log#performance-render-p1",
+      "kind": "build-log",
+      "text": "Date: 2026-09-27. Codex renderer sub-agent, coordinated by the performance-epic lead. Baseline: `d88697f` (current main plus the original audit). Worktree: `performance-render`; branch: `codex/performance-render-p1`. Issues: [#20](https://github.com/ewjdev/world-wide-maze/issues/20), [#21](https://github.com/ewjdev/world-wide-maze/issues/21).\n\n## Result and scope\n- Real active-play timing reduces the wait to minimum graphics under sustained 200 ms stalls from **13.303 to 7.868 seconds (40.9%)**. Glow turns off at 5.857 rather than 9.284 seconds. The exact same artificial stall still limits rendering to about 4.96 FPS; the ladder now reports that truthfully rather than 10 FPS. Recovery hysteresis remains unchanged. Physics stays at 120 Hz with its existing safe delta and score/replay contract.\n- The final graphics candidate reduces high→low retained renderer accounting from **217.02 to 37.41 MiB (82.8%)**, approaching **37.26 MiB fresh low**, with the same **2 render targets / 7 textures**. Fresh low previously used 91.09 MiB. High itself drops 267.44→208.07 MiB by avoiding an unused startup framebuffer. These are renderer estimates, not OS VRAM residency.\n- Three high↔low cycles plateau exactly in byte totals, programs, uniform buffers, attributes, targets and textures, on both backends and both desktop/mobile viewports. Shared-scene shader variants are bounded by one immutable MRT identity.\n\nNo P2 stage-attribute, idle scheduler or recording changes are included. No production telemetry is enabled or deployment performed."
+    },
+    {
+      "id": "docs/build-log/performance-render-p1.md#implementation-and-ownership",
+      "title": "Performance P1: real frame timing and graphics resource ownership › Implementation and ownership",
+      "path": "docs/build-log/performance-render-p1.md",
+      "anchor": "implementation-and-ownership",
+      "url": "/log#performance-render-p1",
+      "kind": "build-log",
+      "text": "## Implementation and ownership\n`Game.#frame` passes real wall time separately from the unchanged clamped simulation/animation delta. Only consecutive visible gameplay frames contribute to adaptation. Loading, deliberate pause, phone disconnect, learning/portal prompts and visibility changes clear stale pressure/recovery history. Active stalls over one second are measurable; nonfinite intervals are rejected. `qualityStatus` exposes fixed/suspended/steady/minimum-tier states. FPS is sampled gameplay FPS and is zero while sampling is suspended. Minimum-tier pressure does not change gameplay fidelity or remove unavoidable CPU work.\n\nEvery post graph owns and disposes its scene pass, bloom resources, explicitly constructed FXAA RTT and pipeline material. Low uses one colour attachment. FXAA-off also rebuilds the graph to shed its RTT. Medium uses quarter-resolution bloom and a 2560×1440 pixel-area cap; lower tiers use 1920×1080, minimum 1280×1024. CSS layout, stage geometry and necessary visual cues remain intact. The small remaining high→low versus fresh-low difference is bounded scene/reflection/shader state, not unused full-resolution post targets.\n\nPrecompilation uses the public `PassNode.compileAsync` API against the actual target/MRT. Compiling the default sRGB canvas had created a full-size conversion framebuffer that this pipeline never used or resized. GPU drawing pauses during async compilation while CPU animation state continues. An outer `finally` restores target/MRT even on failure. Quality/resize requests defer graph rebuilding until the compiler releases its targets, then apply the latest setting. The engine shares one MRT node across graphs because Three keys persistent shared-scene shader variants by MRT identity."
+    },
+    {
+      "id": "docs/build-log/performance-render-p1.md#paired-evidence",
+      "title": "Performance P1: real frame timing and graphics resource ownership › Paired evidence",
+      "path": "docs/build-log/performance-render-p1.md",
+      "anchor": "paired-evidence",
+      "url": "/log#performance-render-p1",
+      "kind": "build-log",
+      "text": "## Paired evidence\nEnvironment: headed Chromium 153, ANGLE/Metal on the same M5 Max host as the audit; production Vite build, 1440×900 DPR 2 desktop and 390×844 DPR 3 mobile viewport. API calls are stubbed and analytics off. Heavy builds, suites and probes were serialized across agents. Unrelated host activity was observed but not stopped.\n\nOnly `qualified-*` artifacts represent the final complete source. `timing-*` is the isolated #20 build retaining the original graph, and `baseline-*` is unmodified `d88697f`. Build manifests preserve asset SHA256s and exact implementation patches independently of changing worktree HEAD. [Raw evidence, manifests and screenshots](../launch/evidence/render-p1/).\n\n| Backend | Quality path | Retained MiB | Textures / targets | Canvas pixels | CPU submit p95 ms | GPU p95 ms |\n|---|---|---:|---:|---|---:|---:|\n| WebGPU | high | 208.07 | 21 / 14 | 2880×1800 | 1.00 | 10.94 |\n| WebGPU | high-to-low | 37.41 | 7 / 2 | 1821×1138 | 0.90 | 0.46 |\n| WebGPU | medium | 132.47 | 21 / 14 | 2428×1517 | 0.90 | 8.59 |\n| WebGPU | low | 37.26 | 7 / 2 | 1821×1138 | 0.70 | 0.79 |\n| WebGL2 | high | 208.04 | 21 / 14 | 2880×1800 | 1.30 | unavailable |\n| WebGL2 | high-to-low | 37.36 | 7 / 2 | 1821×1138 | 0.80 | unavailable |\n| WebGL2 | medium | 132.43 | 21 / 14 | 2428×1517 | 1.20 | unavailable |\n| WebGL2 | low | 37.22 | 7 / 2 | 1821×1138 | 0.60 | unavailable |\n\nGPU timestamp timing varied substantially with uncontrolled host activity: equivalent earlier high samples ranged roughly 11–21 ms p95, and medium roughly 6–17 ms. Do not infer a stable GPU-time percentage gain from selected runs. The admission claim is reproducible resource reduction and bounded lifecycle, with raw CPU/GPU timings preserved rather than selectively omitted. WebGL2 timestamp support is unavailable here. Pixel caps and optional-pass reductions are software resource limits, not an accepted physical-device SLA."
+    },
+    {
+      "id": "docs/build-log/performance-render-p1.md#correctness-and-visual-checks",
+      "title": "Performance P1: real frame timing and graphics resource ownership › Correctness and visual checks",
+      "path": "docs/build-log/performance-render-p1.md",
+      "anchor": "correctness-and-visual-checks",
+      "url": "/log#performance-render-p1",
+      "kind": "build-log",
+      "text": "## Correctness and visual checks\nThe isolated timing build's synthetic hidden/resume test preserves tier 0, suspends samples while hidden and resumes at about 60 FPS without a false transition. Pure tests cover real versus clamped 200 ms sequences (18.8→10.2 seconds from a cold ladder), severe stalls, finite intervals, suspension, hysteresis and fixed quality. Those absolute times differ from browser runs because startup warmup history differs.\n\nDesktop low/portal and mobile low learning/portal images preserve the ball, rails, gems, gates, portals and HUD. Root independently inspected corresponding images. At 390×844 the existing learning overlay overlaps the timer/life HUD in both high and low images; this is an existing mobile layout limitation and physical/mobile acceptance remains open. Screenshots are settled samples, not exhaustive proof about every displayed frame.\n\nThe manual precompile race holds an actual pending compile, requests low quality plus resize, then releases it and verifies play/tier 3 with no page or console errors. The final 6× CPU-throttled replay completed at tick 5429 with score 1484 and one saved replay, matching the audit baseline while changing low → high → auto during play. `pnpm check` passed: all workspace typechecks and lint, 109 test files / 1333 tests passed, 3 files / 32 tests skipped (149.87 seconds). Lint reported existing warnings only. The focused engine suite passes 43 tests. Final product-source patch SHA256 matches the qualified build manifest.\n\nThe final synthetic device-loss callback probe rebuilt the renderer on WebGL2, resumed drawing, then changed to low with 2 render targets and zero page/console errors. This verifies the fallback lifecycle; it does not reproduce a physical driver reset."
+    },
+    {
+      "id": "docs/build-log/performance-render-p1.md#rejected-experiments-and-validation-discipline",
+      "title": "Performance P1: real frame timing and graphics resource ownership › Rejected experiments and validation discipline · Reproduction",
+      "path": "docs/build-log/performance-render-p1.md",
+      "anchor": "rejected-experiments-and-validation-discipline",
+      "url": "/log#performance-render-p1",
+      "kind": "build-log",
+      "text": "## Rejected experiments and validation discipline\nAll raw intermediate evidence remains. `graphics-*` freed bloom/pass but missed FXAA's implicit RTT (156 MiB lowered versus 61 fresh). `final-*` disposed FXAA too but exposed a genuine unused default framebuffer (96.7 versus 61 MiB; `final-inspect` recorded its 2880×1800 dimensions after shrinking the canvas). `accepted-*` is a rejected intermediate despite its provisional label: premature async MRT restoration produced console validation errors. `verified-*` preceded the manual-compile guard. `release-*` fixed resource convergence and errors but failed cyclic program growth. Reusing a stable MRT identity fixes that last issue in `qualified-*`. None of these rejected candidates was committed or admitted.\n\nAn independent renderer review by the ghost sub-agent verified installed Three source semantics, identified async builder state dependence and traced program growth to MRT/context cache identity. Measured gates were retained through every iteration.\n\n## Reproduction\nUse `node infra/perf/render-p1.mjs <mode>` against production preview port 4321, with a unique `PERF_LABEL` and optional `PERF_BACKEND=webgl2`. `PERF_REQUIRE_IMPROVEMENT=1` makes `gpu` reject failure to converge to fresh-low targets/textures or a >2 MiB gap, and makes `transitions` reject growing resource totals/counts. `compile-race` checks pending precompile mutation; `recovery` invokes a synthetic loss callback and verifies WebGL2 fallback. `PERF_REPLAY_THROTTLES=6` selects the final stress replay. Other modes include `tiers`, `visibility`, `stall`, `frames`, and diagnostic `inspect`. Every frame wrapper forwards all arguments."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md",
+      "title": "Performance P2: stage buffer and bitmap ownership · Confirmed owner and narrow fix",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Date: 2026-09-27. Issue [#24](https://github.com/ewjdev/world-wide-maze/issues/24), parent performance epic #19. Baseline is accepted P1 staging `ebd368b`. Worktree `performance-render`, branch `codex/performance-resources-p2`.\n\n## Confirmed owner and narrow fix\nOn both native WebGPU and WebGL2, fifteen retries increase retained attributes from 65 to 93 and attribute bytes from 1,518,020 to 2,145,220. Each additional load contributes exactly two 22,400-byte arrays. The original motes' two attributes remain in both Three's Attributes and backend resource maps after replacement. The probe deliberately retains those first attribute handles to inspect explicit release; all later loads still reproduce the original audit's same slope.\n\nInstalled Three 0.186.1 `renderers/common/Geometries.js` releases node-only attributes through its geometry-dispose listener and the associated render object's attributes. `objects/Sprite.js` gives every Sprite a global shared geometry. The stage-owned mote material had no stage-owned geometry to trigger buffer disposal. Motes now clone the shared quad and register that geometry in the stage Bin, preserving identical vertex data and visuals while giving these buffers an explicit lifetime.\n\nThe other node-only instance attributes (ball streaks, items, portals, locks, and global particles) use owned mesh geometries. The ball halo's shared Sprite has no per-stage node-only instance buffers. No private renderer cache mutation or gameplay changes are added."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "## Bitmap ownership\n`makeStageImages` borrows a fitting single source image and owns only bitmaps created by cropping/downscaling. It closes already-created crops if a later crop fails. The owner is registered before GPU textures so the Bin's reverse disposal frees textures first, then closes their image sources. Partial asynchronous loads cancelled by unload/disposal close their generated bitmaps before adoption. Caller-owned sources remain usable until their caller closes them. The probe deliberately retains tile handles to test explicit closure (`width === 0`); it does not establish an OS-memory saving because unreferenced baseline bitmaps may eventually be reclaimed by browser garbage collection.\n\nFocused tests cover isolated Sprite geometry disposal, caller-source borrowing, tiled and downscaled image ownership, partial failure, and texture-before-bitmap teardown. Engine typecheck passes; focused engine suite passes 48 tests. The candidate passes all native hard gates on both backends: fifteen normal retries hold **63 attributes / 1,473,220 bytes**, compared with **93 / 2,145,220 bytes** after fifteen baseline retries. This removes the **44,800-byte-per-load growth** (672,000 fewer accounted bytes at that endpoint). Three additional retries with the camera outside the background bounds hold **54 attributes / 918,700 bytes**, with `motes.visible === false` in every sample."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership~2",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership (continued)",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Fifteen alternating example-sparse/HN stage loads retain stable per-stage resources: **1,258,660 / 8,058,948 attribute bytes**, respectively, on both backends. Geometry, texture, render-target, program and uniform-buffer counts plateau per scene after its first occurrence as well (example-sparse uniform buffers warm from 85 to 87 on WebGPU). Owning the quad can add one bounded geometry when the ball halo also uses the shared Sprite quad; it does not grow per stage. Four post-recovery WebGL2 retries stay at **63 attributes / 1,258,500 bytes**. All page/console error lists are empty.\n\nBoth backends keep **3 live cropped tiles** across four oversized texture loads, then **0 on unload**, **0 after a cancelled pending crop**, and **0 after engine disposal**, while preserving the caller source at width 512 until the caller closes it. Baseline explicit-close counts are 12 live tiles after four loads/unload and 15 after the cancelled load. Unit tests also cover partial crop failure and downscaling. The manual visual check retains the ocean, visible motes, ball, rails, pickups and HUD. Both backends additionally render a 5120×6400 labelled checker image as two observed tile materials (4096×2560 each after downscaling), with correctly separated top/bottom artwork and no page/console errors. Settled normal and large-tiled screenshots are preserved in the `candidate-v1b-*` folders."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#bitmap-ownership~3",
+      "title": "Performance P2: stage buffer and bitmap ownership › Bitmap ownership (continued)",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "bitmap-ownership",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "Qualified raw results are `candidate-v1-*/tiles.json` and `candidate-v1b-*/{retries,stages}.json`; all use exactly the product-source hashes and asset hashes in `candidate-v1-build.json`. The `b` suffix changes only the culling probe setup. The compact `candidate-v1-gates.json` records plateau counters. `pnpm check` passed: workspace typechecks and lint, **115 test files / 1370 tests passed**, 3 files / 32 tests skipped, 148.70 seconds. Existing lint warnings remain unchanged. Full and focused check logs are preserved alongside the raw measurements. No gameplay constants, simulation cadence, score/replay format, production analytics, regression waivers or shared gate configuration changed.\n\nThe first candidate culling probe changed the camera far plane but did not actually place motes out of view; its visibility assertion failed while GPU bytes stayed flat. This is a preserved probe-setup failure (`candidate-v1-webgpu/retries.json` and the accompanying failure log), not a qualified culling result. The corrected probe places the camera far outside the background bounds and restores it afterward, exercising the engine's explicit `motesInView()` visibility gate without changing production culling. Candidate product source did not change between these probe versions.\n\nA peer reviewed the installed Three disposal path, cloned Sprite geometry ownership, crop cleanup and cancelled-load adoption guard and found no static blocker."
+    },
+    {
+      "id": "docs/build-log/performance-resources-p2.md#evidence-and-limits",
+      "title": "Performance P2: stage buffer and bitmap ownership › Evidence and limits",
+      "path": "docs/build-log/performance-resources-p2.md",
+      "anchor": "evidence-and-limits",
+      "url": "/log#performance-resources-p2",
+      "kind": "build-log",
+      "text": "## Evidence and limits\nRaw data, source/build identities and screenshots live in `docs/launch/evidence/resources-p2/`. `baseline-*` serves the unchanged accepted P1 build even while candidate source is edited. Native headed Chromium/Metal uses the same M5 Max host as P1. API calls are stubbed and analytics remain off. Host-heavy work is serialized across agents. This is a GPU resource lifecycle measurement, not physical low-end desktop/mobile acceptance or OS VRAM residency.\n\nRun `PERF_LABEL=<unique-label> [PERF_BACKEND=webgl2] node infra/perf/resources-p2.mjs retries|stages|tiles` against production preview port 4321. `PERF_REQUIRE_IMPROVEMENT=1` enables hard count/byte plateau and ownership gates. `PERF_CULL_CASE=1` adds three out-of-view retries; `visual` captures settled normal and large tiled texture images. `stages` includes a synthetic WebGPU loss callback followed by WebGL2 retries; this is not a physical driver-reset test. `tiles` holds a pending crop across unload and counts actual live bitmap handles while preserving the caller source."
+    },
+    {
+      "id": "docs/build-log/performance-startup-p2.md",
+      "title": "Performance P2 startup research and resource gate",
+      "path": "docs/build-log/performance-startup-p2.md",
+      "url": "/log#performance-startup-p2",
+      "kind": "build-log",
+      "text": "September 27, 2026. Continues epic #19, research #30 and regression tooling #28 on the performance worktree.\n\n- Captured 18 source-bound production startup/first-input traces: native and 6× page stress, cold/warm HTTP cache, explicit slow network, practice and learning. First audio unlock includes context creation, synthesis, buffer copy and resume. Native median 46.3 ms and stressed medians 341.1/369.1 ms; all raw profiles and outliers retained. No product audio changes.\n- Compared exact synthesis on main versus a fresh worker in 12 diagnostic runs. All 18 cues/2,273,788 PCM bytes match. Native rAF gaps 32.2–35.3 → 16.7–18.7 ms, with slower total worker preparation. Page-only CPU stress is not device emulation. See [report](../launch/performance-startup-p2.md).\n- Added opt-in strict resource plateau mode: every post-warmup allocation checkpoint must remain at or below its warm value; missing samples fail. Historical P1 leak waiver remains available only for reproducing old results. Current P2 staging will require strict mode.\n- Validation: 25 regression-gate tests pass, including deliberately injected small leaks, intermediate peaks, historical non-attribute growth and missing samples. Collector syntax/Biome and peer review passed. No browser errors in startup or synthesis runs. Combined staging checks and physical device acceptance are recorded separately."
+    },
+    {
+      "id": "docs/build-log/performance-test-quarantine.md",
+      "title": "Performance browser-test quarantine · Request and scope",
+      "path": "docs/build-log/performance-test-quarantine.md",
+      "url": "/log#performance-test-quarantine",
+      "kind": "build-log",
+      "text": "September 27, 2026. Codex, with a separate issue-grooming agent. Continues PR #34 after merging main at `fedb9bc`.\n\n## Request and scope\nEric requested a test-hardening plan and high-priority GitHub issues, and explicitly authorized temporarily skipping failing tests so they do not block performance work. Exactly two ghost lifecycle tests and one initial portal travel test are quarantined in CI. Ordinary local runs still execute them; `WWM_RUN_QUARANTINED_TESTS=1` opts CI-mode diagnostic runs in. Test bodies, assertions, timeouts and game code remain unchanged. The remaining ghost parity and portal decline/offline checks stay required.\n\nThe [hardening plan](../../plans/performance-test-hardening.md) covers guaranteed cleanup, explicit lifecycle transitions, failure-state capture, negative controls and evidence required to remove the quarantine. The P1 follow-ups are [#35, ghost lifecycle](https://github.com/ewjdev/world-wide-maze/issues/35) and [#36, portal travel](https://github.com/ewjdev/world-wide-maze/issues/36), both children of epic #19. These follow-ups are separate from performance requalification after the merge of main. Source-fingerprint checks are retained; stale measurements are not an accepted waiver."
+    },
+    {
+      "id": "docs/build-log/performance-test-quarantine.md#validation",
+      "title": "Performance browser-test quarantine › Validation · Remaining work",
+      "path": "docs/build-log/performance-test-quarantine.md",
+      "anchor": "validation",
+      "url": "/log#performance-test-quarantine",
+      "kind": "build-log",
+      "text": "## Validation\n- Before changes: serial local CI-mode run passed all six tests in 82.17 seconds; hosted failures remain real and their exact triggers unresolved.\n- Quarantine mode: three tests passed and exactly three skipped, 17.17 seconds.\n- Opt-in diagnostic run: all six tests passed, zero skipped, 82.82 seconds.\n- Full `CI=true pnpm check`: typecheck and lint passed; 144 test files / 1,560 tests passed, six files / 47 tests skipped, 203.56 seconds. Exactly three skips are newly authorized by this quarantine; 44 were pre-existing in CI mode.\n- Runtime fingerprint remains `b420b32e2c08409ee28e057cfda81c6e622548f29eb4f69a1ade05dc0d723584` (1,036 files), unchanged from the merged head.\n- Generated documentation corpus rebuilt and freshness checked before publication.\n- Independent review confirmed the quarantine scope and preserved assertions.\n- macOS/Node 26 local results are separate from hosted Linux/Node 24 acceptance.\n\n## Remaining work\nImplement the linked P1 repairs, remove each quarantine with evidence, and collect fresh native evidence for the merged runtime under #28. No flaky-test root cause is claimed fixed by skipping it. No production merge is part of this change."
     },
     {
       "id": "docs/build-log/phase-01.md",

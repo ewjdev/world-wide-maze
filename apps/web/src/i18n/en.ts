@@ -135,6 +135,8 @@ export const en = {
     skip: 'Press any key to skip', // N
   },
   ghost: {
+    preparing: 'Preparing ghost… You can keep playing.',
+    unavailable: 'Ghost unavailable. You can keep playing.',
     toggle: 'Race the #1 run', // N (Phase 10 ghosts)
     by: '{{name}} · {{score}} pts',
     key: 'G',

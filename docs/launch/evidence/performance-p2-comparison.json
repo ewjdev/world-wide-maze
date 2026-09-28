@@ -1,0 +1,590 @@
+{
+  "schemaVersion": 1,
+  "policy": {
+    "strictResourcePlateau": true
+  },
+  "generatedAt": "2026-09-28T00:11:27.344Z",
+  "exitCode": 0,
+  "status": "pass",
+  "limitations": [
+    "No physical desktop/mobile, battery or thermal acceptance.",
+    "CPU throttling does not emulate a weak GPU or worker CPU.",
+    "Timing review requires repeated paired trials; metadata and resource/correctness gates are separate.",
+    "Known P2 failures remain visible and return nonzero; this report does not authorize a production merge."
+  ],
+  "gates": [
+    {
+      "id": "source:frames",
+      "status": "pass",
+      "measured": {
+        "version": 2,
+        "algorithm": "sha256",
+        "sha256": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+        "files": 425
+      },
+      "checkedAgainstCurrentTree": true
+    },
+    {
+      "id": "environment:frames",
+      "status": "pass",
+      "baseline": {
+        "commit": "b03830af177f54301a67027c0e0c4838885d7a42",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T21:39:51.517Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "candidate": {
+        "commit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T23:59:46.642Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "message": "Host/browser match; compare scenario DPR, backend and workload below."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"practice\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.299999999999272,
+      "candidateP95Ms": 18.600000000000364,
+      "reviewThresholdMs": 23.959999999999127,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-hn-front\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.400000000000546,
+      "candidateP95Ms": 18.600000000000364,
+      "reviewThresholdMs": 24.080000000000656,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-govuk-card-grid\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.299999999999272,
+      "candidateP95Ms": 18.600000000000364,
+      "reviewThresholdMs": 23.959999999999127,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-mdn-dark-docs\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.30000000000109,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 23.96000000000131,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-image-gallery\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.400000000001455,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 24.080000000001746,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-wikipedia-article~3\",\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.400000000000546,
+      "candidateP95Ms": 18.599999999998545,
+      "reviewThresholdMs": 24.080000000000656,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-wikipedia-article~3\",\"dpr\":2,\"seconds\":16,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.299999999999272,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 23.959999999999127,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"fixture-wikipedia-article~3\",\"throttle\":6,\"seconds\":20,\"drive\":true,\"profile\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.5,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 24.2,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"practice\",\"throttle\":20,\"seconds\":20,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.599999999998545,
+      "candidateP95Ms": 18.599999999998545,
+      "reviewThresholdMs": 24.319999999998252,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"practice\",\"backend\":\"webgl2\",\"dpr\":2,\"seconds\":16,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.299999999999272,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 23.959999999999127,
+      "baselineBackend": "webgl2",
+      "candidateBackend": "webgl2",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"ref\":\"practice\",\"quality\":\"low\",\"dpr\":2,\"seconds\":12,\"drive\":true}",
+      "status": "pass",
+      "baselineP95Ms": 18.30000000000109,
+      "candidateP95Ms": 18.599999999999454,
+      "reviewThresholdMs": 23.96000000000131,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:frames:{\"path\":\"/\",\"seconds\":12}",
+      "status": "pass",
+      "baselineP95Ms": 18.300000000000182,
+      "candidateP95Ms": 18.59999999999991,
+      "reviewThresholdMs": 23.960000000000218,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "source:gpu",
+      "status": "pass",
+      "measured": {
+        "version": 2,
+        "algorithm": "sha256",
+        "sha256": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+        "files": 425
+      },
+      "checkedAgainstCurrentTree": true
+    },
+    {
+      "id": "environment:gpu",
+      "status": "pass",
+      "baseline": {
+        "commit": "b03830af177f54301a67027c0e0c4838885d7a42",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T21:38:49.518Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "candidate": {
+        "commit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T23:58:49.849Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "message": "Host/browser match; compare scenario DPR, backend and workload below."
+    },
+    {
+      "id": "timing:gpu:{\"quality\":\"high\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.200000000000728,
+      "candidateP95Ms": 18.600000000000364,
+      "reviewThresholdMs": 23.840000000000874,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:gpu:{\"quality\":\"high-to-low\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.299999999999272,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 23.959999999999127,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:gpu:{\"quality\":\"medium\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.399999999999636,
+      "candidateP95Ms": 18.599999999998545,
+      "reviewThresholdMs": 24.07999999999956,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:gpu:{\"quality\":\"low\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.30000000000109,
+      "candidateP95Ms": 18.5,
+      "reviewThresholdMs": 23.96000000000131,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "source:replay",
+      "status": "pass",
+      "measured": {
+        "version": 2,
+        "algorithm": "sha256",
+        "sha256": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+        "files": 425
+      },
+      "checkedAgainstCurrentTree": true
+    },
+    {
+      "id": "environment:replay",
+      "status": "pass",
+      "baseline": {
+        "commit": "b03830af177f54301a67027c0e0c4838885d7a42",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T21:44:07.296Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "candidate": {
+        "commit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-28T00:03:46.150Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "message": "Host/browser match; compare scenario DPR, backend and workload below."
+    },
+    {
+      "id": "timing:replay:{\"throttle\":1}",
+      "status": "pass",
+      "baselineP95Ms": 18.30000000000291,
+      "candidateP95Ms": 18.599999999998545,
+      "reviewThresholdMs": 23.960000000003493,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:replay:{\"throttle\":6}",
+      "status": "pass",
+      "baselineP95Ms": 18.5,
+      "candidateP95Ms": 17.599999999998545,
+      "reviewThresholdMs": 24.2,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:replay:{\"throttle\":20}",
+      "status": "pass",
+      "baselineP95Ms": 18.599999999998545,
+      "candidateP95Ms": 17.700000000004366,
+      "reviewThresholdMs": 24.319999999998252,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "source:lifecycle",
+      "status": "pass",
+      "measured": {
+        "version": 2,
+        "algorithm": "sha256",
+        "sha256": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+        "files": 425
+      },
+      "checkedAgainstCurrentTree": true
+    },
+    {
+      "id": "environment:lifecycle",
+      "status": "pass",
+      "baseline": {
+        "commit": "b03830af177f54301a67027c0e0c4838885d7a42",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-27T21:48:01.712Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "candidate": {
+        "commit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+        "hardware": "Apple M5 Max\n137438953472",
+        "browser": "153.0.8010.12",
+        "headless": false,
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "date": "2026-09-28T00:07:07.383Z",
+        "gpu": "{\"devices\":[{\"vendorId\":4203,\"deviceId\":0,\"vendorString\":\"Google Inc. (Apple)\",\"deviceString\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"driverVendor\":\"Apple\",\"driverVersion\":\"26.6.2\"}],\"renderer\":\"ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))\",\"vendor\":\"Google Inc. (Apple)\",\"implementation\":\"(gl=egl-angle,angle=metal)\"}"
+      },
+      "message": "Host/browser match; compare scenario DPR, backend and workload below."
+    },
+    {
+      "id": "timing:lifecycle:{\"name\":\"play\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.399999999999636,
+      "candidateP95Ms": 17.600000000000364,
+      "reviewThresholdMs": 24.07999999999956,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "timing:lifecycle:{\"name\":\"paused\"}",
+      "status": "pass",
+      "baselineP95Ms": 18.400000000001455,
+      "candidateP95Ms": 17.5,
+      "reviewThresholdMs": 24.080000000001746,
+      "baselineBackend": "webgpu",
+      "candidateBackend": "webgpu",
+      "message": "Timing is noisy. Review repeated paired trials; this is not a hard throughput or device certification gate."
+    },
+    {
+      "id": "replay:1",
+      "status": "pass",
+      "actual": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      },
+      "expected": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      }
+    },
+    {
+      "id": "replay:6",
+      "status": "pass",
+      "actual": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      },
+      "expected": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      }
+    },
+    {
+      "id": "replay:20",
+      "status": "pass",
+      "actual": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      },
+      "expected": {
+        "phase": "result",
+        "ticks": 5429,
+        "score": 1484,
+        "savedReplays": 1
+      }
+    },
+    {
+      "id": "gpu:retained-targets",
+      "status": "pass",
+      "freshLowBytes": 39072746,
+      "downshiftBytes": 39225566,
+      "excessBytes": 152820,
+      "toleranceBytes": 8388608,
+      "freshLowTargets": 2,
+      "downshiftTargets": 2,
+      "baselineDownshiftBytes": 39225566,
+      "gainBytes": 0,
+      "message": "Three.js resource estimates, not physical VRAM utilization. Budget allows small shader/geometry differences, never extra retained targets."
+    },
+    {
+      "id": "memory:retry-attributes",
+      "status": "pass",
+      "issue": "#24",
+      "bytesPerRetry": 0,
+      "baselineBytesPerRetry": 44800,
+      "attributesPerRetry": 0,
+      "baselineAttributesPerRetry": 2,
+      "growthBytes": 0,
+      "retriesAfterWarmup": 13,
+      "strictResourcePlateau": true,
+      "message": "No post-warmup attribute growth."
+    },
+    {
+      "id": "memory:plateau-attributes",
+      "status": "pass",
+      "warmup": 65,
+      "checkpoints": [65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-attributesSize",
+      "status": "pass",
+      "warmup": 1473380,
+      "checkpoints": [
+        1473380, 1473380, 1473380, 1473380, 1473380, 1473380, 1473380, 1473380, 1473380, 1473380, 1473380,
+        1473380, 1473380, 1473380
+      ],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-textures",
+      "status": "pass",
+      "warmup": 21,
+      "checkpoints": [21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21, 21],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-texturesSize",
+      "status": "pass",
+      "warmup": 216433191,
+      "checkpoints": [
+        216433191, 216433191, 216433191, 216433191, 216433191, 216433191, 216433191, 216433191, 216433191,
+        216433191, 216433191, 216433191, 216433191, 216433191
+      ],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-renderTargets",
+      "status": "pass",
+      "warmup": 14,
+      "checkpoints": [14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-geometries",
+      "status": "pass",
+      "warmup": 19,
+      "checkpoints": [19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19, 19],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-programs",
+      "status": "pass",
+      "warmup": 61,
+      "checkpoints": [61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-storageAttributes",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-storageAttributesSize",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-readbackBuffers",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-readbackBuffersSize",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-indirectStorageAttributes",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-indirectStorageAttributesSize",
+      "status": "pass",
+      "warmup": 0,
+      "checkpoints": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-indexAttributes",
+      "status": "pass",
+      "warmup": 7,
+      "checkpoints": [7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-indexAttributesSize",
+      "status": "pass",
+      "warmup": 80328,
+      "checkpoints": [
+        80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328, 80328
+      ],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-uniformBuffers",
+      "status": "pass",
+      "warmup": 87,
+      "checkpoints": [87, 87, 87, 87, 87, 87, 87, 87, 87, 87, 87, 87, 87, 87],
+      "message": "Every checkpoint remains within the warm retained set."
+    },
+    {
+      "id": "memory:plateau-uniformBuffersSize",
+      "status": "pass",
+      "warmup": 18448,
+      "checkpoints": [
+        18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448, 18448
+      ],
+      "message": "Every checkpoint remains within the warm retained set."
+    }
+  ]
+}

@@ -130,6 +130,8 @@ export const ja: Resources = {
   },
   intro: { skip: 'いずれかのキーでスキップ' },
   ghost: {
+    preparing: 'ゴーストを準備中… そのままプレイできます。',
+    unavailable: 'ゴーストを利用できません。そのままプレイできます。',
     toggle: '1位のプレイと競走',
     by: '{{name}} · {{score}} pts',
     key: 'G',

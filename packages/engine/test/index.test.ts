@@ -22,7 +22,7 @@ import {
 } from '../src/geom/structures.ts';
 import { clipTriangleToBand, fan, planTiles, tileUv, triArea } from '../src/geom/tiling.ts';
 import { ENGINE_NAME } from '../src/index.ts';
-import { MAX_TIER, QualityLadder } from '../src/quality.ts';
+import { MAX_TIER, QualityLadder, qualityPixelRatio, TIERS } from '../src/quality.ts';
 
 const stage = JSON.parse(
   readFileSync(
@@ -350,6 +350,47 @@ describe('quality ladder', () => {
     const t = l.tier;
     run(l, 50, 30); // above 45 but below the +10 recovery margin
     expect(l.tier).toBe(t);
+  });
+
+  test('real 200 ms stalls shed all optional tiers in under eleven wall seconds', () => {
+    const real = new QualityLadder('auto');
+    const clamped = new QualityLadder('auto');
+    let seconds = 0;
+    while (real.tier < MAX_TIER && seconds < 20) {
+      real.sample(0.2);
+      clamped.sample(0.1);
+      seconds += 0.2;
+    }
+    expect(seconds).toBeLessThan(11);
+    expect(clamped.tier).toBeLessThan(MAX_TIER);
+    expect(real.fps).toBeCloseTo(5);
+    expect(real.status).toBe('minimum-tier');
+    expect(real.sample(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(Number.isFinite(real.fps)).toBe(true);
+  });
+
+  test('active stalls over one second are measured; suspension clears stale pressure and recovery', () => {
+    const l = new QualityLadder('auto');
+    l.sample(2);
+    expect(l.fps).toBe(0.5);
+    run(l, 20, 12);
+    const tier = l.tier;
+    run(l, 60, 4);
+    l.suspend();
+    expect(l.fps).toBe(0);
+    expect(l.status).toBe('suspended');
+    run(l, 60, 5);
+    expect(l.tier).toBe(tier);
+    run(l, 60, 60);
+    expect(l.tier).toBe(0);
+  });
+
+  test('lower tiers bound high-DPR pixels without lowering a small mobile canvas further', () => {
+    const low = TIERS[3];
+    if (!low) throw new Error('missing low tier');
+    expect(qualityPixelRatio(2, 1440, 900, low) ** 2 * 1440 * 900).toBeCloseTo(1920 * 1080);
+    expect(qualityPixelRatio(2, 390, 844, low)).toBe(1.4);
+    expect(qualityPixelRatio(2, 3840, 2160, low) ** 2 * 3840 * 2160).toBeCloseTo(1920 * 1080);
   });
 
   test('fixed settings never change', () => {

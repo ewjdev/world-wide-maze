@@ -304,6 +304,22 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     const rec = recorded[0]?.replay;
     expect(rec?.inputs.length).toBe(goalTick);
     expect(rec?.inputs).toEqual(REPLAY.slice(0, goalTick));
+    const recordingStorage = await page.evaluate(() => window.__wwmGame?.debugState().recording);
+    expect(recordingStorage?.backingBytes).toBe(0);
+    expect(recordingStorage?.savedBackingBytes).toBeGreaterThan(0);
+    expect(recordingStorage?.savedBackingBytes).toBeLessThanOrEqual(Math.ceil(goalTick / 1024) * 1024 * 29);
+    // Debug exports are snapshots: changing one must not corrupt the subsequent submitted replay.
+    expect(
+      await page.evaluate(() => {
+        const game = window.__wwmGame;
+        const exported = game?.debugReplays()[0]?.replay;
+        if (!game || !exported?.inputs[0]) return false;
+        const original = exported.inputs[0].power;
+        exported.inputs[0].power = !original;
+        return game.debugReplays()[0]?.replay?.inputs[0]?.power === original;
+      }),
+    ).toBe(true);
+
     const again = await replay(HANDMADE, rec?.inputs ?? [], { stopAtGoal: true });
     expect(again.goalTick).toBe(goalTick);
     expect(again.events.filter((e) => e.event.type === 'item')).toHaveLength(small + large);
@@ -316,6 +332,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('server');
     await page.getByTestId('stage-verified').waitFor(); // the Worker re-simulated the replay and accepted it
+    expect(await page.evaluate(() => window.__wwmGame?.debugState().recording.savedBackingBytes)).toBe(0);
     await expect
       .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
       .toContain('e2e_bot');
@@ -607,6 +624,74 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
         .poll(async () => (await phone.textContent('body')) ?? '', { timeout: 15_000 })
         .toMatch(/TIME/);
     }, 180_000);
+
+    test('host visibility waits for held phone POWER release before accepting fresh input', async () => {
+      const power = phone.getByTestId('btn-power');
+      await power.dispatchEvent('pointerdown', { pointerId: 6, isPrimary: true, pointerType: 'touch' });
+      await host.waitForFunction(() => window.__wwmGame?.debugRecording().at(-1)?.power);
+      const hidden = await host.evaluate(async () => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' });
+        document.dispatchEvent(new Event('visibilitychange'));
+        const before = window.__wwmGame?.debugState();
+        for (let i = 0; i < 65; i++) await new Promise<void>((r) => requestAnimationFrame(() => r()));
+        return { before, after: window.__wwmGame?.debugState() };
+      });
+      expect(hidden.after?.clock).toBe(hidden.before?.clock);
+      expect(hidden.after?.timer).toEqual(hidden.before?.timer);
+      const mark = await host.evaluate(() => {
+        const mark = window.__wwmGame?.debugRecording().length ?? 0;
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'visible' });
+        document.dispatchEvent(new Event('visibilitychange'));
+        return mark;
+      });
+      await host.waitForFunction(
+        (mark) => (window.__wwmGame?.debugRecording().length ?? 0) >= mark + 8,
+        mark,
+      );
+      expect(
+        await host.evaluate(
+          (mark) =>
+            window.__wwmGame
+              ?.debugRecording()
+              .slice(mark)
+              .every((x) => !x.power && !x.jump && x.tiltX === 0 && x.tiltZ === 0),
+          mark,
+        ),
+      ).toBe(true);
+      // A nonzero neutral-button tilt is an observable barrier that the host consumed the release
+      // and re-armed input. No arbitrary delivery sleep or private latch inspection is needed.
+      await phone.evaluate(() => {
+        (window as unknown as { __pose: unknown }).__pose = { beta: 40, gamma: 0 };
+      });
+      await power.dispatchEvent('pointerup', { pointerId: 6, isPrimary: true, pointerType: 'touch' });
+      await host.waitForFunction(
+        (mark) =>
+          window.__wwmGame
+            ?.debugRecording()
+            .slice(mark)
+            .some((x) => !x.power && (x.tiltX !== 0 || x.tiltZ !== 0)),
+        mark,
+      );
+      const fresh = await host.evaluate(() => window.__wwmGame?.debugRecording().length ?? 0);
+      await power.dispatchEvent('pointerdown', { pointerId: 6, isPrimary: true, pointerType: 'touch' });
+      await host.waitForFunction(
+        (mark) =>
+          window.__wwmGame
+            ?.debugRecording()
+            .slice(mark)
+            .some((x) => x.power),
+        fresh,
+      );
+      await power.dispatchEvent('pointerup', { pointerId: 6, isPrimary: true, pointerType: 'touch' });
+      await phone.evaluate(() => {
+        (window as unknown as { __pose: unknown }).__pose = { beta: 45, gamma: 0 };
+      });
+      await host.waitForFunction(() => window.__wwmGame?.debugRecording().at(-1)?.power === false);
+      await host.evaluate(() => {
+        Reflect.deleteProperty(document, 'visibilityState');
+      });
+      expect(problems).toEqual([]);
+    }, 30_000);
 
     test('disconnect → freeze + reconnect overlay → reconnect → resume from the same state', async () => {
       expect(await phaseOf(host)).toBe('play');

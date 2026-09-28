@@ -1,0 +1,32 @@
+
+ RUN  v5.0.1 /Users/ewj/.codex/worktrees/performance-ghost/wwm
+
+stdout | test/portal.e2e.test.ts > link portals e2e (Chromium, mocked /api) > declining a portal lets the ball roll through it again without interrupting play
+PORTAL_TRACE saved separately in original-physics-trace.json.gz
+
+ ❯ |@wwm/web| test/portal.e2e.test.ts (3 tests | 1 failed | 2 skipped) 22234ms
+   ❯ link portals e2e (Chromium, mocked /api) (3)
+     × declining a portal lets the ball roll through it again without interrupting play 22048ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |@wwm/web| test/portal.e2e.test.ts > link portals e2e (Chromium, mocked /api) > declining a portal lets the ball roll through it again without interrupting play
+AssertionError: expected 29.982442196369696 to be less than 0.463
+ ❯ test/portal.e2e.test.ts:277:56
+    275|     await page.keyboard.down('ArrowDown');
+    276|     try {
+    277|       await expect.poll(distance, { timeout: 15_000 }).toBeLessThan(PO…
+       |                                                        ^
+    278|     } finally {
+    279|       console.log('PORTAL_TRACE', JSON.stringify(await page.evaluate((…
+
+Caused by: Error: Matcher did not succeed in time.
+ ❯ test/portal.e2e.test.ts:277:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 skipped (3)
+   Start at  17:17:19
+   Duration  22.54s (tests 99%, import 1%)

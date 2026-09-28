@@ -42,16 +42,19 @@ import { type GateOutcome, LearningGates } from '../learning/gates.ts';
 import { isLearningHref } from '../learning/href.ts';
 import { createLockPort } from '../learning/port.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
-import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
+import { createGhostBall, type GhostBall, type GhostTrack } from '../ranking/ghost.ts';
+import { GhostClient } from '../ranking/ghost-client.ts';
 import type { Challenge } from '../ranking/share.ts';
 import { serviceFetch } from '../service-mode.ts';
 import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
+import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
+import { RenderCadence } from './render-cadence.ts';
 import {
   addScore,
   countItems,
@@ -201,6 +204,7 @@ export interface RankingView {
 }
 
 export interface GhostView {
+  status: 'idle' | 'preparing' | 'ready' | 'unavailable';
   /** The stage's #1 verified run, when the server has one for this physics version. */
   run: { name: string; score: number; timeMs: number } | null;
   /** The player's choice (persisted). */
@@ -301,6 +305,9 @@ export class Game {
   #driverLoad: Promise<SimDriver> | null = null;
   #raf = 0;
   #lastFrame = 0;
+  #qualityWasActive = false;
+  #renderCadence = new RenderCadence();
+  #inputNeedsRelease = false;
   /** Game clock (seconds, advances only while not held). */
   #clock = 0;
   #timers: Timer[] = [];
@@ -321,6 +328,8 @@ export class Game {
   #loaded: LoadedStage | null = null;
   #attract = false;
   #buildAbort: AbortController | null = null;
+  #attractAbort: AbortController | null = null;
+  #worldLoading: Promise<void> = Promise.resolve();
   #timer = new GameTimer();
   #timerArmed = false;
   #pendingSmall: number[] = [];
@@ -335,13 +344,13 @@ export class Game {
   #hapticAt = 0;
 
   // replay recording (08b): the InputSample of every sim tick of the current stage attempt
-  #rec: InputSample[] = [];
+  #rec = new InputRecording();
   /** Replay tick at which this stage's timer first started (contracts v0.2.6 `timerStartTick`). */
   #timerStartTick: number | undefined;
   /** The recording reproduces the attempt headlessly (lockstep, and no respawn the replay format can't express). */
   #recExact = true;
   /** Replay of each entry in `#results` that has one (same index). */
-  #replays = new Map<number, VersionedReplay>();
+  #replays = new Map<number, SavedRecording>();
 
   // link portals (Phase 13)
   /** The capture service answers `/api/health` (probed once per session when a stage has portals). */
@@ -364,6 +373,8 @@ export class Game {
   #afterGate: (() => void) | null = null;
 
   // ghost race (08b)
+  #ghostClient = new GhostClient();
+  #ghostAbort: AbortController | null = null;
   #ghostTrack: GhostTrack | null = null;
   #ghostFor: string | null = null;
   #ghostBall: GhostBall | null = null;
@@ -411,7 +422,7 @@ export class Game {
       result: null,
       stageSource: null,
       ranking: null,
-      ghost: { run: null, on: this.#get(GHOST_KEY) === '1', racing: false },
+      ghost: { status: 'idle', run: null, on: this.#get(GHOST_KEY) === '1', racing: false },
       challenge: opts.challenge ? { ...opts.challenge, stageId: null } : null,
       muted: opts.audio.muted,
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
@@ -491,6 +502,7 @@ export class Game {
   // ── lifecycle ─────────────────────────────────────────────────────────────────────────────────────────
 
   async mount(host: HTMLElement): Promise<void> {
+    this.audio.prepare();
     // A fresh canvas per engine: a disposed WebGL2 renderer loses its canvas's context (engine README).
     const canvas = document.createElement('canvas');
     canvas.className = 'wwm-canvas';
@@ -512,7 +524,26 @@ export class Game {
     const onKey = (e: KeyboardEvent) => this.#onKeyDown(e);
     const onBlur = () => this.#autoPause();
     const onVis = () => {
-      if (document.visibilityState === 'hidden') this.#autoPause();
+      this.#qualityWasActive = false;
+      this.#lastFrame = performance.now();
+      this.#renderCadence.reset();
+      if (document.visibilityState === 'hidden') {
+        cancelAnimationFrame(this.#raf);
+        this.#raf = 0;
+        this.#autoPause();
+        this.#driver?.setPaused(true);
+        this.#keyboard?.reset();
+        this.#inputNeedsRelease = true;
+        this.#lastSample = neutralSample(this.#yaw());
+        this.#prevJump = false;
+        this.audio.setRoll(0, false);
+      } else {
+        const v = this.#view;
+        this.#driver?.setPaused(
+          this.learning.isOpen || !!v.portal || !!v.travel || (v.phase !== 'play' && v.phase !== 'falling'),
+        );
+        if (this.#engine && !this.#raf && !this.#disposed) this.#raf = requestAnimationFrame(this.#frame);
+      }
     };
     const onResize = () => this.#resize();
     const onGesture = () => {
@@ -560,7 +591,7 @@ export class Game {
     this.#resize();
     this.#set({ engineReady: true });
     this.#lastFrame = performance.now();
-    this.#raf = requestAnimationFrame(this.#frame);
+    if (document.visibilityState === 'visible') this.#raf = requestAnimationFrame(this.#frame);
 
     if (this.#opts.roomCode) void this.#ensureRoom();
     if (this.#opts.localRun) {
@@ -579,7 +610,7 @@ export class Game {
       const p = createDriver(this.#driverKind).then((d) => {
         if (this.#disposed) {
           d.dispose();
-          throw new Error('game disposed');
+          throw new DOMException('Obsolete build', 'AbortError');
         }
         this.#driver = d;
         return d;
@@ -594,6 +625,9 @@ export class Game {
 
   dispose(): void {
     this.#disposed = true;
+    this.#cancelGhostPreparation();
+    this.#ghostClient.dispose();
+    this.#attractAbort?.abort();
     cancelAnimationFrame(this.#raf);
     this.#buildAbort?.abort();
     for (const c of this.#cleanups) c();
@@ -607,7 +641,7 @@ export class Game {
     this.#pool.dispose();
     this.#engineImage?.close();
     this.#canvas?.remove();
-    this.audio.setMusic(null);
+    this.audio.dispose();
     this.#listeners.clear();
     this.learning.clear();
   }
@@ -664,6 +698,7 @@ export class Game {
     }
     switch (to) {
       case 'title':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#resetSession();
         this.#set({
@@ -693,6 +728,7 @@ export class Game {
         this.#after(CALIBRATE_TIMEOUT_SEC, () => this.#set({ calibrateTimedOut: true }));
         break;
       case 'select':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({
           confirm: null,
@@ -708,6 +744,7 @@ export class Game {
         if (IN_STAGE.has(from) && e) e.setView('map');
         break;
       case 'building':
+        this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({ confirm: null, sign: null, result: null, tutorial: null });
         d?.setPaused(true);
@@ -793,19 +830,41 @@ export class Game {
     const e = this.#engine;
     if (!e || this.#attract || this.#loaded) return;
     this.#attract = true;
+    const ac = new AbortController();
+    this.#attractAbort?.abort();
+    this.#attractAbort = ac;
     try {
       const entry = catalogEntry(ATTRACT_ID) ?? PRACTICE;
       const run = entry === PRACTICE ? new PracticeRun() : new FixtureRun(entry, this.#pool);
-      const got = await run.loadSlice(0, () => {});
-      if (this.#disposed || this.#view.phase !== 'title' || this.#loaded) {
+      const got = await run.loadSlice(0, () => {}, ac.signal);
+      if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title' || this.#loaded) {
         got.image.close();
         return;
       }
-      await e.loadStage(got.stage, got.image);
-      this.#setEngineImage(got.image);
-      e.setView('map');
+      const loading = this.#worldLoading.then(async () => {
+        if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title') {
+          got.image.close();
+          return;
+        }
+        try {
+          await e.loadStage(got.stage, got.image);
+        } catch (error) {
+          e.unloadStage();
+          got.image.close();
+          throw error;
+        }
+        if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'title') {
+          e.unloadStage();
+          got.image.close();
+          return;
+        }
+        this.#setEngineImage(got.image);
+        e.setView('map');
+      });
+      this.#worldLoading = loading.catch(() => {});
+      await loading;
     } catch (err) {
-      console.warn('[wwm] attract stage failed', err);
+      if (!ac.signal.aborted) console.warn('[wwm] attract stage failed', err);
     }
   }
 
@@ -928,6 +987,7 @@ export class Game {
 
   /** Build any public URL through the capture service. */
   chooseUrl(url: string): void {
+    this.#attractAbort?.abort();
     telemetry.track({ name: 'stage_selected', run: 'api' });
     this.audio.unlock();
     this.audio.play('click');
@@ -975,7 +1035,10 @@ export class Game {
     this.#set({ total: this.#stageStartTotal });
     const loaded = this.#loaded;
     if (!this.#send({ type: 'RETRY' })) return;
-    void this.#playLoaded(loaded, new AbortController(), this.#clock);
+    this.#buildAbort?.abort();
+    const ac = new AbortController();
+    this.#buildAbort = ac;
+    void this.#playLoaded(loaded, ac, this.#clock);
   }
 
   askConfirm(kind: 'quit' | 'search'): void {
@@ -1040,7 +1103,7 @@ export class Game {
         const i = st.resultIndex;
         const s = this.#results[i];
         if (!s) return st;
-        const replay = this.#replays.get(i);
+        const replay = this.#replays.get(i)?.forSubmission();
         const sr = await this.#boards.submitStage(
           { stageId: s.stageId, name, score: s.stageScore, timeMs: s.timeMs, ...(replay ? { replay } : {}) },
           st.source,
@@ -1146,24 +1209,49 @@ export class Game {
     else if (this.#view.phase === 'play') this.#startGhost();
   }
 
+  #cancelGhostPreparation(): void {
+    this.#ghostAbort?.abort();
+    this.#ghostAbort = null;
+    this.#ghostClient.cancel();
+    if (!this.#disposed && this.#view.ghost.status === 'preparing')
+      this.#set({ ghost: { ...this.#view.ghost, status: 'idle' } });
+  }
+
   async #fetchGhost(stage: StageData): Promise<void> {
+    this.#cancelGhostPreparation();
+    const ac = new AbortController();
+    this.#ghostAbort = ac;
     const id = stage.stageId;
     this.#ghostFor = id;
     this.#ghostTrack = null;
-    this.#set({ ghost: { ...this.#view.ghost, run: null } });
-    const run = await this.#boards.ghost(id);
-    // A replay only reproduces on the physics build it was recorded with.
-    if (!run || run.physicsVersion !== PHYSICS_VERSION || this.#ghostFor !== id || !run.inputs.length) return;
+    this.#set({ ghost: { ...this.#view.ghost, run: null, status: 'preparing' } });
     try {
-      const track = await recordGhostTrack(stage, run.inputs);
-      if (this.#ghostFor !== id || this.#disposed) return;
+      const run = await this.#boards.ghost(id);
+      // Request identity matters even when retrying the same stage id. A stale
+      // fetch must not start a worker or overwrite a newer ghost.
+      if (ac.signal.aborted || this.#disposed) return;
+      if (!run || run.physicsVersion !== PHYSICS_VERSION || !run.inputs.length) {
+        this.#set({ ghost: { ...this.#view.ghost, status: 'idle' } });
+        return;
+      }
+      const track = await this.#ghostClient.prepare(stage, run.inputs, ac.signal);
+      if (ac.signal.aborted || this.#disposed) return;
       this.#ghostTrack = track;
       this.#set({
-        ghost: { ...this.#view.ghost, run: { name: run.name, score: run.score, timeMs: run.timeMs } },
+        ghost: {
+          ...this.#view.ghost,
+          status: 'ready',
+          run: { name: run.name, score: run.score, timeMs: run.timeMs },
+        },
       });
       if (this.#view.phase === 'play') this.#startGhost();
     } catch (err) {
-      console.info('[wwm] ghost unavailable', err);
+      if (!ac.signal.aborted && !this.#disposed) {
+        this.#set({ ghost: { ...this.#view.ghost, status: 'unavailable' } });
+        console.info('[wwm] ghost unavailable', err);
+      }
+    } finally {
+      if (this.#ghostAbort === ac) this.#ghostAbort = null;
     }
   }
 
@@ -1188,6 +1276,7 @@ export class Game {
   // ── building ──────────────────────────────────────────────────────────────────────────────────────────
 
   #beginRun(run: RunSource, slice: number): void {
+    this.#attractAbort?.abort();
     this.#buildAbort?.abort();
     const ac = new AbortController();
     this.#buildAbort = ac;
@@ -1232,7 +1321,13 @@ export class Game {
     this.#ensureDriver().catch(() => {});
     let got: LoadedStage;
     try {
-      got = await run.loadSlice(this.#slice, (p) => this.#progress(p.step, p.pct), ac.signal);
+      got = await run.loadSlice(
+        this.#slice,
+        (p) => {
+          if (!ac.signal.aborted && !this.#disposed) this.#progress(p.step, p.pct);
+        },
+        ac.signal,
+      );
     } catch (err) {
       this.#buildFailed(err, run.url, ac);
       return;
@@ -1243,14 +1338,16 @@ export class Game {
     }
     // Phase 20 M4b: with a lesson loaded, the stage's link portals become Pip gates (same sensor, same pause)
     if (this.learning.active) got = { ...got, stage: this.learning.decorate(got.stage) };
-    this.#loaded = got;
     await this.#playLoaded(got, ac, t0);
   }
 
   async #playLoaded(got: LoadedStage, ac: AbortController, t0: number): Promise<void> {
     const e = this.#engine;
     const run = this.#run;
-    if (!e || !run) return;
+    if (!e || !run) {
+      got.image.close();
+      return;
+    }
     this.#progress('world', 94);
     this.#endGhost();
     let d: SimDriver;
@@ -1264,15 +1361,43 @@ export class Game {
         else await sim.load(got.stage);
         return sim;
       };
-      [, d] = await Promise.all([e.loadStage(got.stage, got.image), loadSim()]);
+      const loading = this.#worldLoading.then(async () => {
+        ac.signal.throwIfAborted();
+        if (this.#disposed || this.#buildAbort !== ac) throw new DOMException('Obsolete build', 'AbortError');
+        // A rejected physics load must not release the queue while texture tiling is still running.
+        const [world, physics] = await Promise.allSettled([e.loadStage(got.stage, got.image), loadSim()]);
+        if (
+          world.status === 'rejected' ||
+          physics.status === 'rejected' ||
+          ac.signal.aborted ||
+          this.#disposed ||
+          this.#buildAbort !== ac
+        ) {
+          // Both loads have settled: clear even late resources created after dispose or a failed load.
+          e.unloadStage();
+          if (world.status === 'rejected') throw world.reason;
+          if (physics.status === 'rejected') throw physics.reason;
+          ac.signal.throwIfAborted();
+          throw new DOMException('Obsolete build', 'AbortError');
+        }
+        return physics.value;
+      });
+      this.#worldLoading = loading.then(
+        () => {},
+        () => {},
+      );
+      d = await loading;
       this.#setEngineImage(got.image);
     } catch (err) {
+      if (got.image !== this.#engineImage) got.image.close();
       this.#buildFailed(new StageLoadError('BUILD_FAILED', String(err)), run.url, ac);
       return;
     }
-    if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'building') return;
+    if (ac.signal.aborted || this.#disposed || this.#buildAbort !== ac || this.#view.phase !== 'building')
+      return;
+    this.#loaded = got;
     // A fresh recording per attempt: tick 0 is the first step after load (08b).
-    this.#rec = [];
+    this.#rec = new InputRecording();
     this.#timerStartTick = undefined;
     // Phase 22: learning runs are unranked, so their recordings are never exact (locks change the physics)
     const learningRun = this.learning.active;
@@ -1290,7 +1415,7 @@ export class Game {
     else if (source !== 'server' || learningRun) {
       this.#ghostFor = null;
       this.#ghostTrack = null;
-      this.#set({ ghost: { ...this.#view.ghost, run: null } });
+      this.#set({ ghost: { ...this.#view.ghost, run: null, status: 'idle' } });
     }
     this.#set({
       run: {
@@ -1310,11 +1435,13 @@ export class Game {
     this.#applyPortalStates(got.stage);
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
-    this.#after(wait, () => this.#send({ type: 'BUILT' }));
+    this.#after(wait, () => {
+      if (!ac.signal.aborted && !this.#disposed && this.#buildAbort === ac) this.#send({ type: 'BUILT' });
+    });
   }
 
   #buildFailed(err: unknown, url: string, ac: AbortController): void {
-    if (ac.signal.aborted) return;
+    if (ac.signal.aborted || this.#disposed) return;
     if (this.#travelling) {
       // the linked site never became a stop of the journey
       this.#travelling = false;
@@ -1649,12 +1776,11 @@ export class Game {
     };
     this.#results.push(result);
     if (cleared && this.#recExact && this.#rec.length > 0)
-      this.#replays.set(this.#results.length - 1, {
-        physicsVersion: PHYSICS_VERSION,
-        inputs: this.#rec,
-        ...(this.#timerStartTick !== undefined ? { timerStartTick: this.#timerStartTick } : {}),
-      });
-    this.#rec = [];
+      this.#replays.set(
+        this.#results.length - 1,
+        new SavedRecording(this.#rec, PHYSICS_VERSION, this.#timerStartTick),
+      );
+    this.#rec = new InputRecording();
     this.#timerStartTick = undefined;
     this.#set({ result, total: f.score.total, spares: f.score.spares, sign: null });
   }
@@ -1980,6 +2106,7 @@ export class Game {
   }
 
   #onMenuKey(): void {
+    if (this.#inputNeedsRelease || document.visibilityState !== 'visible') return;
     const p = this.#view.phase;
     if (this.learning.isOpen) {
       this.learning.skip();
@@ -2012,6 +2139,17 @@ export class Game {
     const gp = this.#gamepad?.sample(now) ?? neutralSample(yaw);
     const ph = this.#phone?.sample(now) ?? null;
     const active = (s: InputSample) => s.power || s.jump || s.tiltX !== 0 || s.tiltZ !== 0;
+    if (this.#inputNeedsRelease) {
+      // Poll physical controls normally, but require a release after returning from
+      // another tab. Phone gravity may be nonzero at rest; only its buttons arm input.
+      const phoneHeld =
+        this.#view.inputMode === 'phone' &&
+        this.#phone &&
+        (!this.#phone.connected || this.#phone.debug(now).stale || ph?.power || ph?.jump);
+      const held = active(kb) || active(gp) || phoneHeld;
+      if (!held) this.#inputNeedsRelease = false;
+      return neutralSample(yaw);
+    }
     let s: InputSample;
     if (active(kb)) {
       s = kb;
@@ -2037,8 +2175,8 @@ export class Game {
     const s = this.#stepInput(tick, dt);
     // 08b: the stream the sim consumes is the replay. Lockstep: exactly one sample per tick. Worker: the latest
     // input is latched for however many ticks the worker runs, so this is only an approximation.
-    if (this.#driver?.kind === 'lockstep') this.#rec.push(s);
-    else for (let n = Math.max(1, Math.round(dt * SIM_HZ)); n > 0; n--) this.#rec.push(s);
+    if (this.#driver?.kind === 'lockstep') this.#rec.append(s);
+    else for (let n = Math.max(1, Math.round(dt * SIM_HZ)); n > 0; n--) this.#rec.append(s);
     return s;
   };
 
@@ -2087,13 +2225,15 @@ export class Game {
   // ── frame ─────────────────────────────────────────────────────────────────────────────────────────────
 
   #frame = (now: number): void => {
-    if (this.#disposed) return;
+    this.#raf = 0;
+    if (this.#disposed || document.visibilityState !== 'visible') return;
     this.#raf = requestAnimationFrame(this.#frame);
     const e = this.#engine;
     const d = this.#driver;
     if (!e) return;
     const scale = this.#opts.test?.timeScale ?? 1;
-    const dt = Math.min(0.1, Math.max(0, (now - this.#lastFrame) / 1000)) * scale;
+    const renderDt = Math.max(0, (now - this.#lastFrame) / 1000);
+    const dt = Math.min(0.1, renderDt) * scale;
     this.#lastFrame = now;
 
     const sample = this.#sample(now);
@@ -2177,7 +2317,12 @@ export class Game {
         ? sample
         : neutralSample(sample.frameYaw);
     e.setControl({ tiltX: control.tiltX, tiltZ: control.tiltZ, power: control.power });
-    e.frame(gdt);
+    // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
+    // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
+    const qualityActive = stepping && document.visibilityState === 'visible';
+    const animationDt = this.#renderCadence.advance(now, gdt, this.#view.phase);
+    if (animationDt !== null) e.frame(animationDt, qualityActive && this.#qualityWasActive ? renderDt : null);
+    this.#qualityWasActive = qualityActive;
     this.#syncController(false);
   };
 
@@ -2224,7 +2369,13 @@ export class Game {
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,
       hold: this.#view.hold,
-      recording: { ticks: this.#rec.length, exact: this.#recExact, replays: this.#replays.size },
+      recording: {
+        ticks: this.#rec.length,
+        exact: this.#recExact,
+        replays: this.#replays.size,
+        backingBytes: this.#rec.byteLength,
+        savedBackingBytes: [...this.#replays.values()].reduce((bytes, r) => bytes + r.byteLength, 0),
+      },
       ghost: { ...this.#view.ghost, loaded: !!this.#ghostTrack, ticks: this.#ghostTrack?.ticks ?? 0 },
       portal: this.#view.portal,
       journey: this.#view.journey,
@@ -2240,13 +2391,13 @@ export class Game {
     return this.#results.map((r, i) => ({
       stageId: r.stageId,
       stageScore: r.stageScore,
-      replay: this.#replays.get(i) ?? null,
+      replay: this.#replays.get(i)?.snapshot() ?? null,
     }));
   }
 
   /** Measurement: the recording of the current attempt so far (also for the worker driver). */
   debugRecording(): InputSample[] {
-    return this.#rec.slice();
+    return this.#rec.toArray();
   }
 
   /** Playtest / e2e: set the remaining time (seconds) of the running stage. */

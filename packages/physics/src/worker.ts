@@ -31,18 +31,35 @@ let epoch = 0;
 let input: InputSample = { tiltX: 0, tiltZ: 0, frameYaw: 0, power: false, jump: false };
 let pendingJumps = 0;
 let jumpHeld = false; // the tick after a latched jump is sent with jump=false to re-arm the edge
-let lastInputAt = 0;
+let lastInputAt = Number.NEGATIVE_INFINITY;
 let clock = 0; // performance.now() of the last simulated tick
 let pendingEvents: SimEvent[] = [];
 let stepMsAvg = 0;
 let stepsWindow = 0;
 let stepsPerSec = 0;
 let windowStart = 0;
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+function stopLoop(): void {
+  if (timer !== null) clearTimeout(timer);
+  timer = null;
+  stepsPerSec = 0;
+  stepsWindow = 0;
+  windowStart = performance.now();
+}
+
+/** A paused, unloaded or stalled worker sleeps until a fresh input message arrives. */
+function wake(): void {
+  if (timer !== null || !sim || !loaded || paused) return;
+  clock = performance.now();
+  windowStart = clock;
+  timer = setTimeout(loop, 2);
+}
 
 const absNow = (t: number) => performance.timeOrigin + t;
 
 function postState(): void {
-  if (!sim) return;
+  if (!sim || !loaded) return;
   const ball = sim.getBallState();
   const s = sim.stats();
   post({
@@ -58,6 +75,7 @@ function postState(): void {
 let lastElevators: { id: number; y: number }[] = [];
 
 function loop(): void {
+  timer = null;
   const now = performance.now();
   if (sim && loaded && !paused && now - lastInputAt <= STALL_MS) {
     const dtMs = 1000 / sim.params.simHz;
@@ -85,10 +103,13 @@ function loop(): void {
       windowStart = now;
     }
     if (n > 0) postState();
+    timer = setTimeout(loop, 2);
   } else {
     clock = now;
+    stopLoop();
+    pendingJumps = 0;
+    jumpHeld = false;
   }
-  setTimeout(loop, 2);
 }
 
 async function handle(m: ToWorker): Promise<void> {
@@ -97,10 +118,11 @@ async function handle(m: ToWorker): Promise<void> {
       simP = RapierSimulation.create({ params: m.params, rapier: m.rapier });
       sim = await simP;
       windowStart = performance.now();
-      loop();
       post({ t: 'ready' });
       return;
     case 'load': {
+      stopLoop();
+      loaded = false;
       const s = sim ?? (await simP);
       if (!s) throw new Error('worker: init first');
       await s.load(m.stage, m.options);
@@ -108,6 +130,8 @@ async function handle(m: ToWorker): Promise<void> {
       epoch++;
       pendingEvents = [];
       pendingJumps = 0;
+      jumpHeld = false;
+      lastInputAt = Number.NEGATIVE_INFINITY;
       clock = performance.now();
       windowStart = clock;
       stepsWindow = 0;
@@ -118,9 +142,10 @@ async function handle(m: ToWorker): Promise<void> {
     }
     case 'input':
       input = m.input;
-      pendingJumps += m.jumps;
+      if (!paused) pendingJumps += m.jumps;
       if (!paused && performance.now() - lastInputAt > STALL_MS) clock = performance.now();
       lastInputAt = performance.now();
+      wake();
       return;
     case 'reset':
       if (!sim || !loaded) return;
@@ -134,7 +159,12 @@ async function handle(m: ToWorker): Promise<void> {
       return;
     case 'pause':
       paused = m.paused;
+      stopLoop();
       clock = performance.now();
+      lastInputAt = Number.NEGATIVE_INFINITY;
+      pendingJumps = 0;
+      jumpHeld = false;
+      postState();
       return;
     case 'replay': {
       const s = sim ?? (await simP);

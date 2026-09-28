@@ -103,16 +103,16 @@ export class KeyboardInputSource implements InputSource {
     const code = keyCode(e);
     const dir = DIRS[code];
     if (dir) {
-      this.#held.add(dir);
+      if (!e.repeat) this.#held.add(dir);
       e.preventDefault?.();
     } else if (code === 'Space') {
       if (!e.repeat && !this.#space) this.#jumpLatched = true;
-      this.#space = true;
+      if (!e.repeat) this.#space = true;
       e.preventDefault?.();
     } else if (code === 'KeyM' || code === 'Escape') {
       if (!e.repeat) this.#events.emit('menu');
     } else if (code === 'ShiftLeft' || code === 'ShiftRight') {
-      this.#shift = true;
+      if (!e.repeat) this.#shift = true;
     }
   };
 
@@ -120,18 +120,27 @@ export class KeyboardInputSource implements InputSource {
     const code = keyCode(ev as unknown as KeyLike);
     const dir = DIRS[code];
     if (dir) {
-      this.#held.delete(dir);
-      if (this.#held.size === 0) this.#lastArrowUpAt = this.#now();
+      const wasHeld = this.#held.delete(dir);
+      if (wasHeld && this.#held.size === 0) this.#lastArrowUpAt = this.#now();
     } else if (code === 'Space') this.#space = false;
     else if (code === 'ShiftLeft' || code === 'ShiftRight') this.#shift = false;
   };
 
   #onBlur = (): void => {
-    if (this.#held.size > 0) this.#lastArrowUpAt = this.#now();
+    this.reset();
+  };
+
+  /** Drop held/latching input when focus or visibility is lost; repeats cannot re-arm it. */
+  reset(): void {
     this.#held.clear();
     this.#space = false;
     this.#shift = false;
-  };
+    this.#jumpLatched = false;
+    this.#lastArrowUpAt = Number.NEGATIVE_INFINITY;
+    this.#tiltX = 0;
+    this.#tiltZ = 0;
+    this.#lastSampleAt = null;
+  }
 
   sample(nowMs: number): InputSample {
     const dt = this.#lastSampleAt === null ? 0 : Math.max(0, (nowMs - this.#lastSampleAt) / 1000);

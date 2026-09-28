@@ -15,7 +15,7 @@ import {
 } from '@wwm/schema';
 import { bloom } from 'three/addons/tsl/display/BloomNode.js';
 import { fxaa } from 'three/addons/tsl/display/FXAANode.js';
-import { emissive, float, mrt, output, pass, renderOutput, vec4 } from 'three/tsl';
+import { emissive, float, mrt, output, pass, renderOutput, rtt, vec4 } from 'three/tsl';
 import {
   Box3,
   Color,
@@ -56,7 +56,7 @@ import {
   ITEM_SMALL,
   WU,
 } from './palette.ts';
-import { MAX_TIER, QualityLadder, type QualitySetting, TIERS } from './quality.ts';
+import { MAX_TIER, QualityLadder, type QualitySetting, qualityPixelRatio, TIERS } from './quality.ts';
 import { NodeFrameClock } from './three-private.ts';
 import { type Background, buildBackground } from './world/background.ts';
 import { type Ball, buildBall } from './world/ball.ts';
@@ -76,6 +76,7 @@ import {
 import { Particles } from './world/particles.ts';
 import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
+import { makeStageImages } from './world/stage-images.ts';
 import {
   buildStageObjects,
   makeStageTextures,
@@ -111,7 +112,9 @@ export interface ControlState {
 }
 
 export interface EngineStats {
+  /** Rolling sampled gameplay FPS; zero while quality sampling is suspended. */
   fps: number;
+  qualityStatus: QualityLadder['status'];
   drawCalls: number;
   triangles: number;
   tier: number;
@@ -175,7 +178,8 @@ export interface Engine {
   /** Camera heading for `InputSample.frameYaw` (see README "Yaw convention"). */
   cameraYaw(): number;
   resize(w: number, h: number): void;
-  frame(dtSec: number): void;
+  /** `renderDtSec` is real active-play time; null excludes pauses/loading/hidden gaps. */
+  frame(dtSec: number, renderDtSec?: number | null): void;
   stats(): EngineStats;
   setQuality(q: QualitySetting): void;
   setPixelLook(on: boolean): void;
@@ -275,27 +279,60 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   const particles = new Particles(4096, u, globalBin, rng);
   scene.add(particles.object);
 
-  // ── post: MRT (colour + emissive), selective bloom on emissive only, screen-blended, FXAA ──
-  const scenePass = pass(scene, camera);
-  scenePass.setMRT(mrt({ output, emissive: vec4(emissive, float(1)) }));
-  const colorTex: N = scenePass.getTextureNode('output');
-  const emTex: N = scenePass.getTextureNode('emissive');
-  const bloomNode: N = bloom(emTex, 1.15, 0.45, 0.0);
-  const composite = colorTex.add(bloomNode.mul(float(1).sub(colorTex)));
-  const outputs = {
-    full: fxaa(renderOutput(composite)),
-    noFxaa: renderOutput(composite),
-    noGlow: renderOutput(colorTex),
-  };
-  let pipeline = new RenderPipeline(renderer);
-  pipeline.outputColorTransform = false;
-  let currentOutput: keyof typeof outputs | null = null;
-  const setOutput = (k: keyof typeof outputs) => {
-    if (k === currentOutput) return;
-    pipeline.outputNode = outputs[k];
-    pipeline.needsUpdate = true;
-    currentOutput = k;
-  };
+  // Each graph owns its pass, bloom targets and material. A low-tier graph never retains a
+  // dormant high-resolution bloom chain; recovery builds it again on demand.
+  // Scene materials key shader variants by MRT identity. Reuse it across graph rebuilds so
+  // repeated high/low cycles do not accumulate equivalent shader programs on live materials.
+  const sceneMrt = mrt({ output, emissive: vec4(emissive, float(1)) });
+  function createPost(glow: boolean, useFxaa: boolean) {
+    const scenePass = pass(scene, camera);
+    // Keep a single colour attachment at low quality (no unused emissive MRT).
+    if (glow) scenePass.setMRT(sceneMrt);
+    const colorTex: N = scenePass.getTextureNode('output');
+    const bloomNode = glow ? bloom(scenePass.getTextureNode('emissive'), 1.15, 0.45, 0.0) : null;
+    const composite: N = bloomNode ? colorTex.add(bloomNode.mul(float(1).sub(colorTex))) : colorTex;
+    const plain = renderOutput(composite);
+    // FXAA converts expressions to an implicit RTT. Own it explicitly so disposal releases it too.
+    const fxaaInput = useFxaa ? rtt(plain) : null;
+    const outputs = { full: fxaaInput ? fxaa(fxaaInput) : plain, plain };
+    const pipeline = new RenderPipeline(renderer);
+    pipeline.outputColorTransform = false;
+    return {
+      glow,
+      useFxaa,
+      scenePass,
+      bloomNode,
+      pipeline,
+      outputs,
+      dispose() {
+        pipeline.dispose();
+        bloomNode?.dispose();
+        fxaaInput?.dispose();
+        scenePass.dispose();
+      },
+    };
+  }
+  let post: ReturnType<typeof createPost> | null = null;
+
+  let compiling = 0;
+  async function compileScenePass(): Promise<void> {
+    if (!post) return;
+    // Precompile the target/MRT we actually draw. Compiling the default sRGB canvas creates a
+    // separate full-size conversion framebuffer that RenderPipeline never uses or resizes.
+    const r = renderer;
+    const target = r.getRenderTarget();
+    const attachment = r.getMRT();
+    compiling++;
+    try {
+      // Three creates builders between awaits; preserve this target throughout compilation.
+      await post.scenePass.compileAsync(r);
+    } finally {
+      r.setRenderTarget(target);
+      r.setMRT(attachment);
+      compiling--;
+      if (compiling === 0 && !disposed) applyTier();
+    }
+  }
 
   const ladder = { value: new QualityLadder(opts.quality ?? 'auto') };
   const reducedMotion = opts.reducedMotion ?? false;
@@ -395,13 +432,13 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let sceneStart = 0;
   let sceneTriStart = 0;
   scene.onBeforeRender = () => {
-    if (sceneDraws === -1 && renderer.getMRT() !== null) {
+    if (sceneDraws === -1 && renderer.getRenderTarget() === post?.scenePass.renderTarget) {
       sceneStart = renderer.info.render.drawCalls;
       sceneTriStart = renderer.info.render.triangles;
     }
   };
   scene.onAfterRender = () => {
-    if (sceneDraws === -1 && renderer.getMRT() !== null) {
+    if (sceneDraws === -1 && renderer.getRenderTarget() === post?.scenePass.renderTarget) {
       sceneDraws = renderer.info.render.drawCalls - sceneStart;
       last.triangles = renderer.info.render.triangles - sceneTriStart;
     }
@@ -457,23 +494,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     return Math.min(4096, lim as number, opts.maxTextureSize ?? 4096);
   }
 
-  async function makeTiles(img: StageImage, p: TilePlan): Promise<TexImageSource[]> {
-    const iw = (img as { width: number }).width;
-    if (p.tiles.length === 1 && p.downscale === 1) return [img as TexImageSource];
-    const out: TexImageSource[] = [];
-    for (const t of p.tiles) {
-      const sy = t.row0 / p.downscale;
-      const sh = (t.row1 - t.row0) / p.downscale;
-      out.push(
-        await createImageBitmap(img as ImageBitmapSource, 0, Math.round(sy), iw, Math.round(sh), {
-          resizeWidth: p.width,
-          resizeHeight: t.row1 - t.row0,
-        }),
-      );
-    }
-    return out;
-  }
-
   function clearStage() {
     for (const tw of tweens) tw.finish();
     tweens = [];
@@ -522,9 +542,21 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   }
 
   function applyTier() {
+    // Quality/resize requests during async precompile must not dispose its live targets.
+    // compileScenePass applies the latest requested setting once all builders finish.
+    if (compiling > 0) return;
     const f = ladder.value.features;
-    renderer.setPixelRatio(baseDpr() * f.renderScale);
-    setOutput(!f.glow ? 'noGlow' : f.fxaa ? 'full' : 'noFxaa');
+    renderer.setPixelRatio(qualityPixelRatio(baseDpr(), size.w, size.h, f));
+    if (!post || post.glow !== f.glow || post.useFxaa !== f.fxaa) {
+      post?.dispose();
+      post = createPost(f.glow, f.fxaa);
+    }
+    post.bloomNode?.setResolutionScale(f.bloomScale);
+    const nextOutput = f.fxaa ? post.outputs.full : post.outputs.plain;
+    if (post.pipeline.outputNode !== nextOutput) {
+      post.pipeline.outputNode = nextOutput;
+      post.pipeline.needsUpdate = true;
+    }
     if (bg) {
       bg.rich.value = f.richBackground ? 1 : 0;
       bg.motes.visible = f.richBackground;
@@ -562,8 +594,19 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const ih = (image as { height: number }).height;
       const scale = iw / s.size.width; // trust the actual image over the metadata
       plan = planTiles(iw, ih, scale, maxTextureSize());
-      const tileImgs = await makeTiles(image, plan);
-      textures = makeStageTextures(tileImgs, opts.anisotropy ?? renderer.getMaxAnisotropy(), stageBin);
+      const loadingBin = stageBin;
+      const tileImages = await makeStageImages(image, plan);
+      if (disposed || stageBin !== loadingBin) {
+        tileImages.dispose();
+        throw new DOMException('Stage load cancelled', 'AbortError');
+      }
+      // Registered before GPU textures, so reverse disposal closes images after texture teardown.
+      stageBin.add(tileImages);
+      textures = makeStageTextures(
+        tileImages.images,
+        opts.anisotropy ?? renderer.getMaxAnisotropy(),
+        stageBin,
+      );
       textures.setPixelLook(false);
       objs = buildStageObjects(s, plan, textures, u, stageBin);
       stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);
@@ -616,7 +659,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       view = 'chase';
       // compile everything up front so the first frames don't hitch
       if (recovery) await recovery;
-      if (!deviceLost) await renderer.compileAsync(scene, camera);
+      if (!deviceLost) await compileScenePass();
     },
 
     unloadStage() {
@@ -1029,15 +1072,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       size.w = w;
       size.h = h;
       renderer.setSize(w, h, false);
+      applyTier();
       camera.aspect = w / Math.max(1, h);
       camera.updateProjectionMatrix();
     },
 
-    frame(dt) {
+    frame(dt, renderDtSec = dt) {
       const d = Math.min(Math.max(dt, 0), 0.1);
       time += d;
       u.time.value = time;
-      if (ladder.value.sample(dt)) applyTier();
+      if (renderDtSec === null) ladder.value.suspend();
+      else if (ladder.value.sample(renderDtSec)) applyTier();
 
       // tweens
       tweens = tweens.filter((tw) => !tw.update(time));
@@ -1104,7 +1149,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       updateCamera(d);
       particles.update(time);
       if (bg) bg.motes.visible = ladder.value.features.richBackground && motesInView();
-      if (deviceLost) return; // switching to WebGL2 (recoverOnWebGL2); the state above keeps advancing
+      if (deviceLost || compiling > 0) return; // loading/recovery keeps CPU state advancing without drawing
 
       // The renderer only re-runs pass nodes once per *its own* rAF frame id. We are driven externally
       // (possibly several frames per rAF, e.g. a manual clock); see three-private.ts.
@@ -1129,7 +1174,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       }
       const afterEnv = renderer.info.render.drawCalls;
       sceneDraws = -1;
-      pipeline.render();
+      post?.pipeline.render();
       if (sceneDraws < 0) sceneDraws = 0;
       last.env = afterEnv;
       last.total = renderer.info.render.drawCalls;
@@ -1141,6 +1186,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       const mem = renderer.info.memory as unknown as Record<string, number>;
       return {
         fps: ladder.value.fps,
+        qualityStatus: ladder.value.status,
         drawCalls: last.total,
         triangles: last.triangles,
         tier: ladder.value.tier,
@@ -1177,8 +1223,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       clearStage();
       scene.clear();
       globalBin.disposeAll();
-      pipeline.dispose();
-      scenePass.dispose();
+      post?.dispose();
       renderer.dispose();
       ownCanvas?.remove();
     },
@@ -1449,7 +1494,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   function recoverOnWebGL2(): Promise<void> {
     recovery ??= (async () => {
       const old = renderer;
-      const oldPipeline = pipeline;
+      const oldPost = post;
       canvas = replaceCanvas(canvas);
       ownCanvas = canvas;
       let r: WebGPURenderer;
@@ -1467,19 +1512,17 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       renderer = r;
       backend = 'webgl2';
       nodeClock = new NodeFrameClock(r);
-      pipeline = new RenderPipeline(r);
-      pipeline.outputColorTransform = false;
-      currentOutput = null;
+      post = null;
       applyTier();
       envPrimed = false;
       // The old renderer's GPU objects died with the device; drop its caches and listeners.
       try {
-        oldPipeline.dispose();
+        oldPost?.dispose();
         void old.dispose().catch(() => {});
       } catch {
         // a lost device can throw anywhere in teardown; nothing left to free
       }
-      await r.compileAsync(scene, camera).catch(() => {});
+      await compileScenePass().catch(() => {});
       deviceLost = false;
     })();
     return recovery;

@@ -1,0 +1,146 @@
+{
+  "allHardGatesPassed": true,
+  "note": "Stage-specific counts are evaluated after the first occurrence; raw first samples are retained.",
+  "backends": [
+    {
+      "backend": "webgpu",
+      "normalRetries": {
+        "attributes": [63],
+        "attributesSize": [1473220],
+        "geometries": [18],
+        "textures": [21],
+        "renderTargets": [14],
+        "programs": [61],
+        "uniformBuffers": [87]
+      },
+      "culledRetries": {
+        "attributes": [54],
+        "attributesSize": [918700],
+        "geometries": [16],
+        "textures": [21],
+        "renderTargets": [14],
+        "programs": [51],
+        "uniformBuffers": [72]
+      },
+      "motesCulled": true,
+      "recovery": {
+        "attributes": [63],
+        "attributesSize": [1258500],
+        "geometries": [18],
+        "textures": [22],
+        "renderTargets": [14],
+        "programs": [64],
+        "uniformBuffers": [88]
+      },
+      "unloadBitmapsAlive": 0,
+      "cancelledBitmapsAlive": 0,
+      "callerSourceWidth": 512,
+      "stageSamplesAll": {
+        "example-sparse": {
+          "attributes": [65],
+          "attributesSize": [1258660],
+          "geometries": [19],
+          "textures": [22],
+          "renderTargets": [14],
+          "programs": [63],
+          "uniformBuffers": [85, 87]
+        },
+        "hn-front": {
+          "attributes": [65],
+          "attributesSize": [8058948],
+          "geometries": [19],
+          "textures": [23],
+          "renderTargets": [14],
+          "programs": [65],
+          "uniformBuffers": [88]
+        }
+      },
+      "stagePlateausAfterFirstOccurrence": {
+        "example-sparse": {
+          "attributes": [65],
+          "attributesSize": [1258660],
+          "geometries": [19],
+          "textures": [22],
+          "renderTargets": [14],
+          "programs": [63],
+          "uniformBuffers": [87]
+        },
+        "hn-front": {
+          "attributes": [65],
+          "attributesSize": [8058948],
+          "geometries": [19],
+          "textures": [23],
+          "renderTargets": [14],
+          "programs": [65],
+          "uniformBuffers": [88]
+        }
+      }
+    },
+    {
+      "backend": "webgl2",
+      "normalRetries": {
+        "attributes": [63],
+        "attributesSize": [1473220],
+        "geometries": [18],
+        "textures": [21],
+        "renderTargets": [14],
+        "programs": [62],
+        "uniformBuffers": [88]
+      },
+      "culledRetries": {
+        "attributes": [54],
+        "attributesSize": [918700],
+        "geometries": [16],
+        "textures": [21],
+        "renderTargets": [14],
+        "programs": [52],
+        "uniformBuffers": [73]
+      },
+      "motesCulled": true,
+      "recovery": null,
+      "unloadBitmapsAlive": 0,
+      "cancelledBitmapsAlive": 0,
+      "callerSourceWidth": 512,
+      "stageSamplesAll": {
+        "example-sparse": {
+          "attributes": [65],
+          "attributesSize": [1258660],
+          "geometries": [19],
+          "textures": [22],
+          "renderTargets": [14],
+          "programs": [64],
+          "uniformBuffers": [86, 88]
+        },
+        "hn-front": {
+          "attributes": [65],
+          "attributesSize": [8058948],
+          "geometries": [19],
+          "textures": [23],
+          "renderTargets": [14],
+          "programs": [66],
+          "uniformBuffers": [89]
+        }
+      },
+      "stagePlateausAfterFirstOccurrence": {
+        "example-sparse": {
+          "attributes": [65],
+          "attributesSize": [1258660],
+          "geometries": [19],
+          "textures": [22],
+          "renderTargets": [14],
+          "programs": [64],
+          "uniformBuffers": [88]
+        },
+        "hn-front": {
+          "attributes": [65],
+          "attributesSize": [8058948],
+          "geometries": [19],
+          "textures": [23],
+          "renderTargets": [14],
+          "programs": [66],
+          "uniformBuffers": [89]
+        }
+      }
+    }
+  ]
+}

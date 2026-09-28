@@ -1,0 +1,4090 @@
+{
+  "date": "2026-09-27T23:40:53.350Z",
+  "base": "http://127.0.0.1:4321",
+  "mode": "stages",
+  "browser": "153.0.8010.12",
+  "headless": false,
+  "commit": "ebd368bfb01f20c77ffa7bf395769fa9caca6df4",
+  "hardware": "Apple M5 Max\n137438953472",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 4203,
+          "deviceId": 0,
+          "vendorString": "Google Inc. (Apple)",
+          "deviceString": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+          "driverVendor": "Apple",
+          "driverVersion": "26.6.2"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_METAL",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_size GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_provoking_vertex GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_translated_shader_source GL_APPLE_clip_distance GL_ARM_rgba8 GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_base_instance GL_EXT_blend_func_extended GL_EXT_blend_minmax GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_multisampled_render_to_texture GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_pvrtc_sRGB GL_EXT_read_format_bgra GL_EXT_render_snorm GL_EXT_robustness GL_EXT_sRGB GL_EXT_shader_texture_lod GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_IMG_texture_compression_pvrtc GL_KHR_debug GL_KHR_parallel_shader_compile GL_KHR_robustness GL_KHR_texture_compression_astc_hdr GL_KHR_texture_compression_astc_ldr GL_KHR_texture_compression_astc_sliced_3d GL_MESA_framebuffer_flip_y GL_NV_fence GL_NV_framebuffer_blit GL_NV_pixel_buffer_object GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_vertex_array_object GL_QCOM_render_shared_exponent ",
+        "glImplementationParts": "(gl=egl-angle,angle=metal)",
+        "glRenderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M5 Max, Version 26.6.2 (Build 25G83))",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Apple)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.044022,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "8",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "GraphiteDawnMetal",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "enabled",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "enabled",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "enabled_on",
+        "rasterization": "enabled",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "enabled_on",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "enabled",
+        "video_encode": "enabled",
+        "webgl": "enabled",
+        "webgpu": "enabled",
+        "webnn": "disabled_off"
+      },
+      "driverBugWorkarounds": [
+        "disable_2d_canvas_auto_flush",
+        "enable_webgl_timer_query_extensions",
+        "disabled_extension_GL_KHR_blend_equation_advanced",
+        "disabled_extension_GL_KHR_blend_equation_advanced_coherent"
+      ],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6"
+  },
+  "runs": [],
+  "errors": [],
+  "changes": [
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731136.068387,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 30,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 3,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 254,
+        "LayoutCount": 25,
+        "RecalcStyleCount": 456,
+        "LayoutDuration": 0.00884,
+        "RecalcStyleDuration": 0.027883,
+        "DevToolsCommandDuration": 0.167313,
+        "ScriptDuration": 0.962785,
+        "V8CompileDuration": 0,
+        "TaskDuration": 1.429897,
+        "TaskOtherDuration": 0.263076,
+        "ThreadTime": 0.783117,
+        "ProcessTime": 1.828235,
+        "JSHeapUsedSize": 13955280,
+        "JSHeapTotalSize": 16318464,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 13955280,
+        "totalSize": 16318464,
+        "embedderHeapUsedSize": 1266880,
+        "backingStorageSize": 5213391
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 1.918903,
+          "rssKiB": 233920
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.04053,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 1.8284,
+          "rssKiB": 371360
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.159072,
+          "rssKiB": 189264
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 1.50689,
+          "rssKiB": 210560
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.106121,
+          "rssKiB": 108160
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030938,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.080236,
+          "rssKiB": 96720
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 10.132100000000007,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 60.18295618680793,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187194,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 86,
+          "uniformBuffersSize": 16192,
+          "total": 213873185
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731140.956653,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 31,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 3,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 346,
+        "LayoutCount": 34,
+        "RecalcStyleCount": 650,
+        "LayoutDuration": 0.01074,
+        "RecalcStyleDuration": 0.043104,
+        "DevToolsCommandDuration": 0.169177,
+        "ScriptDuration": 1.696737,
+        "V8CompileDuration": 0,
+        "TaskDuration": 2.358642,
+        "TaskOtherDuration": 0.438884,
+        "ThreadTime": 1.268052,
+        "ProcessTime": 3.040348,
+        "JSHeapUsedSize": 15233060,
+        "JSHeapTotalSize": 17367040,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15308792,
+        "totalSize": 17367040,
+        "embedderHeapUsedSize": 1829248,
+        "backingStorageSize": 13874810
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 1.987689,
+          "rssKiB": 234000
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.04053,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 3.042474,
+          "rssKiB": 419280
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.168831,
+          "rssKiB": 189264
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 2.381121,
+          "rssKiB": 231936
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.11268,
+          "rssKiB": 108192
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030938,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.103559,
+          "rssKiB": 96576
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 14.666099999999995,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.93766482857823,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191545,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788402
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731145.791558,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 31,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 3,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 299,
+        "LayoutCount": 43,
+        "RecalcStyleCount": 835,
+        "LayoutDuration": 0.012292,
+        "RecalcStyleDuration": 0.058741,
+        "DevToolsCommandDuration": 0.170747,
+        "ScriptDuration": 2.387234,
+        "V8CompileDuration": 0,
+        "TaskDuration": 3.19014,
+        "TaskOtherDuration": 0.561126,
+        "ThreadTime": 1.708795,
+        "ProcessTime": 3.957972,
+        "JSHeapUsedSize": 15019212,
+        "JSHeapTotalSize": 16580608,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15019248,
+        "totalSize": 16580608,
+        "embedderHeapUsedSize": 1559768,
+        "backingStorageSize": 5264021
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.050501,
+          "rssKiB": 234000
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040559,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 3.958265,
+          "rssKiB": 425184
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.179448,
+          "rssKiB": 189280
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 3.265586,
+          "rssKiB": 240032
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.118287,
+          "rssKiB": 108192
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030955,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.127148,
+          "rssKiB": 96608
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 19.199399999999983,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.737156511350065,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187194,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873329
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731150.651527,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 295,
+        "LayoutCount": 52,
+        "RecalcStyleCount": 1022,
+        "LayoutDuration": 0.014068,
+        "RecalcStyleDuration": 0.073331,
+        "DevToolsCommandDuration": 0.172516,
+        "ScriptDuration": 3.090555,
+        "V8CompileDuration": 0,
+        "TaskDuration": 4.055592,
+        "TaskOtherDuration": 0.705122,
+        "ThreadTime": 2.141172,
+        "ProcessTime": 4.907811,
+        "JSHeapUsedSize": 15661744,
+        "JSHeapTotalSize": 17891328,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15661744,
+        "totalSize": 17891328,
+        "embedderHeapUsedSize": 1493912,
+        "backingStorageSize": 13874884
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.11364,
+          "rssKiB": 234064
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040559,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 4.907936,
+          "rssKiB": 447888
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.189915,
+          "rssKiB": 189344
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 4.118738,
+          "rssKiB": 256592
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.123117,
+          "rssKiB": 108208
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030955,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.151659,
+          "rssKiB": 96656
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 50,
+          "timer": {
+            "remains": 299.5833333333337,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 23.716999999999988,
+          "hold": null,
+          "recording": {
+            "ticks": 50,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.8802395209582,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191545,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788402
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731155.474985,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 257,
+        "LayoutCount": 62,
+        "RecalcStyleCount": 1207,
+        "LayoutDuration": 0.015777,
+        "RecalcStyleDuration": 0.089155,
+        "DevToolsCommandDuration": 0.174011,
+        "ScriptDuration": 3.822765,
+        "V8CompileDuration": 0,
+        "TaskDuration": 4.94398,
+        "TaskOtherDuration": 0.842272,
+        "ThreadTime": 2.640449,
+        "ProcessTime": 5.939564,
+        "JSHeapUsedSize": 15319368,
+        "JSHeapTotalSize": 17104896,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15369412,
+        "totalSize": 17104896,
+        "embedderHeapUsedSize": 1529952,
+        "backingStorageSize": 5264095
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.21643,
+          "rssKiB": 234848
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040577,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 5.94067,
+          "rssKiB": 448576
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.201324,
+          "rssKiB": 189552
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 5.148294,
+          "rssKiB": 257760
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.131908,
+          "rssKiB": 108736
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030966,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.174593,
+          "rssKiB": 96656
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 28.250299999999942,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 60.00960153624548,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187194,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873329
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731160.302288,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 316,
+        "LayoutCount": 73,
+        "RecalcStyleCount": 1400,
+        "LayoutDuration": 0.017652,
+        "RecalcStyleDuration": 0.102366,
+        "DevToolsCommandDuration": 0.175638,
+        "ScriptDuration": 4.496873,
+        "V8CompileDuration": 0,
+        "TaskDuration": 5.800813,
+        "TaskOtherDuration": 1.008284,
+        "ThreadTime": 3.106037,
+        "ProcessTime": 6.920726,
+        "JSHeapUsedSize": 15909776,
+        "JSHeapTotalSize": 18415616,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15909776,
+        "totalSize": 18415616,
+        "embedderHeapUsedSize": 1511024,
+        "backingStorageSize": 13874958
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.26213,
+          "rssKiB": 234848
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040577,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 6.920859,
+          "rssKiB": 470240
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231611,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 6.018289,
+          "rssKiB": 269984
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.133711,
+          "rssKiB": 108736
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030966,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.197293,
+          "rssKiB": 96656
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 32.78179999999996,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.89458552946791,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191545,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788402
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731165.12202,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 232,
+        "LayoutCount": 82,
+        "RecalcStyleCount": 1583,
+        "LayoutDuration": 0.019178,
+        "RecalcStyleDuration": 0.115826,
+        "DevToolsCommandDuration": 0.177263,
+        "ScriptDuration": 5.172017,
+        "V8CompileDuration": 0,
+        "TaskDuration": 6.623539,
+        "TaskOtherDuration": 1.139255,
+        "ThreadTime": 3.548361,
+        "ProcessTime": 7.795037,
+        "JSHeapUsedSize": 15522572,
+        "JSHeapTotalSize": 16842752,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15570888,
+        "totalSize": 16842752,
+        "embedderHeapUsedSize": 1480320,
+        "backingStorageSize": 5264169
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.308199,
+          "rssKiB": 234832
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040577,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 7.795655,
+          "rssKiB": 425968
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231701,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 6.935098,
+          "rssKiB": 270240
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.134295,
+          "rssKiB": 108736
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030966,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.221482,
+          "rssKiB": 96672
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 37.2985000000001,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.98080614203411,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187194,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873329
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731169.95541,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 355,
+        "LayoutCount": 92,
+        "RecalcStyleCount": 1772,
+        "LayoutDuration": 0.020967,
+        "RecalcStyleDuration": 0.132191,
+        "DevToolsCommandDuration": 0.178961,
+        "ScriptDuration": 5.902771,
+        "V8CompileDuration": 0,
+        "TaskDuration": 7.550433,
+        "TaskOtherDuration": 1.315543,
+        "ThreadTime": 4.070321,
+        "ProcessTime": 8.89765,
+        "JSHeapUsedSize": 16245228,
+        "JSHeapTotalSize": 19464192,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16299712,
+        "totalSize": 19464192,
+        "embedderHeapUsedSize": 1744488,
+        "backingStorageSize": 13875032
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.356781,
+          "rssKiB": 234832
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040593,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 8.898223,
+          "rssKiB": 465360
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231709,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 7.896541,
+          "rssKiB": 282128
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.135041,
+          "rssKiB": 108752
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030983,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.245444,
+          "rssKiB": 96672
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 41.815000000000275,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 60.00960153624599,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191545,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788402
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731174.808205,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 271,
+        "LayoutCount": 101,
+        "RecalcStyleCount": 1957,
+        "LayoutDuration": 0.022451,
+        "RecalcStyleDuration": 0.145175,
+        "DevToolsCommandDuration": 0.180428,
+        "ScriptDuration": 6.52824,
+        "V8CompileDuration": 0,
+        "TaskDuration": 8.309925,
+        "TaskOtherDuration": 1.433631,
+        "ThreadTime": 4.44689,
+        "ProcessTime": 9.647538,
+        "JSHeapUsedSize": 15888488,
+        "JSHeapTotalSize": 17367040,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 15920792,
+        "totalSize": 17367040,
+        "embedderHeapUsedSize": 1498416,
+        "backingStorageSize": 5264243
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.400334,
+          "rssKiB": 234832
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040593,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 9.648186,
+          "rssKiB": 449040
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231709,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 8.664575,
+          "rssKiB": 281616
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.13564,
+          "rssKiB": 108752
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030983,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.270207,
+          "rssKiB": 96704
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 46.364200000000444,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.86590038314195,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187194,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873329
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731179.645598,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 335,
+        "LayoutCount": 110,
+        "RecalcStyleCount": 2144,
+        "LayoutDuration": 0.023847,
+        "RecalcStyleDuration": 0.15964,
+        "DevToolsCommandDuration": 0.18221,
+        "ScriptDuration": 7.228722,
+        "V8CompileDuration": 0,
+        "TaskDuration": 9.204424,
+        "TaskOtherDuration": 1.610005,
+        "ThreadTime": 4.935081,
+        "ProcessTime": 10.760182,
+        "JSHeapUsedSize": 16417512,
+        "JSHeapTotalSize": 18415616,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16483736,
+        "totalSize": 18415616,
+        "embedderHeapUsedSize": 1699128,
+        "backingStorageSize": 13875106
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.445775,
+          "rssKiB": 234832
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040613,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 10.761198,
+          "rssKiB": 472272
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231728,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 9.54356,
+          "rssKiB": 293152
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.136507,
+          "rssKiB": 108752
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030993,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.292711,
+          "rssKiB": 96704
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 50.880700000000644,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 60.024009603841506,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191545,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788402
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731184.490396,
+        "AudioHandlers": 42,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 276,
+        "LayoutCount": 119,
+        "RecalcStyleCount": 2330,
+        "LayoutDuration": 0.025736,
+        "RecalcStyleDuration": 0.178105,
+        "DevToolsCommandDuration": 0.18402,
+        "ScriptDuration": 7.966371,
+        "V8CompileDuration": 0,
+        "TaskDuration": 10.103013,
+        "TaskOtherDuration": 1.748781,
+        "ThreadTime": 5.447696,
+        "ProcessTime": 11.729174,
+        "JSHeapUsedSize": 16076012,
+        "JSHeapTotalSize": 17891328,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16119620,
+        "totalSize": 17891328,
+        "embedderHeapUsedSize": 1494264,
+        "backingStorageSize": 5264329
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.498426,
+          "rssKiB": 234848
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.040613,
+          "rssKiB": 98976
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 11.7297,
+          "rssKiB": 458080
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.231728,
+          "rssKiB": 182912
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 10.585413,
+          "rssKiB": 293712
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.138058,
+          "rssKiB": 108768
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.030993,
+          "rssKiB": 79664
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.316851,
+          "rssKiB": 96704
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 55.43090000000085,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.85156811108491,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187206,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873341
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731189.278499,
+        "AudioHandlers": 60,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 364,
+        "LayoutCount": 127,
+        "RecalcStyleCount": 2505,
+        "LayoutDuration": 0.02732,
+        "RecalcStyleDuration": 0.194284,
+        "DevToolsCommandDuration": 0.185619,
+        "ScriptDuration": 8.589457,
+        "V8CompileDuration": 0,
+        "TaskDuration": 10.92529,
+        "TaskOtherDuration": 1.92861,
+        "ThreadTime": 5.891,
+        "ProcessTime": 12.70016,
+        "JSHeapUsedSize": 16584200,
+        "JSHeapTotalSize": 18415616,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16647052,
+        "totalSize": 18415616,
+        "embedderHeapUsedSize": 1852672,
+        "backingStorageSize": 13875252
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.556764,
+          "rssKiB": 235568
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.041413,
+          "rssKiB": 99024
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 12.701223,
+          "rssKiB": 479664
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.232503,
+          "rssKiB": 182928
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 11.294829,
+          "rssKiB": 304064
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.143904,
+          "rssKiB": 108912
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.032132,
+          "rssKiB": 79904
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.337541,
+          "rssKiB": 96880
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 51,
+          "timer": {
+            "remains": 299.5750000000004,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 60.01300000000106,
+          "hold": null,
+          "recording": {
+            "ticks": 51,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.99520038396862,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191617,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788474
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731194.093143,
+        "AudioHandlers": 68,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 268,
+        "LayoutCount": 137,
+        "RecalcStyleCount": 2691,
+        "LayoutDuration": 0.029393,
+        "RecalcStyleDuration": 0.211564,
+        "DevToolsCommandDuration": 0.18743,
+        "ScriptDuration": 9.270905,
+        "V8CompileDuration": 0,
+        "TaskDuration": 11.758781,
+        "TaskOtherDuration": 2.059489,
+        "ThreadTime": 6.355255,
+        "ProcessTime": 13.551473,
+        "JSHeapUsedSize": 16122536,
+        "JSHeapTotalSize": 19464192,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16176068,
+        "totalSize": 19464192,
+        "embedderHeapUsedSize": 1615656,
+        "backingStorageSize": 5264463
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.606586,
+          "rssKiB": 235584
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.041488,
+          "rssKiB": 99024
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 13.552434,
+          "rssKiB": 457856
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.232889,
+          "rssKiB": 182928
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 12.220444,
+          "rssKiB": 304160
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.144905,
+          "rssKiB": 108912
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.032234,
+          "rssKiB": 79904
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.362805,
+          "rssKiB": 96960
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 64.5464000000013,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.73715651135004,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187266,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873401
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "hn-front",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731198.936379,
+        "AudioHandlers": 18,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 67,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 154,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 325,
+        "LayoutCount": 147,
+        "RecalcStyleCount": 2878,
+        "LayoutDuration": 0.031149,
+        "RecalcStyleDuration": 0.22753,
+        "DevToolsCommandDuration": 0.188992,
+        "ScriptDuration": 9.988778,
+        "V8CompileDuration": 0,
+        "TaskDuration": 12.668427,
+        "TaskOtherDuration": 2.231978,
+        "ThreadTime": 6.848651,
+        "ProcessTime": 14.51742,
+        "JSHeapUsedSize": 16621348,
+        "JSHeapTotalSize": 19202048,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 154,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16621348,
+        "totalSize": 19202048,
+        "embedderHeapUsedSize": 1583424,
+        "backingStorageSize": 13875326
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.655476,
+          "rssKiB": 235584
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.041499,
+          "rssKiB": 99024
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 14.51761,
+          "rssKiB": 490096
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.233257,
+          "rssKiB": 182928
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 13.11493,
+          "rssKiB": 315184
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.14695,
+          "rssKiB": 108912
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.032279,
+          "rssKiB": 79904
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.38631,
+          "rssKiB": 96960
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [15.666666984558105, 19.76970100402832, 4.111111164093018],
+          "rollLevel": 0,
+          "island": 1,
+          "stageId": "fd63f0b47eaac451ef89deb241eafaa190fff7a64448ae85ac09ba3449ca53aa",
+          "clock": 69.0632000000018,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.995200383967585,
+            "qualityStatus": "fixed",
+            "drawCalls": 47,
+            "triangles": 69232,
+            "tier": 0,
+            "sceneDrawCalls": 21,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 23,
+              "programs": 66,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 8058948,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 66,
+          "programsSize": 191617,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 23,
+          "texturesSize": 222447345,
+          "uniformBuffers": 89,
+          "uniformBuffersSize": 50400,
+          "total": 230788474
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    },
+    {
+      "slug": "example-sparse",
+      "motesVisible": true,
+      "metrics": {
+        "Timestamp": 1731203.711503,
+        "AudioHandlers": 20,
+        "AudioWorkletProcessors": 0,
+        "Documents": 1,
+        "Frames": 1,
+        "JSEventListeners": 199,
+        "LayoutObjects": 65,
+        "MediaKeySessions": 0,
+        "MediaKeys": 0,
+        "Nodes": 152,
+        "Resources": 29,
+        "ContextLifecycleStateObservers": 9,
+        "V8PerContextDatas": 2,
+        "WorkerGlobalScopes": 1,
+        "UACSSResources": 0,
+        "RTCPeerConnections": 0,
+        "ResourceFetchers": 2,
+        "AdSubframes": 0,
+        "DetachedScriptStates": 0,
+        "ArrayBufferContents": 256,
+        "LayoutCount": 156,
+        "RecalcStyleCount": 3061,
+        "LayoutDuration": 0.033111,
+        "RecalcStyleDuration": 0.243818,
+        "DevToolsCommandDuration": 0.190581,
+        "ScriptDuration": 10.686182,
+        "V8CompileDuration": 0,
+        "TaskDuration": 13.522434,
+        "TaskOtherDuration": 2.368742,
+        "ThreadTime": 7.328504,
+        "ProcessTime": 15.394078,
+        "JSHeapUsedSize": 16189660,
+        "JSHeapTotalSize": 17891328,
+        "FirstMeaningfulPaint": 1731125.660865,
+        "DomContentLoaded": 1731125.498992,
+        "NavigationStart": 1731125.442466
+      },
+      "dom": {
+        "documents": 1,
+        "nodes": 152,
+        "jsEventListeners": 199
+      },
+      "heap": {
+        "usedSize": 16241088,
+        "totalSize": 17891328,
+        "embedderHeapUsedSize": 1530408,
+        "backingStorageSize": 5264537
+      },
+      "processes": [
+        {
+          "type": "browser",
+          "id": 39447,
+          "cpuTime": 2.706182,
+          "rssKiB": 235600
+        },
+        {
+          "type": "renderer",
+          "id": 39479,
+          "cpuTime": 0.041643,
+          "rssKiB": 99024
+        },
+        {
+          "type": "renderer",
+          "id": 39480,
+          "cpuTime": 15.394833,
+          "rssKiB": 470928
+        },
+        {
+          "type": "renderer",
+          "id": 39478,
+          "cpuTime": 0.233594,
+          "rssKiB": 182928
+        },
+        {
+          "type": "GPU",
+          "id": 39463,
+          "cpuTime": 14.079159,
+          "rssKiB": 315536
+        },
+        {
+          "type": "network.mojom.NetworkService",
+          "id": 39466,
+          "cpuTime": 0.147785,
+          "rssKiB": 108912
+        },
+        {
+          "type": "storage.mojom.StorageService",
+          "id": 39467,
+          "cpuTime": 0.032344,
+          "rssKiB": 79904
+        },
+        {
+          "type": "audio.mojom.AudioService",
+          "id": 39528,
+          "cpuTime": 0.409744,
+          "rssKiB": 96960
+        }
+      ],
+      "game": {
+        "state": {
+          "phase": "play",
+          "driver": "lockstep",
+          "tick": 52,
+          "timer": {
+            "remains": 299.56666666666706,
+            "int": 300,
+            "running": true
+          },
+          "total": 0,
+          "spares": 3,
+          "small": 0,
+          "large": 0,
+          "ball": [25.88888931274414, 18.239700317382812, 9.88888931274414],
+          "rollLevel": 0,
+          "island": 0,
+          "stageId": "80f029758fa9ec160912fe39eb5316f78d4af2c00d1f5f4a1cda943b671d0721",
+          "clock": 73.54850000000206,
+          "hold": null,
+          "recording": {
+            "ticks": 52,
+            "exact": true,
+            "replays": 0
+          },
+          "ghost": {
+            "status": "idle",
+            "run": null,
+            "on": false,
+            "racing": false,
+            "loaded": false,
+            "ticks": 0
+          },
+          "portal": null,
+          "journey": [
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "start"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            },
+            {
+              "host": "news.ycombinator.com",
+              "title": "Hacker News",
+              "url": "https://news.ycombinator.com/",
+              "ref": "fixture-hn-front",
+              "via": "select"
+            },
+            {
+              "host": "example.com",
+              "title": "Example Domain",
+              "url": "https://example.com/",
+              "ref": "fixture-example-sparse",
+              "via": "select"
+            }
+          ],
+          "learning": {
+            "active": false,
+            "activityId": null,
+            "level": null,
+            "mode": null,
+            "seed": null,
+            "phase": null,
+            "index": null,
+            "built": 0,
+            "done": [],
+            "overridden": [],
+            "gate": null,
+            "binding": null,
+            "missions": [],
+            "banner": null,
+            "said": [],
+            "guards": 0,
+            "notes": [],
+            "port": {
+              "physics": true,
+              "engine": true
+            }
+          },
+          "learningRun": false,
+          "api": "offline",
+          "engine": {
+            "fps": 59.70862192500636,
+            "qualityStatus": "fixed",
+            "drawCalls": 45,
+            "triangles": 18400,
+            "tier": 0,
+            "sceneDrawCalls": 19,
+            "envDrawCalls": 12,
+            "postDrawCalls": 14,
+            "backend": "webgl2",
+            "memory": {
+              "geometries": 19,
+              "textures": 22,
+              "programs": 64,
+              "renderTargets": 14
+            },
+            "tierLog": []
+          }
+        },
+        "rendererMemory": {
+          "attributes": 65,
+          "attributesSize": 1258660,
+          "geometries": 19,
+          "indexAttributes": 7,
+          "indexAttributesSize": 40164,
+          "indirectStorageAttributes": 0,
+          "indirectStorageAttributesSize": 0,
+          "programs": 64,
+          "programsSize": 187266,
+          "readbackBuffers": 0,
+          "readbackBuffersSize": 0,
+          "renderTargets": 14,
+          "storageAttributes": 0,
+          "storageAttributesSize": 0,
+          "textures": 22,
+          "texturesSize": 212370975,
+          "uniformBuffers": 88,
+          "uniformBuffersSize": 16336,
+          "total": 213873401
+        },
+        "canvas": {
+          "width": 2880,
+          "height": 1800
+        },
+        "deviceFeatures": null,
+        "visibility": "visible"
+      }
+    }
+  ],
+  "recovery": []
+}

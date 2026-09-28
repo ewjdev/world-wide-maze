@@ -1,0 +1,19 @@
+✖ portable collector exports real frame/resource data and restores hooks without longtask support (30245.668375ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 30425.032917
+
+✖ failing tests:
+
+test at infra/perf/device-browser.test.mjs:11:1
+✖ portable collector exports real frame/resource data and restores hooks without longtask support (30245.668375ms)
+  page.waitForFunction: Timeout 30000ms exceeded.
+      at TestContext.<anonymous> (/Users/ewj/.codex/worktrees/performance-ghost/wwm/infra/perf/device-browser.test.mjs:43:16) {
+    name: 'TimeoutError',
+    log: []
+  }

@@ -1,0 +1,36 @@
+{
+  "date": "2026-09-27",
+  "unitTests": {
+    "command": "pnpm exec vitest run --project @wwm/web apps/web/test/builder.test.ts apps/web/test/stage-cancellation.test.ts apps/web/test/stages.test.ts",
+    "passed": 27
+  },
+  "browserTests": {
+    "command": "pnpm exec vitest run --project @wwm/web apps/web/test/builder.e2e.test.ts",
+    "passed": 3,
+    "durationSeconds": 28.61
+  },
+  "fullCheck": {
+    "command": "pnpm check",
+    "exitCode": 1,
+    "typecheck": "passed",
+    "lint": "passed (32 existing warnings; 4 info)",
+    "testsPassed": 1348,
+    "testsSkipped": 32,
+    "testFilesPassed": 111,
+    "testFilesSkipped": 3,
+    "failedTestFiles": 1,
+    "failure": "apps/worker/test/cards.integration.test.ts afterAll harness disposal hook timeout 60000ms; all 40 assertions in that file passed",
+    "durationSeconds": 150.76
+  },
+  "nativeWorkerProbe": {
+    "identicalStageHashes": true,
+    "boundPass": true,
+    "pairs": 2,
+    "totalBuilds": 44,
+    "baselineCatalogDecodedBytes": 113843200,
+    "candidateCatalogDecodedBytes": 30720000,
+    "baselineWorkerBackingBytes": 117253017,
+    "candidateWorkerBackingBytes": 34140257
+  },
+  "productionDeployment": false
+}
