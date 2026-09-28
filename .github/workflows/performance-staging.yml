@@ -33,13 +33,13 @@ jobs:
       - run: node --test infra/perf/p1-regression.test.mjs
       - run: node --import tsx --test infra/perf/recording-p2.test.mjs
       - run: node --test infra/perf/device-data.test.mjs infra/perf/device-server.test.mjs
-      - run: node --test infra/perf/audio-p2-summary.test.mjs
+      - run: node --test infra/perf/audio-p2-summary.test.mjs infra/perf/startup-input.test.mjs
       - name: Verify qualified sound-enabled audio comparison
-        run: node infra/perf/audio-p2-summary.mjs docs/launch/evidence/audio-p2/baseline-sound/startup.json docs/launch/evidence/performance-p2-followup/startup/startup.json /tmp/performance-audio-comparison.json --current-runtime
+        run: node infra/perf/audio-p2-summary.mjs docs/launch/evidence/performance-main-integration/audio-baseline/startup.json docs/launch/evidence/performance-main-integration/startup/startup.json /tmp/performance-audio-comparison.json --current-runtime
       - name: Compare native evidence committed with staging
         shell: bash
         run: |
-          node infra/perf/p1-regression.mjs docs/launch/evidence/performance-p2-staging docs/launch/evidence/performance-p2-followup /tmp/performance-comparison.json --strict-resource-plateau
+          node infra/perf/p1-regression.mjs docs/launch/evidence/performance-main-integration/comparison-baseline docs/launch/evidence/performance-main-integration /tmp/performance-comparison.json --strict-resource-plateau
       - name: Preserve comparison and native evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -50,6 +50,7 @@ jobs:
           path: |
             /tmp/performance-comparison.json
             /tmp/performance-audio-comparison.json
+            docs/launch/evidence/performance-main-integration/
             docs/launch/evidence/performance-p2-followup/
             docs/launch/evidence/audio-p2/
             docs/launch/evidence/recording-chunks-p2/

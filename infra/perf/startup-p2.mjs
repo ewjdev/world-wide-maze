@@ -36,7 +36,8 @@ const report = {
   }).trim(),
   system: await (await browser.newBrowserCDPSession()).send('SystemInfo.getInfo'),
   instrumentation:
-    'Phase/audio wrappers plus CDP sampling profiler; not a production timing gate or field INP.',
+    'Phase/audio wrappers plus CDP sampling profiler; scripted-input isolation; not field INP.',
+  inputIsolation: 'v1: one armed Space per press; reject suppressed Space or timing-window interference',
   runs: [],
 };
 const save = () => writeFileSync(resolve(out, 'startup.json'), `${JSON.stringify(report, null, 2)}\n`);
@@ -47,8 +48,38 @@ function instrument({ muted }) {
   localStorage.setItem('wwm.tutorialDone', '1');
   localStorage.setItem('wwm.muted', muted ? '1' : '0');
   window.__WWM_TEST__ = { skipIntro: true, noAutoPause: true };
-  const probe = { spans: [], phases: [], longTasks: [], inputs: [], frames: [] };
+  const probe = {
+    spans: [],
+    phases: [],
+    longTasks: [],
+    inputs: [],
+    frames: [],
+    gestures: [],
+    armedInput: false,
+    releases: 0,
+  };
   window.__startup = probe;
+  // This headed benchmark shares a desktop. Only its two explicitly armed Space
+  // presses belong to the workload; unrelated gestures must not pre-unlock audio.
+  // Preserve suppressed gesture categories/times without recording typed content.
+  const isolate = (event) => {
+    const allowed = event.type === 'keydown' && event.code === 'Space' && !event.repeat && probe.armedInput;
+    probe.gestures.push({
+      at: performance.now(),
+      type: event.type,
+      category: event.type === 'keydown' ? (event.code === 'Space' ? 'space' : 'other-key') : 'pointer',
+      trusted: event.isTrusted,
+      shot: allowed ? probe.inputs.length : null,
+      allowed,
+    });
+    if (allowed) probe.armedInput = false;
+    else {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
+  };
+  addEventListener('keydown', isolate, { capture: true });
+  addEventListener('pointerdown', isolate, { capture: true });
   new PerformanceObserver((list) => {
     probe.longTasks.push(...list.getEntries().map((e) => ({ start: e.startTime, duration: e.duration })));
   }).observe({ type: 'longtask', buffered: true });
@@ -196,13 +227,25 @@ try {
             timeout: 120_000,
           });
           await page.waitForTimeout(300);
+          await page.evaluate(() => {
+            window.__startup.armedInput = true;
+          });
           await page.keyboard.down('Space');
           await page.waitForTimeout(300);
           await page.keyboard.up('Space');
+          await page.evaluate(() => {
+            window.__startup.releases++;
+          });
           await page.waitForTimeout(300);
+          await page.evaluate(() => {
+            window.__startup.armedInput = true;
+          });
           await page.keyboard.down('Space');
           await page.waitForTimeout(300);
           await page.keyboard.up('Space');
+          await page.evaluate(() => {
+            window.__startup.releases++;
+          });
           await page.waitForTimeout(300);
           run.observations = await page.evaluate(() => ({
             ...window.__startup,
@@ -215,6 +258,21 @@ try {
             })),
             state: window.__wwmGame.debugState(),
           }));
+          const observed = run.observations;
+          const admitted = observed.gestures.filter((gesture) => gesture.allowed);
+          if (observed.armedInput || observed.releases !== 2 || admitted.length !== 2)
+            throw new Error('Scripted input isolation did not complete two press/release pairs');
+          if (
+            observed.gestures.some(
+              (gesture) =>
+                !gesture.allowed &&
+                (gesture.category === 'space' ||
+                  observed.inputs.some(
+                    (input) => gesture.at >= input.start && gesture.at <= input.nextFrame,
+                  )),
+            )
+          )
+            throw new Error('Desktop input interfered with a measured input window');
         } finally {
           const profile = (await cdp.send('Profiler.stop')).profile;
           const profileFile = `${scenario.label}-${trial}-${cache}.cpuprofile`;

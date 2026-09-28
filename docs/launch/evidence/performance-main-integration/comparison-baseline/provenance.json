@@ -1,0 +1,25 @@
+{
+  "reason": "Historical 20x timing shift reproduced on both old and merged code across three alternating pairs. Refresh full frame/replay timing references, retaining independently valid GPU/lifecycle resource controls.",
+  "modes": {
+    "gpu": {
+      "source": "docs/launch/evidence/performance-p2-staging/gpu.json",
+      "sha256": "b2b596c19ce1c7a0364d50a5d24530e545c46203085ed7da4c37a4e594b2bce8",
+      "method": "unchanged complete historical report; existing comparison passes"
+    },
+    "lifecycle": {
+      "source": "docs/launch/evidence/performance-p2-staging/lifecycle.json",
+      "sha256": "04a668460f9775e7475827bbc286a10d61acb72c1bfdbe475d7940e79f07b349",
+      "method": "unchanged complete historical report; existing comparison passes"
+    },
+    "frames": {
+      "sourceCommit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+      "runtimeFingerprint": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+      "method": "complete mode recollected with current harness and same native host; no individual sample substitution"
+    },
+    "replay": {
+      "sourceCommit": "7eb2309b6c023b121c812e9f5994ac842c436835",
+      "runtimeFingerprint": "36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669",
+      "method": "complete mode recollected with current harness and same native host; no individual sample substitution"
+    }
+  }
+}

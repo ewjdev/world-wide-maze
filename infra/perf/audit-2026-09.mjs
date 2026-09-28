@@ -16,12 +16,19 @@ const out = process.env.AUDIT_OUT
   : new URL('../../docs/launch/evidence/audit-2026-09-27/', import.meta.url);
 mkdirSync(out, { recursive: true });
 const mode = process.argv[2] ?? 'frames';
-const servedBuild = await verifyServedBuild(base);
+// Explicit historical identity permits an A/B diagnostic against preserved built
+// assets. Every served byte is still verified; candidates use current source.
+const historical = process.env.AUDIT_BASELINE_RECORD
+  ? JSON.parse(readFileSync(process.env.AUDIT_BASELINE_RECORD, 'utf8'))
+  : null;
+const expected = historical?.runtimeFingerprint ?? runtimeFingerprint();
+const servedBuild = await verifyServedBuild(base, expected);
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
 const root = await browser.newBrowserCDPSession();
 const report = {
   date: new Date().toISOString(),
-  runtimeFingerprint: runtimeFingerprint(),
+  runtimeFingerprint: expected,
+  historicalSourceRecord: process.env.AUDIT_BASELINE_RECORD ?? null,
   servedBuild,
   base,
   mode,
@@ -34,7 +41,7 @@ const report = {
     maximumRunSeconds: 60,
     gpuTimestampQueries: mode === 'gpu',
   },
-  commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  commit: historical?.commit ?? execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
   hardware: execFileSync('sysctl', ['-n', 'machdep.cpu.brand_string', 'hw.memsize'], {
     encoding: 'utf8',
   }).trim(),
@@ -255,7 +262,14 @@ try {
       { ref: 'practice', quality: 'low', dpr: 2, seconds: 12, drive: true },
       { path: '/', seconds: 12 },
     ];
-    for (const spec of specs) {
+    // Partial diagnostic reports intentionally cannot pass the full-scenario gate.
+    const selected = process.env.AUDIT_FRAME_THROTTLE
+      ? specs.filter((spec) => String(spec.throttle) === process.env.AUDIT_FRAME_THROTTLE)
+      : specs;
+    if (!selected.length) throw new Error('No matching frame diagnostic scenario');
+    if (process.env.AUDIT_FRAME_THROTTLE)
+      report.diagnosticSelection = { frameThrottle: process.env.AUDIT_FRAME_THROTTLE };
+    for (const spec of selected) {
       let ctx;
       try {
         const run = await setup(spec);

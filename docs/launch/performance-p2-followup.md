@@ -1,5 +1,7 @@
 # Performance follow-up staging
 
+Historical pre-main checkpoint. Current merged-runtime qualification is in [main integration evidence](performance-main-integration.md).
+
 September 27, 2026. Continues [the accepted P2 checkpoint](performance-p2-staging.md) at `2629523` on `codex/performance-p1-staging`. Three agents worked in separate worktrees; benchmark, build and full-suite activity was serialized on the measurement host. This batch targets staging only. Both desktop and mobile remain in scope.
 
 ## Individual results

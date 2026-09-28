@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "c42d677853037e3c",
+  "hash": "1d5009cf7b25143e",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -13,6 +13,7 @@
     "docs/build-log/performance-ghost-p1.md",
     "docs/build-log/performance-idle-p2.md",
     "docs/build-log/performance-input-p2.md",
+    "docs/build-log/performance-main-integration.md",
     "docs/build-log/performance-p1-staging.md",
     "docs/build-log/performance-p2-followup.md",
     "docs/build-log/performance-p2-staging.md",
@@ -580,6 +581,23 @@
       "url": "/log#performance-input-p2",
       "kind": "build-log",
       "text": "Validation and final evidence are listed in `docs/launch/performance-controller-p2.md`. Parent owns full combined CI after integration; this agent runs focused controller/net correctness and relevant type/lint checks. Physical Android/iOS CPU, battery, thermal and input-to-photon latency remain unmeasured. No productivity multiplier claim.\n\nFinal validation (23:46 UTC): corrected ControllerPage smoke passed with no page/console errors; screenshot inspected and controls legible at 390×844. Final 45 paired traces retained identical wire/timestamp hashes and showed lower median session CPU for all nine scenarios. The measured source hash is recorded in the controller report. Twelve controller + 44 net tests, three research-prototype tests, web typecheck and focused Biome checks passed. Docent corpus regenerated and checked. No full-suite claim for this component: the parent explicitly owns combined full validation; no other agent's full test result is represented as this branch's full test result. Browser/Vite and all probe processes stopped. The only human decision requested is #26 overflow behavior, through the parent; no production recording policy was changed."
+    },
+    {
+      "id": "docs/build-log/performance-main-integration.md",
+      "title": "Requalify PR #34 performance after main integration · Trigger and work",
+      "path": "docs/build-log/performance-main-integration.md",
+      "url": "/log#performance-main-integration",
+      "kind": "build-log",
+      "text": "September 27, 2026. Codex with independent review and a lightweight test agent.\n\n## Trigger and work\nPR #34's `a022bde` CI and preview succeeded; Performance staging failed only at the source-bound audio gate, which correctly rejected pre-merge measurements. Rebuilt the merged source with race enabled like the preview, collected fresh native evidence, and pointed the staging workflow at the new directory. No product runtime or threshold changes.\n\nTwo complete startup attempts were rejected because extra unlocks invalidated first-input attribution. Added harness-only input isolation and privacy-conscious gesture categories; preserved both rejected collections. Rebuilt the original baseline at `7eb2309` in the free performance-render worktree and recollected its audio traces with the same harness instead of comparing incompatible instrumentation. That worktree's prior completed audio branch remains preserved.\n\nA separate agent added seven Node tests against the actual collector instrumentation and interference validation. Independent review checked scope, build flags, source identity, gate coverage and timing-window isolation. [Results and limitations](../launch/performance-main-integration.md)."
+    },
+    {
+      "id": "docs/build-log/performance-main-integration.md#validation",
+      "title": "Requalify PR #34 performance after main integration › Validation",
+      "path": "docs/build-log/performance-main-integration.md",
+      "anchor": "validation",
+      "url": "/log#performance-main-integration",
+      "kind": "build-log",
+      "text": "## Validation\nFresh audio comparison passes with native first-key median 44.90 → 14.75 ms. Core comparison initially returned timing-review for two 20× cases; three alternating old/merged pairs reproduced the timing shift on both builds. Preserved the initial result and all six trials, refreshed all baseline frame/replay scenarios, and retained the documented GPU/lifecycle reference files. The final comparison passes all 51 gates without changed thresholds or substituted candidate samples. All 66 performance-tool tests pass, including seven isolation tests. The first full `CI=true pnpm check` passed typecheck/lint and 1,559 tests but timed out at `learning.e2e.test.ts:377` waiting for the level picker after a 2.3-second Grown-ups hold (47 skipped). The unchanged focused learning suite passed 4/4 in 58.07 seconds. Both outcomes are retained; no learning test assertion, product code or quarantine was changed. The intermittent hold-to-open check is tracked by [P1 #37](https://github.com/ewjdev/world-wide-maze/issues/37) and remains blocking. One unchanged full-suite retry passed typecheck, lint and all 1,560 tests (47 skipped; 144 passing files) in 193.95 seconds. This successful retry does not resolve the intermittent failure in #37. The old measurements and three authorized CI quarantines remain visible. No production merge is part of this work."
     },
     {
       "id": "docs/build-log/performance-p1-staging.md",

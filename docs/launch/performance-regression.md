@@ -15,7 +15,7 @@ AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE" node infra/perf/aud
 AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE" node infra/perf/audit-2026-09.mjs gpu
 AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE" node infra/perf/audit-2026-09.mjs replay
 AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE" node infra/perf/audit-2026-09.mjs lifecycle
-node infra/perf/p1-regression.mjs docs/launch/evidence/performance-p2-staging "$PERF_CANDIDATE" /tmp/performance-comparison.json --strict-resource-plateau
+node infra/perf/p1-regression.mjs docs/launch/evidence/performance-main-integration/comparison-baseline "$PERF_CANDIDATE" /tmp/performance-comparison.json --strict-resource-plateau
 node --test infra/perf/p1-regression.test.mjs
 AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE" node infra/perf/p1-overhead.mjs
 ```
@@ -54,7 +54,7 @@ A passing comparator covers the supplied historical frame/resource/reference-rep
 
 ## Staging CI
 
-`.github/workflows/performance-staging.yml` runs only on `codex/performance-p1-staging` pushes or manual dispatch on that branch. Node 24, frozen dependencies, Chromium and `pnpm check` mirror repository correctness checks. Linux browser tests use the existing headless WebGL2 software fallback and make no native GPU timing claim. CI requires source-bound served-build proof and verifies candidate native evidence matches a SHA-256 fingerprint of current runtime source bytes, then compares it. Runtime code, shaders, entry HTML, public assets, build-plugin dependencies, extension build inputs, compiler/workspace configuration, fixtures, package manifests and the lockfile are included; docs/evidence-only commits are excluded. It does not remeasure native GPU performance on the hosted runner. CI publishes a 14-day artifact. Every nonzero comparison result blocks the workflow; the former P1 resource-leak warning path is removed. It also runs the exact packed-recording research tests, 20 device-tool integrity tests, and 11 sound-enabled comparison tests. The follow-up batch compares `performance-p2-staging` with `performance-p2-followup`; the audio comparator separately requires fresh combined startup evidence via `--current-runtime`. That gate validates unique cold/warm trials, finite paired input/unlock timings, host/build metadata and recomputed asset-manifest hashes before calculating gains. There are no deployment steps or production credentials.
+`.github/workflows/performance-staging.yml` runs only on `codex/performance-p1-staging` pushes or manual dispatch on that branch. Node 24, frozen dependencies, Chromium and `pnpm check` mirror repository correctness checks. Linux browser tests use the existing headless WebGL2 software fallback and make no native GPU timing claim. CI requires source-bound served-build proof and verifies candidate native evidence matches a SHA-256 fingerprint of current runtime source bytes, then compares it. Runtime code, shaders, entry HTML, public assets, build-plugin dependencies, extension build inputs, compiler/workspace configuration, fixtures, package manifests and the lockfile are included; docs/evidence-only commits are excluded. It does not remeasure native GPU performance on the hosted runner. CI publishes a 14-day artifact. Every nonzero comparison result blocks the workflow; the former P1 resource-leak warning path is removed. It also runs the exact packed-recording research tests, 20 device-tool integrity tests, and 11 sound-enabled comparison tests. The main-integration batch compares its documented `comparison-baseline` with `performance-main-integration`; the audio comparator separately requires fresh combined startup evidence via `--current-runtime`. That gate validates unique cold/warm trials, finite paired input/unlock timings, host/build metadata and recomputed asset-manifest hashes before calculating gains. There are no deployment steps or production credentials.
 
 ## Portable device collection
 
@@ -66,8 +66,10 @@ After collecting the core modes in the same unused directory, run:
 
 ```sh
 AUDIT_BASE=http://127.0.0.1:4318 AUDIT_OUT="$PERF_CANDIDATE/startup" AUDIT_MUTED=0 node infra/perf/startup-p2.mjs
-node infra/perf/audio-p2-summary.mjs docs/launch/evidence/audio-p2/baseline-sound/startup.json "$PERF_CANDIDATE/startup/startup.json" /tmp/performance-audio-comparison.json --current-runtime
+node infra/perf/audio-p2-summary.mjs docs/launch/evidence/performance-main-integration/audio-baseline/startup.json "$PERF_CANDIDATE/startup/startup.json" /tmp/performance-audio-comparison.json --current-runtime
 node --test infra/perf/audio-p2-summary.test.mjs
 ```
 
 Its 50% unlock and 20% first-key-to-rAF improvement thresholds qualify this specific audio change against the measured baseline. They are not physical-device budgets or field INP targets. All eighteen samples and cold-context outliers remain in the evidence.
+
+The current audio baseline was recollected from runtime `36bcaafb…` using the same scripted-input isolation as the merged candidate. The headed collector admits one explicitly armed Space per measured press and logs suppressed pointer/other-key categories without typed content. Suppressed Space or interference during an input-to-rAF timing window invalidates collection. Both press/release pairs must complete; the exact-two-input/two-unlock comparison remains unchanged. Seven Node tests exercise dispatch and rejection paths. See [main integration evidence](performance-main-integration.md).
