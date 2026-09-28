@@ -17,6 +17,7 @@ import {
   type TokenStorage,
 } from '@wwm/net';
 import { useCallback, useEffect, useState } from 'react';
+import { serviceFetch, servicesResting } from '../service-mode.ts';
 
 export interface HostRoom {
   status: 'creating' | 'ready' | 'error';
@@ -55,6 +56,7 @@ export async function openHostRoom(
   origin: string,
   code?: string,
 ): Promise<{ code: string; conn: HostConnection; pairToken: string | null }> {
+  if (servicesResting()) throw new Error('Phone control is resting. Use keyboard controls.');
   const store = sessionStore();
   let c: string;
   let hostToken: string | null;
@@ -69,7 +71,7 @@ export async function openHostRoom(
     hostToken = known?.hostToken ?? null;
     pairToken = known?.pairToken ?? null;
   } else {
-    const room = await createRoom(origin);
+    const room = await createRoom(origin, serviceFetch);
     c = room.code;
     hostToken = room.hostToken;
     pairToken = room.pairToken;

@@ -1,5 +1,7 @@
 # Runbook — World Wide Maze (revival)
 
+Cost-budget activation, monthly reconciliation and emergency shutdown: [cost controls](cost-controls.md).
+
 Status: **written before the first deploy** (Phase 12). Nothing below has been run against a real Cloudflare
 account; every command was checked locally against `wrangler dev` unless it says otherwise. Replace
 `<ACCOUNT>`, `<DOMAIN>` once the resources exist (infra/README.md).

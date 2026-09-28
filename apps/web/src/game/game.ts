@@ -44,6 +44,7 @@ import { createLockPort } from '../learning/port.ts';
 import type { SubmitResult, VersionedReplay } from '../ranking/client.ts';
 import { createGhostBall, type GhostBall, type GhostTrack, recordGhostTrack } from '../ranking/ghost.ts';
 import type { Challenge } from '../ranking/share.ts';
+import { serviceFetch } from '../service-mode.ts';
 import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
@@ -1748,7 +1749,9 @@ export class Game {
         return;
       }
       try {
-        const r = await fetch(`${this.#opts.origin}/api/health`, { signal: AbortSignal.timeout(5000) });
+        const r = await serviceFetch(`${this.#opts.origin}/api/health`, {
+          signal: AbortSignal.timeout(5000),
+        });
         const j = r.ok ? ((await r.json()) as { ok?: boolean }) : null;
         this.#api = j?.ok ? 'online' : 'offline';
       } catch {

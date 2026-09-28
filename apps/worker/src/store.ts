@@ -10,12 +10,14 @@
  * KV: `run:<…>` → {runId} (TTL CACHE_TTL_DAYS), `job:<cacheKey>` → jobId (in-flight dedupe, 120 s),
  *     `optout:<domain>` → any value (the domain and its subdomains are never captured).
  */
+
 import type { CaptureBundle, CuratedRun, RunResponse, StageData } from '@wwm/schema';
+import { type BudgetEnv, reserveWrite } from './budget-client.ts';
 import type { SliceTexture } from './capture/types.ts';
 import { Catalog } from './catalog.ts';
 import type { RunRecord, StageStore } from './pipeline.ts';
 
-export interface StoreBindings {
+export interface StoreBindings extends Partial<BudgetEnv> {
   STAGES: R2Bucket;
   DB: D1Database;
   CACHE: KVNamespace;
@@ -36,10 +38,18 @@ export class CloudflareStore implements StageStore {
     this.catalog = new Catalog(env);
   }
 
+  private async reserveBytes(bytes: number) {
+    // Plain storage adapters in unit tests have no environment; deployed services always do.
+    if (this.env.WWM_ENV !== undefined) await reserveWrite(this.env as StoreBindings & BudgetEnv, bytes);
+  }
+
   // ── writes (StageStore) ────────────────────────────────────────────────────────────────────────────
 
   async putCapture(bundle: CaptureBundle, screenshotPng: Uint8Array): Promise<void> {
     const p = capturePrefix(bundle.captureId);
+    await this.reserveBytes(
+      new TextEncoder().encode(JSON.stringify(bundle)).byteLength + screenshotPng.byteLength,
+    );
     await Promise.all([
       this.env.STAGES.put(`${p}capture.json`, JSON.stringify(bundle), {
         httpMetadata: { contentType: 'application/json' },
@@ -52,6 +62,7 @@ export class CloudflareStore implements StageStore {
 
   async putTexture(captureId: string, t: SliceTexture): Promise<string> {
     const key = textureKey(captureId, t.sliceIndex);
+    await this.reserveBytes(t.bytes.byteLength);
     await this.env.STAGES.put(key, t.bytes, {
       httpMetadata: { contentType: t.contentType, cacheControl: IMMUTABLE },
     });
@@ -78,6 +89,7 @@ export class CloudflareStore implements StageStore {
   }
 
   async putStage(stage: StageData, meta: { runId: string; textureKey: string }): Promise<void> {
+    await this.reserveBytes(new TextEncoder().encode(JSON.stringify(stage)).byteLength);
     await this.env.STAGES.put(stageKey(stage.stageId), JSON.stringify(stage), {
       httpMetadata: { contentType: 'application/json', cacheControl: IMMUTABLE },
     });

@@ -15,7 +15,7 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": ["nodejs_compat"],
-  "observability": { "enabled": true, "head_sampling_rate": 1 },
+  "observability": { "enabled": true, "head_sampling_rate": 0.1 },
 
   // Phase 18 share cards: fonts and the practice-stage texture are bundled as binary (Data) modules.
   // (Inherited by env.production and its Previews.)
@@ -41,7 +41,7 @@
     "CACHE_TTL_DAYS": "7",
     "RETENTION_DAYS": "30",
     // Phase 12: all new builds per hour across all clients.
-    "GLOBAL_BUILD_LIMIT_PER_HOUR": "600",
+    "GLOBAL_BUILD_LIMIT_PER_HOUR": "60",
     // Phase 12 kill switch: "0" refuses new captures (cached runs and curated stages still play). The runtime
     // switch without a redeploy is the KV key `kill:capture` (docs/launch/runbook.md).
     "CAPTURE_ENABLED": "1",
@@ -55,6 +55,7 @@
     // "development" | "preview" | "production". Any value other than "development" is a deployed environment
     // and fails closed on missing secrets.
     "WWM_ENV": "development",
+    "COST_CONTROLS": "0",
     // Phase 12 (contracts v0.2.3): "1" exposes GET /api/rooms/:code/stats. Dev/test ONLY; "0" when deployed.
     "ROOM_STATS": "1",
     // Explicit event analytics: first-party ingest forwards allow-listed records to PostHog.
@@ -70,7 +71,7 @@
     "DOCENT_PROVIDER": "auto",
     "DOCENT_MODEL": "claude-haiku-4-5",
     "DOCENT_MAX_TOKENS": "600",
-    "DOCENT_LIMIT_PER_HOUR": "20",
+    "DOCENT_LIMIT_PER_HOUR": "10",
     "DOCENT_CACHE_TTL_DAYS": "7",
     "DOCENT_MOCK_DELAY_MS": "25"
     // Secrets (not vars): IP_HASH_SALT, ANTHROPIC_API_KEY. Locally: apps/worker/.dev.vars (see .dev.vars.example).
@@ -112,6 +113,7 @@
       // One per build job: runs capture → build → store and serves the SSE progress stream.
       { "name": "BUILD_JOB", "class_name": "BuildJob" },
       // Sliding-window counters (per-IP build limit) and the global browser-session semaphore.
+      { "name": "BUDGET", "class_name": "Budget" },
       { "name": "LIMITER", "class_name": "Limiter" },
       { "name": "JEV_CONTROL", "class_name": "JevControl" }
     ]
@@ -119,10 +121,11 @@
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
     { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
-    { "tag": "v3", "new_sqlite_classes": ["JevControl"] }
+    { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
+    { "tag": "v4", "new_sqlite_classes": ["Budget"] }
   ],
   // Retention sweep (task 9): daily at 03:17 UTC.
-  "triggers": { "crons": ["17 3 * * *"] },
+  "triggers": { "crons": ["17 */4 * * *"] },
 
   // ── Deploy target (Phase 12 → Phase 17). Named-environment keys are NOT inherited from the top level, so every
   // var and binding is redeclared. Deploys: .github/workflows/ci.yml (jobs deploy-production on main, preview on PRs).
@@ -136,16 +139,16 @@
       "workers_dev": false,
       // Required for Preview URLs on workers.dev: pr-<N>-wwm.<account-subdomain>.workers.dev (HTTPS).
       "preview_urls": true,
-      "observability": { "enabled": true, "head_sampling_rate": 1 },
+      "observability": { "enabled": true, "head_sampling_rate": 0.1 },
       "limits": { "cpu_ms": 300000 },
       // Web app. `assets` stays here (not in `previews`): each Preview uploads the assets of its own branch.
       "assets": {
         "directory": "../web/dist",
         "binding": "ASSETS",
         "not_found_handling": "single-page-application",
-        // Phase 18: `/`, `/log` and `/j/*` get their own link-preview tags (the Worker serves the app shell with
-        // them), `/r/*` are score permalinks. Everything else stays asset-first.
-        "run_worker_first": ["/api/*", "/s/*", "/r/*", "/j/*", "/", "/log", "/admin", "/admin/*"]
+        // Home/log are static assets. Journey previews and score permalinks need the Worker.
+        // Everything else stays asset-first.
+        "run_worker_first": ["/api/*", "/s/*", "/r/*", "/j/*", "/admin", "/admin/*"]
       },
       "vars": {
         "CAPTURE_BACKEND": "browser-run",
@@ -153,8 +156,9 @@
         "DEV_ALLOWED_HOSTS": "",
         "DOH_URL": "https://cloudflare-dns.com/dns-query",
         "WWM_ENV": "production",
+        "COST_CONTROLS": "1",
         "BUILD_LIMIT_PER_HOUR": "10",
-        "GLOBAL_BUILD_LIMIT_PER_HOUR": "600",
+        "GLOBAL_BUILD_LIMIT_PER_HOUR": "60",
         "BROWSER_MAX_CONCURRENCY": "2",
         "CAPTURE_BUDGET_MS": "20000",
         "SLICE0_BUDGET_MS": "30000",
@@ -176,11 +180,11 @@
         "TELEMETRY_DEBUG": "0",
         "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
         "AI_GATEWAY_ID": "wwm",
-        "DOCENT_DAILY_LIMIT": "500",
+        "DOCENT_DAILY_LIMIT": "100",
         "DOCENT_PROVIDER": "auto",
         "DOCENT_MODEL": "claude-haiku-4-5",
         "DOCENT_MAX_TOKENS": "600",
-        "DOCENT_LIMIT_PER_HOUR": "20",
+        "DOCENT_LIMIT_PER_HOUR": "10",
         "DOCENT_CACHE_TTL_DAYS": "7",
         "DOCENT_MOCK_DELAY_MS": "0"
       },
@@ -206,6 +210,7 @@
         "bindings": [
           { "name": "ROOM", "class_name": "Room" },
           { "name": "BUILD_JOB", "class_name": "BuildJob" },
+          { "name": "BUDGET", "class_name": "Budget" },
           { "name": "LIMITER", "class_name": "Limiter" },
           { "name": "JEV_CONTROL", "class_name": "JevControl" }
         ]
@@ -213,17 +218,18 @@
       "migrations": [
         { "tag": "v1", "new_sqlite_classes": ["Room"] },
         { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
-        { "tag": "v3", "new_sqlite_classes": ["JevControl"] }
+        { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
+        { "tag": "v4", "new_sqlite_classes": ["Budget"] }
       ],
       // Cron Triggers only run on production (never on Previews).
-      "triggers": { "crons": ["17 3 * * *"] },
+      "triggers": { "crons": ["17 */4 * * *"] },
 
       // ── Worker Previews (one per PR). Previews inherit NOTHING from production: every var and every binding the
       // code reads from `env` is repeated here, pointed at preview-only resources. No crons/routes/queue consumers
       // here (they don't apply to Previews). Preview D1 migrations: wrangler.preview-migrations.jsonc (same db).
       // Preview secrets: `wrangler preview base-config secret put <NAME> --env production` (infra/README.md).
       "previews": {
-        "observability": { "enabled": true, "head_sampling_rate": 1 },
+        "observability": { "enabled": true, "head_sampling_rate": 0.1 },
         "limits": { "cpu_ms": 300000 },
         "vars": {
           "CAPTURE_BACKEND": "browser-run",
@@ -231,6 +237,7 @@
           "DEV_ALLOWED_HOSTS": "",
           "DOH_URL": "https://cloudflare-dns.com/dns-query",
           "WWM_ENV": "preview",
+          "COST_CONTROLS": "1",
           "BUILD_LIMIT_PER_HOUR": "10",
           // Lower caps: Previews share the account's Browser Run concurrency with production.
           "GLOBAL_BUILD_LIMIT_PER_HOUR": "60",
@@ -239,7 +246,7 @@
           "SLICE0_BUDGET_MS": "30000",
           "CACHE_TTL_DAYS": "1",
           "RETENTION_DAYS": "7",
-          "CAPTURE_ENABLED": "1",
+          "CAPTURE_ENABLED": "0",
           "MODERATION_MODE": "manual",
           "MODERATION_MODEL": "claude-haiku-4-5",
           "MODERATION_TIMEOUT_MS": "15000",
@@ -256,10 +263,10 @@
           "AI_GATEWAY_ACCOUNT_ID": "927320d088a7c2ec3c070b43da0e85de",
           "AI_GATEWAY_ID": "wwm", // one gateway for production and Previews (owner decision 2026-09-25)
           "DOCENT_DAILY_LIMIT": "50",
-          "DOCENT_PROVIDER": "auto",
+          "DOCENT_PROVIDER": "mock",
           "DOCENT_MODEL": "claude-haiku-4-5",
           "DOCENT_MAX_TOKENS": "600",
-          "DOCENT_LIMIT_PER_HOUR": "20",
+          "DOCENT_LIMIT_PER_HOUR": "10",
           "DOCENT_CACHE_TTL_DAYS": "7",
           "DOCENT_MOCK_DELAY_MS": "0"
         },
@@ -284,6 +291,7 @@
           "bindings": [
             { "name": "ROOM", "class_name": "Room" },
             { "name": "BUILD_JOB", "class_name": "BuildJob" },
+            { "name": "BUDGET", "class_name": "Budget" },
             { "name": "LIMITER", "class_name": "Limiter" },
             { "name": "JEV_CONTROL", "class_name": "JevControl" }
           ]

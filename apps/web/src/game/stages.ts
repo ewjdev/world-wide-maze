@@ -20,6 +20,7 @@ import {
 import { applyLinkTargets, type LinkTargets } from '@wwm/stage-builder/links';
 import handmadeJson from '../../../../fixtures/stages/handmade-simple.json';
 import handmadePng from '../../../../fixtures/stages/handmade-simple.png?url';
+import { serviceFetch } from '../service-mode.ts';
 import type { BuildReply, BuildRequest } from './builder.worker.ts';
 import { type CatalogEntry, catalogEntry, PRACTICE } from './catalog.ts';
 
@@ -62,7 +63,7 @@ async function bitmapFrom(
   url: string,
   crop?: { x: number; y: number; w: number; h: number },
 ): Promise<ImageBitmap> {
-  const r = await fetch(url);
+  const r = await serviceFetch(url);
   if (!r.ok) throw new StageLoadError(r.status === 404 ? 'NOT_FOUND' : 'NETWORK', `texture ${r.status}`);
   const blob = await r.blob();
   return crop ? createImageBitmap(blob, crop.x, crop.y, crop.w, crop.h) : createImageBitmap(blob);
@@ -209,7 +210,7 @@ async function apiError(r: Response): Promise<StageLoadError> {
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   let r: Response;
   try {
-    r = await fetch(url, init);
+    r = await serviceFetch(url, init);
   } catch (e) {
     throw new StageLoadError('NETWORK', String(e));
   }

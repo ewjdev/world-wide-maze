@@ -43,7 +43,23 @@ function rapierWasmAsset(): Plugin {
 
 // `pnpm dev` runs this alongside `wrangler dev` (apps/worker, port 8787); /api is proxied there.
 export default defineConfig({
-  plugins: [jevPlugin(fileURLToPath(new URL('../../', import.meta.url))), react(), rapierWasmAsset()],
+  plugins: [
+    jevPlugin(fileURLToPath(new URL('../../', import.meta.url))),
+    react(),
+    rapierWasmAsset(),
+    {
+      name: 'wwm:static-log',
+      enforce: 'post',
+      generateBundle(_options, bundle) {
+        const index = bundle['index.html'];
+        if (index?.type !== 'asset') return;
+        const html = String(index.source)
+          .replaceAll('World Wide Maze: turn any website into a 3D maze', 'World Wide Maze — build log')
+          .replace('<title>World Wide Maze — revival</title>', '<title>World Wide Maze — build log</title>');
+        this.emitFile({ type: 'asset', fileName: 'log/index.html', source: html });
+      },
+    },
+  ],
   resolve: {
     alias: {
       // Phase 12: `@wwm/physics` `loadRapier('standard')` (non-deterministic Rapier) exists only for the

@@ -103,7 +103,7 @@ export function gatewayProvider(cfg: GatewayConfig): DocentProvider {
     authToken: null,
     baseURL: gatewayBaseUrl(cfg.accountId, cfg.gatewayId),
     defaultHeaders: headers,
-    maxRetries: 1,
+    maxRetries: 0,
     timeout: cfg.timeoutMs ?? 30_000,
     ...(cfg.fetch ? { fetch: cfg.fetch } : {}),
   });
@@ -119,7 +119,12 @@ export function gatewayProvider(cfg: GatewayConfig): DocentProvider {
           messages: input.messages,
           ...modelParams(cfg.model, cfg.effort),
         },
-        input.signal ? { signal: input.signal } : undefined,
+        {
+          signal: AbortSignal.any([
+            ...(input.signal ? [input.signal] : []),
+            AbortSignal.timeout(Math.min(cfg.timeoutMs ?? 30_000, 30_000)),
+          ]),
+        },
       );
       stream.on('text', (t) => onText(t));
       const msg = await stream.finalMessage();

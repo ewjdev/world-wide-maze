@@ -14,7 +14,10 @@ if (!/^https?:\/\//.test(base)) {
   console.error('usage: smoke.mjs <base-url> [--dev]');
   process.exit(2);
 }
+const expectStatic = process.argv.includes('--expect-static');
 const results = [];
+let staticMode = false;
+const intentionallyPaused = (r) => r.status === 429 && r.headers.get('x-wwm-mode') === 'static';
 async function check(name, fn) {
   try {
     const detail = await fn();
@@ -38,7 +41,7 @@ await check('GET / serves the app with a CSP', async () => {
   return csp.slice(0, 60);
 });
 await check('SPA fallback for /play/:id and /c/:code', async () => {
-  for (const p of ['/play/practice', '/c/123456', '/about']) {
+  for (const p of ['/play/practice?offline=1', '/c/123456', '/about', '/log']) {
     const r = await fetch(`${base}${p}`);
     expect(r.status === 200 && (await r.text()).includes('<div id="root">'), `${p}: ${r.status}`);
   }
@@ -69,12 +72,20 @@ await check('GET /api/health', async () => {
 });
 await check('GET /api/curated (kill-switch fallback list)', async () => {
   const r = await fetch(`${base}/api/curated`);
+  staticMode = intentionallyPaused(r);
+  if (expectStatic) expect(staticMode, 'preview must deny dynamic work');
+  if (staticMode)
+    return 'Budget is paused; static practice remains available (provider acceptance still required)';
   const j = await r.json();
   expect(r.status === 200 && Array.isArray(j.runs), `status ${r.status}`);
   return `${j.runs.length} curated runs`;
 });
 await check('POST /api/rooms → 6-digit code + tokens', async () => {
   const r = await fetch(`${base}/api/rooms`, { method: 'POST' });
+  if (staticMode) {
+    expect(intentionallyPaused(r), 'room admission must be paused');
+    return 'intentionally paused';
+  }
   const j = await r.json();
   expect(r.status === 200 && /^\d{6}$/.test(j.code), `status ${r.status}`);
   expect(
@@ -92,11 +103,11 @@ await check('cross-site POST refused', async () => {
     headers: { 'sec-fetch-site': 'cross-site', 'content-type': 'text/plain' },
     body: '{}',
   });
-  expect(r.status === 403, `status ${r.status}`);
+  expect(staticMode ? intentionallyPaused(r) : r.status === 403, `status ${r.status}`);
 });
 await check('share page 404 for an unknown stage', async () => {
   const r = await fetch(`${base}/s/${'0'.repeat(64)}`);
-  expect(r.status === 404, `status ${r.status}`);
+  expect(staticMode ? intentionallyPaused(r) : r.status === 404, `status ${r.status}`);
 });
 
 for (const r of results)

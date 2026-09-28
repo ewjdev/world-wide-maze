@@ -20,6 +20,8 @@ import {
 } from '@wwm/schema';
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { reserveWrite } from '../budget-client.ts';
+import { paidOperation } from '../budget-middleware.ts';
 import { errorResponse, ServiceError } from '../errors.ts';
 import { BodyTooLargeError, readJsonCapped, tooLarge } from '../security.ts';
 import {
@@ -185,7 +187,7 @@ scoresRoutes.get('/stage/:stageId/ghost', async (c) => {
   });
 });
 
-scoresRoutes.post('/', async (c) => {
+scoresRoutes.post('/', paidOperation('score'), async (c) => {
   const { log } = c.get('services');
   // Phase 12: the cap holds for chunked bodies too (no content-length), not just for honest clients.
   let raw: Record<string, unknown> | null;
@@ -273,6 +275,7 @@ scoresRoutes.post('/', async (c) => {
         });
       if (v.status === 'unverified') note = v.reason;
       replayKey = `replays/${req.stageId}/${crypto.randomUUID()}.json`;
+      await reserveWrite(c.env, new TextEncoder().encode(JSON.stringify(replay)).byteLength);
       await c.env.STAGES.put(
         replayKey,
         JSON.stringify({ physicsVersion: replay.physicsVersion, inputs: replay.inputs }),
