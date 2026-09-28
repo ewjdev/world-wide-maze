@@ -99,6 +99,10 @@ export const BridgeSchema = z.object({
   b: Vec2Schema,
   width: posFinite,
   type: BridgeTypeSchema,
+  control: Vec2Schema.optional(),
+  bank: finite.min(-0.35).max(0.35).optional(),
+  elevationProfile: z.literal('smoothstep').optional(),
+  rails: z.boolean().optional(),
   levelA: finite,
   levelB: finite,
 });
@@ -180,6 +184,7 @@ export const StageDataSchema = z.object({
   timeLimitSec: posFinite,
   islands: z.array(IslandSchema).min(1),
   bridges: z.array(BridgeSchema),
+  flightLinks: z.array(z.object({ from: nonNegInt, to: nonNegInt })).optional(),
   elevators: z.array(ElevatorSchema),
   items: z.array(ItemSchema),
   portals: z.array(PortalSchema).optional(),
@@ -229,9 +234,48 @@ export const GamePhaseSchema = z.enum([
 export const RoomRoleSchema = z.enum(['host', 'controller']);
 export const HapticPatternSchema = z.enum(['item', 'large', 'fall', 'goal']);
 
+export const RaceStateSchema = z.object({
+  version: z.literal(1),
+  phase: z.enum(['loading', 'ready', 'countdown', 'racing', 'paused', 'finished', 'exhausted']),
+  elapsedTicks: z.number().int().nonnegative(),
+  simHz: z.number().finite().positive(),
+  sector: z.number().int().nonnegative(),
+  totalSectors: z.number().int().nonnegative(),
+  practice: z.boolean(),
+  splitDeltaTicks: z.number().int().optional(),
+  lives: z.number().int().nonnegative().optional(),
+  maxLives: z.number().int().positive().optional(),
+  boost: z
+    .object({
+      ready: z.boolean(),
+      chargeTicks: z.number().int().nonnegative(),
+      chargeRequired: z.number().int().positive(),
+      chargingReason: z
+        .enum(['charging', 'slow', 'downhill', 'airborne', 'recovering', 'disabled'])
+        .optional(),
+      turboTicks: z.number().int().nonnegative(),
+      turboCharges: z.number().int().nonnegative().optional(),
+    })
+    .optional(),
+});
+
 export const ControlMessageSchema = z.discriminatedUnion('t', [
   z.object({ t: z.literal('peer'), role: RoomRoleSchema, connected: z.boolean() }),
-  z.object({ t: z.literal('state'), phase: GamePhaseSchema, score: finite, balls: finite, timeLeft: finite }),
+  z.object({
+    t: z.literal('state'),
+    phase: GamePhaseSchema,
+    score: finite,
+    balls: finite,
+    timeLeft: finite,
+    race: RaceStateSchema.optional(),
+  }),
+  z.object({ t: z.literal('capabilities-request') }),
+  z.object({
+    t: z.literal('capabilities'),
+    raceVersion: z.literal(1),
+    stuntVersion: z.literal(1).optional(),
+  }),
+  z.object({ t: z.literal('race-turbo') }),
   z.object({ t: z.literal('haptic'), pattern: HapticPatternSchema }),
   z.object({ t: z.literal('pos'), x: finite, y: finite, heading: finite }),
   z.object({ t: z.literal('text'), field: z.enum(['url', 'name']), value: z.string().max(2048) }),

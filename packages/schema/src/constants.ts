@@ -5,7 +5,7 @@
  */
 
 /** Contract version implemented by this package (contracts.md header). */
-export const CONTRACT_VERSION = '0.3.3';
+export const CONTRACT_VERSION = '0.3.6';
 /** Version of the explicit event envelope, independent from game/physics versions. */
 export const ANALYTICS_VERSION = 1;
 

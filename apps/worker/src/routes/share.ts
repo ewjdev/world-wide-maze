@@ -17,8 +17,10 @@
  *                                   by the curated list's thumbnails.
  * 2013 shared a `/maze/?http://site` link that rebuilt the site (E, fidelity-spec §9); ours links the built stage (N).
  */
+
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { releaseCost, reserveCost, reserveWrite } from '../budget-client.ts';
 import { CARD_H, CARD_W, type CardData, cardKey } from '../cards/data.ts';
 import {
   type CardSource,
@@ -40,7 +42,7 @@ const IMMUTABLE = 'public, max-age=31536000, immutable';
 export const CARD_RENDER_LIMIT = {
   perIp: 30,
   perIpWindowMs: 10 * 60_000,
-  global: 1200,
+  global: 60,
   globalWindowMs: 3600_000,
 };
 
@@ -273,34 +275,33 @@ shareRoutes.get('/api/cards/:kind/:file', async (c) => {
   const b = a.ok ? await global.hit(L.global, L.globalWindowMs) : a;
   if (!b.ok) {
     log.warn('card render rate limited', { kind, scope: a.ok ? 'global' : 'ip' });
-    if (kind !== 'site')
-      return new Response(null, {
-        status: 302,
-        headers: { location: '/api/cards/site/default.png', 'cache-control': 'no-store' },
-      });
-    return Response.json(
-      { error: 'rate limited' },
-      { status: 503, headers: { 'retry-after': String(b.retryAfterSec), 'cache-control': 'no-store' } },
-    );
+    return c.redirect('/og/log.png', 302);
   }
-  const { renderCard } = await import('../cards/render.ts');
-  const art = await src.art();
-  const out = await renderCard(src.data, art, site);
-  log.info('card rendered', { kind, ms: Math.round(out.ms), bytes: out.png.byteLength });
-  c.executionCtx.waitUntil(
-    c.env.STAGES.put(key, out.png, {
+  // A failed cache write must not make this card unrenderable until the receipt expires.
+  // The global render limiter and the budget bound retries independently.
+  const admission = await reserveCost(c.env, 'card');
+  if (!admission.ok) return c.redirect('/og/log.png', 302);
+  try {
+    const { renderCard } = await import('../cards/render.ts');
+    const art = await src.art();
+    const out = await renderCard(src.data, art, site);
+    log.info('card rendered', { kind, ms: Math.round(out.ms), bytes: out.png.byteLength });
+    await reserveWrite(c.env, out.png.byteLength);
+    await c.env.STAGES.put(key, out.png, {
       httpMetadata: { contentType: 'image/png', cacheControl: IMMUTABLE },
       customMetadata: { kind, renderMs: String(Math.round(out.ms)) },
-    }),
-  );
-  return new Response(out.png, {
-    headers: {
-      'content-type': 'image/png',
-      'cache-control': cache,
-      'x-card': 'render',
-      'x-render-ms': String(Math.round(out.ms)),
-    },
-  });
+    });
+    return new Response(out.png, {
+      headers: {
+        'content-type': 'image/png',
+        'cache-control': cache,
+        'x-card': 'render',
+        'x-render-ms': String(Math.round(out.ms)),
+      },
+    });
+  } finally {
+    await releaseCost(c.env, admission.id);
+  }
 });
 
 // (Phase 10) the curated hero shot, else the stage texture.
@@ -324,9 +325,15 @@ shareRoutes.get('/api/share/:stageId/card', async (c) => {
 });
 
 /** Retention: rendered cards are caches; drop ones older than `days` (they re-render on demand). */
-export async function sweepCards(env: Pick<Env, 'STAGES'>, days: number, now = Date.now(), max = 1000) {
+export async function sweepCards(
+  env: Pick<Env, 'STAGES' | 'CACHE'>,
+  days: number,
+  now = Date.now(),
+  max = 1000,
+) {
   const cutoff = now - days * 86400_000;
-  let cursor: string | undefined;
+  const cursorKey = 'cost:card-sweep-cursor';
+  let cursor: string | undefined = (await env.CACHE.get(cursorKey)) ?? undefined;
   let deleted = 0;
   let seen = 0;
   do {
@@ -337,5 +344,7 @@ export async function sweepCards(env: Pick<Env, 'STAGES'>, days: number, now = D
     seen += page.objects.length;
     cursor = page.truncated ? page.cursor : undefined;
   } while (cursor && seen < max);
+  if (cursor) await env.CACHE.put(cursorKey, cursor);
+  else await env.CACHE.delete(cursorKey);
   return { deleted };
 }

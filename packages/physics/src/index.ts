@@ -38,9 +38,14 @@ export {
 export {
   createSimulation,
   type LockableSimulation,
+  RACE_ELEVATION_PROFILE,
+  RACE_GRADE_DEADBAND,
+  RACE_HORIZONTAL_SPEED_LIMIT,
   RapierSimulation,
   type SimStats,
   type SimulationOptions,
+  type SurfaceSupport,
+  surfaceTravelGrade,
 } from './simulation.ts';
 export {
   createWorkerSimulation,

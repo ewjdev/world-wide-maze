@@ -2,7 +2,10 @@
  * English UI strings. Comments: E = the 2013 localization string (docs/reference/ux-flow.md), quoted or
  * lightly adapted; N = new in the rebuild. Button glyphs (__POWER__ etc.) are rendered by the UI.
  */
+import { raceEn } from './race.ts';
+
 export const en = {
+  race: raceEn,
   analytics: {
     title: 'Analytics privacy',
     intro:

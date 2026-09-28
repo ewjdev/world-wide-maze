@@ -164,7 +164,12 @@ export function createModerator(env: ModerationEnv, options: { fetch?: typeof fe
     )
       return pending('evidence_limit');
     const text = input.text || '';
-    if (text.length > 24_000 || input.url.length > 4096 || (input.title?.length ?? 0) > 2000)
+    if (
+      text.length > 24_000 ||
+      input.url.length > 4096 ||
+      (input.title?.length ?? 0) > 2000 ||
+      new TextEncoder().encode(text + input.url + (input.title ?? '')).byteLength > 30_000
+    )
       return pending('evidence_limit');
     const controller = new AbortController();
     let timer: ReturnType<typeof setTimeout> | undefined;

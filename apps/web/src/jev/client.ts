@@ -1,4 +1,5 @@
 import type { RunDetail, RunSummary } from '@wwm/maze-agent';
+import { serviceFetch } from '../service-mode.ts';
 export interface Availability {
   available: boolean;
   configured?: boolean;
@@ -24,7 +25,7 @@ export class JevClient {
   token = '';
   availability: Availability = { available: false, model: '', attempts: 0, limit: 600 };
   async connect() {
-    const r = await fetch(`${this.base}/session`, {
+    const r = await serviceFetch(`${this.base}/session`, {
       credentials: 'same-origin',
       cache: 'no-store',
       redirect: 'error',
@@ -36,7 +37,7 @@ export class JevClient {
     return data as Availability;
   }
   async request<T>(path: string, data?: unknown): Promise<T> {
-    const r = await fetch(`${this.base}/${path}`, {
+    const r = await serviceFetch(`${this.base}/${path}`, {
       credentials: 'same-origin',
       cache: 'no-store',
       redirect: 'error',

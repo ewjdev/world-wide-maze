@@ -7,7 +7,7 @@ test('cancellation after non-abortable bitmap decode closes the obsolete bitmap'
   const abort = new AbortController();
   const close = vi.fn();
   let finish: ((image: ImageBitmap) => void) | undefined;
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, blob: async () => new Blob() }));
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(new Blob())));
   vi.stubGlobal(
     'createImageBitmap',
     vi.fn(

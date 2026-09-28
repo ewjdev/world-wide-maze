@@ -85,7 +85,12 @@ function ControllerForCode({ code }: { code: string }) {
   const debug = typeof location !== 'undefined' && new URLSearchParams(location.search).has('debug');
 
   return (
-    <div className="wwmc" data-screen={view.screen} data-testid="controller">
+    <div
+      className="wwmc"
+      data-screen={view.screen}
+      data-stunts={!!view.host?.race?.boost}
+      data-testid="controller"
+    >
       <header className="wwmc-top">
         <HoldButton name="menu" label={t.menu} session={session} view={view} className="wwmc-menu" />
         <Status view={view} />
@@ -95,7 +100,8 @@ function ControllerForCode({ code }: { code: string }) {
         <Body view={view} session={session} />
       </main>
       {view.screen === 'play' && (
-        <footer className="wwmc-bottom">
+        <footer className={`wwmc-bottom ${view.host?.race?.boost ? 'wwmc-bottom-stunts' : ''}`}>
+          {view.host?.race?.boost && <TurboButton session={session} view={view} />}
           <HoldButton name="jump" label={t.jump} session={session} view={view} className="wwmc-jump" />
           <HoldButton name="power" label={t.power} session={session} view={view} className="wwmc-power" />
         </footer>
@@ -140,6 +146,44 @@ function HostHud({ view }: { view: ControllerView }) {
   const t = strings();
   const h = view.host;
   if (!h) return null;
+  if (h.race) {
+    const race = h.race;
+    const seconds = race.elapsedTicks / race.simHz;
+    const split = race.splitDeltaTicks;
+    return (
+      <section className="wwmc-hud wwmc-hud-race" data-testid="race-host-hud" aria-label={t.race}>
+        <span>
+          {race.practice ? t.racePractice : t.race} <b>{t.racePhases[race.phase]}</b>
+        </span>
+        <span>
+          {t.time} <b>{seconds.toFixed(2)}s</b>
+        </span>
+        <span>
+          {t.raceSector}{' '}
+          <b>
+            {Math.min(race.sector + 1, race.totalSectors)}/{race.totalSectors}
+          </b>
+        </span>
+        {race.lives !== undefined && (
+          <span>
+            {t.raceLives}{' '}
+            <b>
+              {race.lives} / {race.maxLives ?? 3}
+            </b>
+          </span>
+        )}
+        {split !== undefined && (
+          <span>
+            {t.raceSplit}{' '}
+            <b>
+              {split > 0 ? '+' : ''}
+              {(split / race.simHz).toFixed(2)}s
+            </b>
+          </span>
+        )}
+      </section>
+    );
+  }
   return (
     <div className="wwmc-hud" data-testid="host-hud">
       <span>
@@ -244,13 +288,43 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           <p className={`wwmc-warn ${view.tooTilted ? 'on' : ''}`} aria-live="polite">
             {view.tooTilted ? t.tooTilted : ' '}
           </p>
-          <p className="wwmc-hint">{t.powerHint}</p>
+          <p className="wwmc-hint">{view.host?.race?.boost ? t.racePowerHint : t.powerHint}</p>
           <button type="button" className="wwmc-link" onClick={() => session?.retryCalibration()}>
             {t.recalibrate}
           </button>
         </div>
       );
   }
+}
+
+function TurboButton({ session, view }: { session: ControllerSession | null; view: ControllerView }) {
+  const t = strings();
+  const race = view.host?.race;
+  const boost = race?.boost;
+  if (!boost) return null;
+  const ready = race.phase === 'racing' && boost.ready && view.hostConnected && view.connection === 'open';
+  const charge = Math.min(100, Math.round((100 * boost.chargeTicks) / Math.max(1, boost.chargeRequired)));
+  return (
+    <button
+      type="button"
+      className="wwmc-btn wwmc-turbo"
+      data-testid="btn-turbo"
+      disabled={!ready}
+      onClick={() => session?.turbo()}
+    >
+      <strong>
+        {t.raceTurbo} × {boost.turboCharges ?? (boost.ready ? 1 : 0)}
+      </strong>
+      <span>
+        {boost.ready ? t.raceTurboReady : ''}
+        {boost.chargingReason === 'downhill'
+          ? t.raceTurboDownhill
+          : boost.chargingReason === 'airborne'
+            ? t.raceTurboAirborne
+            : `${charge}% ${t.raceTurboNext}`}
+      </span>
+    </button>
+  );
 }
 
 function HoldButton({

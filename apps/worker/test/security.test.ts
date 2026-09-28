@@ -162,6 +162,12 @@ describe('deploy config (wrangler.jsonc)', () => {
   ] as const)('%s: dev-only switches are off and abuse caps are bound', (_name, target, wwmEnv) => {
     expect(target).toBeDefined();
     if (!target) return;
+    expect(target.vars.COST_CONTROLS).toBe('1');
+    if (wwmEnv === 'preview') {
+      expect(target.vars.CAPTURE_ENABLED).toBe('0');
+      expect(target.vars.DOCENT_PROVIDER).toBe('mock');
+      expect(target.vars.MODERATION_MODE).toBe('manual');
+    }
     expect(target.vars.ROOM_STATS).toBe('0');
     expect(target.vars.DEV_ALLOWED_HOSTS).toBe('');
     expect(target.vars.TELEMETRY_INGEST).toBe(wwmEnv === 'production' ? '1' : '0');
@@ -178,16 +184,7 @@ describe('deploy config (wrangler.jsonc)', () => {
     ]);
   });
   test('production serves the web app with the API first', () => {
-    // Phase 18: + score permalinks (/r/*) and the app routes with their own link-preview card (/, /log, /j/*)
-    expect(prod?.assets.run_worker_first).toEqual([
-      '/api/*',
-      '/s/*',
-      '/r/*',
-      '/j/*',
-      '/',
-      '/log',
-      '/admin',
-      '/admin/*',
-    ]);
+    // Home and log are static assets so the emergency dynamic block preserves both.
+    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*', '/r/*', '/j/*', '/admin', '/admin/*']);
   });
 });

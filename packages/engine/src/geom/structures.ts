@@ -5,6 +5,8 @@
  * World mapping (contracts §1): x = px / PX_PER_METER, z = py / PX_PER_METER, y = level · LEVEL_HEIGHT_M.
  */
 import {
+  bridgeSections,
+  bridgeSurfaceMesh,
   ELEVATOR_MIN_PLATFORM_PX,
   type Island,
   LEVEL_HEIGHT_M,
@@ -200,6 +202,53 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
     tag(railIdx, rails, -1);
     const delay = ((delays.get(br.from) ?? 0) + (delays.get(br.to) ?? 0)) / 2;
     bridges.face.delay = delay;
+    if (br.control || br.bank || br.elevationProfile) {
+      const sections = bridgeSections(br);
+      const distances = [0];
+      for (let i = 1; i < sections.length; i++) {
+        const prev = sections[i - 1] as (typeof sections)[number],
+          next = sections[i] as (typeof sections)[number];
+        distances.push(
+          (distances[i - 1] as number) +
+            Math.hypot(next.pos[0] - prev.pos[0], next.pos[1] - prev.pos[1]) / PX_PER_METER,
+        );
+      }
+      const append = (builder: MeshBuilder, surface: ReturnType<typeof bridgeSurfaceMesh>) => {
+        for (let i = 0; i < surface.indices.length; i += 3) {
+          const points = [0, 1, 2].map((j) => {
+            const k = (surface.indices[i + j] as number) * 3;
+            return [surface.vertices[k], surface.vertices[k + 1], surface.vertices[k + 2]] as V3;
+          });
+          builder.face.base = ((points[0] as V3)[1] + (points[1] as V3)[1] + (points[2] as V3)[1]) / 3;
+          builder.face.seed = rng();
+          const ids = [0, 1, 2].map((j) => surface.indices[i + j] as number);
+          const horizontal = ids.every((id) => id % 4 < 2) || ids.every((id) => id % 4 >= 2);
+          const uvs = ids.map((id): V2 => [horizontal ? id % 2 : 2, distances[Math.floor(id / 4)] ?? 0]);
+          builder.tri(points[0] as V3, points[1] as V3, points[2] as V3, uvs[0], uvs[1], uvs[2]);
+        }
+      };
+      append(bridges, bridgeSurfaceMesh(br, SLAB_THICKNESS_M));
+      for (const [section, islandId, direction] of [
+        [sections[0], br.from, -1],
+        [sections.at(-1), br.to, 1],
+      ] as const) {
+        if (!section) continue;
+        const d: Vec2 = [section.tangent[0] * direction, section.tangent[1] * direction];
+        const length = gapIntoIsland(section.pos, d, islandById.get(islandId)) + APRON_PX;
+        const end: Vec2 = [section.pos[0] + d[0] * length, section.pos[1] + d[1] * length];
+        deck(bridges, rng, section.pos, end, br.width, () => section.y, SLAB_THICKNESS_M, false, true);
+      }
+      tag(deckIdx, bridges, bi);
+      if (br.rails !== false) {
+        rails.face.group = GROUP_BRIDGE;
+        rails.face.delay = delay;
+        rails.face.hsv = HSV.yellow;
+        for (const side of [-1, 1])
+          append(rails, bridgeSurfaceMesh(br, RAIL_HEIGHT_M, side, RAIL_THICKNESS_M));
+      }
+      tag(railIdx, rails, bi);
+      continue;
+    }
     const len = Math.hypot(br.b[0] - br.a[0], br.b[1] - br.a[1]);
     if (len < 1e-6) continue;
     const d: Vec2 = [(br.b[0] - br.a[0]) / len, (br.b[1] - br.a[1]) / len];
@@ -219,7 +268,7 @@ export function buildStageMeshes(stage: StageData, plan: TilePlan): StageMeshes 
     rails.face.hsv = HSV.yellow;
     const n: Vec2 = [-d[1], d[0]];
     const off = br.width / 2 + (RAIL_THICKNESS_M / 2) * PX_PER_METER;
-    for (const side of [-1, 1]) {
+    for (const side of br.rails === false ? [] : [-1, 1]) {
       const pts: V3[] = [];
       const segs = Math.max(1, Math.ceil(toX(len) / SEGMENT_M));
       for (let s = 0; s <= segs; s++) {

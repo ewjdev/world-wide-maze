@@ -10,6 +10,7 @@
 
 import { DurableObject } from 'cloudflare:workers';
 import type { JobEvent } from '@wwm/schema';
+import { budget, controlsOn, releaseCost, requireCost } from './budget-client.ts';
 import { createServices } from './config.ts';
 import { JobEventHub } from './job-events.ts';
 import { type JobParams, runBuildJob } from './pipeline.ts';
@@ -33,6 +34,7 @@ export class BuildJob extends DurableObject<Env> {
 
   async start(params: JobParams): Promise<void> {
     if (await this.ctx.storage.get('params')) return; // idempotent
+    await requireCost(this.env, 'build', params.jobId);
     await this.ctx.storage.put({ params, state: 'queued' satisfies JobState });
     await this.emit({ type: 'progress', step: 'queued', pct: 0 });
     await this.ctx.storage.setAlarm(Date.now());
@@ -60,7 +62,12 @@ export class BuildJob extends DurableObject<Env> {
       await this.ctx.storage.deleteAll();
       return;
     }
-    if (state === 'running') {
+    const expired =
+      controlsOn(this.env) &&
+      !(await budget(this.env)
+        .hasLease(params.jobId)
+        .catch(() => false));
+    if (state === 'running' || expired) {
       // A previous attempt died mid-job (eviction/deploy). Don't loop: report and stop (and let a retry start
       // a fresh job: Phase 12b).
       await createServices(this.env, { jobId: params.jobId })
@@ -76,6 +83,7 @@ export class BuildJob extends DurableObject<Env> {
       const services = createServices(this.env, { jobId: params.jobId });
       await runBuildJob(params, services.pipeline, (e) => this.emit(e));
     }
+    await releaseCost(this.env, params.jobId);
     await this.ctx.storage.put('state', 'finished' satisfies JobState);
     await this.ctx.storage.setAlarm(Date.now() + EXPIRE_MS);
   }

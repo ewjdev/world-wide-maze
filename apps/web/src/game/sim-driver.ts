@@ -42,6 +42,14 @@ export interface AdvanceResult {
 export type InputFn = (tick: number, dt: number) => InputSample;
 /** Handle an event; return true to stop stepping for this frame (e.g. the phase changed). */
 export type EventFn = (e: SimEvent) => boolean;
+/** Race observes every completed fixed step, never interpolated render positions. */
+export interface ObservedStep {
+  tick: number;
+  previous: BallState;
+  current: BallState;
+  events: readonly SimEvent[];
+}
+export type StepObserver = (step: ObservedStep) => boolean;
 
 export interface SimDriver {
   readonly kind: 'worker' | 'lockstep';
@@ -50,7 +58,7 @@ export interface SimDriver {
   /** contracts §10.4: open / close a runtime lock before the next tick. */
   setLock(id: number, open: boolean): void;
   /** Step the sim for a render frame of `dt` seconds. */
-  advance(dt: number, input: InputFn, onEvent: EventFn): AdvanceResult;
+  advance(dt: number, input: InputFn, onEvent: EventFn, observe?: StepObserver): AdvanceResult;
   reset(to?: Vec2): void;
   setPaused(p: boolean): void;
   /** Ticks stepped since the last `load()` (lockstep only; worker returns an estimate). */
@@ -103,12 +111,12 @@ export class WorkerDriver implements SimDriver {
 
 export class LockstepDriver implements SimDriver {
   readonly kind = 'lockstep' as const;
-  #sim: LockableSimulation;
+  #sim: LockableSimulation & { getBallState(): BallState };
   #acc = 0;
   #tick = 0;
   #paused = true;
   #last: { ball: BallState; elevators: { id: number; y: number }[] } | null = null;
-  constructor(sim: LockableSimulation) {
+  constructor(sim: LockableSimulation & { getBallState(): BallState }) {
     this.#sim = sim;
   }
   get tick() {
@@ -120,20 +128,24 @@ export class LockstepDriver implements SimDriver {
     this.#tick = 0;
     this.#last = null;
   }
-  advance(dt: number, input: InputFn, onEvent: EventFn): AdvanceResult {
+  advance(dt: number, input: InputFn, onEvent: EventFn, observe?: StepObserver): AdvanceResult {
     if (this.#paused) return { ball: null, elevators: [], simDt: 0 };
     this.#acc += dt;
     let steps = 0;
     // Never spiral: at most 1/4 s of catch-up per frame.
     const max = Math.ceil(SIM_HZ / 4);
     while (this.#acc >= H && steps < max) {
-      const r = this.#sim.step(input(this.#tick, H));
+      const sample = input(this.#tick, H);
+      const previous = observe ? this.#sim.getBallState() : null;
+      const r = this.#sim.step(sample);
       this.#tick++;
       steps++;
       this.#acc -= H;
       this.#last = { ball: r.ball, elevators: r.elevators };
       let stop = false;
       for (const e of r.events) if (onEvent(e)) stop = true;
+      if (observe && previous && observe({ tick: this.#tick, previous, current: r.ball, events: r.events }))
+        stop = true;
       if (stop || this.#paused) {
         this.#acc = 0;
         break;

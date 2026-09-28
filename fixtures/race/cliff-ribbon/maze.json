@@ -1,0 +1,308 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "cliff-ribbon",
+  "number": 5,
+  "name": "Cliff Ribbon",
+  "tier": "5 \u00b7 Edge control",
+  "width": "3\u20134.5 ball widths",
+  "skill": "Sustained steering + restrained speed",
+  "tech": "Flat curved island contours fit; climbing banked curves do not",
+  "beats": [
+    14,
+    16,
+    14,
+    16
+  ],
+  "phase": [
+    "Outer ribbon",
+    "Brake and turn",
+    "Inside transfer",
+    "Narrow exit"
+  ],
+  "nodes": {
+    "S": [
+      12,
+      86
+    ],
+    "A": [
+      77,
+      86
+    ],
+    "G1": [
+      88,
+      63
+    ],
+    "B": [
+      85,
+      18
+    ],
+    "G2": [
+      30,
+      14
+    ],
+    "C": [
+      14,
+      42
+    ],
+    "G3": [
+      40,
+      63
+    ],
+    "D": [
+      64,
+      57
+    ],
+    "F": [
+      56,
+      43
+    ],
+    "T": [
+      65,
+      24
+    ],
+    "J": [
+      36,
+      39
+    ],
+    "R": [
+      38,
+      53
+    ],
+    "JL1": [
+      28.427568410377344,
+      22.13939202562805
+    ],
+    "JT1": [
+      30.98010841037734,
+      32.77501202562806
+    ],
+    "JL2": [
+      40.4515641728763,
+      44.91393049180328
+    ],
+    "JT2": [
+      42.254844172876304,
+      55.73361049180328
+    ],
+    "W0_1": [
+      32.33333,
+      86.0
+    ],
+    "W0_2": [
+      54.66667,
+      86.0
+    ],
+    "W2_1": [
+      86.5,
+      40.5
+    ],
+    "W3_1": [
+      66.66667,
+      16.66667
+    ],
+    "W3_2": [
+      48.33333,
+      15.33333
+    ],
+    "W4_1": [
+      22.0,
+      28.0
+    ],
+    "W5_1": [
+      27.0,
+      52.5
+    ],
+    "W8_1": [
+      76.5,
+      43.5
+    ],
+    "W9_1": [
+      47.5,
+      19.0
+    ]
+  },
+  "routes": [
+    [
+      "Outer braking turns",
+      "S W0_1 W0_2 A G1 W2_1 B W3_1 W3_2 G2 W4_1 C W5_1 G3 D F",
+      "Exposed straight connectors with deliberate brake-and-turn islands at B and D."
+    ],
+    [
+      "Inside transfer",
+      "S W0_1 W0_2 A G1 W8_1 T W9_1 G2 W4_1 C W5_1 G3 D F",
+      "Short connector with a smaller usable entry angle."
+    ],
+    [
+      "Cliff hop",
+      "S W0_1 W0_2 A G1 W2_1 B W3_1 W3_2 G2 JL1 JT1 J JL2 JT2 G3 D F",
+      "Skip the exposed arc, then brake into the final ribbon."
+    ]
+  ],
+  "tight": [],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2"
+  ],
+  "catch": [
+    "J R",
+    "R C"
+  ],
+  "danger": "Segmented exposed turns are the baseline; smooth flat contours are a later geometry option.",
+  "largePads": [
+    "B",
+    "D"
+  ],
+  "gateNormals": {
+    "G1": [
+      0.7071,
+      -0.7071
+    ],
+    "G2": [
+      -0.7071,
+      -0.7071
+    ],
+    "G3": [
+      0,
+      1
+    ],
+    "F": [
+      0,
+      -1
+    ]
+  },
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "G2": 10,
+    "C": 10,
+    "G3": 10,
+    "D": 10,
+    "F": 10,
+    "T": 10,
+    "J": 10,
+    "R": 8,
+    "JL1": 10,
+    "JT1": 10,
+    "JL2": 10,
+    "JT2": 10,
+    "W0_1": 10.0,
+    "W0_2": 10.0,
+    "W2_1": 10.0,
+    "W3_1": 10.0,
+    "W3_2": 10.0,
+    "W4_1": 10.0,
+    "W5_1": 10.0,
+    "W8_1": 10.0,
+    "W9_1": 10.0
+  },
+  "reviewStatus": "Authored segmented rail-free geometry with raised physical jump approaches; scripted traversal verified",
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 62,
+  "targetSpeed": 9.2,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "JL1": 42,
+    "JT1": 52,
+    "JL2": 42,
+    "JT2": 52,
+    "W0_1": 55,
+    "W0_2": 55,
+    "W2_1": 55,
+    "W3_1": 55,
+    "W3_2": 55,
+    "W4_1": 55,
+    "W5_1": 55,
+    "W8_1": 55,
+    "W9_1": 55
+  },
+  "edgeControls": {
+    "S W0_1": [
+      21.16666,
+      93.0
+    ],
+    "W0_1 W0_2": [
+      43.5,
+      79.0
+    ],
+    "A G1": [
+      88.13183,
+      77.75911
+    ],
+    "G1 W2_1": [
+      93.59091,
+      51.2385
+    ],
+    "W2_1 B": [
+      79.40909,
+      29.7615
+    ],
+    "B W3_1": [
+      76.20909,
+      11.08167
+    ],
+    "W3_1 W3_2": [
+      57.87576,
+      9.74833
+    ],
+    "W3_2 G2": [
+      39.54242,
+      8.415
+    ],
+    "G2 W4_1": [
+      22.05455,
+      18.272
+    ],
+    "W4_1 C": [
+      21.94545,
+      37.728
+    ],
+    "C W5_1": [
+      17.54091,
+      51.683
+    ],
+    "W5_1 G3": [
+      30.540909999999997,
+      62.183
+    ],
+    "G3 D": [
+      53.41032,
+      66.82593
+    ],
+    "D F": [
+      63.94545,
+      47.272
+    ],
+    "G1 W8_1": [
+      87.58868,
+      49.44038
+    ],
+    "W8_1 T": [
+      65.41132,
+      37.55962
+    ],
+    "T W9_1": [
+      54.84091,
+      27.4675
+    ],
+    "W9_1 G2": [
+      37.34091,
+      22.4675
+    ],
+    "R C": [
+      28.0,
+      39.0
+    ]
+  },
+  "longStraightEdges": [
+    "S A"
+  ]
+}

@@ -207,12 +207,8 @@ describe('share cards (workerd)', { timeout: 30_000 }, () => {
       expect(pngInfo(png)).toEqual({ sig: true, width: 1200, height: 630 });
       expect(png.byteLength).toBeGreaterThan(20_000); // not a blank image
       saved[name] = png;
-      // R2 put happens in waitUntil; the next request is a cache hit with the same bytes
-      let again = await get(path());
-      for (let i = 0; i < 20 && again.headers.get('x-card') !== 'hit'; i++) {
-        await new Promise((res) => setTimeout(res, 100));
-        again = await get(path());
-      }
+      // A successful render acknowledges the R2 write, so the next request must hit the cache.
+      const again = await get(path());
       expect(again.headers.get('x-card')).toBe('hit');
       expect(new Uint8Array(await again.arrayBuffer())).toEqual(png);
     },

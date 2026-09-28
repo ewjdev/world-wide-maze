@@ -19,6 +19,7 @@ import {
 import { applyLinkTargets, type LinkTargets } from '@wwm/stage-builder/links';
 import handmadeJson from '../../../../fixtures/stages/handmade-simple.json';
 import handmadePng from '../../../../fixtures/stages/handmade-simple.png?url';
+import { serviceFetch } from '../service-mode.ts';
 import type { StageBuilderPool } from './builder-pool.ts';
 import { StageLoadError } from './stage-errors.ts';
 
@@ -56,7 +57,7 @@ async function bitmapFrom(
   signal?: AbortSignal,
 ): Promise<ImageBitmap> {
   signal?.throwIfAborted();
-  const r = await fetch(url, { signal });
+  const r = await serviceFetch(url, { signal });
   if (!r.ok) throw new StageLoadError(r.status === 404 ? 'NOT_FOUND' : 'NETWORK', `texture ${r.status}`);
   const blob = await r.blob();
   signal?.throwIfAborted();
@@ -195,7 +196,7 @@ async function apiError(r: Response): Promise<StageLoadError> {
 async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
   let r: Response;
   try {
-    r = await fetch(url, init);
+    r = await serviceFetch(url, init);
   } catch (e) {
     throw new StageLoadError('NETWORK', String(e));
   }

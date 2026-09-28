@@ -1,6 +1,8 @@
 /** POST /api/t: bounded first-party ingestion, server allowlist, acknowledged PostHog delivery. */
+
 import { Hono } from 'hono';
 import type { AppEnv } from '../app-env.ts';
+import { reserveCost } from '../budget-client.ts';
 import { createLogger } from '../log.ts';
 import { BodyTooLargeError, MAX_TELEMETRY_BYTES, readJsonCapped, tooLarge } from '../security.ts';
 import { deliverTelemetry } from './telemetry-posthog.ts';
@@ -29,6 +31,11 @@ telemetryRoutes.post('/t', async (c) => {
   }
   const records = sanitizeTelemetry(body);
   if (!records.length) return c.body(null, 204);
+  const allowance = await reserveCost(c.env, 'telemetry', undefined, records.length);
+  if (!allowance.ok) {
+    c.header('x-wwm-telemetry', 'dropped-budget');
+    return c.body(null, 204);
+  }
   const log = createLogger({ svc: 'wwm-telemetry' });
   // Local QA only. Production never logs event bodies, IDs or request correlation fields.
   if (c.env.WWM_ENV === 'development' && c.env.TELEMETRY_DEBUG === '1') {
@@ -41,6 +48,7 @@ telemetryRoutes.post('/t', async (c) => {
     release: c.env.ANALYTICS_RELEASE,
   });
   log.info('telemetry_delivery', { accepted: records.length, delivered, environment: c.env.WWM_ENV });
-  // A 204 now means the provider accepted the batch. A 502 lets the bounded client retry it.
+  // Forwarded batches acknowledge delivery; earlier 204 branches intentionally drop collection.
+  // A 502 permits the bounded client retry, which must reserve its own allowance again.
   return c.body(null, delivered ? 204 : 502);
 });

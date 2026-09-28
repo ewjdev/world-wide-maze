@@ -1,3 +1,4 @@
+import { serviceFetch } from '../service-mode.ts';
 /**
  * Share links (Phase 10). `/s/:stageId` is served by the Worker with an Open Graph card (apps/worker
  * src/routes/share.ts) and forwards to `/play/:stageId`, keeping `beat` and `by` so the game can show the challenge.
@@ -54,7 +55,7 @@ export function cardImage(kind: 'stage' | 'score' | 'run' | 'journey' | 'site', 
 /** The card as a file for the Web Share API (null when it can't be fetched, e.g. offline). */
 export async function fetchCardFile(src: string, name = 'world-wide-maze.png'): Promise<File | null> {
   try {
-    const res = await fetch(src);
+    const res = await serviceFetch(src);
     if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('image/')) return null;
     return new File([await res.blob()], name, { type: 'image/png' });
   } catch {

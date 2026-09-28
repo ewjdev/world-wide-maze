@@ -61,6 +61,42 @@ export interface SimulationOptions {
   params?: Partial<PhysicsParams>;
   /** Rapier build; default 'deterministic'. */
   rapier?: RapierBuild;
+  /** Trusted Race-only elevation profile. Never inferred from stage metadata. */
+  raceElevation?: boolean;
+}
+
+export interface SurfaceSupport {
+  normal: [number, number, number];
+  surfaceId: string;
+}
+
+/** Shared numerical slope tolerance, not a shallow-ramp gameplay exemption. */
+export const RACE_GRADE_DEADBAND = 0.001;
+export const RACE_HORIZONTAL_SPEED_LIMIT = 48;
+/** Replay identity includes this complete trusted profile in addition to DEFAULT_PARAMS. */
+export const RACE_ELEVATION_PROFILE = Object.freeze({
+  version: 'elevation-v1',
+  horizontalSpeedLimit: RACE_HORIZONTAL_SPEED_LIMIT,
+  gradeDeadband: RACE_GRADE_DEADBAND,
+  downhillDamping: 0.04,
+  uphillDamping: 0.7,
+  overspeedDamping: 1.0,
+  momentumThreshold: 24,
+  momentumBlendRange: 12,
+  floorRestitution: 0,
+  supportSeparationSpeed: 0.5,
+  supportSelection: 'compressive-impulse-v2',
+});
+
+/** Signed rise/run in the direction of horizontal travel; negative means descending. */
+export function surfaceTravelGrade(
+  support: SurfaceSupport | null,
+  velocity: readonly [number, number, number],
+): number {
+  const speed = Math.hypot(velocity[0], velocity[2]);
+  if (!support || speed < 0.01) return 0;
+  const [nx, ny, nz] = support.normal;
+  return -(nx * velocity[0] + nz * velocity[2]) / (ny * speed);
 }
 
 type Role = ColliderRole | { type: 'elevator'; elevatorId: number };
@@ -169,6 +205,8 @@ export class RapierSimulation implements LockableSimulation {
   private goalReached = false;
   private riding: ElevatorRt | null = null;
   private lastStepMs = 0;
+  private support: SurfaceSupport | null = null;
+  private readonly raceElevation: boolean;
 
   // derived per-tick constants
   private readonly dt: number;
@@ -179,8 +217,9 @@ export class RapierSimulation implements LockableSimulation {
   // scratch
   private readonly v0 = { x: 0, y: 0, z: 0 };
 
-  constructor(R: Rapier, params: PhysicsParams) {
+  constructor(R: Rapier, params: PhysicsParams, raceElevation = false) {
     this.R = R;
+    this.raceElevation = raceElevation;
     this.params = params;
     this.dt = 1 / params.simHz;
     this.tiltAlpha = oneMinusExpNeg(this.dt / params.tiltTau);
@@ -190,7 +229,7 @@ export class RapierSimulation implements LockableSimulation {
 
   static async create(opts: SimulationOptions = {}): Promise<RapierSimulation> {
     const R = await loadRapier(opts.rapier);
-    return new RapierSimulation(R, resolveParams(opts.params));
+    return new RapierSimulation(R, resolveParams(opts.params), opts.raceElevation === true);
   }
 
   // ───────────────────────────────────────── load ─────────────────────────────────────────
@@ -211,7 +250,13 @@ export class RapierSimulation implements LockableSimulation {
     const floor = (d: RapierNS.ColliderDesc, rail: boolean) =>
       d
         .setFriction(rail ? p.railFriction : p.floorFriction)
-        .setRestitution(rail ? p.railRestitution : p.floorRestitution)
+        .setRestitution(
+          rail
+            ? p.railRestitution
+            : this.raceElevation
+              ? RACE_ELEVATION_PROFILE.floorRestitution
+              : p.floorRestitution,
+        )
         .setFrictionCombineRule(R.CoefficientCombineRule.Multiply)
         .setRestitutionCombineRule(R.CoefficientCombineRule.Multiply);
 
@@ -368,6 +413,8 @@ export class RapierSimulation implements LockableSimulation {
 
     this.tick = 0;
     this.goalReached = false;
+    this.groundedNow = false;
+    this.prevJump = false;
     this.reset();
     this.lastIslandId = -1; // first contact (the start island) emits an 'island' event
   }
@@ -393,6 +440,7 @@ export class RapierSimulation implements LockableSimulation {
     this.lastContactTick = NEG_INF_TICK;
     this.lastTouchTick = this.tick;
     this.prevTouching.clear();
+    this.support = null;
     if (island) {
       this.lastIslandId = island.id;
       this.lastIslandPos = [target[0], target[1]];
@@ -470,6 +518,33 @@ export class RapierSimulation implements LockableSimulation {
     // forward = (−sy, 0, −cy), right = (cy, 0, −sy)
     world.gravity = { x: g * (dr * cy - df * sy), y: -g * cx * cz, z: g * (-dr * sy - df * cy) };
     ball.setAngularDamping(power ? p.angularDampingActive : p.angularDampingInactive);
+    if (this.raceElevation) {
+      const v = ball.linvel();
+      const speed = Math.hypot(v.x, v.z);
+      const grade = surfaceTravelGrade(this.support, [v.x, v.y, v.z]);
+      // Terrain supplies the extra speed. Braking retains the legacy drag; flats below the
+      // legacy boost ceiling retain their original acceleration. Above it, drag blends
+      // gradually to preserve earned momentum instead of abruptly deleting it at a seam.
+      const excess = Math.max(
+        0,
+        Math.min(
+          1,
+          (speed - RACE_ELEVATION_PROFILE.momentumThreshold) / RACE_ELEVATION_PROFILE.momentumBlendRange,
+        ),
+      );
+      const descent = grade < -RACE_GRADE_DEADBAND;
+      const ascent = grade > RACE_GRADE_DEADBAND;
+      const baseDrag = ascent ? RACE_ELEVATION_PROFILE.uphillDamping : p.linearDamping;
+      const drag =
+        power && !this.falling
+          ? descent
+            ? RACE_ELEVATION_PROFILE.downhillDamping
+            : baseDrag + (RACE_ELEVATION_PROFILE.overspeedDamping - baseDrag) * excess
+          : p.linearDamping;
+      ball.setLinearDamping(drag);
+      if (power && descent) ball.setAngularDamping(RACE_ELEVATION_PROFILE.downhillDamping);
+      else if (power && ascent) ball.setAngularDamping(RACE_ELEVATION_PROFILE.uphillDamping);
+    }
     if (p.torqueAssist !== 0) {
       ball.resetTorques(false);
       if (power) {
@@ -503,6 +578,7 @@ export class RapierSimulation implements LockableSimulation {
     // 4. Contacts → grounded, jump grace, islands, landed / bump.
     const pos = ball.translation();
     this.processContacts(tick, pos, events);
+    if (this.raceElevation) this.limitHorizontalSpeed();
 
     // 5. Sensors → items, goal, portals.
     this.processSensors(events);
@@ -549,6 +625,12 @@ export class RapierSimulation implements LockableSimulation {
     const p = this.params;
     const touching = new Set<number>();
     let grounded = false;
+    let support: SurfaceSupport | null = null;
+    let supportDistance = Number.POSITIVE_INFINITY;
+    let supportY = -1;
+    let supportImpulse = -1;
+    const velocity = (this.ball as RigidBody).linvel();
+    let supportHandle = Number.POSITIVE_INFINITY;
     let floorContact = false;
     let landImpact = 0;
     let bumpImpact = 0;
@@ -579,6 +661,36 @@ export class RapierSimulation implements LockableSimulation {
         } else floorContact = true;
         if (ny > p.groundNormalY && !lock) {
           grounded = true;
+          // Rails and walls cannot become the Race surface, even at their upper edges.
+          // At a seam, the deepest trailing triangle can be separating while the
+          // next ramp is already carrying the ball. Select compressive contacts first,
+          // then support impulse, depth, upward normal and stable handle in that order.
+          let impulse = 0;
+          for (let i = 0; i < nc; i++) impulse += m.contactImpulse(i);
+          const separating = nx * velocity.x + ny * velocity.y + nz * velocity.z;
+          const supporting = role.type === 'island' || role.type === 'bridge' || role.type === 'elevator';
+          if (
+            supporting &&
+            separating <= RACE_ELEVATION_PROFILE.supportSeparationSpeed &&
+            (impulse > supportImpulse + 1e-6 ||
+              (Math.abs(impulse - supportImpulse) <= 1e-6 &&
+                (minDist < supportDistance - 1e-6 ||
+                  (Math.abs(minDist - supportDistance) <= 1e-6 &&
+                    (ny > supportY + 1e-6 ||
+                      (Math.abs(ny - supportY) <= 1e-6 && other.handle < supportHandle))))))
+          ) {
+            const id =
+              role.type === 'island'
+                ? role.islandId
+                : role.type === 'bridge'
+                  ? role.bridgeId
+                  : role.elevatorId;
+            support = { normal: [nx, ny, nz], surfaceId: `${role.type}:${id}` };
+            supportDistance = minDist;
+            supportImpulse = impulse;
+            supportY = ny;
+            supportHandle = other.handle;
+          }
           if (approach > landImpact) landImpact = approach;
         } else if (!this.prevTouching.has(other.handle) && approach > bumpImpact) {
           bumpImpact = approach;
@@ -606,6 +718,7 @@ export class RapierSimulation implements LockableSimulation {
       this.lastTouchTick = tick;
     }
     this.groundedNow = grounded;
+    this.support = support;
     this.prevTouching = touching;
   }
 
@@ -864,6 +977,7 @@ export class RapierSimulation implements LockableSimulation {
     this.goalLocks = [];
     this.elevatorLocks.clear();
     this.riding = null;
+    this.support = null;
   }
 
   dispose(): void {
@@ -888,7 +1002,50 @@ export class RapierSimulation implements LockableSimulation {
     this.falling = false;
     this.lostEmitted = false;
     this.prevTouching.clear();
+    this.support = null;
     this.armPortals();
+  }
+
+  /** Add a bounded world-space velocity delta without teleporting or changing spin/contact/fall state. */
+  applyVelocityDelta(delta: readonly [number, number, number]): void {
+    this.need();
+    if (delta.length !== 3 || !delta.every(Number.isFinite) || Math.hypot(...delta) > 100)
+      throw new Error('Invalid velocity delta');
+    if (this.falling || this.riding) return;
+    const ball = this.ball as RigidBody;
+    const v = ball.linvel();
+    const next = { x: v.x + delta[0], y: v.y + delta[1], z: v.z + delta[2] };
+    if (Math.hypot(next.x, next.y, next.z) > 150) throw new Error('Velocity exceeds safety bound');
+    ball.setLinvel(next, true);
+    if (this.raceElevation) this.limitHorizontalSpeed();
+  }
+
+  /** Actual supporting contact from the last step; never an overhead heightfield lookup. */
+  getSurfaceSupport(): SurfaceSupport | null {
+    if (!this.support || this.falling || !this.ball) return null;
+    const v = this.ball.linvel();
+    const [nx, ny, nz] = this.support.normal;
+    // Predicted contacts may survive the take-off tick; an actively separating ball
+    // must not earn surface charging or have its jump Y changed by the speed cap.
+    if (nx * v.x + ny * v.y + nz * v.z > RACE_ELEVATION_PROFILE.supportSeparationSpeed) return null;
+    return { normal: [...this.support.normal], surfaceId: this.support.surfaceId };
+  }
+
+  private limitHorizontalSpeed(): void {
+    const ball = this.ball as RigidBody;
+    const v = ball.linvel();
+    const speed = Math.hypot(v.x, v.z);
+    if (speed <= RACE_HORIZONTAL_SPEED_LIMIT) return;
+    const scale = RACE_HORIZONTAL_SPEED_LIMIT / speed;
+    // At contact preserve the velocity component normal to the surface: clipping only
+    // XZ on a climb would create artificial separating velocity (an unwanted launch).
+    let y = v.y;
+    const support = this.getSurfaceSupport();
+    if (support) {
+      const [nx, ny, nz] = support.normal;
+      y -= ((nx * v.x + nz * v.z) * (scale - 1)) / ny;
+    }
+    ball.setLinvel({ x: v.x * scale, y, z: v.z * scale }, true);
   }
 
   getBallState(): BallState {

@@ -1,0 +1,328 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "bankshot-basin",
+  "number": 6,
+  "name": "Bankshot Basin",
+  "tier": "6 \u00b7 Aimed launches",
+  "width": "3\u20134.5 ball widths",
+  "skill": "Curved approach + launch heading + exit",
+  "tech": "New curved/banked surface contract, collision and render geometry",
+  "beats": [
+    12,
+    18,
+    16,
+    14
+  ],
+  "phase": [
+    "Load the curve",
+    "Bank or brake",
+    "Offset landing",
+    "Release to finish"
+  ],
+  "nodes": {
+    "S": [
+      19,
+      88
+    ],
+    "A": [
+      24,
+      85
+    ],
+    "G1": [
+      49,
+      56
+    ],
+    "B": [
+      25,
+      52
+    ],
+    "C": [
+      22,
+      25
+    ],
+    "G2": [
+      44,
+      14
+    ],
+    "D": [
+      70,
+      28
+    ],
+    "G3": [
+      87,
+      49
+    ],
+    "E": [
+      72,
+      72
+    ],
+    "F": [
+      111,
+      95
+    ],
+    "T": [
+      51,
+      28
+    ],
+    "J": [
+      82,
+      10
+    ],
+    "R": [
+      79.5,
+      30.5
+    ],
+    "Q": [
+      65,
+      58
+    ],
+    "JL2": [
+      52.78960702159189,
+      9.61427104575792
+    ],
+    "JT2": [
+      62.7685870215919,
+      8.901491045757922
+    ],
+    "JL3": [
+      88,
+      23
+    ],
+    "JT3": [
+      90,
+      33
+    ],
+    "W1_1": [
+      36.5,
+      70.5
+    ],
+    "W5_1": [
+      57.0,
+      21.0
+    ],
+    "W6_1": [
+      78.5,
+      38.5
+    ],
+    "W7_1": [
+      79.5,
+      60.5
+    ],
+    "W8_1": [
+      91.0,
+      84.0
+    ],
+    "U": [
+      40,
+      28
+    ]
+  },
+  "routes": [
+    [
+      "Grounded basin",
+      "S A W1_1 G1 B C G2 W5_1 D W6_1 G3 W7_1 E W8_1 F",
+      "Take the outside curve and arrive settled."
+    ],
+    [
+      "Banked launch",
+      "S A W1_1 G1 T U G2 W5_1 D W6_1 G3 W7_1 E W8_1 F",
+      "Turn while climbing; launch along the actual lip tangent."
+    ],
+    [
+      "Three-jump commitment",
+      "S A W1_1 G1 T U G2 JL2 JT2 J JL3 JT3 G3 W7_1 E W8_1 F",
+      "One banked launch plus a two-hop transfer. Each landing needs a real setup area."
+    ]
+  ],
+  "tight": [
+    "G1 T"
+  ],
+  "jumps": [
+    "U G2",
+    "JL2 JT2",
+    "JL3 JT3"
+  ],
+  "catch": [
+    "J R",
+    "R Q",
+    "Q D"
+  ],
+  "bank": "G1 T",
+  "danger": "Rail-free curved and banked climb leads to a launch; landing heading must be controlled.",
+  "bankControl": [
+    58,
+    41
+  ],
+  "largePads": [
+    "J",
+    "G3"
+  ],
+  "levels": {
+    "S": 10,
+    "A": 10,
+    "G1": 10,
+    "B": 10,
+    "C": 11,
+    "G2": 12,
+    "D": 12,
+    "G3": 12,
+    "E": 12,
+    "F": 12,
+    "T": 12,
+    "J": 12,
+    "R": 8,
+    "Q": 8,
+    "JL2": 12,
+    "JT2": 12,
+    "JL3": 12,
+    "JT3": 12,
+    "W1_1": 10.0,
+    "W5_1": 12.0,
+    "W6_1": 12.0,
+    "W7_1": 12.0,
+    "W8_1": 12.0,
+    "U": 12
+  },
+  "reviewStatus": "Implemented banked surface, physical jump ramps, real-input verification pending",
+  "gateNormals": {
+    "G1": [
+      0.508729312126641,
+      -0.8609265282143156
+    ],
+    "G2": [
+      0.38764478097342603,
+      -0.9218088325591509
+    ],
+    "G3": [
+      0,
+      1
+    ],
+    "F": [
+      57,
+      36
+    ]
+  },
+  "scale": [
+    22,
+    20
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 57,
+  "targetSpeed": 9.6,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "R": 40,
+    "Q": 65,
+    "JL1": 42,
+    "JT1": 52,
+    "JL2": 42,
+    "JT2": 85,
+    "JL3": 42,
+    "JT3": 85,
+    "W0_1": 55,
+    "W1_1": 55,
+    "W5_1": 55,
+    "W6_1": 55,
+    "W7_1": 55,
+    "W8_1": 55,
+    "W8_2": 55,
+    "G2": 115,
+    "U": 60
+  },
+  "edgeControls": {
+    "S W0_1": [
+      9,
+      89
+    ],
+    "W0_1 A": [
+      16.45,
+      83.658
+    ],
+    "A W1_1": [
+      34.33636,
+      82.0125
+    ],
+    "W1_1 G1": [
+      38.66364,
+      58.9875
+    ],
+    "G1 B": [
+      37.95331,
+      47.07899
+    ],
+    "B C": [
+      29.81663,
+      37.65076
+    ],
+    "C G2": [
+      29.445058499999995,
+      10.8970305
+    ],
+    "G2 W5_1": [
+      54,
+      14
+    ],
+    "W5_1 D": [
+      65.47273,
+      20.067
+    ],
+    "D W6_1": [
+      69,
+      37
+    ],
+    "W6_1 G3": [
+      79.79091,
+      46.6485
+    ],
+    "G3 W7_1": [
+      80.00909,
+      52.1925
+    ],
+    "W7_1 E": [
+      78.99091,
+      68.8075
+    ],
+    "E W8_1": [
+      78.33138,
+      84.07054
+    ],
+    "W8_1 W8_2": [
+      103.66862,
+      83.92946
+    ],
+    "J JL3": [
+      90,
+      14
+    ],
+    "JT3 G3": [
+      99,
+      46
+    ],
+    "JT2 J": [
+      73,
+      18
+    ],
+    "W8_1 F": [
+      107,
+      86
+    ],
+    "R Q": [
+      65,
+      39
+    ],
+    "Q D": [
+      59,
+      41
+    ],
+    "S A": [
+      24,
+      91
+    ]
+  },
+  "longStraightEdges": [
+    "E F"
+  ]
+}
