@@ -1,0 +1,44 @@
+✔ complete matching controlled evidence passes (1.868333ms)
+✔ missing evidence cannot pass (0.069625ms)
+✔ changed score fails correctness even with fast frames (0.155833ms)
+✔ extra retained targets fail even if their reported bytes are small (0.091583ms)
+✔ retained bytes fail despite unchanged target count (0.081333ms)
+✔ known retry leak is explicitly nonzero and remains assigned to P2 (0.199208ms)
+✔ larger/new retry leaks cannot be waived under P2 (0.167459ms)
+✔ P2 strict plateau rejects even reduced historical retry leakage (0.192416ms)
+✔ strict plateau rejects matching non-attribute growth and transient retained peaks (0.225417ms)
+✔ strict plateau rejects a missing middle checkpoint even when endpoints match (0.11225ms)
+✔ missing frame scenarios and invalid samples cannot pass (0.362625ms)
+✔ native versus software GPU identity requires review (0.0505ms)
+✔ native evidence must match current runtime bytes (0.09625ms)
+✔ noisy timing regressions require review instead of claiming a deterministic failure (0.040875ms)
+✔ different environment requires review (0.038ms)
+✔ cache evidence cannot hide a decoded-byte overflow (0.045208ms)
+✔ runtime fingerprint ignores docs but includes new runtime bytes across git add (100.457708ms)
+✔ CSS viewport changes cannot masquerade as optimization (0.134959ms)
+✔ even small deterministic allocation regressions fail the P2 waiver (0.136417ms)
+✔ empty GPU metadata and missing served-build proof do not pass (0.086541ms)
+✔ served asset bytes are verified and stale source manifests rejected (21.495208ms)
+✔ one-frame, zero timing and truncated windows cannot pass evidence coverage (0.131791ms)
+✔ viewport key order is immaterial but DPR differs (0.075666ms)
+✔ report-level page and GPU console errors fail every mode, including supplemental modes (0.659708ms)
+✔ new shader-program retention fails independently of target counts (0.109709ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 191.592125
+✔ preserves exact double precision, button edges, tick offsets and envelope serialization (0.980792ms)
+✔ bound refuses the first overflow tick without overwriting or pretending exactness; retry clears (3.921167ms)
+✔ score and explicit/implicit timer offsets survive exact expansion and unchanged submit envelope (12.8165ms)
+ℹ tests 3
+ℹ suites 0
+ℹ pass 3
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 173.40225

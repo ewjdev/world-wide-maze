@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "bf4df685d9841838",
+  "hash": "f17def5772a74752",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -11,6 +11,7 @@
     "docs/build-log/performance-idle-p2.md",
     "docs/build-log/performance-input-p2.md",
     "docs/build-log/performance-p1-staging.md",
+    "docs/build-log/performance-p2-staging.md",
     "docs/build-log/performance-regression-p1.md",
     "docs/build-log/performance-render-p1.md",
     "docs/build-log/performance-resources-p2.md",
@@ -476,6 +477,23 @@
       "url": "/log#performance-p1-staging",
       "kind": "build-log",
       "text": "## Validation\nQualified branches merged: ghost `ff7eaa3` as `737649c`; cache/tooling through `1cd13a4` as `4882a6f`; renderer `566d9d6` as `b03830a`. Integration preserved both ghost and stage cancellation in Game.dispose and regenerated the documentation corpus. Independent source reviews cleared cache/ghost lifecycle and renderer timing/compile ownership after merge.\n\nThe final production runtime fingerprint is `7ec6d5eb369258f8d58e47c31222bda8ad395505dfbc13597f3bfee45509ba1e`, measured at `b03830af177f54301a67027c0e0c4838885d7a42`. Parent ran the source-bound build, native GPU, all 12 frame cases, replay at 1×/6×/20×, 15 retries plus seven fixture loads, artificial stall/recovery, three instrumentation pairs, two cache A/B tours, and six ghost reference/worker pairs. Raw results and distinctions are in `docs/launch/performance-p1-staging.md` and its evidence directory.\n\nFinal comparator returns exit 3 solely for existing P2 #24: 44,800 bytes and two attributes per retry, identical to baseline. No P1 hard failure, missing evidence or timing-review gate remains. All six ghost pairs retain exact pose parity and improve frame/heartbeat gaps; one throttled worker trial retains a 79 ms long task, explicitly reported. Source/manifest/382-asset integrity and frame/GPU sampling were independently rechecked by the ghost agent.\n\nRenderer full check was green: 1,333 passed, 32 skipped. Ghost/cache component logs retain their earlier isolated full-suite failures and passing focused regressions. Combined full correctness is enforced by the published staging-only GitHub workflow before handoff; its run is linked from the staging report and epic update. The coordinator independently ran 22 controlled gate tests, documentation checks, lint and diff validation. No deployment or main merge, no physical-device/thermal/controller acceptance, and no P2 implementation. Every task-owned browser and preview was stopped after measurement."
+    },
+    {
+      "id": "docs/build-log/performance-p2-staging.md",
+      "title": "Performance P2 staging integration · Plans preserved · Integration",
+      "path": "docs/build-log/performance-p2-staging.md",
+      "url": "/log#performance-p2-staging",
+      "kind": "build-log",
+      "text": "September 27, 2026. User authorized committing pending plans, then continuing remaining performance epic work in isolated worktrees with tested, measured agent changes integrated into staging.\n\n## Plans preserved\nCommitted all five pending plan files as `f362b45` on the original `feat/phase-23-lesson-limits` checkout: overview, cost controls, cost-controls execution, extension release and Phase 24 race. Docent index/check and whitespace validation passed; that checkout is clean. This local planning commit was not moved into the unrelated performance branch.\n\n## Integration\n- `8b387ac`: stage-owned GPU attributes and generated bitmap cleanup, individually measured on WebGPU/WebGL2 with full check (1,370 passed).\n- `a6d7aed`: controller presentation cadence with exact paired input/timing traces; recording research only.\n- `02ec024`: idle rendering/worker suspension, three native pairs and keyboard/gamepad/phone visibility, reconnect and worker parity tests.\n- Parent startup research: 18 attributed production runs plus 12 exact-synthesis prototype runs; production audio unchanged.\n- Parent regression tooling: 25 controlled tests and strict post-warmup allocation plateaus. Current CI rejects the historical P1 leak waiver.\n\nMerged the qualified individual branches with explicit merge commits. Generated docent corpus conflicts were resolved by regeneration, preserving every agent's report. No product-source conflict required manual resolution. Independent merged-path review found no blocker between idle cadence and adaptive timing, resource ownership or current controller samples. Runtime source is frozen at `7eb2309`, SHA-256 `36bcaafb2c26d87ee779d57e7419e088c2c8d1f645de28225716aad557488669`, 382 served assets."
+    },
+    {
+      "id": "docs/build-log/performance-p2-staging.md#combined-validation",
+      "title": "Performance P2 staging integration › Combined validation",
+      "path": "docs/build-log/performance-p2-staging.md",
+      "anchor": "combined-validation",
+      "url": "/log#performance-p2-staging",
+      "kind": "build-log",
+      "text": "## Combined validation\nSix native modes completed with zero captured browser errors. All 51 strict comparison checks pass; all three reference replays finish at 5,429 ticks / score 1,484 / one saved replay, and 15 retries retain exactly 65 attributes / 1,473,380 bytes. The first full check stopped on 11 generated JSON formatting errors; formatting preserved every parsed value. The next full run passed typecheck/lint and 1,382 tests, with one portal return-crossing test failure (distance polling at line 263); the failed output is retained. The owning agent is diagnosing the timing-dependent test before qualification. Published-head CI is also required before handoff. The final results are recorded in [P2 staging report](../launch/performance-p2-staging.md). Main/production remain unchanged. No P2 research prototype is presented as a shipped runtime change; physical lower-tier acceptance and recording overflow policy remain open."
     },
     {
       "id": "docs/build-log/performance-regression-p1.md",
