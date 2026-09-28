@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "c2bea315a23e6ce8",
+  "hash": "b1114caaf0875183",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -494,7 +494,7 @@
       "anchor": "combined-validation",
       "url": "/log#performance-p2-staging",
       "kind": "build-log",
-      "text": "## Combined validation\nSix native modes completed with zero captured browser errors. All 51 strict comparison checks pass; all three reference replays finish at 5,429 ticks / score 1,484 / one saved replay, and 15 retries retain exactly 65 attributes / 1,473,380 bytes. The first full check stopped on 11 generated JSON formatting errors; formatting preserved every parsed value. The next full run passed typecheck/lint and 1,382 tests, with one portal return-crossing test failure (distance polling at line 263); the failed output is retained. The owning agent is diagnosing the timing-dependent test before qualification. Published-head CI is also required before handoff. The final results are recorded in [P2 staging report](../launch/performance-p2-staging.md). Main/production remain unchanged. No P2 research prototype is presented as a shipped runtime change; physical lower-tier acceptance and recording overflow policy remain open."
+      "text": "## Combined validation\nSix native modes completed with zero captured browser errors. All 51 strict comparison checks pass; all three reference replays finish at 5,429 ticks / score 1,484 / one saved replay, and 15 retries retain exactly 65 attributes / 1,473,380 bytes. The first full check stopped on 11 generated JSON formatting errors; formatting preserved every parsed value. The next full run passed typecheck/lint and 1,382 tests, with one portal return-crossing test failure (distance polling at line 263); the failed output is retained. The agent reproduced a real crossing missed by remote polling and repaired only the test, retaining each physics-step crossing. Disabling decline suppression makes the repaired test fail semantically, and runtime source is unchanged. After merging `dbae737`, final local `pnpm check` passes: 118 files / 1,383 tests, three files / 32 tests skipped, 149.65 seconds. Full output and repair evidence are retained. All 25 gate tests and three recording research tests pass. Published-head CI is also required before handoff and its exact run is recorded on epic #19. The final results are recorded in [P2 staging report](../launch/performance-p2-staging.md). Main/production remain unchanged. No P2 research prototype is presented as a shipped runtime change; physical lower-tier acceptance and recording overflow policy remain open."
     },
     {
       "id": "docs/build-log/performance-portal-test-repair.md",
