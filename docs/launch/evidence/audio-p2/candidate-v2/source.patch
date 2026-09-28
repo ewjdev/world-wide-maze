@@ -1,0 +1,570 @@
+diff --git a/apps/web/src/audio/audio.ts b/apps/web/src/audio/audio.ts
+index 8e20190..6d5b94d 100644
+--- a/apps/web/src/audio/audio.ts
++++ b/apps/web/src/audio/audio.ts
+@@ -10,129 +10,13 @@
+  * Autoplay: nothing sounds until `unlock()` runs inside a user gesture. Mute persists in localStorage.
+  */
+ 
+-export type Sfx =
+-  | 'item'
+-  | 'large'
+-  | 'jump'
+-  | 'land'
+-  | 'bump'
+-  | 'fall'
+-  | 'splash'
+-  | 'elevator'
+-  | 'getGoal'
+-  | 'goal'
+-  | 'firework'
+-  | 'caution'
+-  | 'click'
+-  | 'point'
+-  | 'oneup'
+-  | 'connected'
+-  | 'tick'
+-  | 'go';
++import { type PreparedAudio, type Sfx, SR } from './synthesis.ts';
+ 
++export type { Sfx } from './synthesis.ts';
+ export type Bgm = 'opening' | 'game' | 'timeup' | 'result' | 'over';
+-
+ const MUTE_KEY = 'wwm.muted';
+-const SR = 44100;
+-
+-type Synth = (t: number, i: number, n: number) => number;
+-
+-function render(sec: number, fn: Synth): Float32Array {
+-  const n = Math.max(1, Math.floor(sec * SR));
+-  const out = new Float32Array(n);
+-  for (let i = 0; i < n; i++) out[i] = fn(i / SR, i, n);
+-  return out;
+-}
+-
+-/** Deterministic noise so every build of the sound set is identical. */
+-function noiseGen(seed = 1): () => number {
+-  let s = seed >>> 0;
+-  return () => {
+-    s = (s + 0x6d2b79f5) >>> 0;
+-    let t = s;
+-    t = Math.imul(t ^ (t >>> 15), t | 1);
+-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+-    return (((t ^ (t >>> 14)) >>> 0) / 4294967296) * 2 - 1;
+-  };
+-}
+-
+-const TAU = Math.PI * 2;
+-const env = (t: number, a: number, d: number) => (t < a ? t / a : Math.exp(-(t - a) / d));
+ const midi = (m: number) => 440 * 2 ** ((m - 69) / 12);
+ 
+-/** Sine with a frequency sweep; phase integrated so sweeps stay clean. */
+-function sweep(sec: number, f0: number, f1: number, a: number, d: number, shape = 1): Float32Array {
+-  let ph = 0;
+-  return render(sec, (t) => {
+-    const k = t / sec;
+-    const f = f0 + (f1 - f0) * k ** shape;
+-    ph += (TAU * f) / SR;
+-    return Math.sin(ph) * env(t, a, d);
+-  });
+-}
+-
+-function bell(sec: number, notes: number[], gap: number, decay: number, bright = 2): Float32Array {
+-  return render(sec, (t) => {
+-    let v = 0;
+-    notes.forEach((m, k) => {
+-      const t0 = t - k * gap;
+-      if (t0 < 0) return;
+-      const f = midi(m);
+-      const e = env(t0, 0.004, decay);
+-      v += (Math.sin(TAU * f * t0 + bright * Math.sin(TAU * f * 2 * t0) * e) * e) / notes.length ** 0.5;
+-    });
+-    return v * 0.7;
+-  });
+-}
+-
+-function noiseBurst(sec: number, a: number, d: number, lp: number, seed: number): Float32Array {
+-  const rnd = noiseGen(seed);
+-  let y = 0;
+-  return render(sec, (t) => {
+-    y += lp * (rnd() - y);
+-    return y * env(t, a, d) * 2.2;
+-  });
+-}
+-
+-function mix(...parts: [Float32Array, number][]): Float32Array {
+-  const n = Math.max(...parts.map(([p]) => p.length));
+-  const out = new Float32Array(n);
+-  for (const [p, g] of parts)
+-    for (let i = 0; i < p.length; i++) out[i] = (out[i] as number) + (p[i] as number) * g;
+-  return out;
+-}
+-
+-function buildSfx(): Record<Sfx, Float32Array> {
+-  return {
+-    // small item: a bright two-tone blip (teal energy)
+-    item: bell(0.25, [88, 95], 0.045, 0.06, 1.2),
+-    // large item: a sparkling rising triad
+-    large: mix(
+-      [bell(0.9, [76, 83, 88, 95], 0.06, 0.25, 2.5), 0.9],
+-      [noiseBurst(0.5, 0.01, 0.12, 0.6, 3), 0.08],
+-    ),
+-    jump: sweep(0.22, 320, 820, 0.005, 0.08, 0.6),
+-    land: mix([sweep(0.18, 140, 60, 0.002, 0.05), 1], [noiseBurst(0.12, 0.001, 0.03, 0.25, 5), 0.5]),
+-    bump: mix([sweep(0.1, 900, 500, 0.001, 0.025), 0.6], [noiseBurst(0.08, 0.001, 0.015, 0.7, 7), 0.4]),
+-    fall: sweep(1.4, 700, 90, 0.01, 0.6, 0.8),
+-    splash: mix([noiseBurst(1.2, 0.01, 0.35, 0.12, 11), 1], [sweep(0.5, 220, 110, 0.005, 0.15), 0.4]),
+-    elevator: render(1.2, (t) => Math.sin(TAU * (180 + 120 * t) * t) * env(t, 0.15, 0.5) * 0.5),
+-    getGoal: mix([sweep(0.9, 300, 1400, 0.01, 0.5, 1.6), 0.7], [bell(0.9, [84, 91], 0.2, 0.3), 0.5]),
+-    goal: bell(2.2, [72, 76, 79, 84, 88, 91, 96], 0.11, 0.55, 1.5),
+-    firework: mix([noiseBurst(1.1, 0.002, 0.28, 0.35, 13), 0.9], [sweep(0.25, 1200, 400, 0.001, 0.06), 0.3]),
+-    caution: render(0.9, (t) => {
+-      const on = t % 0.3 < 0.18 ? 1 : 0;
+-      return Math.sign(Math.sin(TAU * 880 * t)) * 0.18 * on * env(t, 0.005, 0.6);
+-    }),
+-    click: bell(0.08, [96], 0, 0.018, 0.5),
+-    point: bell(0.06, [100], 0, 0.02, 0.3),
+-    oneup: bell(0.8, [79, 84, 88, 91, 96, 100], 0.05, 0.2, 1.8),
+-    connected: bell(0.7, [76, 83, 88], 0.09, 0.22, 1),
+-    tick: bell(0.2, [81], 0, 0.08, 0.6),
+-    go: bell(0.5, [93], 0, 0.25, 1.4),
+-  };
+-}
+-
+ // ── music ────────────────────────────────────────────────────────────────────────────────────────────────
+ 
+ interface Track {
+@@ -228,10 +112,26 @@ export const TRACKS: Record<Bgm, Track> = {
+ 
+ export interface AudioManagerOptions {
+   muted?: boolean;
++  /** Injected only by lifecycle tests; production creates a one-shot module worker. */
++  createWorker?: () => Worker;
+ }
+ 
+ export class AudioManager {
+   #ctx: AudioContext | null = null;
++  #disposed = false;
++  #prepared: { sfx: Partial<PreparedAudio['sfx']>; roll: PreparedAudio['roll'] | null } | null = null;
++  #preparation: 'idle' | 'pending' | 'ready' | 'failed' | 'disposed' = 'idle';
++  #worker: Worker | null = null;
++  #prepareTimer: ReturnType<typeof setTimeout> | null = null;
++  #createWorker: () => Worker;
++  #resuming = false;
++  #pending: { s: Sfx; opts: { gain?: number; rate?: number }; at: number }[] = [];
++  #fallbacks = new Set<OscillatorNode>();
++  /** Read-only lifecycle diagnostics; no PCM copies or hot-path instrumentation. */
++  get preparation(): string {
++    return this.#preparation;
++  }
++
+   #master: GainNode | null = null;
+   #musicBus: GainNode | null = null;
+   #buffers: Partial<Record<Sfx, AudioBuffer>> = {};
+@@ -255,6 +155,9 @@ export class AudioManager {
+       saved = false;
+     }
+     this.#muted = opts.muted ?? saved;
++    this.#createWorker =
++      opts.createWorker ??
++      (() => new Worker(new URL('./synthesis.worker.ts', import.meta.url), { type: 'module' }));
+   }
+ 
+   get muted(): boolean {
+@@ -270,9 +173,46 @@ export class AudioManager {
+     return () => this.#listeners.delete(cb);
+   }
+ 
+-  /** Call from a user gesture (click / key). Creates the context and the sound set on first use. */
++  /** Begin during mounting/world preparation. No AudioContext or autoplay permission is needed. */
++  prepare(): void {
++    if (this.#disposed || this.#preparation !== 'idle') return;
++    this.#preparation = 'pending';
++    const finish = () => {
++      this.#worker?.terminate();
++      this.#worker = null;
++      if (this.#prepareTimer !== null) clearTimeout(this.#prepareTimer);
++      this.#prepareTimer = null;
++    };
++    const fail = () => {
++      if (this.#disposed || this.#preparation !== 'pending') return;
++      this.#preparation = 'failed';
++      finish();
++    };
++    try {
++      const worker = this.#createWorker();
++      this.#worker = worker;
++      worker.onmessage = (event: MessageEvent<PreparedAudio>) => {
++        if (this.#disposed || this.#worker !== worker) return;
++        this.#prepared = event.data;
++        this.#preparation = 'ready';
++        finish();
++      };
++      worker.onerror = (event) => {
++        event.preventDefault();
++        fail();
++      };
++      worker.onmessageerror = fail;
++      this.#prepareTimer = setTimeout(fail, 15_000);
++      worker.postMessage(null);
++    } catch {
++      fail();
++    }
++  }
++
++  /** Call from a user gesture. Only creates/resumes WebAudio; synthesis never runs here. */
+   unlock(): void {
+-    if (typeof AudioContext === 'undefined') return;
++    if (this.#disposed || typeof AudioContext === 'undefined') return;
++    this.prepare();
+     if (!this.#ctx) {
+       const ctx = new AudioContext({ latencyHint: 'interactive' });
+       this.#ctx = ctx;
+@@ -282,19 +222,34 @@ export class AudioManager {
+       this.#musicBus = ctx.createGain();
+       this.#musicBus.gain.value = 1;
+       this.#musicBus.connect(this.#master);
+-      const raw = buildSfx();
+-      for (const [k, data] of Object.entries(raw) as [Sfx, Float32Array][]) {
+-        const b = ctx.createBuffer(1, data.length, SR);
+-        b.copyToChannel(data as Float32Array<ArrayBuffer>, 0);
+-        this.#buffers[k] = b;
+-      }
+     }
+-    if (this.#ctx.state === 'suspended') void this.#ctx.resume();
++    const ctx = this.#ctx;
++    if (ctx.state !== 'running' && ctx.state !== 'closed' && !this.#resuming) {
++      this.#resuming = true;
++      // resume() is invoked synchronously inside the gesture, not after preparation/await.
++      void ctx.resume().then(
++        () => {
++          this.#resuming = false;
++          if (this.#disposed || this.#ctx !== ctx || ctx.state !== 'running') return;
++          const pending = this.#pending;
++          this.#pending = [];
++          for (const cue of pending) if (performance.now() - cue.at <= 500) this.play(cue.s, cue.opts);
++          if (this.#wantMusic && !this.#music) this.setMusic(this.#wantMusic);
++          for (const listener of this.#listeners) listener();
++        },
++        () => {
++          this.#resuming = false;
++          this.#pending = [];
++        },
++      );
++    }
+     if (this.#wantMusic && !this.#music) this.setMusic(this.#wantMusic);
+     for (const l of this.#listeners) l();
+   }
+ 
+   setMuted(m: boolean): void {
++    if (this.#disposed) return;
++    this.#pending = [];
+     this.#muted = m;
+     try {
+       localStorage.setItem(MUTE_KEY, m ? '1' : '0');
+@@ -308,13 +263,48 @@ export class AudioManager {
+ 
+   play(s: Sfx, opts: { gain?: number; rate?: number } = {}): void {
+     const ctx = this.#ctx;
+-    const buf = this.#buffers[s];
+-    if (!ctx || !buf || !this.#master || ctx.state !== 'running') return;
++    if (this.#disposed || this.#muted || !ctx || !this.#master) return;
++    if (ctx.state !== 'running') {
++      if (this.#resuming) {
++        if (this.#pending.length === 8) this.#pending.shift();
++        this.#pending.push({ s, opts: { ...opts }, at: performance.now() });
++      }
++      return;
++    }
+     if (s === 'bump') {
+       // E: hit_guardrail is throttled to 500 ms
+       if (ctx.currentTime - this.#lastBump < 0.5) return;
+       this.#lastBump = ctx.currentTime;
+     }
++    let buf = this.#buffers[s];
++    const data = this.#prepared?.sfx[s];
++    if (!buf && data) {
++      buf = ctx.createBuffer(1, data.length, SR);
++      buf.copyToChannel(data, 0);
++      this.#buffers[s] = buf;
++      // The AudioBuffer now owns its copy; release the transferred PCM for this cue.
++      if (this.#prepared) delete this.#prepared.sfx[s];
++    }
++    if (!buf) {
++      // Early gestures/worker failure: immediate bounded feedback, never stale replay or sync synthesis.
++      if (this.#fallbacks.size >= 8) return;
++      const oscillator = ctx.createOscillator();
++      oscillator.frequency.value =
++        (s === 'jump' ? 660 : s === 'bump' || s === 'land' ? 180 : 880) * (opts.rate ?? 1);
++      const gain = ctx.createGain();
++      gain.gain.setValueAtTime(Math.max(0, Math.min(1.5, opts.gain ?? 1)) * 0.12, ctx.currentTime);
++      gain.gain.exponentialRampToValueAtTime(0.0008, ctx.currentTime + 0.06);
++      oscillator.connect(gain).connect(this.#master);
++      this.#fallbacks.add(oscillator);
++      oscillator.onended = () => {
++        this.#fallbacks.delete(oscillator);
++        oscillator.disconnect();
++        gain.disconnect();
++      };
++      oscillator.start();
++      oscillator.stop(ctx.currentTime + 0.08);
++      return;
++    }
+     const src = ctx.createBufferSource();
+     src.buffer = buf;
+     src.playbackRate.value = opts.rate ?? 1;
+@@ -337,15 +327,11 @@ export class AudioManager {
+     const ctx = this.#ctx;
+     if (!ctx || !this.#master || ctx.state !== 'running') return;
+     if (!this.#roll) {
+-      const rnd = noiseGen(99);
+-      const data = new Float32Array(SR);
+-      let y = 0;
+-      for (let i = 0; i < data.length; i++) {
+-        y += 0.08 * (rnd() - y);
+-        data[i] = y * 3 + Math.sin((TAU * 55 * i) / SR) * 0.15;
+-      }
++      const data = this.#prepared?.roll;
++      if (!data) return;
+       const b = ctx.createBuffer(1, data.length, SR);
+-      b.copyToChannel(data as Float32Array<ArrayBuffer>, 0);
++      b.copyToChannel(data, 0);
++      if (this.#prepared) this.#prepared.roll = null;
+       const src = ctx.createBufferSource();
+       src.buffer = b;
+       src.loop = true;
+@@ -367,11 +353,12 @@ export class AudioManager {
+ 
+   /** Switch the background music (null = silence). Remembered until unlock. */
+   setMusic(track: Bgm | null): void {
++    if (this.#disposed) return;
+     this.#wantMusic = track;
+     if (this.#music?.track === track) return;
+     this.#stopMusic();
+     const ctx = this.#ctx;
+-    if (!track || !ctx || !this.#musicBus || ctx.state === 'closed') return;
++    if (!track || !ctx || !this.#musicBus || ctx.state !== 'running') return;
+     const tr = TRACKS[track];
+     const stepSec = 60 / tr.bpm / 4;
+     const state = {
+@@ -427,11 +414,26 @@ export class AudioManager {
+   }
+ 
+   dispose(): void {
++    if (this.#disposed) return;
++    this.#disposed = true;
++    this.#preparation = 'disposed';
++    this.#worker?.terminate();
++    this.#worker = null;
++    if (this.#prepareTimer !== null) clearTimeout(this.#prepareTimer);
++    this.#prepareTimer = null;
++    this.#prepared = null;
++    this.#buffers = {};
++    this.#pending = [];
++    for (const source of this.#fallbacks) source.stop();
++    this.#fallbacks.clear();
+     this.#stopMusic();
+     this.#roll?.src.stop();
+     this.#roll = null;
+-    void this.#ctx?.close();
++    this.#rollLevel = 0;
++    void this.#ctx?.close().catch(() => {});
+     this.#ctx = null;
++    this.#master = null;
++    this.#musicBus = null;
+     this.#listeners.clear();
+   }
+ }
+diff --git a/apps/web/src/game/game.ts b/apps/web/src/game/game.ts
+index 07df55b..71b61bc 100644
+--- a/apps/web/src/game/game.ts
++++ b/apps/web/src/game/game.ts
+@@ -500,6 +500,7 @@ export class Game {
+   // ── lifecycle ─────────────────────────────────────────────────────────────────────────────────────────
+ 
+   async mount(host: HTMLElement): Promise<void> {
++    this.audio.prepare();
+     // A fresh canvas per engine: a disposed WebGL2 renderer loses its canvas's context (engine README).
+     const canvas = document.createElement('canvas');
+     canvas.className = 'wwm-canvas';
+@@ -638,7 +639,7 @@ export class Game {
+     this.#pool.dispose();
+     this.#engineImage?.close();
+     this.#canvas?.remove();
+-    this.audio.setMusic(null);
++    this.audio.dispose();
+     this.#listeners.clear();
+     this.learning.clear();
+   }
+diff --git a/apps/web/src/audio/synthesis.ts b/apps/web/src/audio/synthesis.ts
+new file mode 100644
+index 0000000..9b387b9
+--- /dev/null
++++ b/apps/web/src/audio/synthesis.ts
+@@ -0,0 +1,149 @@
++/** Deterministic original synthesized PCM; shared only by the worker and parity tests. */
++export type Sfx =
++  | 'item'
++  | 'large'
++  | 'jump'
++  | 'land'
++  | 'bump'
++  | 'fall'
++  | 'splash'
++  | 'elevator'
++  | 'getGoal'
++  | 'goal'
++  | 'firework'
++  | 'caution'
++  | 'click'
++  | 'point'
++  | 'oneup'
++  | 'connected'
++  | 'tick'
++  | 'go';
++
++export const SR = 44100;
++
++type Synth = (t: number, i: number, n: number) => number;
++
++function render(sec: number, fn: Synth): Float32Array<ArrayBuffer> {
++  const n = Math.max(1, Math.floor(sec * SR));
++  const out = new Float32Array(n);
++  for (let i = 0; i < n; i++) out[i] = fn(i / SR, i, n);
++  return out;
++}
++
++/** Deterministic noise so every build of the sound set is identical. */
++function noiseGen(seed = 1): () => number {
++  let s = seed >>> 0;
++  return () => {
++    s = (s + 0x6d2b79f5) >>> 0;
++    let t = s;
++    t = Math.imul(t ^ (t >>> 15), t | 1);
++    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
++    return (((t ^ (t >>> 14)) >>> 0) / 4294967296) * 2 - 1;
++  };
++}
++
++const TAU = Math.PI * 2;
++const env = (t: number, a: number, d: number) => (t < a ? t / a : Math.exp(-(t - a) / d));
++const midi = (m: number) => 440 * 2 ** ((m - 69) / 12);
++
++/** Sine with a frequency sweep; phase integrated so sweeps stay clean. */
++function sweep(
++  sec: number,
++  f0: number,
++  f1: number,
++  a: number,
++  d: number,
++  shape = 1,
++): Float32Array<ArrayBuffer> {
++  let ph = 0;
++  return render(sec, (t) => {
++    const k = t / sec;
++    const f = f0 + (f1 - f0) * k ** shape;
++    ph += (TAU * f) / SR;
++    return Math.sin(ph) * env(t, a, d);
++  });
++}
++
++function bell(
++  sec: number,
++  notes: number[],
++  gap: number,
++  decay: number,
++  bright = 2,
++): Float32Array<ArrayBuffer> {
++  return render(sec, (t) => {
++    let v = 0;
++    notes.forEach((m, k) => {
++      const t0 = t - k * gap;
++      if (t0 < 0) return;
++      const f = midi(m);
++      const e = env(t0, 0.004, decay);
++      v += (Math.sin(TAU * f * t0 + bright * Math.sin(TAU * f * 2 * t0) * e) * e) / notes.length ** 0.5;
++    });
++    return v * 0.7;
++  });
++}
++
++function noiseBurst(sec: number, a: number, d: number, lp: number, seed: number): Float32Array<ArrayBuffer> {
++  const rnd = noiseGen(seed);
++  let y = 0;
++  return render(sec, (t) => {
++    y += lp * (rnd() - y);
++    return y * env(t, a, d) * 2.2;
++  });
++}
++
++function mix(...parts: [Float32Array<ArrayBuffer>, number][]): Float32Array<ArrayBuffer> {
++  const n = Math.max(...parts.map(([p]) => p.length));
++  const out = new Float32Array(n);
++  for (const [p, g] of parts)
++    for (let i = 0; i < p.length; i++) out[i] = (out[i] as number) + (p[i] as number) * g;
++  return out;
++}
++
++export function buildSfx(): Record<Sfx, Float32Array<ArrayBuffer>> {
++  return {
++    // small item: a bright two-tone blip (teal energy)
++    item: bell(0.25, [88, 95], 0.045, 0.06, 1.2),
++    // large item: a sparkling rising triad
++    large: mix(
++      [bell(0.9, [76, 83, 88, 95], 0.06, 0.25, 2.5), 0.9],
++      [noiseBurst(0.5, 0.01, 0.12, 0.6, 3), 0.08],
++    ),
++    jump: sweep(0.22, 320, 820, 0.005, 0.08, 0.6),
++    land: mix([sweep(0.18, 140, 60, 0.002, 0.05), 1], [noiseBurst(0.12, 0.001, 0.03, 0.25, 5), 0.5]),
++    bump: mix([sweep(0.1, 900, 500, 0.001, 0.025), 0.6], [noiseBurst(0.08, 0.001, 0.015, 0.7, 7), 0.4]),
++    fall: sweep(1.4, 700, 90, 0.01, 0.6, 0.8),
++    splash: mix([noiseBurst(1.2, 0.01, 0.35, 0.12, 11), 1], [sweep(0.5, 220, 110, 0.005, 0.15), 0.4]),
++    elevator: render(1.2, (t) => Math.sin(TAU * (180 + 120 * t) * t) * env(t, 0.15, 0.5) * 0.5),
++    getGoal: mix([sweep(0.9, 300, 1400, 0.01, 0.5, 1.6), 0.7], [bell(0.9, [84, 91], 0.2, 0.3), 0.5]),
++    goal: bell(2.2, [72, 76, 79, 84, 88, 91, 96], 0.11, 0.55, 1.5),
++    firework: mix([noiseBurst(1.1, 0.002, 0.28, 0.35, 13), 0.9], [sweep(0.25, 1200, 400, 0.001, 0.06), 0.3]),
++    caution: render(0.9, (t) => {
++      const on = t % 0.3 < 0.18 ? 1 : 0;
++      return Math.sign(Math.sin(TAU * 880 * t)) * 0.18 * on * env(t, 0.005, 0.6);
++    }),
++    click: bell(0.08, [96], 0, 0.018, 0.5),
++    point: bell(0.06, [100], 0, 0.02, 0.3),
++    oneup: bell(0.8, [79, 84, 88, 91, 96, 100], 0.05, 0.2, 1.8),
++    connected: bell(0.7, [76, 83, 88], 0.09, 0.22, 1),
++    tick: bell(0.2, [81], 0, 0.08, 0.6),
++    go: bell(0.5, [93], 0, 0.25, 1.4),
++  };
++}
++
++export function buildRoll(): Float32Array<ArrayBuffer> {
++  const rnd = noiseGen(99);
++  const data = new Float32Array(SR);
++  let y = 0;
++  for (let i = 0; i < data.length; i++) {
++    y += 0.08 * (rnd() - y);
++    data[i] = y * 3 + Math.sin((TAU * 55 * i) / SR) * 0.15;
++  }
++  return data;
++}
++
++export interface PreparedAudio {
++  sfx: Record<Sfx, Float32Array<ArrayBuffer>>;
++  roll: Float32Array<ArrayBuffer>;
++}
+diff --git a/apps/web/src/audio/synthesis.worker.ts b/apps/web/src/audio/synthesis.worker.ts
+new file mode 100644
+index 0000000..22a68d4
+--- /dev/null
++++ b/apps/web/src/audio/synthesis.worker.ts
+@@ -0,0 +1,11 @@
++import { buildRoll, buildSfx } from './synthesis.ts';
++
++// One message, ownership-transferred PCM. The manager terminates this worker on completion/error/dispose.
++self.onmessage = () => {
++  const sfx = buildSfx();
++  const roll = buildRoll();
++  self.postMessage(
++    { sfx, roll },
++    { transfer: [...Object.values(sfx).map((data) => data.buffer), roll.buffer] },
++  );
++};
