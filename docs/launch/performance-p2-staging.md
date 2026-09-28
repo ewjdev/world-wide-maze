@@ -1,5 +1,7 @@
 # Performance P2 staging
 
+This records the accepted `2629523` checkpoint. Subsequent audio, recording and physical-device tooling work is documented in [the follow-up staging report](performance-p2-followup.md).
+
 September 27, 2026. Continues epic #19 on `codex/performance-p1-staging`, following the [qualified P1 checkpoint](performance-p1-staging.md). This branch is a staging review target; main and production remain unchanged. Both desktop and mobile remain in the acceptance scope.
 
 ## Qualified individual work
