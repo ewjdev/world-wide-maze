@@ -304,6 +304,22 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     const rec = recorded[0]?.replay;
     expect(rec?.inputs.length).toBe(goalTick);
     expect(rec?.inputs).toEqual(REPLAY.slice(0, goalTick));
+    const recordingStorage = await page.evaluate(() => window.__wwmGame?.debugState().recording);
+    expect(recordingStorage?.backingBytes).toBe(0);
+    expect(recordingStorage?.savedBackingBytes).toBeGreaterThan(0);
+    expect(recordingStorage?.savedBackingBytes).toBeLessThanOrEqual(Math.ceil(goalTick / 1024) * 1024 * 29);
+    // Debug exports are snapshots: changing one must not corrupt the subsequent submitted replay.
+    expect(
+      await page.evaluate(() => {
+        const game = window.__wwmGame;
+        const exported = game?.debugReplays()[0]?.replay;
+        if (!game || !exported?.inputs[0]) return false;
+        const original = exported.inputs[0].power;
+        exported.inputs[0].power = !original;
+        return game.debugReplays()[0]?.replay?.inputs[0]?.power === original;
+      }),
+    ).toBe(true);
+
     const again = await replay(HANDMADE, rec?.inputs ?? [], { stopAtGoal: true });
     expect(again.goalTick).toBe(goalTick);
     expect(again.events.filter((e) => e.event.type === 'item')).toHaveLength(small + large);
@@ -316,6 +332,7 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await expect.poll(() => page.getByTestId('rank-value').textContent(), { timeout: 15_000 }).toBe('1st');
     expect(await page.getByTestId('rank-value').getAttribute('data-source')).toBe('server');
     await page.getByTestId('stage-verified').waitFor(); // the Worker re-simulated the replay and accepted it
+    expect(await page.evaluate(() => window.__wwmGame?.debugState().recording.savedBackingBytes)).toBe(0);
     await expect
       .poll(() => page.getByTestId('rank-board').textContent(), { timeout: 15_000 })
       .toContain('e2e_bot');

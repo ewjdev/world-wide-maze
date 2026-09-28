@@ -1,0 +1,2567 @@
+{
+  "date": "2026-09-28T01:39:11.041Z",
+  "commit": "2629523daf89bc899874c0b24e2fd5b989057279",
+  "sourceSHA256": "00d90b1f6838c50568dfb2877b1a90b7d804695e5c6fd5355b12abfe3fbf6f76",
+  "method": "Real production InputRecording in headless Chromium/Vite. Explicit GC before every retained checkpoint. P1 array push with one fresh sample per2ticks(60Hz) or per tick(120Hz). Heap and backing-store metrics separate; exported arrays and JSON held for transient peak checkpoint. No physical-device or whole-game CPU claim.",
+  "runs": [
+    {
+      "ticks": 1394,
+      "share": 2,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1134596,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307048,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1198248,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307048,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1380568,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1161648,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.10000014305114746,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1161648,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1167884,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1433008,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1170356,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.20000004768371582,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.20000004768371582,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 1394,
+      "share": 2,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1170372,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1172964,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1435136,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1172528,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.2999999523162842,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.20000004768371582,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1172528,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1227776,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1389352,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1172616,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.10000014305114746,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.10000014305114746,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 1394,
+      "share": 2,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1172616,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1228788,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1390592,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1173856,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.10000014305114746,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.10000014305114746,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1173856,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1178188,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1444784,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.20000004768371582,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.10000014305114746,
+            "serializeMs": 0.20000004768371582,
+            "jsonBytes": 161497,
+            "sha256": "250aea49fc769f8cb752d874720bdb42ba50a1106d4ef16b907c6d9cec561541"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 1394,
+      "share": 1,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1280244,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1441796,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.09999990463256836,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.19999980926513672,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1178272,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1440272,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.2999999523162842,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.09999990463256836,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 1394,
+      "share": 1,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1178272,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1444824,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.20000004768371582,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.20000004768371582,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1280244,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1441796,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.19999980926513672,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.19999980926513672,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 1394,
+      "share": 1,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1280244,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 1441796,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.09999990463256836,
+            "ticks": 1394,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1178272,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "exportPeak": {
+            "usedSize": 1440272,
+            "totalSize": 2326528,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 58302
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.20000004768371582,
+            "ticks": 1394,
+            "backingBytes": 51200
+          },
+          "exported": {
+            "exportMs": 0.10000014305114746,
+            "serializeMs": 0.09999990463256836,
+            "jsonBytes": 161538,
+            "sha256": "bcea4a529bf021fe3e123151ae70be340b00cfebd65a60098e4d316a8cb34d04"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 2,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1388936,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2014184,
+            "totalSize": 2801664,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.2999999523162842,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.5,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1177624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1187152,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2203284,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1177848,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.39999985694885254,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.2999999523162842,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 2,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1177848,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1187152,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2198928,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1178068,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.39999985694885254,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.3000001907348633,
+            "serializeMs": 0.5,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1178068,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1389380,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2014628,
+            "totalSize": 2801664,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1178068,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.40000009536743164,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 2,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1178068,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1394376,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2014772,
+            "totalSize": 2801664,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1178212,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.2999999523162842,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1178212,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1188360,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2204760,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1179356,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.40000009536743164,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.39999985694885254,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625236,
+            "sha256": "680f94b9209bc904daa416355a614b3cf55c26dd465f1161b1f5a5df5aaf56f7"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 1,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1179356,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1580400,
+            "totalSize": 2424832,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2201116,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1179924,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.40000009536743164,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.5,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1179924,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1189360,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2201176,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.5,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.2999999523162842,
+            "serializeMs": 0.5,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 1,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1189540,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2205720,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.5,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.2999999523162842,
+            "serializeMs": 0.5,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1580712,
+            "totalSize": 2424832,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2201428,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.2999999523162842,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 5429,
+      "share": 1,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1580712,
+            "totalSize": 2424832,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 2201428,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.39999985694885254,
+            "ticks": 5429,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 0.40000009536743164,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1189540,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "exportPeak": {
+            "usedSize": 2201176,
+            "totalSize": 3063808,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 160702
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.40000009536743164,
+            "ticks": 5429,
+            "backingBytes": 153600
+          },
+          "exported": {
+            "exportMs": 0.20000004768371582,
+            "serializeMs": 0.5,
+            "jsonBytes": 625313,
+            "sha256": "199b01a2cdffa7f975c58e7de7e1d3b1a6ed17386154c49da609a3f5b0f03fc9"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 2,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 2612292,
+            "totalSize": 3424256,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 6747704,
+            "totalSize": 7569408,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.9000000953674316,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 3.1000001430511475,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180236,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195404,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7927360,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180256,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 2.4000000953674316,
+            "serializeMs": 3,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 2,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180256,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195424,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7922892,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 0.9000000953674316,
+            "serializeMs": 3,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 2612336,
+            "totalSize": 3424256,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 6747748,
+            "totalSize": 7569408,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.7999999523162842,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 2.8999998569488525,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 2,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 2612336,
+            "totalSize": 3424256,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 6747748,
+            "totalSize": 7569408,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 0.9000000953674316,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 3,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180280,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195484,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7927420,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 2.4000000953674316,
+            "serializeMs": 3.200000047683716,
+            "jsonBytes": 4140009,
+            "sha256": "64d0e2fbb3494eff681cb9df900e99a653cc259563231959fecaad98ce37e258"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 1,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3832104,
+            "totalSize": 4734976,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 7971660,
+            "totalSize": 8880128,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.5,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 3.200000047683716,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195484,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7922804,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.2000000476837158,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 1.1000001430511475,
+            "serializeMs": 3.0999999046325684,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 1,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195484,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7927328,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.2999999523162842,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 2.299999952316284,
+            "serializeMs": 3.200000047683716,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3832104,
+            "totalSize": 4734976,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 7971660,
+            "totalSize": 8880128,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.6000001430511475,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 3.0999999046325684,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 36000,
+      "share": 1,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3832104,
+            "totalSize": 4734976,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 7971660,
+            "totalSize": 8880128,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.6999998092651367,
+            "ticks": 36000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 3.200000047683716,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1195484,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "exportPeak": {
+            "usedSize": 7922804,
+            "totalSize": 8814592,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 928702
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.3000001907348633,
+            "ticks": 36000,
+            "backingBytes": 921600
+          },
+          "exported": {
+            "exportMs": 1,
+            "serializeMs": 3.1000001430511475,
+            "jsonBytes": 4139888,
+            "sha256": "d0380357e767d0aa43f73bd7b752edea41cad1d6e507dde1a40c9b60e1f08ebc"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 2,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3933540,
+            "totalSize": 4833280,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 12212064,
+            "totalSize": 13123584,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.7000000476837158,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6.099999904632568,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180316,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1205376,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14664712,
+            "totalSize": 15728640,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180396,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.6000001430511475,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 3.200000047683716,
+            "serializeMs": 6.099999904632568,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 2,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180396,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1205456,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14660292,
+            "totalSize": 15466496,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180492,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.5999999046325684,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 1.9000000953674316,
+            "serializeMs": 5.8999998569488525,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180492,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3933716,
+            "totalSize": 4833280,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 12212240,
+            "totalSize": 13123584,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180492,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.7999999523162842,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 2,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180492,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 3933788,
+            "totalSize": 4833280,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 12212312,
+            "totalSize": 13123584,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180564,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.7999999523162842,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6.099999904632568,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180564,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1205624,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14664984,
+            "totalSize": 15466496,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 1.6000001430511475,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 3,
+            "serializeMs": 5.900000095367432,
+            "jsonBytes": 8278511,
+            "sha256": "94009c0f5cf71f8728ae11ae2d64636f444b26828d8adb1220caab69bdc09ead"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 1,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 6381860,
+            "totalSize": 7192576,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 14660244,
+            "totalSize": 15482880,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.5999999046325684,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6.299999952316284,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1197844,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14660296,
+            "totalSize": 15466496,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.1999998092651367,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 2.0999999046325684,
+            "serializeMs": 6.299999952316284,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 1,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1197844,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14664788,
+            "totalSize": 15466496,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.1000001430511475,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 2.9000000953674316,
+            "serializeMs": 6.3999998569488525,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 6381860,
+            "totalSize": 7454720,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 14660244,
+            "totalSize": 15745024,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.5999999046325684,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6.299999952316284,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 72000,
+      "share": 1,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 6381860,
+            "totalSize": 7192576,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 14660244,
+            "totalSize": 15482880,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.5,
+            "ticks": 72000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 6.299999952316284,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1197844,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "exportPeak": {
+            "usedSize": 14660296,
+            "totalSize": 15466496,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 1824702
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 2.1999998092651367,
+            "ticks": 72000,
+            "backingBytes": 1817600
+          },
+          "exported": {
+            "exportMs": 1.7999999523162842,
+            "serializeMs": 6.400000095367432,
+            "jsonBytes": 8278369,
+            "sha256": "9e0fff88911e1f5ef5cb65b59cb99f083543b30b3db013137809daee66b0e28e"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 2,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 14966292,
+            "totalSize": 15777792,
+            "embedderHeapUsedSize": 307256,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 56354100,
+            "totalSize": 57180160,
+            "embedderHeapUsedSize": 307528,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307528,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 8.400000095367432,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 30.5,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180636,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307528,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253060,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307528,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68561564,
+            "totalSize": 69648384,
+            "embedderHeapUsedSize": 307776,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1180776,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307776,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 5.5,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 8.799999952316284,
+            "serializeMs": 29.799999952316284,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 2,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180776,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307776,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253228,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 307776,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68561108,
+            "totalSize": 69386240,
+            "embedderHeapUsedSize": 308024,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308024,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 5.5,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 8.199999809265137,
+            "serializeMs": 29.90000009536743,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308024,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 14966600,
+            "totalSize": 15777792,
+            "embedderHeapUsedSize": 308024,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 56354408,
+            "totalSize": 57180160,
+            "embedderHeapUsedSize": 308272,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308272,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 7.800000190734863,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 29.40000009536743,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 2,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308272,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 14966600,
+            "totalSize": 15777792,
+            "embedderHeapUsedSize": 308272,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 56354408,
+            "totalSize": 57180160,
+            "embedderHeapUsedSize": 308528,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308528,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 8.599999904632568,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 29.299999952316284,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1180944,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308528,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253480,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308528,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68561984,
+            "totalSize": 69386240,
+            "embedderHeapUsedSize": 308776,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308776,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 5.3999998569488525,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 9,
+            "serializeMs": 29.90000009536743,
+            "jsonBytes": 41387795,
+            "sha256": "d50045371b73af7ba2455d59b6360ec715b359c08dac7ef7a0288049885c5cd2"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 1,
+      "repeat": 0,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 308776,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 27206852,
+            "totalSize": 28098560,
+            "embedderHeapUsedSize": 308776,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 68594108,
+            "totalSize": 69500928,
+            "embedderHeapUsedSize": 309032,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309032,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 11.200000047683716,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 31.40000009536743,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309032,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253480,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309032,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68560808,
+            "totalSize": 69648384,
+            "embedderHeapUsedSize": 309280,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309280,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 8,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 8.400000095367432,
+            "serializeMs": 31.299999952316284,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 1,
+      "repeat": 1,
+      "pair": [
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309280,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253480,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309280,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68561432,
+            "totalSize": 69386240,
+            "embedderHeapUsedSize": 309544,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309544,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 8.099999904632568,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 9.200000047683716,
+            "serializeMs": 31,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        },
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309544,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 27206852,
+            "totalSize": 28098560,
+            "embedderHeapUsedSize": 309544,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 68594108,
+            "totalSize": 69500928,
+            "embedderHeapUsedSize": 309792,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309792,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 11.099999904632568,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 30.800000190734863,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        }
+      ]
+    },
+    {
+      "ticks": 360000,
+      "share": 1,
+      "repeat": 2,
+      "pair": [
+        {
+          "variant": "array",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 309792,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 27206852,
+            "totalSize": 28098560,
+            "embedderHeapUsedSize": 309792,
+            "backingStorageSize": 7102
+          },
+          "exportPeak": {
+            "usedSize": 68594108,
+            "totalSize": 69500928,
+            "embedderHeapUsedSize": 310040,
+            "backingStorageSize": 7102
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 310040,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 11.600000143051147,
+            "ticks": 360000,
+            "backingBytes": null
+          },
+          "exported": {
+            "exportMs": 0,
+            "serializeMs": 31,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        },
+        {
+          "variant": "chunks",
+          "empty": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 310040,
+            "backingStorageSize": 7102
+          },
+          "retained": {
+            "usedSize": 1253480,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 310040,
+            "backingStorageSize": 9018302
+          },
+          "exportPeak": {
+            "usedSize": 68560808,
+            "totalSize": 69386240,
+            "embedderHeapUsedSize": 310288,
+            "backingStorageSize": 9018302
+          },
+          "cleared": {
+            "usedSize": 1181196,
+            "totalSize": 2162688,
+            "embedderHeapUsedSize": 310288,
+            "backingStorageSize": 7102
+          },
+          "capture": {
+            "appendMs": 7.799999952316284,
+            "ticks": 360000,
+            "backingBytes": 9011200
+          },
+          "exported": {
+            "exportMs": 8.100000143051147,
+            "serializeMs": 31.399999856948853,
+            "jsonBytes": 41387242,
+            "sha256": "3d0afa74dc1d3197f6c4c9d8a4294883714610d3655fa359346a8c6e3cbda605"
+          }
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "browser": "153.0.8010.12",
+  "system": {
+    "gpu": {
+      "devices": [
+        {
+          "vendorId": 65535,
+          "deviceId": 65535,
+          "vendorString": "Google Inc. (Google)",
+          "deviceString": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+          "driverVendor": "SwANGLE",
+          "driverVersion": "5.0.0"
+        }
+      ],
+      "auxAttributes": {
+        "amdSwitchable": false,
+        "canSupportThreadedTextureMailbox": false,
+        "directRenderingVersion": "",
+        "displayType": "ANGLE_SWIFTSHADER",
+        "glExtensions": "GL_AMD_performance_monitor GL_ANGLE_base_vertex_base_instance_shader_builtin GL_ANGLE_blob_cache GL_ANGLE_client_arrays GL_ANGLE_clip_cull_distance GL_ANGLE_compressed_texture_etc GL_ANGLE_copy_texture_3d GL_ANGLE_depth_texture GL_ANGLE_framebuffer_blit GL_ANGLE_framebuffer_multisample GL_ANGLE_get_image GL_ANGLE_get_serialized_context_string GL_ANGLE_get_tex_level_parameter GL_ANGLE_instanced_arrays GL_ANGLE_memory_object_flags GL_ANGLE_memory_size GL_ANGLE_multi_draw GL_ANGLE_pack_reverse_row_order GL_ANGLE_polygon_mode GL_ANGLE_program_binary_readiness_query GL_ANGLE_program_cache_control GL_ANGLE_read_only_depth_stencil_feedback_loops GL_ANGLE_relaxed_vertex_attribute_type GL_ANGLE_renderability_validation GL_ANGLE_request_extension GL_ANGLE_rgbx_internal_format GL_ANGLE_robust_client_memory GL_ANGLE_robust_fragment_shader_output GL_ANGLE_robust_resource_initialization GL_ANGLE_shader_pixel_local_storage GL_ANGLE_shader_pixel_local_storage_coherent GL_ANGLE_stencil_texturing GL_ANGLE_texture_compression_dxt3 GL_ANGLE_texture_compression_dxt5 GL_ANGLE_texture_multisample GL_ANGLE_texture_usage GL_ANGLE_translated_shader_source GL_ANGLE_vulkan_image GL_ANGLE_yuv_internal_format GL_APPLE_clip_distance GL_ARM_rgba8 GL_ARM_shader_framebuffer_fetch GL_CHROMIUM_bind_generates_resource GL_CHROMIUM_bind_uniform_location GL_CHROMIUM_copy_compressed_texture GL_CHROMIUM_copy_texture GL_CHROMIUM_lose_context GL_EXT_EGL_image_array GL_EXT_EGL_image_external_wrap_modes GL_EXT_EGL_image_storage GL_EXT_base_instance GL_EXT_blend_minmax GL_EXT_buffer_storage GL_EXT_clear_texture GL_EXT_clip_control GL_EXT_clip_cull_distance GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_compressed_ETC1_RGB8_sub_texture GL_EXT_conservative_depth GL_EXT_copy_image GL_EXT_debug_label GL_EXT_debug_marker GL_EXT_depth_clamp GL_EXT_discard_framebuffer GL_EXT_disjoint_timer_query GL_EXT_draw_buffers GL_EXT_draw_buffers_indexed GL_EXT_draw_elements_base_vertex GL_EXT_float_blend GL_EXT_frag_depth GL_EXT_instanced_arrays GL_EXT_map_buffer_range GL_EXT_memory_object GL_EXT_memory_object_fd GL_EXT_occlusion_query_boolean GL_EXT_polygon_offset_clamp GL_EXT_read_format_bgra GL_EXT_robustness GL_EXT_sRGB GL_EXT_sRGB_write_control GL_EXT_semaphore GL_EXT_separate_shader_objects GL_EXT_shader_framebuffer_fetch GL_EXT_shader_framebuffer_fetch_non_coherent GL_EXT_shader_non_constant_global_initializers GL_EXT_shader_texture_lod GL_EXT_shadow_samplers GL_EXT_texture_border_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_dxt1 GL_EXT_texture_compression_rgtc GL_EXT_texture_compression_s3tc_srgb GL_EXT_texture_filter_anisotropic GL_EXT_texture_format_BGRA8888 GL_EXT_texture_lod_bias GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_rg GL_EXT_texture_sRGB_R8 GL_EXT_texture_sRGB_RG8 GL_EXT_texture_sRGB_decode GL_EXT_texture_shadow_lod GL_EXT_texture_storage GL_EXT_texture_type_2_10_10_10_REV GL_EXT_unpack_subimage GL_KHR_blend_equation_advanced GL_KHR_debug GL_KHR_robust_buffer_access_behavior GL_KHR_robustness GL_KHR_texture_compression_astc_ldr GL_NV_fence GL_NV_framebuffer_blit GL_NV_pack_subimage GL_NV_pixel_buffer_object GL_NV_polygon_mode GL_NV_read_depth GL_NV_read_depth_stencil GL_NV_read_stencil GL_NV_shader_noperspective_interpolation GL_OES_EGL_image GL_OES_EGL_image_external GL_OES_EGL_image_external_essl3 GL_OES_EGL_sync GL_OES_compressed_ETC1_RGB8_texture GL_OES_compressed_paletted_texture GL_OES_copy_image GL_OES_depth24 GL_OES_depth32 GL_OES_depth_texture GL_OES_depth_texture_cube_map GL_OES_draw_buffers_indexed GL_OES_draw_elements_base_vertex GL_OES_element_index_uint GL_OES_fbo_render_mipmap GL_OES_get_program_binary GL_OES_mapbuffer GL_OES_packed_depth_stencil GL_OES_required_internalformat GL_OES_rgb8_rgba8 GL_OES_sample_shading GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_standard_derivatives GL_OES_surfaceless_context GL_OES_texture_3D GL_OES_texture_border_clamp GL_OES_texture_float GL_OES_texture_float_linear GL_OES_texture_half_float GL_OES_texture_half_float_linear GL_OES_texture_npot GL_OES_texture_stencil8 GL_OES_texture_storage_multisample_2d_array GL_OES_vertex_array_object GL_OES_vertex_half_float GL_OES_vertex_type_10_10_10_2 GL_OVR_multiview GL_OVR_multiview2 GL_QCOM_texture_lod_bias ",
+        "glImplementationParts": "(gl=egl-angle,angle=swiftshader)",
+        "glRenderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (LLVM 10.0.0) (0x0000C0DE)), SwiftShader driver-5.0.0)",
+        "glResetNotificationStrategy": 33362,
+        "glVendor": "Google Inc. (Google)",
+        "glVersion": "OpenGL ES 3.0 (ANGLE 2.1.28646 git hash: a6bc9eff8444)",
+        "glWsExtensions": "",
+        "glWsVendor": "",
+        "glWsVersion": "",
+        "inProcessGpu": false,
+        "initializationTime": 0.010631,
+        "isAsan": false,
+        "isClangCoverage": false,
+        "jpegDecodeAcceleratorSupported": false,
+        "maxMsaaSamples": "4",
+        "optimus": false,
+        "passthroughCmdDecoder": true,
+        "pixelShaderVersion": "3.00",
+        "processCrashCount": 0,
+        "sandboxed": false,
+        "skiaBackendType": "None",
+        "subpixelFontRendering": true,
+        "targetCpuBits": 64,
+        "vertexShaderVersion": "3.00",
+        "visibilityCallbackCallCount": 0
+      },
+      "featureStatus": {
+        "2d_canvas": "unavailable_software",
+        "direct_rendering_display_compositor": "disabled_off_ok",
+        "gpu_compositing": "disabled_software",
+        "multiple_raster_threads": "enabled_on",
+        "opengl": "disabled_off",
+        "rasterization": "disabled_software",
+        "raw_draw": "disabled_off_ok",
+        "skia_graphite": "disabled_off",
+        "trees_in_viz": "disabled_off",
+        "video_decode": "disabled_software",
+        "video_encode": "disabled_software",
+        "webgl": "unavailable_software",
+        "webgpu": "unavailable_software",
+        "webnn": "unavailable_software"
+      },
+      "driverBugWorkarounds": [],
+      "videoDecoding": [],
+      "videoEncoding": []
+    },
+    "modelName": "Mac",
+    "modelVersion": "17.6",
+    "commandLine": "/Users/ewj/Library/Caches/ms-playwright/chromium_headless_shell-1243/chrome-headless-shell-mac-arm64/chrome-headless-shell --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,BlockOriginHeaderModificationOnRedirect,Translate,AutoDeElevate,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --disable-updater-scheduler --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=/var/folders/yq/vw6fjyjj2lq060nlzyt2xcr00000gn/T/playwright_chromiumdev_profile-avegKg --remote-debugging-pipe --no-startup-window --use-mock-keychain --use-gl=angle --use-angle=swiftshader-webgl --allow-pre-commit-input"
+  }
+}

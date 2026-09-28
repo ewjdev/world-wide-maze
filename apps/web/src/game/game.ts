@@ -49,6 +49,7 @@ import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
+import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
@@ -342,13 +343,13 @@ export class Game {
   #hapticAt = 0;
 
   // replay recording (08b): the InputSample of every sim tick of the current stage attempt
-  #rec: InputSample[] = [];
+  #rec = new InputRecording();
   /** Replay tick at which this stage's timer first started (contracts v0.2.6 `timerStartTick`). */
   #timerStartTick: number | undefined;
   /** The recording reproduces the attempt headlessly (lockstep, and no respawn the replay format can't express). */
   #recExact = true;
   /** Replay of each entry in `#results` that has one (same index). */
-  #replays = new Map<number, VersionedReplay>();
+  #replays = new Map<number, SavedRecording>();
 
   // link portals (Phase 13)
   /** The capture service answers `/api/health` (probed once per session when a stage has portals). */
@@ -1100,7 +1101,7 @@ export class Game {
         const i = st.resultIndex;
         const s = this.#results[i];
         if (!s) return st;
-        const replay = this.#replays.get(i);
+        const replay = this.#replays.get(i)?.forSubmission();
         const sr = await this.#boards.submitStage(
           { stageId: s.stageId, name, score: s.stageScore, timeMs: s.timeMs, ...(replay ? { replay } : {}) },
           st.source,
@@ -1394,7 +1395,7 @@ export class Game {
       return;
     this.#loaded = got;
     // A fresh recording per attempt: tick 0 is the first step after load (08b).
-    this.#rec = [];
+    this.#rec = new InputRecording();
     this.#timerStartTick = undefined;
     // Phase 22: learning runs are unranked, so their recordings are never exact (locks change the physics)
     const learningRun = this.learning.active;
@@ -1773,12 +1774,11 @@ export class Game {
     };
     this.#results.push(result);
     if (cleared && this.#recExact && this.#rec.length > 0)
-      this.#replays.set(this.#results.length - 1, {
-        physicsVersion: PHYSICS_VERSION,
-        inputs: this.#rec,
-        ...(this.#timerStartTick !== undefined ? { timerStartTick: this.#timerStartTick } : {}),
-      });
-    this.#rec = [];
+      this.#replays.set(
+        this.#results.length - 1,
+        new SavedRecording(this.#rec, PHYSICS_VERSION, this.#timerStartTick),
+      );
+    this.#rec = new InputRecording();
     this.#timerStartTick = undefined;
     this.#set({ result, total: f.score.total, spares: f.score.spares, sign: null });
   }
@@ -2171,8 +2171,8 @@ export class Game {
     const s = this.#stepInput(tick, dt);
     // 08b: the stream the sim consumes is the replay. Lockstep: exactly one sample per tick. Worker: the latest
     // input is latched for however many ticks the worker runs, so this is only an approximation.
-    if (this.#driver?.kind === 'lockstep') this.#rec.push(s);
-    else for (let n = Math.max(1, Math.round(dt * SIM_HZ)); n > 0; n--) this.#rec.push(s);
+    if (this.#driver?.kind === 'lockstep') this.#rec.append(s);
+    else for (let n = Math.max(1, Math.round(dt * SIM_HZ)); n > 0; n--) this.#rec.append(s);
     return s;
   };
 
@@ -2365,7 +2365,13 @@ export class Game {
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,
       hold: this.#view.hold,
-      recording: { ticks: this.#rec.length, exact: this.#recExact, replays: this.#replays.size },
+      recording: {
+        ticks: this.#rec.length,
+        exact: this.#recExact,
+        replays: this.#replays.size,
+        backingBytes: this.#rec.byteLength,
+        savedBackingBytes: [...this.#replays.values()].reduce((bytes, r) => bytes + r.byteLength, 0),
+      },
       ghost: { ...this.#view.ghost, loaded: !!this.#ghostTrack, ticks: this.#ghostTrack?.ticks ?? 0 },
       portal: this.#view.portal,
       journey: this.#view.journey,
@@ -2381,13 +2387,13 @@ export class Game {
     return this.#results.map((r, i) => ({
       stageId: r.stageId,
       stageScore: r.stageScore,
-      replay: this.#replays.get(i) ?? null,
+      replay: this.#replays.get(i)?.snapshot() ?? null,
     }));
   }
 
   /** Measurement: the recording of the current attempt so far (also for the worker driver). */
   debugRecording(): InputSample[] {
-    return this.#rec.slice();
+    return this.#rec.toArray();
   }
 
   /** Playtest / e2e: set the remaining time (seconds) of the running stage. */

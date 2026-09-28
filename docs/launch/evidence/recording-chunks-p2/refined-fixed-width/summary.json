@@ -1,0 +1,1235 @@
+{
+  "description": "Median of three paired runs; memory is delta(usedSize + backingStorageSize) from empty page checkpoint in bytes. Raw memory checkpoints are not peak RSS. exportPeak is held array+JSON after explicit GC, a retained lower bound on peak.",
+  "rows": [
+    {
+      "scenario": "active",
+      "ticks": 1394,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 56100,
+          "expansionRaw": 71428,
+          "serializationRaw": 406396,
+          "exportPeak": 217612,
+          "cleared": 876,
+          "appendMs": 0.10000014305114746,
+          "exportMs": 0,
+          "serializeMs": 0.10000014305114746,
+          "jsonBytes": 161497
+        },
+        "chunks-debug": {
+          "retained": 51848,
+          "expansionRaw": 233024,
+          "serializationRaw": 568284,
+          "exportPeak": 272964,
+          "cleared": 144,
+          "appendMs": 0.19999980926513672,
+          "exportMs": 0.10000014305114746,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 161497
+        },
+        "chunks-submit": {
+          "retained": 52104,
+          "expansionRaw": 233908,
+          "serializationRaw": 568536,
+          "exportPeak": 215268,
+          "cleared": 264,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.20000004768371582,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 161497,
+          "debugAfterSubmission": 106840
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 1394,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 102620,
+          "expansionRaw": 117948,
+          "serializationRaw": 452949,
+          "exportPeak": 264172,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0,
+          "serializeMs": 0,
+          "jsonBytes": 161538
+        },
+        "chunks-debug": {
+          "retained": 51844,
+          "expansionRaw": 268648,
+          "serializationRaw": 603705,
+          "exportPeak": 320268,
+          "cleared": 16,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 161538
+        },
+        "chunks-submit": {
+          "retained": 51828,
+          "expansionRaw": 270172,
+          "serializationRaw": 604881,
+          "exportPeak": 262464,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.19999980926513672,
+          "serializeMs": 0.19999980926513672,
+          "jsonBytes": 161538,
+          "debugAfterSubmission": 201368
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 5429,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 211312,
+          "expansionRaw": 226632,
+          "serializationRaw": 1488987,
+          "exportPeak": 836560,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0,
+          "serializeMs": 0.40000009536743164,
+          "jsonBytes": 625236
+        },
+        "chunks-debug": {
+          "retained": 163756,
+          "expansionRaw": 804104,
+          "serializationRaw": 2066447,
+          "exportPeak": 996308,
+          "cleared": 36,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.39999985694885254,
+          "serializeMs": 0.40000009536743164,
+          "jsonBytes": 625236
+        },
+        "chunks-submit": {
+          "retained": 163576,
+          "expansionRaw": 654828,
+          "serializationRaw": 1923379,
+          "exportPeak": 832388,
+          "cleared": 288,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.5,
+          "jsonBytes": 625236,
+          "debugAfterSubmission": 413564
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 5429,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 401148,
+          "expansionRaw": 416436,
+          "serializationRaw": 1678848,
+          "exportPeak": 1021192,
+          "cleared": 0,
+          "appendMs": 0.39999985694885254,
+          "exportMs": 0,
+          "serializeMs": 0.40000009536743164,
+          "jsonBytes": 625313
+        },
+        "chunks-debug": {
+          "retained": 163576,
+          "expansionRaw": 945196,
+          "serializationRaw": 2207608,
+          "exportPeak": 1180940,
+          "cleared": 0,
+          "appendMs": 0.5,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.40000009536743164,
+          "jsonBytes": 625313
+        },
+        "chunks-submit": {
+          "retained": 163576,
+          "expansionRaw": 823956,
+          "serializationRaw": 2092176,
+          "exportPeak": 1016912,
+          "cleared": 308,
+          "appendMs": 0.40000009536743164,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.5,
+          "jsonBytes": 625313,
+          "debugAfterSubmission": 782560
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 36000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 1432728,
+          "expansionRaw": 1448016,
+          "serializationRaw": 9739820,
+          "exportPeak": 5567468,
+          "cleared": 0,
+          "appendMs": 0.7999999523162842,
+          "exportMs": 0,
+          "serializeMs": 2.9000000953674316,
+          "jsonBytes": 4140009
+        },
+        "chunks-debug": {
+          "retained": 937440,
+          "expansionRaw": 2382524,
+          "serializationRaw": 10674328,
+          "exportPeak": 6446444,
+          "cleared": 0,
+          "appendMs": 1,
+          "exportMs": 2.299999952316284,
+          "serializeMs": 2.8999998569488525,
+          "jsonBytes": 4140009
+        },
+        "chunks-submit": {
+          "retained": 937440,
+          "expansionRaw": 2390780,
+          "serializationRaw": 10688356,
+          "exportPeak": 5508436,
+          "cleared": 36,
+          "appendMs": 1,
+          "exportMs": 1.5,
+          "serializeMs": 2.9000000953674316,
+          "jsonBytes": 4140009,
+          "debugAfterSubmission": 2739476
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 36000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 2651896,
+          "expansionRaw": 2667204,
+          "serializationRaw": 10958763,
+          "exportPeak": 6791344,
+          "cleared": 0,
+          "appendMs": 1.5,
+          "exportMs": 0,
+          "serializeMs": 3,
+          "jsonBytes": 4139888
+        },
+        "chunks-debug": {
+          "retained": 937440,
+          "expansionRaw": 3568220,
+          "serializationRaw": 11864127,
+          "exportPeak": 7670300,
+          "cleared": 0,
+          "appendMs": 1.3000001907348633,
+          "exportMs": 2.3000001907348633,
+          "serializeMs": 3,
+          "jsonBytes": 4139888
+        },
+        "chunks-submit": {
+          "retained": 937440,
+          "expansionRaw": 3569204,
+          "serializationRaw": 11866535,
+          "exportPeak": 6732288,
+          "cleared": 0,
+          "appendMs": 1.2000000476837158,
+          "exportMs": 1.2000000476837158,
+          "serializeMs": 3,
+          "jsonBytes": 4139888,
+          "debugAfterSubmission": 5184552
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 72000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 2753224,
+          "expansionRaw": 2768488,
+          "serializationRaw": 19337182,
+          "exportPeak": 11031748,
+          "cleared": 0,
+          "appendMs": 1.7000000476837158,
+          "exportMs": 0,
+          "serializeMs": 5.799999952316284,
+          "jsonBytes": 8278511
+        },
+        "chunks-debug": {
+          "retained": 1843332,
+          "expansionRaw": 4609164,
+          "serializationRaw": 21183794,
+          "exportPeak": 12855636,
+          "cleared": 36,
+          "appendMs": 1.5,
+          "exportMs": 2.8999998569488525,
+          "serializeMs": 5.700000047683716,
+          "jsonBytes": 8278511
+        },
+        "chunks-submit": {
+          "retained": 1843332,
+          "expansionRaw": 4637252,
+          "serializationRaw": 21211718,
+          "exportPeak": 11015008,
+          "cleared": 96,
+          "appendMs": 1.4000000953674316,
+          "exportMs": 1.9000000953674316,
+          "serializeMs": 5.599999904632568,
+          "jsonBytes": 8278511,
+          "debugAfterSubmission": 5475476
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 72000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 5201224,
+          "expansionRaw": 5216488,
+          "serializationRaw": 21784940,
+          "exportPeak": 13479608,
+          "cleared": 0,
+          "appendMs": 2.6000001430511475,
+          "exportMs": 0,
+          "serializeMs": 6,
+          "jsonBytes": 8278369
+        },
+        "chunks-debug": {
+          "retained": 1835260,
+          "expansionRaw": 7125004,
+          "serializationRaw": 23699320,
+          "exportPeak": 15303472,
+          "cleared": 0,
+          "appendMs": 2.200000047683716,
+          "exportMs": 3.0999999046325684,
+          "serializeMs": 6,
+          "jsonBytes": 8278369
+        },
+        "chunks-submit": {
+          "retained": 1843332,
+          "expansionRaw": 7089636,
+          "serializationRaw": 23663860,
+          "exportPeak": 13462772,
+          "cleared": 0,
+          "appendMs": 2.1999998092651367,
+          "exportMs": 2.200000047683716,
+          "serializeMs": 6,
+          "jsonBytes": 8278369,
+          "debugAfterSubmission": 10368504
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 360000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 13790940,
+          "expansionRaw": 13806164,
+          "serializationRaw": 96593466,
+          "exportPeak": 55173464,
+          "cleared": 0,
+          "appendMs": 7.8999998569488525,
+          "exportMs": 0,
+          "serializeMs": 28.5,
+          "jsonBytes": 41387795
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 22929064,
+          "serializationRaw": 105558406,
+          "exportPeak": 64151988,
+          "cleared": 120,
+          "appendMs": 5.299999952316284,
+          "exportMs": 7.700000047683716,
+          "serializeMs": 28.59999990463257,
+          "jsonBytes": 41387795
+        },
+        "chunks-submit": {
+          "retained": 9083628,
+          "expansionRaw": 22834500,
+          "serializationRaw": 96474554,
+          "exportPeak": 55068340,
+          "cleared": 144,
+          "appendMs": 5.299999952316284,
+          "exportMs": 6.799999952316284,
+          "serializeMs": 29.09999990463257,
+          "jsonBytes": 41387795,
+          "debugAfterSubmission": 27363476
+        }
+      }
+    },
+    {
+      "scenario": "active",
+      "ticks": 360000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 26025656,
+          "expansionRaw": 26040920,
+          "serializationRaw": 108832185,
+          "exportPeak": 67412912,
+          "cleared": 0,
+          "appendMs": 11.100000143051147,
+          "exportMs": 0,
+          "serializeMs": 30.40000009536743,
+          "jsonBytes": 41387242
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 35109404,
+          "serializationRaw": 117797153,
+          "exportPeak": 76391436,
+          "cleared": 0,
+          "appendMs": 7.6000001430511475,
+          "exportMs": 9.599999904632568,
+          "serializeMs": 30.40000009536743,
+          "jsonBytes": 41387242
+        },
+        "chunks-submit": {
+          "retained": 9083484,
+          "expansionRaw": 35108560,
+          "serializationRaw": 108713913,
+          "exportPeak": 67307644,
+          "cleared": 0,
+          "appendMs": 7.799999952316284,
+          "exportMs": 9.200000047683716,
+          "serializeMs": 30.700000047683716,
+          "jsonBytes": 41387242,
+          "debugAfterSubmission": 51842540
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 1394,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 55224,
+          "expansionRaw": 70488,
+          "serializationRaw": 255174,
+          "exportPeak": 141724,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0,
+          "serializeMs": 0.10000014305114746,
+          "jsonBytes": 86487
+        },
+        "chunks-debug": {
+          "retained": 51828,
+          "expansionRaw": 195912,
+          "serializationRaw": 380654,
+          "exportPeak": 150264,
+          "cleared": 0,
+          "appendMs": 0.19999980926513672,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 86487
+        },
+        "chunks-submit": {
+          "retained": 51828,
+          "expansionRaw": 197652,
+          "serializationRaw": 382246,
+          "exportPeak": 92532,
+          "cleared": 0,
+          "appendMs": 0.19999980926513672,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 86487,
+          "debugAfterSubmission": 11764
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 1394,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 102620,
+          "expansionRaw": 117884,
+          "serializationRaw": 302570,
+          "exportPeak": 189120,
+          "cleared": 0,
+          "appendMs": 0.10000014305114746,
+          "exportMs": 0,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 86487
+        },
+        "chunks-debug": {
+          "retained": 51828,
+          "expansionRaw": 195944,
+          "serializationRaw": 380686,
+          "exportPeak": 150264,
+          "cleared": 0,
+          "appendMs": 0.19999980926513672,
+          "exportMs": 0.10000014305114746,
+          "serializeMs": 0,
+          "jsonBytes": 86487
+        },
+        "chunks-submit": {
+          "retained": 51828,
+          "expansionRaw": 197652,
+          "serializationRaw": 382246,
+          "exportPeak": 92532,
+          "cleared": 0,
+          "appendMs": 0.19999980926513672,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 86487,
+          "debugAfterSubmission": 11764
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 5429,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 211312,
+          "expansionRaw": 226576,
+          "serializationRaw": 911592,
+          "exportPeak": 547984,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-debug": {
+          "retained": 163576,
+          "expansionRaw": 662692,
+          "serializationRaw": 1347720,
+          "exportPeak": 522984,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.19999980926513672,
+          "jsonBytes": 336657
+        },
+        "chunks-submit": {
+          "retained": 163576,
+          "expansionRaw": 475604,
+          "serializationRaw": 1160540,
+          "exportPeak": 359020,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.3000001907348633,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657,
+          "debugAfterSubmission": 47044
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 5429,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 395864,
+          "expansionRaw": 411128,
+          "serializationRaw": 1096156,
+          "exportPeak": 732536,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-debug": {
+          "retained": 163576,
+          "expansionRaw": 662660,
+          "serializationRaw": 1347688,
+          "exportPeak": 522952,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.39999985694885254,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-submit": {
+          "retained": 163576,
+          "expansionRaw": 477620,
+          "serializationRaw": 1162556,
+          "exportPeak": 359020,
+          "cleared": 0,
+          "appendMs": 0.3000001907348633,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657,
+          "debugAfterSubmission": 44044
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 36000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 1432728,
+          "expansionRaw": 1447952,
+          "serializationRaw": 5923782,
+          "exportPeak": 3659516,
+          "cleared": 0,
+          "appendMs": 0.6000001430511475,
+          "exportMs": 0,
+          "serializeMs": 1.3000001907348633,
+          "jsonBytes": 2232059
+        },
+        "chunks-debug": {
+          "retained": 937440,
+          "expansionRaw": 1135976,
+          "serializationRaw": 5611806,
+          "exportPeak": 3314540,
+          "cleared": 0,
+          "appendMs": 0.6000001430511475,
+          "exportMs": 1.7999999523162842,
+          "serializeMs": 1.2999999523162842,
+          "jsonBytes": 2232059
+        },
+        "chunks-submit": {
+          "retained": 937440,
+          "expansionRaw": 1374852,
+          "serializationRaw": 5639822,
+          "exportPeak": 2376528,
+          "cleared": 0,
+          "appendMs": 0.6000001430511475,
+          "exportMs": 0.7000000476837158,
+          "serializeMs": 1.5,
+          "jsonBytes": 2232059,
+          "debugAfterSubmission": 291612
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 36000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 2656728,
+          "expansionRaw": 2671952,
+          "serializationRaw": 7147782,
+          "exportPeak": 4883516,
+          "cleared": 0,
+          "appendMs": 1,
+          "exportMs": 0,
+          "serializeMs": 1.3999998569488525,
+          "jsonBytes": 2232059
+        },
+        "chunks-debug": {
+          "retained": 937440,
+          "expansionRaw": 1136008,
+          "serializationRaw": 5611838,
+          "exportPeak": 3314540,
+          "cleared": 0,
+          "appendMs": 0.7000000476837158,
+          "exportMs": 1.8999998569488525,
+          "serializeMs": 1.2999999523162842,
+          "jsonBytes": 2232059
+        },
+        "chunks-submit": {
+          "retained": 937440,
+          "expansionRaw": 1381572,
+          "serializationRaw": 5639894,
+          "exportPeak": 2376528,
+          "cleared": 0,
+          "appendMs": 0.6000001430511475,
+          "exportMs": 0.6999998092651367,
+          "serializeMs": 1.4000000953674316,
+          "jsonBytes": 2232059,
+          "debugAfterSubmission": 288640
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 72000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 2758508,
+          "expansionRaw": 2773732,
+          "serializationRaw": 11713522,
+          "exportPeak": 7217296,
+          "cleared": 0,
+          "appendMs": 1.2000000476837158,
+          "exportMs": 0,
+          "serializeMs": 2.799999952316284,
+          "jsonBytes": 4464059
+        },
+        "chunks-debug": {
+          "retained": 1840316,
+          "expansionRaw": 2182852,
+          "serializationRaw": 11128506,
+          "exportPeak": 6593416,
+          "cleared": 0,
+          "appendMs": 1,
+          "exportMs": 2.3999998569488525,
+          "serializeMs": 2.700000047683716,
+          "jsonBytes": 4464059
+        },
+        "chunks-submit": {
+          "retained": 1840316,
+          "expansionRaw": 2442056,
+          "serializationRaw": 11150538,
+          "exportPeak": 4752528,
+          "cleared": 0,
+          "appendMs": 1,
+          "exportMs": 1,
+          "serializeMs": 2.8999998569488525,
+          "jsonBytes": 4464059,
+          "debugAfterSubmission": 579612
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 72000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 5206508,
+          "expansionRaw": 5221732,
+          "serializationRaw": 14161510,
+          "exportPeak": 9665296,
+          "cleared": 0,
+          "appendMs": 1.7000000476837158,
+          "exportMs": 0,
+          "serializeMs": 2.8999998569488525,
+          "jsonBytes": 4464059
+        },
+        "chunks-debug": {
+          "retained": 1840316,
+          "expansionRaw": 2185892,
+          "serializationRaw": 11131606,
+          "exportPeak": 6593252,
+          "cleared": 0,
+          "appendMs": 1.2000000476837158,
+          "exportMs": 2.4000000953674316,
+          "serializeMs": 2.799999952316284,
+          "jsonBytes": 4464059
+        },
+        "chunks-submit": {
+          "retained": 1840316,
+          "expansionRaw": 2445236,
+          "serializationRaw": 11149750,
+          "exportPeak": 4752528,
+          "cleared": 0,
+          "appendMs": 1.2000000476837158,
+          "exportMs": 1.0999999046325684,
+          "serializeMs": 3,
+          "jsonBytes": 4464059,
+          "debugAfterSubmission": 576640
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 360000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 13790940,
+          "expansionRaw": 13806164,
+          "serializationRaw": 58457994,
+          "exportPeak": 36105728,
+          "cleared": 0,
+          "appendMs": 5.599999904632568,
+          "exportMs": 0,
+          "serializeMs": 15.100000143051147,
+          "jsonBytes": 22320059
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 11304624,
+          "serializationRaw": 55956442,
+          "exportPeak": 32844320,
+          "cleared": 0,
+          "appendMs": 3.299999952316284,
+          "exportMs": 5.200000047683716,
+          "serializeMs": 14.5,
+          "jsonBytes": 22320059
+        },
+        "chunks-submit": {
+          "retained": 9083484,
+          "expansionRaw": 10871328,
+          "serializationRaw": 55256998,
+          "exportPeak": 23760528,
+          "cleared": 0,
+          "appendMs": 3.299999952316284,
+          "exportMs": 3.5,
+          "serializeMs": 15.299999952316284,
+          "jsonBytes": 22320059,
+          "debugAfterSubmission": 2883612
+        }
+      }
+    },
+    {
+      "scenario": "idle",
+      "ticks": 360000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 26025656,
+          "expansionRaw": 26040920,
+          "serializationRaw": 70692750,
+          "exportPeak": 48345728,
+          "cleared": 0,
+          "appendMs": 7,
+          "exportMs": 0,
+          "serializeMs": 15,
+          "jsonBytes": 22320059
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 11309664,
+          "serializationRaw": 55961494,
+          "exportPeak": 32844320,
+          "cleared": 0,
+          "appendMs": 3.799999952316284,
+          "exportMs": 5.300000190734863,
+          "serializeMs": 14.700000047683716,
+          "jsonBytes": 22320059
+        },
+        "chunks-submit": {
+          "retained": 9083484,
+          "expansionRaw": 10898112,
+          "serializationRaw": 55256854,
+          "exportPeak": 23760528,
+          "cleared": 0,
+          "appendMs": 3.700000047683716,
+          "exportMs": 3.5,
+          "serializeMs": 15.399999856948853,
+          "jsonBytes": 22320059,
+          "debugAfterSubmission": 2880640
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 1394,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 7896,
+          "expansionRaw": 23160,
+          "serializationRaw": 207846,
+          "exportPeak": 94396,
+          "cleared": 0,
+          "appendMs": 0,
+          "exportMs": 0,
+          "serializeMs": 0,
+          "jsonBytes": 86487
+        },
+        "chunks-debug": {
+          "retained": 51828,
+          "expansionRaw": 195912,
+          "serializationRaw": 380654,
+          "exportPeak": 150264,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0.09999990463256836,
+          "jsonBytes": 86487
+        },
+        "chunks-submit": {
+          "retained": 51828,
+          "expansionRaw": 197664,
+          "serializationRaw": 382246,
+          "exportPeak": 92532,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0,
+          "serializeMs": 0,
+          "jsonBytes": 86487,
+          "debugAfterSubmission": 11764
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 1394,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 7896,
+          "expansionRaw": 23160,
+          "serializationRaw": 207846,
+          "exportPeak": 94396,
+          "cleared": 0,
+          "appendMs": 0,
+          "exportMs": 0,
+          "serializeMs": 0,
+          "jsonBytes": 86487
+        },
+        "chunks-debug": {
+          "retained": 51828,
+          "expansionRaw": 195900,
+          "serializationRaw": 380642,
+          "exportPeak": 150264,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0.09999990463256836,
+          "serializeMs": 0,
+          "jsonBytes": 86487
+        },
+        "chunks-submit": {
+          "retained": 51828,
+          "expansionRaw": 197652,
+          "serializationRaw": 382246,
+          "exportPeak": 92532,
+          "cleared": 0,
+          "appendMs": 0.10000014305114746,
+          "exportMs": 0.10000014305114746,
+          "serializeMs": 0.10000014305114746,
+          "jsonBytes": 86487,
+          "debugAfterSubmission": 11764
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 5429,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 26760,
+          "expansionRaw": 42024,
+          "serializationRaw": 727052,
+          "exportPeak": 363432,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-debug": {
+          "retained": 163452,
+          "expansionRaw": 662536,
+          "serializationRaw": 1347564,
+          "exportPeak": 522952,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.39999985694885254,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-submit": {
+          "retained": 163452,
+          "expansionRaw": 516052,
+          "serializationRaw": 1200988,
+          "exportPeak": 359020,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.39999985694885254,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657,
+          "debugAfterSubmission": 44044
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 5429,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 26760,
+          "expansionRaw": 42024,
+          "serializationRaw": 727052,
+          "exportPeak": 363432,
+          "cleared": 0,
+          "appendMs": 0.09999990463256836,
+          "exportMs": 0,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-debug": {
+          "retained": 163452,
+          "expansionRaw": 662536,
+          "serializationRaw": 1347564,
+          "exportPeak": 522952,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0.40000009536743164,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657
+        },
+        "chunks-submit": {
+          "retained": 163452,
+          "expansionRaw": 478252,
+          "serializationRaw": 1163188,
+          "exportPeak": 359020,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0.2999999523162842,
+          "serializeMs": 0.20000004768371582,
+          "jsonBytes": 336657,
+          "debugAfterSubmission": 44044
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 36000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 208672,
+          "expansionRaw": 223896,
+          "serializationRaw": 4699726,
+          "exportPeak": 2435584,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0,
+          "serializeMs": 1.2999999523162842,
+          "jsonBytes": 2232059
+        },
+        "chunks-debug": {
+          "retained": 937316,
+          "expansionRaw": 2015980,
+          "serializationRaw": 6491810,
+          "exportPeak": 3314540,
+          "cleared": 0,
+          "appendMs": 0.5,
+          "exportMs": 1.9000000953674316,
+          "serializeMs": 1.3000001907348633,
+          "jsonBytes": 2232059
+        },
+        "chunks-submit": {
+          "retained": 937316,
+          "expansionRaw": 1381604,
+          "serializationRaw": 5639782,
+          "exportPeak": 2376528,
+          "cleared": 0,
+          "appendMs": 0.5,
+          "exportMs": 0.7000000476837158,
+          "serializeMs": 1.5,
+          "jsonBytes": 2232059,
+          "debugAfterSubmission": 291612
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 36000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 208672,
+          "expansionRaw": 223896,
+          "serializationRaw": 4699726,
+          "exportPeak": 2435584,
+          "cleared": 0,
+          "appendMs": 0.20000004768371582,
+          "exportMs": 0,
+          "serializeMs": 1.2999999523162842,
+          "jsonBytes": 2232059
+        },
+        "chunks-debug": {
+          "retained": 937316,
+          "expansionRaw": 2035456,
+          "serializationRaw": 6511286,
+          "exportPeak": 3314540,
+          "cleared": 0,
+          "appendMs": 0.40000009536743164,
+          "exportMs": 1.9000000953674316,
+          "serializeMs": 1.2999999523162842,
+          "jsonBytes": 2232059
+        },
+        "chunks-submit": {
+          "retained": 937316,
+          "expansionRaw": 1377740,
+          "serializationRaw": 5639770,
+          "exportPeak": 2376528,
+          "cleared": 0,
+          "appendMs": 0.40000009536743164,
+          "exportMs": 0.5999999046325684,
+          "serializeMs": 1.4000000953674316,
+          "jsonBytes": 2232059,
+          "debugAfterSubmission": 288640
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 72000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 310452,
+          "expansionRaw": 325676,
+          "serializationRaw": 9265466,
+          "exportPeak": 4769364,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0,
+          "serializeMs": 2.9000000953674316,
+          "jsonBytes": 4464059
+        },
+        "chunks-debug": {
+          "retained": 1840192,
+          "expansionRaw": 3052352,
+          "serializationRaw": 11998006,
+          "exportPeak": 6593416,
+          "cleared": 0,
+          "appendMs": 0.7000000476837158,
+          "exportMs": 2.299999952316284,
+          "serializeMs": 2.700000047683716,
+          "jsonBytes": 4464059
+        },
+        "chunks-submit": {
+          "retained": 1840192,
+          "expansionRaw": 2443360,
+          "serializationRaw": 11150606,
+          "exportPeak": 4752528,
+          "cleared": 0,
+          "appendMs": 0.7000000476837158,
+          "exportMs": 1.0999999046325684,
+          "serializeMs": 3,
+          "jsonBytes": 4464059,
+          "debugAfterSubmission": 579612
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 72000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 310452,
+          "expansionRaw": 325676,
+          "serializationRaw": 9265466,
+          "exportPeak": 4769364,
+          "cleared": 0,
+          "appendMs": 0.2999999523162842,
+          "exportMs": 0,
+          "serializeMs": 2.8999998569488525,
+          "jsonBytes": 4464059
+        },
+        "chunks-debug": {
+          "retained": 1840192,
+          "expansionRaw": 3121140,
+          "serializationRaw": 12066794,
+          "exportPeak": 6593416,
+          "cleared": 0,
+          "appendMs": 0.7000000476837158,
+          "exportMs": 2.3999998569488525,
+          "serializeMs": 3,
+          "jsonBytes": 4464059
+        },
+        "chunks-submit": {
+          "retained": 1840192,
+          "expansionRaw": 2450416,
+          "serializationRaw": 11150534,
+          "exportPeak": 4752528,
+          "cleared": 0,
+          "appendMs": 0.7999999523162842,
+          "exportMs": 1.1000001430511475,
+          "serializeMs": 3,
+          "jsonBytes": 4464059,
+          "debugAfterSubmission": 576640
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 360000,
+      "share": 2,
+      "variants": {
+        "array": {
+          "retained": 1545724,
+          "expansionRaw": 1560988,
+          "serializationRaw": 46212818,
+          "exportPeak": 23865796,
+          "cleared": 0,
+          "appendMs": 1.5999999046325684,
+          "exportMs": 0,
+          "serializeMs": 15.399999856948853,
+          "jsonBytes": 22320059
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 11330548,
+          "serializationRaw": 55982378,
+          "exportPeak": 32844320,
+          "cleared": 0,
+          "appendMs": 2.5,
+          "exportMs": 5.400000095367432,
+          "serializeMs": 15.400000095367432,
+          "jsonBytes": 22320059
+        },
+        "chunks-submit": {
+          "retained": 9083484,
+          "expansionRaw": 10875444,
+          "serializationRaw": 55258134,
+          "exportPeak": 23760528,
+          "cleared": 0,
+          "appendMs": 2.5,
+          "exportMs": 3.4000000953674316,
+          "serializeMs": 15.5,
+          "jsonBytes": 22320059,
+          "debugAfterSubmission": 2883612
+        }
+      }
+    },
+    {
+      "scenario": "same-reference-idle",
+      "ticks": 360000,
+      "share": 1,
+      "variants": {
+        "array": {
+          "retained": 1545724,
+          "expansionRaw": 1560988,
+          "serializationRaw": 46212818,
+          "exportPeak": 23865796,
+          "cleared": 0,
+          "appendMs": 1.5999999046325684,
+          "exportMs": 0,
+          "serializeMs": 15.400000095367432,
+          "jsonBytes": 22320059
+        },
+        "chunks-debug": {
+          "retained": 9083484,
+          "expansionRaw": 11285124,
+          "serializationRaw": 55936954,
+          "exportPeak": 32844320,
+          "cleared": 0,
+          "appendMs": 2.5999999046325684,
+          "exportMs": 5.299999952316284,
+          "serializeMs": 13.800000190734863,
+          "jsonBytes": 22320059
+        },
+        "chunks-submit": {
+          "retained": 9083484,
+          "expansionRaw": 10864932,
+          "serializationRaw": 55258050,
+          "exportPeak": 23760528,
+          "cleared": 0,
+          "appendMs": 2.5,
+          "exportMs": 3.4000000953674316,
+          "serializeMs": 15.099999904632568,
+          "jsonBytes": 22320059,
+          "debugAfterSubmission": 2880640
+        }
+      }
+    }
+  ]
+}
