@@ -54,3 +54,7 @@ A passing comparator covers the supplied historical frame/resource/reference-rep
 ## Staging CI
 
 `.github/workflows/performance-staging.yml` runs only on `codex/performance-p1-staging` pushes or manual dispatch on that branch. Node 24, frozen dependencies, Chromium and `pnpm check` mirror repository correctness checks. Linux browser tests use the existing headless WebGL2 software fallback and make no native GPU timing claim. CI requires source-bound served-build proof and verifies candidate native evidence matches a SHA-256 fingerprint of current runtime source bytes, then compares it. Runtime code, shaders, entry HTML, public assets, build-plugin dependencies, extension build inputs, compiler/workspace configuration, fixtures, package manifests and the lockfile are included; docs/evidence-only commits are excluded. It does not remeasure native GPU performance on the hosted runner. CI publishes a 14-day artifact. Every nonzero comparison result blocks the workflow; the former P1 resource-leak warning path is removed. It also runs the exact packed-recording research tests without changing the production recorder. There are no deployment steps or production credentials.
+
+## Portable device collection
+
+Use [the opt-in device capture guide](performance-device-capture.md) for source-bound local exports and incomplete/invalid-evidence checks on desktop or phone. The tool never certifies physical hardware or selects accepted budgets.

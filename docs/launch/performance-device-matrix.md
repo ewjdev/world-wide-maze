@@ -65,3 +65,7 @@ Attach an evidence row for each scenario/trial containing: baseline and candidat
 ## Staging gate
 
 Only integrate runtime changes with a paired relevant gain, passing correctness tests, and no unexplained regression. Re-run combined scenarios after integration because individual wins can interact. Keep production/main unchanged until the staging evidence is reviewed. P2 work follows the P1 staging decision. #27 remains open until nominated physical desktop/mobile rows have recorded outcomes and Eric accepts the supported floor and budgets; the matrix itself makes no runtime speedup claim.
+
+## Portable device collection
+
+Use [the opt-in device capture guide](performance-device-capture.md) for source-bound local exports and incomplete/invalid-evidence checks on desktop or phone. The tool never certifies physical hardware or selects accepted budgets.

@@ -1,0 +1,19 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>WWM physical-device evidence</title>
+<style>body{font:16px system-ui;max-width:780px;margin:24px auto;padding:0 18px;background:#f6f6f2;color:#182821}label{display:grid;gap:5px;margin:12px 0}input,select,textarea,button{font:inherit;padding:9px}button{background:#24583d;color:white;border:0;border-radius:5px}small{display:block;line-height:1.5}</style>
+<h1>Device evidence capture</h1><p>This local tool records browser timing and existing diagnostics. Hardware identity is self-reported. It cannot certify a device or select a performance budget.</p>
+<form id="setup">
+<label>Operator <input name="operator" required></label><label>Device model <input name="deviceModel" required></label><label>OS version <input name="osVersion" required></label><label>Browser version <input name="browserVersion" required></label>
+<label>Execution <select name="execution"><option value="unknown">Unknown — not physical evidence</option><option value="physical-self-reported">Physical device — self-reported</option><option value="emulated">Emulated viewport/device</option><option value="automated">Automated browser test</option></select></label>
+<label>Role <select name="role"><option>desktop-game</option><option>mobile-game</option><option>phone-controller</option></select></label>
+<label>Scenario <select name="scenario"><option>steady-play</option><option>adaptation</option><option>lifecycle</option><option>paused</option><option>title</option><option>hidden</option><option>thermal</option><option>controller</option></select></label>
+<label>Duration, seconds (thermal: at least 900) <input name="durationSeconds" type="number" min="5" max="1800" value="60" required></label>
+<label>Input / fixture protocol <textarea name="inputProtocol" required placeholder="Same stage, camera/input route, settings and trial order"></textarea></label>
+<label>Physical evidence / reviewer reference <input name="physicalEvidence" placeholder="Independent photo/video or reviewer note; no serial numbers needed"></label>
+<label>Power mode <input name="powerMode" required></label><label>Network <input name="network" required placeholder="e.g. local Wi-Fi; relay used"></label><label>Cache state <select name="cacheState"><option>warm</option><option>cold-manually-cleared</option><option>unknown</option></select></label>
+<label>Display refresh Hz, if known <input name="refreshHz" type="number" min="1"></label>
+<label>Battery start (%) <input name="batteryStart"></label><label>Charging state <input name="charging"></label><label>Brightness <input name="brightness"></label><label>Ambient conditions <input name="ambient"></label>
+<label>Game/controller path <input name="path" value="/play/practice?offline=1" required></label><small>Use an actual pairing URL path including its fragment for controller tests, on this same HTTPS origin. The pairing fragment is used for navigation but is never exported. An existing API relay must be configured separately. LAN HTTP does not enable secure-context motion sensors.</small>
+<button type="submit">Open instrumented preview</button></form><p id="error" role="alert"></p>
+<script type="module">
+document.querySelector('form').addEventListener('submit',event=>{event.preventDefault();const metadata=Object.fromEntries(new FormData(event.target));const path=metadata.path;delete metadata.path;metadata.durationSeconds=Number(metadata.durationSeconds);metadata.refreshHz=metadata.refreshHz?Number(metadata.refreshHz):null;const url=new URL(path,location.origin);if(url.origin!==location.origin||!path.startsWith('/')||url.pathname.startsWith('/__device')){document.querySelector('#error').textContent='Choose a game/controller path on this origin.';return;}sessionStorage.setItem('wwm.device.capture',JSON.stringify(metadata));location.href=url.href;});
+</script></html>
