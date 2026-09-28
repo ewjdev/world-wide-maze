@@ -3,7 +3,7 @@
  * Phase wrappers and sampling profiler add overhead. Samples are diagnostic, not field INP.
  */
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import { verifyServedBuild } from './p1-build.mjs';
@@ -14,12 +14,21 @@ const { chromium } = require('playwright');
 const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const out = resolve(process.env.AUDIT_OUT ?? 'docs/launch/evidence/startup-p2');
 mkdirSync(out, { recursive: true });
-const servedBuild = await verifyServedBuild(base);
+// A prior verified report can bind a historical baseline after the worktree has advanced.
+// Every served asset is still verified; this never labels dirty candidate source as the baseline.
+const historical = process.env.AUDIT_BASELINE_RECORD
+  ? JSON.parse(readFileSync(process.env.AUDIT_BASELINE_RECORD, 'utf8'))
+  : null;
+const expected = historical?.runtimeFingerprint ?? runtimeFingerprint();
+const servedBuild = await verifyServedBuild(base, expected);
+const muted = process.env.AUDIT_MUTED !== '0';
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
 const report = {
   date: new Date().toISOString(),
-  commit: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
-  runtimeFingerprint: runtimeFingerprint(),
+  commit: historical?.commit ?? execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(),
+  runtimeFingerprint: expected,
+  historicalSourceRecord: process.env.AUDIT_BASELINE_RECORD ?? null,
+  muted,
   servedBuild,
   browser: browser.version(),
   hardware: execFileSync('sysctl', ['-n', 'machdep.cpu.brand_string', 'hw.memsize'], {
@@ -32,11 +41,11 @@ const report = {
 };
 const save = () => writeFileSync(resolve(out, 'startup.json'), `${JSON.stringify(report, null, 2)}\n`);
 
-function instrument() {
+function instrument({ muted }) {
   localStorage.setItem('wwm.analytics.preference', 'off');
   localStorage.setItem('wwm.howtoSeen', '1');
   localStorage.setItem('wwm.tutorialDone', '1');
-  localStorage.setItem('wwm.muted', '1');
+  localStorage.setItem('wwm.muted', muted ? '1' : '0');
   window.__WWM_TEST__ = { skipIntro: true, noAutoPause: true };
   const probe = { spans: [], phases: [], longTasks: [], inputs: [], frames: [] };
   window.__startup = probe;
@@ -156,7 +165,7 @@ try {
         viewport: { width: 1440, height: 900 },
         deviceScaleFactor: 2,
       });
-      await context.addInitScript(instrument);
+      await context.addInitScript(instrument, { muted });
       // Offline mode keeps scores local and telemetry is off. Avoid request interception,
       // which disables browser HTTP cache in Playwright; record actual transfer sizes.
       const page = await context.newPage();

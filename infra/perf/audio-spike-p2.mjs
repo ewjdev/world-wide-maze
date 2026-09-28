@@ -15,9 +15,11 @@ const require = createRequire(new URL('../../apps/web/package.json', import.meta
 const web = fileURLToPath(new URL('../../apps/web/', import.meta.url));
 const out = resolve(process.env.AUDIT_OUT ?? 'docs/launch/evidence/startup-p2/audio-spike');
 mkdirSync(out, { recursive: true });
-const source = readFileSync(`${web}src/audio/audio.ts`, 'utf8');
-const synth = source.slice(0, source.indexOf('// ── music'));
-if (!synth.includes('function buildSfx()') || synth.length >= source.length)
+// #32 extracted the same PCM functions; retain the historical prototype on both source layouts.
+const extracted = existsSync(`${web}src/audio/synthesis.ts`);
+const source = readFileSync(`${web}src/audio/${extracted ? 'synthesis' : 'audio'}.ts`, 'utf8');
+const synth = extracted ? source : source.slice(0, source.indexOf('// ── music'));
+if (!synth.includes('function buildSfx()') || (!extracted && synth.length >= source.length))
   throw new Error('Synthesis extraction boundary changed');
 const sourceHash = createHash('sha256').update(source).digest('hex');
 if (process.argv[2] === 'build') {

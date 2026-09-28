@@ -500,6 +500,7 @@ export class Game {
   // ── lifecycle ─────────────────────────────────────────────────────────────────────────────────────────
 
   async mount(host: HTMLElement): Promise<void> {
+    this.audio.prepare();
     // A fresh canvas per engine: a disposed WebGL2 renderer loses its canvas's context (engine README).
     const canvas = document.createElement('canvas');
     canvas.className = 'wwm-canvas';
@@ -638,7 +639,7 @@ export class Game {
     this.#pool.dispose();
     this.#engineImage?.close();
     this.#canvas?.remove();
-    this.audio.setMusic(null);
+    this.audio.dispose();
     this.#listeners.clear();
     this.learning.clear();
   }
