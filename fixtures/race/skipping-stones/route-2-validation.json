@@ -1,0 +1,7637 @@
+{
+  "courseId": "c607d0900618c6727b1c15f1ed4849c1c53ad616c48a617a6168019dc1805e51",
+  "compatibility": {
+    "courseId": "c607d0900618c6727b1c15f1ed4849c1c53ad616c48a617a6168019dc1805e51",
+    "physicsVersion": "0.2.0",
+    "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+    "rulesVersion": "wwm.race-rules/5",
+    "hz": 120
+  },
+  "route": "route-2",
+  "seconds": 69.71666666666667,
+  "targetWindowSeconds": [
+    55,
+    65
+  ],
+  "withinTargetWindow": false,
+  "progress": {
+    "tick": 8366,
+    "nextGate": 4,
+    "sectorTicks": [
+      1685,
+      4131,
+      6451
+    ],
+    "finishTick": 8366,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 77,
+    "chargeRequired": 360,
+    "chargingReason": "charging",
+    "ready": false,
+    "turboCharges": 0,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 5,
+    "landings": 5,
+    "lastEvent": null
+  },
+  "maxChargeTicks": 320,
+  "chargingTicks": {
+    "slow": 4239,
+    "downhill": 1782,
+    "charging": 1884,
+    "airborne": 461
+  },
+  "replayVerified": true,
+  "verifiedTicks": 8366,
+  "controller": {
+    "targetSpeed": 9.6
+  },
+  "events": [
+    {
+      "tick": 1,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 0
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        27.407445907592773,
+        9.91697883605957,
+        249.851806640625
+      ]
+    },
+    {
+      "tick": 383,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 24
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        39.50874328613281,
+        7.681082725524902,
+        235.8997344970703
+      ]
+    },
+    {
+      "tick": 706,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 1
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        46.1628303527832,
+        9.34246826171875,
+        216.44822692871094
+      ]
+    },
+    {
+      "tick": 1254,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 25
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        63.708892822265625,
+        7.20798921585083,
+        188.66893005371094
+      ]
+    },
+    {
+      "tick": 1665,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 2
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        71.21322631835938,
+        9.572032928466797,
+        158.06985473632812
+      ]
+    },
+    {
+      "tick": 1859,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 14
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        81.6158447265625,
+        9.163329124450684,
+        156.03909301757812
+      ]
+    },
+    {
+      "tick": 2004,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 31
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        88.96955871582031,
+        9.731188774108887,
+        153.09327697753906
+      ]
+    },
+    {
+      "tick": 2023,
+      "events": [
+        {
+          "type": "landed",
+          "impact": 2.822192430496216
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        90.13153839111328,
+        9.757089614868164,
+        152.2427215576172
+      ]
+    },
+    {
+      "tick": 2032,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        90.70633697509766,
+        9.7556791305542,
+        151.89622497558594
+      ]
+    },
+    {
+      "tick": 2110,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 15
+        },
+        {
+          "type": "landed",
+          "impact": 12.901268005371094
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        96.73393249511719,
+        9.08753490447998,
+        148.80975341796875
+      ]
+    },
+    {
+      "tick": 2326,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 3
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        105.46521759033203,
+        8.83515739440918,
+        138.79986572265625
+      ]
+    },
+    {
+      "tick": 2498,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 16
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        110.97956848144531,
+        8.384725570678711,
+        129.03623962402344
+      ]
+    },
+    {
+      "tick": 2675,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 32
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        116.7120132446289,
+        8.956087112426758,
+        123.77656555175781
+      ]
+    },
+    {
+      "tick": 2709,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        118.5030746459961,
+        8.982325553894043,
+        122.66302490234375
+      ]
+    },
+    {
+      "tick": 2788,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 17
+        },
+        {
+          "type": "landed",
+          "impact": 13.021647453308105
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        124.42985534667969,
+        8.339669227600098,
+        118.95391082763672
+      ]
+    },
+    {
+      "tick": 3018,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 4
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        137.36753845214844,
+        8.651226997375488,
+        116.31074523925781
+      ]
+    },
+    {
+      "tick": 3266,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 18
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        143.40548706054688,
+        9.257978439331055,
+        109.45230865478516
+      ]
+    },
+    {
+      "tick": 3444,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 33
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        148.88729858398438,
+        9.826804161071777,
+        104.03263092041016
+      ]
+    },
+    {
+      "tick": 3481,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        150.73582458496094,
+        9.85469913482666,
+        102.93182373046875
+      ]
+    },
+    {
+      "tick": 3560,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 19
+        },
+        {
+          "type": "landed",
+          "impact": 12.955645561218262
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        156.5011749267578,
+        9.2561674118042,
+        98.96315002441406
+      ]
+    },
+    {
+      "tick": 4002,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 5
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        170.20201110839844,
+        7.9743828773498535,
+        101.12081146240234
+      ]
+    },
+    {
+      "tick": 4696,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 11
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        193.5360870361328,
+        11.523666381835938,
+        98.00675201416016
+      ]
+    },
+    {
+      "tick": 4924,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 20
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        193.96994018554688,
+        12.152307510375977,
+        89.10424041748047
+      ]
+    },
+    {
+      "tick": 5082,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 34
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        195.3118896484375,
+        12.735919952392578,
+        81.29676818847656
+      ]
+    },
+    {
+      "tick": 5098,
+      "events": [
+        {
+          "type": "landed",
+          "impact": 2.3480629920959473
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        195.61614990234375,
+        12.753665924072266,
+        80.26399230957031
+      ]
+    },
+    {
+      "tick": 5113,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        195.83624267578125,
+        12.752381324768066,
+        79.24687957763672
+      ]
+    },
+    {
+      "tick": 5191,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 21
+        },
+        {
+          "type": "landed",
+          "impact": 12.797234535217285
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        197.42892456054688,
+        12.133257865905762,
+        72.69330596923828
+      ]
+    },
+    {
+      "tick": 5269,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.4459228515625,
+        12.151458740234375,
+        66.74188232421875
+      ]
+    },
+    {
+      "tick": 5270,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.4726104736328,
+        12.155648231506348,
+        66.66583251953125
+      ]
+    },
+    {
+      "tick": 5271,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.4996337890625,
+        12.157124519348145,
+        66.59014892578125
+      ]
+    },
+    {
+      "tick": 5272,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.52706909179688,
+        12.155475616455078,
+        66.51487731933594
+      ]
+    },
+    {
+      "tick": 5273,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.55438232421875,
+        12.153056144714355,
+        66.44025421142578
+      ]
+    },
+    {
+      "tick": 5274,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.58189392089844,
+        12.152812004089355,
+        66.3663101196289
+      ]
+    },
+    {
+      "tick": 5275,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.6096954345703,
+        12.15260124206543,
+        66.29302978515625
+      ]
+    },
+    {
+      "tick": 5276,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.6377410888672,
+        12.152414321899414,
+        66.22045135498047
+      ]
+    },
+    {
+      "tick": 5277,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.6660919189453,
+        12.152249336242676,
+        66.14862060546875
+      ]
+    },
+    {
+      "tick": 5278,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.69473266601562,
+        12.152104377746582,
+        66.07756805419922
+      ]
+    },
+    {
+      "tick": 5279,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.7235565185547,
+        12.156023025512695,
+        66.00761413574219
+      ]
+    },
+    {
+      "tick": 5280,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.75254821777344,
+        12.160163879394531,
+        65.93889617919922
+      ]
+    },
+    {
+      "tick": 5281,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.78224182128906,
+        12.161197662353516,
+        65.87081146240234
+      ]
+    },
+    {
+      "tick": 5282,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.81248474121094,
+        12.159150123596191,
+        65.80370330810547
+      ]
+    },
+    {
+      "tick": 5283,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.8433074951172,
+        12.154059410095215,
+        65.73761749267578
+      ]
+    },
+    {
+      "tick": 5284,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.87200927734375,
+        12.156583786010742,
+        65.67323303222656
+      ]
+    },
+    {
+      "tick": 5285,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9011993408203,
+        12.156983375549316,
+        65.6099853515625
+      ]
+    },
+    {
+      "tick": 5286,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.93099975585938,
+        12.154337882995605,
+        65.54782104492188
+      ]
+    },
+    {
+      "tick": 5287,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.96063232421875,
+        12.153451919555664,
+        65.48641967773438
+      ]
+    },
+    {
+      "tick": 5288,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.99057006835938,
+        12.153206825256348,
+        65.42601013183594
+      ]
+    },
+    {
+      "tick": 5289,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0208282470703,
+        12.152990341186523,
+        65.36662292480469
+      ]
+    },
+    {
+      "tick": 5290,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0514373779297,
+        12.152800559997559,
+        65.30825805664062
+      ]
+    },
+    {
+      "tick": 5291,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0823974609375,
+        12.152792930603027,
+        65.25093841552734
+      ]
+    },
+    {
+      "tick": 5292,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1136474609375,
+        12.152848243713379,
+        65.19464874267578
+      ]
+    },
+    {
+      "tick": 5293,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.14523315429688,
+        12.152902603149414,
+        65.139404296875
+      ]
+    },
+    {
+      "tick": 5294,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.17715454101562,
+        12.152956008911133,
+        65.08521270751953
+      ]
+    },
+    {
+      "tick": 5295,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.2093963623047,
+        12.153008460998535,
+        65.03209686279297
+      ]
+    },
+    {
+      "tick": 5296,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.24195861816406,
+        12.153060913085938,
+        64.98004913330078
+      ]
+    },
+    {
+      "tick": 5297,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.27484130859375,
+        12.153111457824707,
+        64.92906951904297
+      ]
+    },
+    {
+      "tick": 5298,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.3080291748047,
+        12.15316104888916,
+        64.87916564941406
+      ]
+    },
+    {
+      "tick": 5299,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.3415069580078,
+        12.153209686279297,
+        64.83033752441406
+      ]
+    },
+    {
+      "tick": 5300,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.37527465820312,
+        12.153257369995117,
+        64.78257751464844
+      ]
+    },
+    {
+      "tick": 5301,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.40931701660156,
+        12.153303146362305,
+        64.73588562011719
+      ]
+    },
+    {
+      "tick": 5302,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.44363403320312,
+        12.153347969055176,
+        64.69026184082031
+      ]
+    },
+    {
+      "tick": 5303,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.4782257080078,
+        12.15339183807373,
+        64.64570617675781
+      ]
+    },
+    {
+      "tick": 5304,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.5130615234375,
+        12.153434753417969,
+        64.60218811035156
+      ]
+    },
+    {
+      "tick": 5305,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.5481414794922,
+        12.153475761413574,
+        64.55973815917969
+      ]
+    },
+    {
+      "tick": 5306,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.58346557617188,
+        12.153515815734863,
+        64.51832580566406
+      ]
+    },
+    {
+      "tick": 5307,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.61900329589844,
+        12.153554916381836,
+        64.47795104980469
+      ]
+    },
+    {
+      "tick": 5308,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.65475463867188,
+        12.153593063354492,
+        64.4385986328125
+      ]
+    },
+    {
+      "tick": 5309,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.69070434570312,
+        12.153629302978516,
+        64.4002685546875
+      ]
+    },
+    {
+      "tick": 5310,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.7268524169922,
+        12.153664588928223,
+        64.36294555664062
+      ]
+    },
+    {
+      "tick": 5311,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.76318359375,
+        12.153698921203613,
+        64.32662963867188
+      ]
+    },
+    {
+      "tick": 5312,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.7996826171875,
+        12.153732299804688,
+        64.29129028320312
+      ]
+    },
+    {
+      "tick": 5313,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.83636474609375,
+        12.153763771057129,
+        64.25692749023438
+      ]
+    },
+    {
+      "tick": 5314,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.87318420410156,
+        12.153794288635254,
+        64.22354125976562
+      ]
+    },
+    {
+      "tick": 5315,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.91012573242188,
+        12.153824806213379,
+        64.19110107421875
+      ]
+    },
+    {
+      "tick": 5316,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.9471893310547,
+        12.153853416442871,
+        64.15960693359375
+      ]
+    },
+    {
+      "tick": 5317,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.984375,
+        12.153881072998047,
+        64.1290283203125
+      ]
+    },
+    {
+      "tick": 5318,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.0216827392578,
+        12.153907775878906,
+        64.099365234375
+      ]
+    },
+    {
+      "tick": 5319,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.05906677246094,
+        12.15393352508545,
+        64.07061767578125
+      ]
+    },
+    {
+      "tick": 5320,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.09652709960938,
+        12.153958320617676,
+        64.04275512695312
+      ]
+    },
+    {
+      "tick": 5321,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.13406372070312,
+        12.153983116149902,
+        64.01577758789062
+      ]
+    },
+    {
+      "tick": 5322,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.17164611816406,
+        12.154006004333496,
+        63.98965072631836
+      ]
+    },
+    {
+      "tick": 5323,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.2092742919922,
+        12.15402889251709,
+        63.96436309814453
+      ]
+    },
+    {
+      "tick": 5324,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.24693298339844,
+        12.154050827026367,
+        63.939910888671875
+      ]
+    },
+    {
+      "tick": 5325,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.2846221923828,
+        12.154072761535645,
+        63.9162712097168
+      ]
+    },
+    {
+      "tick": 5326,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.3223114013672,
+        12.154092788696289,
+        63.8934326171875
+      ]
+    },
+    {
+      "tick": 5327,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.36000061035156,
+        12.154112815856934,
+        63.871376037597656
+      ]
+    },
+    {
+      "tick": 5328,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.39767456054688,
+        12.154132843017578,
+        63.850093841552734
+      ]
+    },
+    {
+      "tick": 5329,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.43531799316406,
+        12.154151916503906,
+        63.82956314086914
+      ]
+    },
+    {
+      "tick": 5330,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.47293090820312,
+        12.154170036315918,
+        63.80976867675781
+      ]
+    },
+    {
+      "tick": 5331,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.51048278808594,
+        12.15418815612793,
+        63.79069900512695
+      ]
+    },
+    {
+      "tick": 5332,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.5479736328125,
+        12.154206275939941,
+        63.7723388671875
+      ]
+    },
+    {
+      "tick": 5333,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.58538818359375,
+        12.154223442077637,
+        63.754669189453125
+      ]
+    },
+    {
+      "tick": 5334,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.62271118164062,
+        12.154239654541016,
+        63.73767852783203
+      ]
+    },
+    {
+      "tick": 5335,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.65992736816406,
+        12.154256820678711,
+        63.72134780883789
+      ]
+    },
+    {
+      "tick": 5336,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.697021484375,
+        12.15427303314209,
+        63.70566177368164
+      ]
+    },
+    {
+      "tick": 5337,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.73399353027344,
+        12.154289245605469,
+        63.69060134887695
+      ]
+    },
+    {
+      "tick": 5338,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.77084350585938,
+        12.154304504394531,
+        63.6761589050293
+      ]
+    },
+    {
+      "tick": 5339,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8075714111328,
+        12.154319763183594,
+        63.662315368652344
+      ]
+    },
+    {
+      "tick": 5340,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8441162109375,
+        12.154335021972656,
+        63.64905548095703
+      ]
+    },
+    {
+      "tick": 5341,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8804931640625,
+        12.154350280761719,
+        63.6363639831543
+      ]
+    },
+    {
+      "tick": 5342,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.91671752929688,
+        12.154365539550781,
+        63.62422561645508
+      ]
+    },
+    {
+      "tick": 5343,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.95272827148438,
+        12.154379844665527,
+        63.612632751464844
+      ]
+    },
+    {
+      "tick": 5344,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.98854064941406,
+        12.15439510345459,
+        63.6015625
+      ]
+    },
+    {
+      "tick": 5345,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.02415466308594,
+        12.154409408569336,
+        63.590999603271484
+      ]
+    },
+    {
+      "tick": 5346,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.05953979492188,
+        12.154423713684082,
+        63.5809326171875
+      ]
+    },
+    {
+      "tick": 5347,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.09471130371094,
+        12.154438018798828,
+        63.57135009765625
+      ]
+    },
+    {
+      "tick": 5348,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.129638671875,
+        12.154452323913574,
+        63.562232971191406
+      ]
+    },
+    {
+      "tick": 5349,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.16432189941406,
+        12.15446662902832,
+        63.55356979370117
+      ]
+    },
+    {
+      "tick": 5350,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.19873046875,
+        12.154480934143066,
+        63.54534149169922
+      ]
+    },
+    {
+      "tick": 5351,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.23287963867188,
+        12.154495239257812,
+        63.53754425048828
+      ]
+    },
+    {
+      "tick": 5352,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.26675415039062,
+        12.154509544372559,
+        63.53015899658203
+      ]
+    },
+    {
+      "tick": 5353,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.30032348632812,
+        12.154523849487305,
+        63.52317428588867
+      ]
+    },
+    {
+      "tick": 5354,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.33358764648438,
+        12.154537200927734,
+        63.51657485961914
+      ]
+    },
+    {
+      "tick": 5355,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.36654663085938,
+        12.15455150604248,
+        63.51034927368164
+      ]
+    },
+    {
+      "tick": 5356,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.39920043945312,
+        12.154565811157227,
+        63.504486083984375
+      ]
+    },
+    {
+      "tick": 5357,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.43150329589844,
+        12.154580116271973,
+        63.49899673461914
+      ]
+    },
+    {
+      "tick": 5358,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.4634246826172,
+        12.154596328735352,
+        63.49391174316406
+      ]
+    },
+    {
+      "tick": 5359,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.49493408203125,
+        12.154613494873047,
+        63.489253997802734
+      ]
+    },
+    {
+      "tick": 5360,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.52597045898438,
+        12.154631614685059,
+        63.485050201416016
+      ]
+    },
+    {
+      "tick": 5361,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.55650329589844,
+        12.154650688171387,
+        63.48131561279297
+      ]
+    },
+    {
+      "tick": 5362,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.58651733398438,
+        12.154670715332031,
+        63.47807693481445
+      ]
+    },
+    {
+      "tick": 5363,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.61598205566406,
+        12.154690742492676,
+        63.47535705566406
+      ]
+    },
+    {
+      "tick": 5364,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.6448516845703,
+        12.15471076965332,
+        63.47316360473633
+      ]
+    },
+    {
+      "tick": 5365,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.67312622070312,
+        12.154731750488281,
+        63.47152328491211
+      ]
+    },
+    {
+      "tick": 5366,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.7007598876953,
+        12.154751777648926,
+        63.47044372558594
+      ]
+    },
+    {
+      "tick": 5367,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.72776794433594,
+        12.154772758483887,
+        63.469940185546875
+      ]
+    },
+    {
+      "tick": 5368,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.7541046142578,
+        12.154792785644531,
+        63.47003173828125
+      ]
+    },
+    {
+      "tick": 5369,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.77975463867188,
+        12.154812812805176,
+        63.47072982788086
+      ]
+    },
+    {
+      "tick": 5370,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.8046875,
+        12.154831886291504,
+        63.47203826904297
+      ]
+    },
+    {
+      "tick": 5371,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.8289031982422,
+        12.154850959777832,
+        63.47397232055664
+      ]
+    },
+    {
+      "tick": 5372,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.85240173339844,
+        12.154869079589844,
+        63.47654342651367
+      ]
+    },
+    {
+      "tick": 5373,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.87515258789062,
+        12.154886245727539,
+        63.47975540161133
+      ]
+    },
+    {
+      "tick": 5374,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.89712524414062,
+        12.154902458190918,
+        63.483619689941406
+      ]
+    },
+    {
+      "tick": 5375,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.91836547851562,
+        12.154918670654297,
+        63.48814010620117
+      ]
+    },
+    {
+      "tick": 5376,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.93881225585938,
+        12.154932975769043,
+        63.49332046508789
+      ]
+    },
+    {
+      "tick": 5377,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.95848083496094,
+        12.154947280883789,
+        63.49917221069336
+      ]
+    },
+    {
+      "tick": 5378,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.97735595703125,
+        12.154959678649902,
+        63.50570297241211
+      ]
+    },
+    {
+      "tick": 5379,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.99545288085938,
+        12.1549711227417,
+        63.51289367675781
+      ]
+    },
+    {
+      "tick": 5380,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.01275634765625,
+        12.15498161315918,
+        63.5207633972168
+      ]
+    },
+    {
+      "tick": 5381,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.0292510986328,
+        12.154991149902344,
+        63.52931594848633
+      ]
+    },
+    {
+      "tick": 5382,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.04493713378906,
+        12.154998779296875,
+        63.53855514526367
+      ]
+    },
+    {
+      "tick": 5383,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.059814453125,
+        12.15500545501709,
+        63.54848098754883
+      ]
+    },
+    {
+      "tick": 5384,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.07386779785156,
+        12.155011177062988,
+        63.55910873413086
+      ]
+    },
+    {
+      "tick": 5385,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.08709716796875,
+        12.155014991760254,
+        63.5704231262207
+      ]
+    },
+    {
+      "tick": 5386,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.09951782226562,
+        12.155017852783203,
+        63.58242416381836
+      ]
+    },
+    {
+      "tick": 5387,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.11109924316406,
+        12.155019760131836,
+        63.5951042175293
+      ]
+    },
+    {
+      "tick": 5388,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1218719482422,
+        12.155020713806152,
+        63.60845947265625
+      ]
+    },
+    {
+      "tick": 5389,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1317901611328,
+        12.155019760131836,
+        63.62248229980469
+      ]
+    },
+    {
+      "tick": 5390,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1409149169922,
+        12.15501880645752,
+        63.637168884277344
+      ]
+    },
+    {
+      "tick": 5391,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.14918518066406,
+        12.15501594543457,
+        63.652496337890625
+      ]
+    },
+    {
+      "tick": 5392,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1566619873047,
+        12.155012130737305,
+        63.66846466064453
+      ]
+    },
+    {
+      "tick": 5393,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1632843017578,
+        12.155007362365723,
+        63.68505859375
+      ]
+    },
+    {
+      "tick": 5394,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.16909790039062,
+        12.155001640319824,
+        63.70226287841797
+      ]
+    },
+    {
+      "tick": 5395,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.174072265625,
+        12.15499496459961,
+        63.72006607055664
+      ]
+    },
+    {
+      "tick": 5396,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.17822265625,
+        12.154987335205078,
+        63.73844909667969
+      ]
+    },
+    {
+      "tick": 5397,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18154907226562,
+        12.15497875213623,
+        63.75739669799805
+      ]
+    },
+    {
+      "tick": 5398,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18405151367188,
+        12.154970169067383,
+        63.77689743041992
+      ]
+    },
+    {
+      "tick": 5399,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18572998046875,
+        12.154960632324219,
+        63.796932220458984
+      ]
+    },
+    {
+      "tick": 5400,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18655395507812,
+        12.154951095581055,
+        63.8174934387207
+      ]
+    },
+    {
+      "tick": 5401,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18658447265625,
+        12.154939651489258,
+        63.83855056762695
+      ]
+    },
+    {
+      "tick": 5402,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.18577575683594,
+        12.154929161071777,
+        63.86008071899414
+      ]
+    },
+    {
+      "tick": 5403,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1841583251953,
+        12.154916763305664,
+        63.8820686340332
+      ]
+    },
+    {
+      "tick": 5404,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1817169189453,
+        12.154903411865234,
+        63.90449142456055
+      ]
+    },
+    {
+      "tick": 5405,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.17845153808594,
+        12.154891014099121,
+        63.92732620239258
+      ]
+    },
+    {
+      "tick": 5406,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1743927001953,
+        12.154877662658691,
+        63.950557708740234
+      ]
+    },
+    {
+      "tick": 5407,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.16952514648438,
+        12.154863357543945,
+        63.97416305541992
+      ]
+    },
+    {
+      "tick": 5408,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.16383361816406,
+        12.1548490524292,
+        63.99812698364258
+      ]
+    },
+    {
+      "tick": 5409,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1573486328125,
+        12.154834747314453,
+        64.02242279052734
+      ]
+    },
+    {
+      "tick": 5410,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.15005493164062,
+        12.154820442199707,
+        64.04703521728516
+      ]
+    },
+    {
+      "tick": 5411,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.14195251464844,
+        12.154805183410645,
+        64.07194519042969
+      ]
+    },
+    {
+      "tick": 5412,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.133056640625,
+        12.154789924621582,
+        64.09712982177734
+      ]
+    },
+    {
+      "tick": 5413,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1233673095703,
+        12.15477466583252,
+        64.12255859375
+      ]
+    },
+    {
+      "tick": 5414,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.11288452148438,
+        12.154759407043457,
+        64.1482162475586
+      ]
+    },
+    {
+      "tick": 5415,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.1016387939453,
+        12.154743194580078,
+        64.17408752441406
+      ]
+    },
+    {
+      "tick": 5416,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.08961486816406,
+        12.154727935791016,
+        64.20015716552734
+      ]
+    },
+    {
+      "tick": 5417,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.07681274414062,
+        12.154711723327637,
+        64.22639465332031
+      ]
+    },
+    {
+      "tick": 5418,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.06321716308594,
+        12.154695510864258,
+        64.25279235839844
+      ]
+    },
+    {
+      "tick": 5419,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.0488739013672,
+        12.154680252075195,
+        64.27932739257812
+      ]
+    },
+    {
+      "tick": 5420,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.03375244140625,
+        12.154664039611816,
+        64.30598449707031
+      ]
+    },
+    {
+      "tick": 5421,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.01788330078125,
+        12.154647827148438,
+        64.3327407836914
+      ]
+    },
+    {
+      "tick": 5422,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.00123596191406,
+        12.154631614685059,
+        64.35958099365234
+      ]
+    },
+    {
+      "tick": 5423,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.98385620117188,
+        12.154614448547363,
+        64.38648223876953
+      ]
+    },
+    {
+      "tick": 5424,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.96572875976562,
+        12.1545991897583,
+        64.4134292602539
+      ]
+    },
+    {
+      "tick": 5425,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.9468536376953,
+        12.154582023620605,
+        64.4404067993164
+      ]
+    },
+    {
+      "tick": 5426,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.92723083496094,
+        12.154565811157227,
+        64.46739959716797
+      ]
+    },
+    {
+      "tick": 5427,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.90687561035156,
+        12.154549598693848,
+        64.494384765625
+      ]
+    },
+    {
+      "tick": 5428,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.88580322265625,
+        12.154533386230469,
+        64.5213623046875
+      ]
+    },
+    {
+      "tick": 5429,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.864013671875,
+        12.15451717376709,
+        64.54830169677734
+      ]
+    },
+    {
+      "tick": 5430,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.8415069580078,
+        12.154500961303711,
+        64.5751953125
+      ]
+    },
+    {
+      "tick": 5431,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.8182830810547,
+        12.154484748840332,
+        64.60202026367188
+      ]
+    },
+    {
+      "tick": 5432,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.79437255859375,
+        12.154468536376953,
+        64.62876892089844
+      ]
+    },
+    {
+      "tick": 5433,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.76976013183594,
+        12.154452323913574,
+        64.65542602539062
+      ]
+    },
+    {
+      "tick": 5434,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.7444610595703,
+        12.154436111450195,
+        64.6819839477539
+      ]
+    },
+    {
+      "tick": 5435,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.718505859375,
+        12.154420852661133,
+        64.70841979980469
+      ]
+    },
+    {
+      "tick": 5436,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.69190979003906,
+        12.154404640197754,
+        64.73472595214844
+      ]
+    },
+    {
+      "tick": 5437,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.66465759277344,
+        12.154389381408691,
+        64.76089477539062
+      ]
+    },
+    {
+      "tick": 5438,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.63677978515625,
+        12.154375076293945,
+        64.78691101074219
+      ]
+    },
+    {
+      "tick": 5439,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.60829162597656,
+        12.1543607711792,
+        64.81275177001953
+      ]
+    },
+    {
+      "tick": 5440,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.57920837402344,
+        12.154346466064453,
+        64.83842468261719
+      ]
+    },
+    {
+      "tick": 5441,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.549560546875,
+        12.154332160949707,
+        64.8639144897461
+      ]
+    },
+    {
+      "tick": 5442,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.51934814453125,
+        12.154318809509277,
+        64.88919830322266
+      ]
+    },
+    {
+      "tick": 5443,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.4886016845703,
+        12.154306411743164,
+        64.9142837524414
+      ]
+    },
+    {
+      "tick": 5444,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.4573211669922,
+        12.15429401397705,
+        64.93915557861328
+      ]
+    },
+    {
+      "tick": 5445,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.42555236816406,
+        12.154282569885254,
+        64.96380615234375
+      ]
+    },
+    {
+      "tick": 5446,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.39329528808594,
+        12.154271125793457,
+        64.98822021484375
+      ]
+    },
+    {
+      "tick": 5447,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.3605499267578,
+        12.154260635375977,
+        65.01239013671875
+      ]
+    },
+    {
+      "tick": 5448,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.32737731933594,
+        12.154250144958496,
+        65.03631591796875
+      ]
+    },
+    {
+      "tick": 5449,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.2937774658203,
+        12.154241561889648,
+        65.05999755859375
+      ]
+    },
+    {
+      "tick": 5450,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.25978088378906,
+        12.1542329788208,
+        65.08341979980469
+      ]
+    },
+    {
+      "tick": 5451,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.2253875732422,
+        12.154224395751953,
+        65.1065673828125
+      ]
+    },
+    {
+      "tick": 5452,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.1906280517578,
+        12.154217720031738,
+        65.12944793701172
+      ]
+    },
+    {
+      "tick": 5453,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.15553283691406,
+        12.154211044311523,
+        65.15204620361328
+      ]
+    },
+    {
+      "tick": 5454,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.1201171875,
+        12.154205322265625,
+        65.17436981201172
+      ]
+    },
+    {
+      "tick": 5455,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.0843963623047,
+        12.154200553894043,
+        65.19639587402344
+      ]
+    },
+    {
+      "tick": 5456,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.04840087890625,
+        12.154195785522461,
+        65.21813201904297
+      ]
+    },
+    {
+      "tick": 5457,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.0121307373047,
+        12.154191970825195,
+        65.23957061767578
+      ]
+    },
+    {
+      "tick": 5458,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.97564697265625,
+        12.154190063476562,
+        65.2607192993164
+      ]
+    },
+    {
+      "tick": 5459,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.93893432617188,
+        12.154187202453613,
+        65.28157043457031
+      ]
+    },
+    {
+      "tick": 5460,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.9020233154297,
+        12.154186248779297,
+        65.30211639404297
+      ]
+    },
+    {
+      "tick": 5461,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8649444580078,
+        12.154186248779297,
+        65.32234191894531
+      ]
+    },
+    {
+      "tick": 5462,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8277130126953,
+        12.154186248779297,
+        65.34224700927734
+      ]
+    },
+    {
+      "tick": 5463,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.79034423828125,
+        12.154187202453613,
+        65.36184692382812
+      ]
+    },
+    {
+      "tick": 5464,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.7528533935547,
+        12.154189109802246,
+        65.38114166259766
+      ]
+    },
+    {
+      "tick": 5465,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.7152557373047,
+        12.154191970825195,
+        65.40010833740234
+      ]
+    },
+    {
+      "tick": 5466,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.67758178710938,
+        12.154194831848145,
+        65.41876220703125
+      ]
+    },
+    {
+      "tick": 5467,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.63986206054688,
+        12.154199600219727,
+        65.43709564208984
+      ]
+    },
+    {
+      "tick": 5468,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.60211181640625,
+        12.154204368591309,
+        65.45510864257812
+      ]
+    },
+    {
+      "tick": 5469,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.5643310546875,
+        12.15420913696289,
+        65.4728012084961
+      ]
+    },
+    {
+      "tick": 5470,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.52655029296875,
+        12.154215812683105,
+        65.49016571044922
+      ]
+    },
+    {
+      "tick": 5471,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.48878479003906,
+        12.15422248840332,
+        65.50720977783203
+      ]
+    },
+    {
+      "tick": 5472,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.4510498046875,
+        12.154230117797852,
+        65.52392578125
+      ]
+    },
+    {
+      "tick": 5473,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.4133758544922,
+        12.154237747192383,
+        65.54032897949219
+      ]
+    },
+    {
+      "tick": 5474,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.37576293945312,
+        12.15424633026123,
+        65.55640411376953
+      ]
+    },
+    {
+      "tick": 5475,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.33824157714844,
+        12.154255867004395,
+        65.57215881347656
+      ]
+    },
+    {
+      "tick": 5476,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.3008270263672,
+        12.154265403747559,
+        65.58759307861328
+      ]
+    },
+    {
+      "tick": 5477,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.2635498046875,
+        12.154275894165039,
+        65.60271453857422
+      ]
+    },
+    {
+      "tick": 5478,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.2263946533203,
+        12.154287338256836,
+        65.61750793457031
+      ]
+    },
+    {
+      "tick": 5479,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.1893768310547,
+        12.154298782348633,
+        65.63199615478516
+      ]
+    },
+    {
+      "tick": 5480,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.15252685546875,
+        12.15431022644043,
+        65.64616394042969
+      ]
+    },
+    {
+      "tick": 5481,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.11585998535156,
+        12.154322624206543,
+        65.6600112915039
+      ]
+    },
+    {
+      "tick": 5482,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.0793914794922,
+        12.154335021972656,
+        65.67355346679688
+      ]
+    },
+    {
+      "tick": 5483,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.04315185546875,
+        12.154348373413086,
+        65.68678283691406
+      ]
+    },
+    {
+      "tick": 5484,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.0071258544922,
+        12.154361724853516,
+        65.69970703125
+      ]
+    },
+    {
+      "tick": 5485,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.97132873535156,
+        12.154376029968262,
+        65.71231842041016
+      ]
+    },
+    {
+      "tick": 5486,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.935791015625,
+        12.154390335083008,
+        65.72462463378906
+      ]
+    },
+    {
+      "tick": 5487,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.9005126953125,
+        12.154404640197754,
+        65.73663330078125
+      ]
+    },
+    {
+      "tick": 5488,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.8655242919922,
+        12.154419898986816,
+        65.74833679199219
+      ]
+    },
+    {
+      "tick": 5489,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.83082580566406,
+        12.154435157775879,
+        65.7597427368164
+      ]
+    },
+    {
+      "tick": 5490,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.79640197753906,
+        12.154450416564941,
+        65.77084350585938
+      ]
+    },
+    {
+      "tick": 5491,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.76231384277344,
+        12.154465675354004,
+        65.78165435791016
+      ]
+    },
+    {
+      "tick": 5492,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.7285614013672,
+        12.154481887817383,
+        65.79217529296875
+      ]
+    },
+    {
+      "tick": 5493,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.69515991210938,
+        12.154498100280762,
+        65.80238342285156
+      ]
+    },
+    {
+      "tick": 5494,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.6621551513672,
+        12.15451717376709,
+        65.81224060058594
+      ]
+    },
+    {
+      "tick": 5495,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.62957763671875,
+        12.154536247253418,
+        65.82172393798828
+      ]
+    },
+    {
+      "tick": 5496,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.5974578857422,
+        12.154557228088379,
+        65.83080291748047
+      ]
+    },
+    {
+      "tick": 5497,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.5658721923828,
+        12.154579162597656,
+        65.83943939208984
+      ]
+    },
+    {
+      "tick": 5498,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.53480529785156,
+        12.15460205078125,
+        65.84762573242188
+      ]
+    },
+    {
+      "tick": 5499,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.50430297851562,
+        12.154626846313477,
+        65.85531616210938
+      ]
+    },
+    {
+      "tick": 5500,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.4744110107422,
+        12.154650688171387,
+        65.86251068115234
+      ]
+    },
+    {
+      "tick": 5501,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.44512939453125,
+        12.154674530029297,
+        65.86917877197266
+      ]
+    },
+    {
+      "tick": 5502,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.41647338867188,
+        12.154699325561523,
+        65.87529754638672
+      ]
+    },
+    {
+      "tick": 5503,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.38848876953125,
+        12.15472412109375,
+        65.88085174560547
+      ]
+    },
+    {
+      "tick": 5504,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.36117553710938,
+        12.154748916625977,
+        65.88582611083984
+      ]
+    },
+    {
+      "tick": 5505,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.33457946777344,
+        12.154773712158203,
+        65.89020538330078
+      ]
+    },
+    {
+      "tick": 5506,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.30870056152344,
+        12.154796600341797,
+        65.89398193359375
+      ]
+    },
+    {
+      "tick": 5507,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.28355407714844,
+        12.154820442199707,
+        65.89713287353516
+      ]
+    },
+    {
+      "tick": 5508,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.25914001464844,
+        12.1548433303833,
+        65.899658203125
+      ]
+    },
+    {
+      "tick": 5509,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.2354736328125,
+        12.154865264892578,
+        65.90153503417969
+      ]
+    },
+    {
+      "tick": 5510,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.21258544921875,
+        12.154886245727539,
+        65.90275573730469
+      ]
+    },
+    {
+      "tick": 5511,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1904754638672,
+        12.1549072265625,
+        65.9033203125
+      ]
+    },
+    {
+      "tick": 5512,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.16915893554688,
+        12.154926300048828,
+        65.90321350097656
+      ]
+    },
+    {
+      "tick": 5513,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1486358642578,
+        12.154945373535156,
+        65.90242767333984
+      ]
+    },
+    {
+      "tick": 5514,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.12890625,
+        12.154962539672852,
+        65.90094757080078
+      ]
+    },
+    {
+      "tick": 5515,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1099853515625,
+        12.154979705810547,
+        65.89878845214844
+      ]
+    },
+    {
+      "tick": 5516,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.09185791015625,
+        12.154994010925293,
+        65.89594268798828
+      ]
+    },
+    {
+      "tick": 5517,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0745391845703,
+        12.155006408691406,
+        65.89240264892578
+      ]
+    },
+    {
+      "tick": 5518,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.05809020996094,
+        12.15503978729248,
+        65.88809967041016
+      ]
+    },
+    {
+      "tick": 5519,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.04244995117188,
+        12.155113220214844,
+        65.88311767578125
+      ]
+    },
+    {
+      "tick": 5520,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.027587890625,
+        12.15504264831543,
+        65.87737274169922
+      ]
+    },
+    {
+      "tick": 5521,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0135040283203,
+        12.155050277709961,
+        65.87089538574219
+      ]
+    },
+    {
+      "tick": 5522,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.00022888183594,
+        12.155056953430176,
+        65.86370849609375
+      ]
+    },
+    {
+      "tick": 5523,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.98780822753906,
+        12.15506362915039,
+        65.85580444335938
+      ]
+    },
+    {
+      "tick": 5524,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.97622680664062,
+        12.155068397521973,
+        65.84716796875
+      ]
+    },
+    {
+      "tick": 5525,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9654541015625,
+        12.155071258544922,
+        65.83782196044922
+      ]
+    },
+    {
+      "tick": 5526,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.95553588867188,
+        12.155073165893555,
+        65.82775115966797
+      ]
+    },
+    {
+      "tick": 5527,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9464111328125,
+        12.155074119567871,
+        65.81696319580078
+      ]
+    },
+    {
+      "tick": 5528,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.93814086914062,
+        12.155073165893555,
+        65.80545043945312
+      ]
+    },
+    {
+      "tick": 5529,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9307098388672,
+        12.155071258544922,
+        65.79322814941406
+      ]
+    },
+    {
+      "tick": 5530,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.92408752441406,
+        12.155067443847656,
+        65.7802734375
+      ]
+    },
+    {
+      "tick": 5531,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.91830444335938,
+        12.155062675476074,
+        65.76661682128906
+      ]
+    },
+    {
+      "tick": 5532,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.913330078125,
+        12.155056953430176,
+        65.75222778320312
+      ]
+    },
+    {
+      "tick": 5533,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9091796875,
+        12.155049324035645,
+        65.73713684082031
+      ]
+    },
+    {
+      "tick": 5534,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9058380126953,
+        12.155094146728516,
+        65.72132873535156
+      ]
+    },
+    {
+      "tick": 5535,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9032745361328,
+        12.155062675476074,
+        65.704833984375
+      ]
+    },
+    {
+      "tick": 5536,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.90151977539062,
+        12.155019760131836,
+        65.68763732910156
+      ]
+    },
+    {
+      "tick": 5537,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.90057373046875,
+        12.155007362365723,
+        65.66973876953125
+      ]
+    },
+    {
+      "tick": 5538,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9004364013672,
+        12.154994010925293,
+        65.6511459350586
+      ]
+    },
+    {
+      "tick": 5539,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.90109252929688,
+        12.15497875213623,
+        65.63185119628906
+      ]
+    },
+    {
+      "tick": 5540,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9025421142578,
+        12.154962539672852,
+        65.61186218261719
+      ]
+    },
+    {
+      "tick": 5541,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.90480041503906,
+        12.154947280883789,
+        65.59115600585938
+      ]
+    },
+    {
+      "tick": 5542,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.90785217285156,
+        12.154928207397461,
+        65.56976318359375
+      ]
+    },
+    {
+      "tick": 5543,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.91168212890625,
+        12.154909133911133,
+        65.54768371582031
+      ]
+    },
+    {
+      "tick": 5544,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.91629028320312,
+        12.154889106750488,
+        65.52491760253906
+      ]
+    },
+    {
+      "tick": 5545,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.92166137695312,
+        12.154867172241211,
+        65.50147247314453
+      ]
+    },
+    {
+      "tick": 5546,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.92779541015625,
+        12.154844284057617,
+        65.47735595703125
+      ]
+    },
+    {
+      "tick": 5547,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9346923828125,
+        12.154820442199707,
+        65.45256805419922
+      ]
+    },
+    {
+      "tick": 5548,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.94235229492188,
+        12.15479564666748,
+        65.42710876464844
+      ]
+    },
+    {
+      "tick": 5549,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9507598876953,
+        12.154770851135254,
+        65.40099334716797
+      ]
+    },
+    {
+      "tick": 5550,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9599151611328,
+        12.154744148254395,
+        65.37422180175781
+      ]
+    },
+    {
+      "tick": 5551,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.96981811523438,
+        12.154716491699219,
+        65.34679412841797
+      ]
+    },
+    {
+      "tick": 5552,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.98045349121094,
+        12.154687881469727,
+        65.31871795654297
+      ]
+    },
+    {
+      "tick": 5553,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        199.9918212890625,
+        12.154658317565918,
+        65.29000091552734
+      ]
+    },
+    {
+      "tick": 5554,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.00390625,
+        12.15462875366211,
+        65.2606430053711
+      ]
+    },
+    {
+      "tick": 5555,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.01670837402344,
+        12.154597282409668,
+        65.23065185546875
+      ]
+    },
+    {
+      "tick": 5556,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0302276611328,
+        12.154565811157227,
+        65.20004272460938
+      ]
+    },
+    {
+      "tick": 5557,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.04446411132812,
+        12.154534339904785,
+        65.16883087158203
+      ]
+    },
+    {
+      "tick": 5558,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.0594024658203,
+        12.154500961303711,
+        65.13700866699219
+      ]
+    },
+    {
+      "tick": 5559,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.07505798339844,
+        12.154468536376953,
+        65.10459899902344
+      ]
+    },
+    {
+      "tick": 5560,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.09140014648438,
+        12.154434204101562,
+        65.07161712646484
+      ]
+    },
+    {
+      "tick": 5561,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1084442138672,
+        12.154400825500488,
+        65.03807830810547
+      ]
+    },
+    {
+      "tick": 5562,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.1261749267578,
+        12.154366493225098,
+        65.00399017333984
+      ]
+    },
+    {
+      "tick": 5563,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.14459228515625,
+        12.154332160949707,
+        64.96935272216797
+      ]
+    },
+    {
+      "tick": 5564,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.16368103027344,
+        12.154297828674316,
+        64.93419647216797
+      ]
+    },
+    {
+      "tick": 5565,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.18344116210938,
+        12.15426254272461,
+        64.89854431152344
+      ]
+    },
+    {
+      "tick": 5566,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.20387268066406,
+        12.154228210449219,
+        64.8624038696289
+      ]
+    },
+    {
+      "tick": 5567,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.22499084472656,
+        12.154192924499512,
+        64.82579803466797
+      ]
+    },
+    {
+      "tick": 5568,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.24676513671875,
+        12.154158592224121,
+        64.78873443603516
+      ]
+    },
+    {
+      "tick": 5569,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.2692108154297,
+        12.154123306274414,
+        64.75123596191406
+      ]
+    },
+    {
+      "tick": 5570,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.29232788085938,
+        12.154088973999023,
+        64.71331787109375
+      ]
+    },
+    {
+      "tick": 5571,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.3161163330078,
+        12.154054641723633,
+        64.67500305175781
+      ]
+    },
+    {
+      "tick": 5572,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.34054565429688,
+        12.154020309448242,
+        64.63629913330078
+      ]
+    },
+    {
+      "tick": 5573,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.36561584472656,
+        12.153985977172852,
+        64.59723663330078
+      ]
+    },
+    {
+      "tick": 5574,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.391357421875,
+        12.153952598571777,
+        64.55782318115234
+      ]
+    },
+    {
+      "tick": 5575,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.417724609375,
+        12.153919219970703,
+        64.51809692382812
+      ]
+    },
+    {
+      "tick": 5576,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.4447479248047,
+        12.153886795043945,
+        64.47805786132812
+      ]
+    },
+    {
+      "tick": 5577,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.47239685058594,
+        12.153853416442871,
+        64.4377212524414
+      ]
+    },
+    {
+      "tick": 5578,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.50067138671875,
+        12.153820991516113,
+        64.39710998535156
+      ]
+    },
+    {
+      "tick": 5579,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.52960205078125,
+        12.153789520263672,
+        64.35624694824219
+      ]
+    },
+    {
+      "tick": 5580,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.55914306640625,
+        12.15375804901123,
+        64.31514739990234
+      ]
+    },
+    {
+      "tick": 5581,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.5893096923828,
+        12.153727531433105,
+        64.27383422851562
+      ]
+    },
+    {
+      "tick": 5582,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.6201171875,
+        12.15369701385498,
+        64.2323226928711
+      ]
+    },
+    {
+      "tick": 5583,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.6515350341797,
+        12.153667449951172,
+        64.19062805175781
+      ]
+    },
+    {
+      "tick": 5584,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.68356323242188,
+        12.153637886047363,
+        64.1487808227539
+      ]
+    },
+    {
+      "tick": 5585,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.71620178222656,
+        12.153609275817871,
+        64.1067886352539
+      ]
+    },
+    {
+      "tick": 5586,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.7494354248047,
+        12.153580665588379,
+        64.0646743774414
+      ]
+    },
+    {
+      "tick": 5587,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.78326416015625,
+        12.153553009033203,
+        64.02244567871094
+      ]
+    },
+    {
+      "tick": 5588,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.8177032470703,
+        12.153526306152344,
+        63.98012161254883
+      ]
+    },
+    {
+      "tick": 5589,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.85272216796875,
+        12.153498649597168,
+        63.93772888183594
+      ]
+    },
+    {
+      "tick": 5590,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.8883514404297,
+        12.153472900390625,
+        63.89527893066406
+      ]
+    },
+    {
+      "tick": 5591,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.924560546875,
+        12.153448104858398,
+        63.85279083251953
+      ]
+    },
+    {
+      "tick": 5592,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.9613494873047,
+        12.153422355651855,
+        63.810272216796875
+      ]
+    },
+    {
+      "tick": 5593,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.99871826171875,
+        12.153398513793945,
+        63.76774597167969
+      ]
+    },
+    {
+      "tick": 5594,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.03663635253906,
+        12.153374671936035,
+        63.725223541259766
+      ]
+    },
+    {
+      "tick": 5595,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.07516479492188,
+        12.153350830078125,
+        63.68273162841797
+      ]
+    },
+    {
+      "tick": 5596,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.11424255371094,
+        12.153327941894531,
+        63.64027404785156
+      ]
+    },
+    {
+      "tick": 5597,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.15386962890625,
+        12.153306007385254,
+        63.597869873046875
+      ]
+    },
+    {
+      "tick": 5598,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.1940460205078,
+        12.153284072875977,
+        63.55552291870117
+      ]
+    },
+    {
+      "tick": 5599,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.23477172851562,
+        12.1532621383667,
+        63.51325607299805
+      ]
+    },
+    {
+      "tick": 5600,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.2760467529297,
+        12.153241157531738,
+        63.4710807800293
+      ]
+    },
+    {
+      "tick": 5601,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.31787109375,
+        12.153221130371094,
+        63.429012298583984
+      ]
+    },
+    {
+      "tick": 5602,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.36024475097656,
+        12.15320110321045,
+        63.387054443359375
+      ]
+    },
+    {
+      "tick": 5603,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.4031219482422,
+        12.153181076049805,
+        63.3452262878418
+      ]
+    },
+    {
+      "tick": 5604,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.446533203125,
+        12.153162002563477,
+        63.30353546142578
+      ]
+    },
+    {
+      "tick": 5605,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.49049377441406,
+        12.153143882751465,
+        63.26199722290039
+      ]
+    },
+    {
+      "tick": 5606,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.53494262695312,
+        12.153124809265137,
+        63.220619201660156
+      ]
+    },
+    {
+      "tick": 5607,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.57992553710938,
+        12.153107643127441,
+        63.17941665649414
+      ]
+    },
+    {
+      "tick": 5608,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.6254119873047,
+        12.15308952331543,
+        63.138389587402344
+      ]
+    },
+    {
+      "tick": 5609,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.67138671875,
+        12.15307331085205,
+        63.09755325317383
+      ]
+    },
+    {
+      "tick": 5610,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.7178497314453,
+        12.153057098388672,
+        63.056915283203125
+      ]
+    },
+    {
+      "tick": 5611,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.76480102539062,
+        12.153040885925293,
+        63.016483306884766
+      ]
+    },
+    {
+      "tick": 5612,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.8121795654297,
+        12.15302562713623,
+        62.97626495361328
+      ]
+    },
+    {
+      "tick": 5613,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.86004638671875,
+        12.153011322021484,
+        62.9362678527832
+      ]
+    },
+    {
+      "tick": 5614,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.90834045410156,
+        12.152997016906738,
+        62.89649963378906
+      ]
+    },
+    {
+      "tick": 5615,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        201.95706176757812,
+        12.152984619140625,
+        62.856971740722656
+      ]
+    },
+    {
+      "tick": 5616,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.00621032714844,
+        12.152972221374512,
+        62.81768798828125
+      ]
+    },
+    {
+      "tick": 5617,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.05577087402344,
+        12.152960777282715,
+        62.77865219116211
+      ]
+    },
+    {
+      "tick": 5618,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.10569763183594,
+        12.152949333190918,
+        62.739871978759766
+      ]
+    },
+    {
+      "tick": 5619,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.156005859375,
+        12.152939796447754,
+        62.70135498046875
+      ]
+    },
+    {
+      "tick": 5620,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.20668029785156,
+        12.15293025970459,
+        62.66310119628906
+      ]
+    },
+    {
+      "tick": 5621,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.25770568847656,
+        12.152922630310059,
+        62.625118255615234
+      ]
+    },
+    {
+      "tick": 5622,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.30908203125,
+        12.153946876525879,
+        62.587345123291016
+      ]
+    },
+    {
+      "tick": 5623,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.35984802246094,
+        12.159741401672363,
+        62.55071258544922
+      ]
+    },
+    {
+      "tick": 5624,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.4114990234375,
+        12.162514686584473,
+        62.514156341552734
+      ]
+    },
+    {
+      "tick": 5625,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.46400451660156,
+        12.162281036376953,
+        62.47766876220703
+      ]
+    },
+    {
+      "tick": 5626,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.51712036132812,
+        12.159055709838867,
+        62.441410064697266
+      ]
+    },
+    {
+      "tick": 5627,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.570556640625,
+        12.153188705444336,
+        62.405426025390625
+      ]
+    },
+    {
+      "tick": 5628,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.6228790283203,
+        12.152979850769043,
+        62.36998748779297
+      ]
+    },
+    {
+      "tick": 5629,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.67547607421875,
+        12.152944564819336,
+        62.33481979370117
+      ]
+    },
+    {
+      "tick": 5630,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.728271484375,
+        12.152942657470703,
+        62.2999382019043
+      ]
+    },
+    {
+      "tick": 5631,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.78128051757812,
+        12.152941703796387,
+        62.26533508300781
+      ]
+    },
+    {
+      "tick": 5632,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.83447265625,
+        12.152941703796387,
+        62.231021881103516
+      ]
+    },
+    {
+      "tick": 5633,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.88780212402344,
+        12.152942657470703,
+        62.196990966796875
+      ]
+    },
+    {
+      "tick": 5634,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.9412841796875,
+        12.152944564819336,
+        62.163246154785156
+      ]
+    },
+    {
+      "tick": 5635,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        202.99488830566406,
+        12.152947425842285,
+        62.129791259765625
+      ]
+    },
+    {
+      "tick": 5636,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.04856872558594,
+        12.15295124053955,
+        62.096622467041016
+      ]
+    },
+    {
+      "tick": 5637,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.10235595703125,
+        12.152956008911133,
+        62.063743591308594
+      ]
+    },
+    {
+      "tick": 5638,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        },
+        {
+          "type": "island",
+          "islandId": 21
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.15623474121094,
+        12.152961730957031,
+        62.03115463256836
+      ]
+    },
+    {
+      "tick": 5639,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 12
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        203.21017456054688,
+        12.152968406677246,
+        61.99885177612305
+      ]
+    },
+    {
+      "tick": 5924,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 22
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        204.94949340820312,
+        12.25619888305664,
+        51.36920928955078
+      ]
+    },
+    {
+      "tick": 6118,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 35
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        200.8086700439453,
+        12.840080261230469,
+        44.5296745300293
+      ]
+    },
+    {
+      "tick": 6149,
+      "events": [],
+      "mechanic": "launch",
+      "pos": [
+        199.19232177734375,
+        12.853683471679688,
+        43.180320739746094
+      ]
+    },
+    {
+      "tick": 6227,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 23
+        },
+        {
+          "type": "landed",
+          "impact": 12.891690254211426
+        }
+      ],
+      "mechanic": "landing",
+      "pos": [
+        194.2552032470703,
+        12.248282432556152,
+        38.28267288208008
+      ]
+    },
+    {
+      "tick": 6445,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 7
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        182.1195068359375,
+        12.054549217224121,
+        31.299095153808594
+      ]
+    },
+    {
+      "tick": 7140,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 28
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        215.19729614257812,
+        15.176532745361328,
+        27.95252799987793
+      ]
+    },
+    {
+      "tick": 7758,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 29
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        255.14039611816406,
+        12.050816535949707,
+        28.124584197998047
+      ]
+    },
+    {
+      "tick": 8290,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 8
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        291.80194091796875,
+        9.356858253479004,
+        29.850135803222656
+      ]
+    },
+    {
+      "tick": 8360,
+      "events": [
+        {
+          "type": "goal"
+        }
+      ],
+      "mechanic": null,
+      "pos": [
+        296.78826904296875,
+        9.353943824768066,
+        29.85752296447754
+      ]
+    }
+  ],
+  "method": "Ordinary bounded tilt, power and optional turbo inputs through real fixed-step Rapier; ordered gates, no falls or recovery, exact float32 pose and progress replay in a second simulation. Scripted feasibility, not human difficulty or optimal-route evidence."
+}

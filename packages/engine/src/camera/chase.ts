@@ -9,7 +9,7 @@
  * - N: instead of the 2013 `y ≥ 0` clamp, the camera rises when an island would block the view.
  */
 import { Quaternion, Vector3 } from 'three/webgpu';
-import { type Heightfield, lineOfSight, sampleTop } from '../geom/heightfield.ts';
+import { type Heightfield, lineOfSight, sampleFloor } from '../geom/heightfield.ts';
 import { WU } from '../palette.ts';
 
 export const CHASE = {
@@ -127,7 +127,7 @@ export class ChaseCamera {
       if (!this.hf) break;
       const p: [number, number, number] = [this.scratch.x, this.scratch.y, this.scratch.z];
       const clear = lineOfSight(this.hf, [ball.x, ball.y + 0.3, ball.z], p) >= 1;
-      const ground = sampleTop(this.hf, p[0], p[2]);
+      const ground = sampleFloor(this.hf, p[0], p[2], p[1]);
       if (clear && (Number.isNaN(ground) || p[1] > ground + 0.4)) break;
       elev = Math.min(elev + 0.12, 1.45);
     }

@@ -1,7 +1,9 @@
 /** 日本語 UI strings. E = the 2013 translation-ja.json string (quoted or adapted), N = new. */
 import type { Resources } from './en.ts';
+import { raceJa } from './race.ts';
 
 export const ja: Resources = {
+  race: raceJa,
   analytics: {
     title: 'アクセス解析とプライバシー',
     intro: 'ゲームの改善のため、このブラウザーから送信する解析情報を選べます。',

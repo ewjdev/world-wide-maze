@@ -366,3 +366,40 @@ test('mesh builder winds faces towards the requested side', () => {
   const md = mb.build();
   expect(md.normal[1]).toBeCloseTo(1);
 });
+
+describe('race bridge rendering', () => {
+  test('explicit rail removal and curved physics use exactly matching deck vertices', async () => {
+    const { bridgeSpecs } = await import('../../physics/src/geometry.ts');
+    const { DEFAULT_PARAMS } = await import('../../physics/src/params.ts');
+    const fixture = structuredClone(stage);
+    fixture.islands.forEach((island) => {
+      island.guardrails = [];
+    });
+    fixture.elevators = [];
+    fixture.bridges = fixture.bridges.slice(0, 1);
+    const bridge = fixture.bridges[0];
+    if (!bridge) throw new Error('fixture bridge');
+    bridge.rails = false;
+    const plan = planTiles(fixture.texture.width, fixture.texture.height, fixture.texture.scale, 4096);
+    expect(buildStageMeshes(fixture, plan).rails.triangles).toBe(0);
+    bridge.control = [320, 250];
+    bridge.bank = 0.2;
+    const visual = buildStageMeshes(fixture, plan);
+    expect(visual.rails.triangles).toBe(0);
+    // Curved tops must span the road material, not collapse every vertex onto its white edge.
+    const topUv = [...visual.bridges.uv.slice(0, 12)];
+    expect(topUv.filter((_, i) => i % 2 === 0)).toContain(1);
+    expect(topUv.filter((_, i) => i % 2 === 0)).toContain(0);
+    expect(Math.max(...topUv.filter((_, i) => i % 2 === 1))).toBeGreaterThan(0);
+    const collider = bridgeSpecs(
+      bridge,
+      new Map(fixture.islands.map((island) => [island.id, island])),
+      DEFAULT_PARAMS,
+    )[0];
+    if (collider?.shape !== 'trimesh') throw new Error('curved collider');
+    const expanded = [...collider.indices].flatMap((i) => [...collider.vertices.slice(i * 3, i * 3 + 3)]);
+    expect([...visual.bridges.position.slice(0, expanded.length)]).toEqual(expanded);
+    bridge.rails = true;
+    expect(buildStageMeshes(fixture, plan).rails.triangles).toBeGreaterThan(0);
+  });
+});

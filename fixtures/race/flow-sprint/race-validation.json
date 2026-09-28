@@ -1,0 +1,153 @@
+{
+  "courseId": "0394bbfb036058076af0d77ef892fc6863e0d3fe3457b02ad290371a2c5f8d20",
+  "compatibility": {
+    "courseId": "0394bbfb036058076af0d77ef892fc6863e0d3fe3457b02ad290371a2c5f8d20",
+    "physicsVersion": "0.2.0",
+    "physicsConfig": "{\"params\":[[\"angularDampingActive\",1.2039728043259361],[\"angularDampingInactive\",4.605170185988091],[\"ballFriction\",0.95],[\"ballMass\",1],[\"ballRadius\",0.5],[\"ballRestitution\",0.35],[\"bridgeOverlap\",0.3],[\"elevatorCooldownSec\",2],[\"elevatorMinPlatformPx\",18.75],[\"elevatorSensorHeight\",1.2],[\"fallDepth\",9],[\"fallGravityRampSec\",1],[\"fallGravityScale\",2],[\"fallLostDelaySec\",3],[\"floorFriction\",0.95],[\"floorRestitution\",0.7],[\"goalHeight\",1.85],[\"gravity\",46.3],[\"groundNormalY\",0.6],[\"impactMinSpeed\",1],[\"itemHeight\",0.5],[\"itemRadius\",0.926],[\"jumpConsumesGrace\",true],[\"jumpDeltaV\",16.7],[\"jumpGraceSec\",0.1],[\"landedMinAirSec\",0.1],[\"linearDamping\",1.2039728043259361],[\"maxTiltPitch\",0.785],[\"maxTiltRoll\",0.436],[\"railFriction\",0.5],[\"railHeight\",0.5556],[\"railRestitution\",0.7],[\"railThickness\",0.1],[\"simHz\",120],[\"slabThickness\",0.463],[\"solverIterations\",4],[\"tiltTau\",0.17672088421066812],[\"torqueAssist\",0],[\"touchDistance\",0.02]],\"options\":{\"raceElevation\":true},\"profile\":{\"version\":\"elevation-v1\",\"horizontalSpeedLimit\":48,\"gradeDeadband\":0.001,\"downhillDamping\":0.04,\"uphillDamping\":0.7,\"overspeedDamping\":1,\"momentumThreshold\":24,\"momentumBlendRange\":12,\"floorRestitution\":0,\"supportSeparationSpeed\":0.5,\"supportSelection\":\"compressive-impulse-v2\"}}",
+    "rulesVersion": "wwm.race-rules/5",
+    "hz": 120
+  },
+  "progress": {
+    "tick": 2974,
+    "nextGate": 9,
+    "sectorTicks": [
+      222,
+      591,
+      998,
+      1408,
+      1782,
+      2156,
+      2439,
+      2845
+    ],
+    "finishTick": 2974,
+    "reasons": []
+  },
+  "mechanics": {
+    "enabled": true,
+    "chargeTicks": 0,
+    "chargeRequired": 360,
+    "chargingReason": "slow",
+    "ready": false,
+    "turboCharges": 0,
+    "lives": 3,
+    "maxLives": 3,
+    "exhausted": false,
+    "turboTicks": 0,
+    "launches": 0,
+    "landings": 0,
+    "lastEvent": null
+  },
+  "events": [
+    {
+      "tick": 1,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 0
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 247,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 1
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 624,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 2
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 1023,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 3
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 1439,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 4
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 1807,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 5
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 2189,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 6
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 2460,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 7
+        }
+      ],
+      "mechanic": null
+    },
+    {
+      "tick": 2870,
+      "events": [
+        {
+          "type": "island",
+          "islandId": 8
+        }
+      ],
+      "mechanic": null
+    }
+  ],
+  "replayProgress": {
+    "tick": 2974,
+    "nextGate": 9,
+    "sectorTicks": [
+      222,
+      591,
+      998,
+      1408,
+      1782,
+      2156,
+      2439,
+      2845
+    ],
+    "finishTick": 2974,
+    "reasons": []
+  },
+  "verifiedTicks": 2974,
+  "inputBytes": 74350,
+  "poseBytes": 86275,
+  "method": "Ordinary bounded waypoint input stream through real Rapier, Race per-step reducer, exact second-simulation Race replay. Automated traversal only; human flow not assessed."
+}

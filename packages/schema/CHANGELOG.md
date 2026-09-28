@@ -2,6 +2,25 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.6 (2026-09-27, Race elevation)
+- Optional `Bridge.elevationProfile: 'smoothstep'` round-trips through the schema and selects one shared render/collider/camera surface, including straight unbanked ramps.
+- Trusted `validateStage(stage, { mode: 'race' })` enforces a 20-degree local surface limit and a 4 m maximum for connectors below 5-degree mean grade. Default Original/Education validation retains its existing slope limit.
+- Optional Race boost `chargingReason` communicates downhill/airborne restrictions to the controller without changing existing message requirements.
+
+## 0.3.5 (2026-09-27, curved Race courses and lives)
+- Optional quadratic/banked bridge surfaces, rail-free decks and directed flight links share render/physics geometry.
+- Race controller state adds turbo inventory, lives and exhausted phase; retries and replays retain host authority.
+- Includes the private admin contracts from main without changing their API semantics.
+
+## 0.3.4 (2026-09-27, Race jumps and turbo)
+- Optional controller `stuntVersion: 1` capability, `race-turbo` control message, and authoritative Race boost charge/ready/timer payload.
+- Stunt courses require the new capability before phone play; old Race and Original flows retain their protocol.
+- Standard binary inputs and StageData are unchanged. Race-only v2 recording captures turbo in its own bounded format.
+
+### Race controller additions (included in 0.3.4)
+- Optional `StateMessage.race` version-1 timer, sector, phase, practice and split payload.
+- Additive `capabilities-request` / `capabilities { raceVersion: 1 }` controller handshake. Old messages still parse; Race requires support before GO and can fall back to keyboard.
+- Stage geometry, standard input samples and Original/Education state semantics unchanged.
 ## 0.3.3 (2026-09-26, URL catalog and review)
 - CCR-21-1: additive private admin catalog, attempts, evidence, decision, rule and audit types in `src/admin.ts`.
 - Public stage/job response shapes unchanged; pending review uses existing `CAPTURE_BLOCKED`.

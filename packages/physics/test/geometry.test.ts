@@ -70,7 +70,7 @@ describe('stage colliders', () => {
     if (!ramp) throw new Error('fixture has a ramp');
     const islands = new Map(HANDMADE.islands.map((i) => [i.id, i]));
     const [deck] = bridgeSpecs(ramp, islands, DEFAULT_PARAMS);
-    if (!deck) throw new Error('deck');
+    if (deck?.shape !== 'box') throw new Error('box deck');
     // top of the deck at its centre = mean level
     const q = deck.rot;
     // local +Y axis of the box in world
@@ -87,4 +87,69 @@ describe('stage colliders', () => {
     expect(inFootprint(f, 350 / 13.5, 540 / 13.5)).toBe(true);
     expect(inFootprint(f, 340 / 13.5, 540 / 13.5)).toBe(false);
   });
+});
+
+describe('race bridge surfaces', () => {
+  test('rails default on; explicit false preserves decks and removes every physical rail', () => {
+    const bridge = HANDMADE.bridges[0];
+    if (!bridge) throw new Error('bridge fixture');
+    const islands = new Map(HANDMADE.islands.map((i) => [i.id, i]));
+    const original = bridgeSpecs(bridge, islands, DEFAULT_PARAMS);
+    expect(bridgeSpecs({ ...bridge, rails: true }, islands, DEFAULT_PARAMS)).toEqual(original);
+    const bare = bridgeSpecs({ ...bridge, rails: false }, islands, DEFAULT_PARAMS);
+    expect(bare).toEqual(original.filter((s) => s.role.type === 'bridge'));
+  });
+
+  test('curved banked deck has a real closed collider and optional curved rail colliders', () => {
+    const bridge = HANDMADE.bridges[0];
+    if (!bridge) throw new Error('bridge fixture');
+    const curved = { ...bridge, control: [320, 250] as [number, number], bank: 0.2, rails: false };
+    const islands = new Map(HANDMADE.islands.map((i) => [i.id, i]));
+    const bare = bridgeSpecs(curved, islands, DEFAULT_PARAMS);
+    expect(bare[0]?.shape).toBe('trimesh');
+    expect(bare).toHaveLength(3); // curved surface + tangent aprons
+    expect(bare.some((s) => s.role.type === 'bridge-rail')).toBe(false);
+    const railed = bridgeSpecs({ ...curved, rails: true }, islands, DEFAULT_PARAMS);
+    expect(railed.filter((s) => s.role.type === 'bridge-rail')).toHaveLength(2);
+    expect(railed.every((s) => s.shape === 'box' || s.vertices.every(Number.isFinite))).toBe(true);
+  });
+});
+
+test('Rapier ball lands on curved banked surface rather than its empty endpoint chord', async () => {
+  const { loadRapier } = await import('../src/rapier.ts');
+  const { bridgeSections, bridgeSurfaceMesh } = await import('@wwm/schema');
+  const R = await loadRapier();
+  const world = new R.World({ x: 0, y: -9.81, z: 0 });
+  try {
+    const bridge = {
+      id: 0,
+      from: 0,
+      to: 1,
+      a: [0, 0] as [number, number],
+      b: [270, 0] as [number, number],
+      control: [135, 270] as [number, number],
+      width: 54,
+      type: 'flat' as const,
+      levelA: 2,
+      levelB: 2,
+      bank: 0.2,
+      rails: false,
+    };
+    const mesh = bridgeSurfaceMesh(bridge, DEFAULT_PARAMS.slabThickness);
+    world.createCollider(R.ColliderDesc.trimesh(mesh.vertices, mesh.indices));
+    const sections = bridgeSections(bridge);
+    const mid = sections[Math.floor(sections.length / 2)];
+    if (!mid) throw new Error('curve midpoint');
+    const body = world.createRigidBody(
+      R.RigidBodyDesc.dynamic()
+        .setTranslation(mid.pos[0] / 13.5, 5, mid.pos[1] / 13.5)
+        .enabledTranslations(false, true, false),
+    );
+    world.createCollider(R.ColliderDesc.ball(0.5), body);
+    for (let i = 0; i < 240; i++) world.step();
+    expect(body.translation().y).toBeGreaterThan(2.45);
+    expect(body.translation().y).toBeLessThan(2.6);
+  } finally {
+    world.free();
+  }
 });

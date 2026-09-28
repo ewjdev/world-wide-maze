@@ -12,6 +12,7 @@ import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
 import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
+import { ModeNav } from '../race/ModeNav.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyTrail } from './Journey.tsx';
 import { useJourneyT } from './journey-strings.ts';
@@ -100,6 +101,7 @@ function Title() {
       <div className="wwm-title__block">
         <Logo />
         <p className="wwm-title__caption">{t('title.caption')}</p>
+        <ModeNav active={new URLSearchParams(location.search).has('learn') ? 'education' : 'original'} />
         <div className="wwm-title__actions">
           <button
             ref={start}

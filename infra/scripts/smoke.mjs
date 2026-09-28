@@ -29,6 +29,17 @@ async function check(name, fn) {
 const expect = (cond, msg) => {
   if (!cond) throw new Error(msg);
 };
+async function createRoom() {
+  // A newly published Preview can serve assets before its Room Durable Object is ready.
+  // Retry only transient server failures; contract and authorization failures remain immediate.
+  const delays = [1000, 2000, 4000, 8000, 8000];
+  for (let attempt = 0; ; attempt++) {
+    const response = await fetch(`${base}/api/rooms`, { method: 'POST' });
+    if (![500, 502, 503, 504].includes(response.status) || attempt >= delays.length) return response;
+    await response.body?.cancel();
+    await new Promise((resolve) => setTimeout(resolve, delays[attempt]));
+  }
+}
 
 await check('GET / serves the app with a CSP', async () => {
   const r = await fetch(`${base}/`);
@@ -81,7 +92,7 @@ await check('GET /api/curated (kill-switch fallback list)', async () => {
   return `${j.runs.length} curated runs`;
 });
 await check('POST /api/rooms → 6-digit code + tokens', async () => {
-  const r = await fetch(`${base}/api/rooms`, { method: 'POST' });
+  const r = await createRoom();
   if (staticMode) {
     expect(intentionallyPaused(r), 'room admission must be paused');
     return 'intentionally paused';

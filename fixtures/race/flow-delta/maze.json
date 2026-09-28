@@ -1,0 +1,340 @@
+{
+  "schema": "wwm.race-maze/1",
+  "slug": "flow-delta",
+  "number": 1,
+  "name": "Flow Delta",
+  "tier": "1 \u00b7 Longer rhythm",
+  "width": "5\u20137 ball widths",
+  "skill": "Continuous speed + route reading",
+  "tech": "Current motion rules; new branching authoring and rail-free support",
+  "beats": [
+    12,
+    16,
+    14,
+    18
+  ],
+  "phase": [
+    "Build speed",
+    "Choose a channel",
+    "Two short hops",
+    "Exit sweep"
+  ],
+  "nodes": {
+    "S": [
+      8,
+      82
+    ],
+    "A": [
+      24,
+      82
+    ],
+    "G1": [
+      40,
+      78
+    ],
+    "B": [
+      66,
+      74
+    ],
+    "G2": [
+      73,
+      48
+    ],
+    "C": [
+      36,
+      46
+    ],
+    "G3": [
+      35,
+      18
+    ],
+    "D": [
+      65,
+      18
+    ],
+    "F": [
+      91,
+      18
+    ],
+    "T": [
+      51,
+      60
+    ],
+    "J": [
+      56,
+      34
+    ],
+    "R": [
+      65,
+      42
+    ],
+    "JL1": [
+      67.19704,
+      43.22109
+    ],
+    "JT1": [
+      61.80296,
+      38.77891
+    ],
+    "JL2": [
+      48.26964,
+      28.1102
+    ],
+    "JT2": [
+      42.73036,
+      23.8898
+    ],
+    "W2_1": [
+      53.0,
+      76.0
+    ],
+    "W3_1": [
+      69.5,
+      61.0
+    ],
+    "W4_1": [
+      60.66667,
+      47.33333
+    ],
+    "W4_2": [
+      48.33333,
+      50.66667
+    ],
+    "W5_1": [
+      35.5,
+      32.0
+    ],
+    "W8_1": [
+      45.5,
+      69.0
+    ],
+    "W9_1": [
+      62.0,
+      54.0
+    ],
+    "Z": [
+      50,
+      18
+    ],
+    "RC": [
+      44,
+      36
+    ],
+    "RC1": [
+      54.5,
+      39
+    ]
+  },
+  "routes": [
+    [
+      "Flow line",
+      "S A G1 W2_1 B W3_1 G2 W4_1 W4_2 C W5_1 G3 Z D F",
+      "Broad approaches; keep turbo for the final sweep."
+    ],
+    [
+      "Inside line",
+      "S A G1 W8_1 T W9_1 G2 W4_1 W4_2 C W5_1 G3 Z D F",
+      "Shorter corner; precise exit needed."
+    ],
+    [
+      "Hop line",
+      "S A G1 W2_1 B W3_1 G2 JL1 JT1 J JL2 JT2 G3 Z D F",
+      "Two grounded-separated hops; brake on the enlarged G3 apron before turning east."
+    ],
+    [
+      "Inside + hops",
+      "S A G1 W8_1 T W9_1 G2 JL1 JT1 J JL2 JT2 G3 Z D F",
+      "Combined short branches are legal; compare this whole-run line with the alternatives."
+    ]
+  ],
+  "tight": [],
+  "jumps": [
+    "JL1 JT1",
+    "JL2 JT2"
+  ],
+  "catch": [
+    "G2 R",
+    "R RC1",
+    "RC1 RC",
+    "RC C"
+  ],
+  "danger": "G3 is a brake-and-reverse apron; the lower catch rejoins C without repeating the used launch.",
+  "largePads": [
+    "G3"
+  ],
+  "gateNormals": {
+    "G1": [
+      1,
+      0
+    ],
+    "G2": [
+      0,
+      -1
+    ],
+    "G3": [
+      0,
+      -1
+    ],
+    "F": [
+      1,
+      0
+    ]
+  },
+  "levels": {
+    "S": 8,
+    "A": 8,
+    "G1": 9,
+    "B": 9,
+    "G2": 9,
+    "C": 9,
+    "G3": 9,
+    "D": 9,
+    "F": 9,
+    "T": 9,
+    "J": 9,
+    "R": 7,
+    "JL1": 9,
+    "JT1": 9,
+    "JL2": 9,
+    "JT2": 9,
+    "W2_1": 9.0,
+    "W3_1": 9.0,
+    "W4_1": 9.0,
+    "W4_2": 9.0,
+    "W5_1": 9.0,
+    "W8_1": 9.0,
+    "W9_1": 9.0,
+    "Z": 9,
+    "RC": 7,
+    "RC1": 7
+  },
+  "reviewStatus": "Real Rapier route tuning; validation artifacts accompany the course",
+  "scale": [
+    32.65,
+    29.68
+  ],
+  "margin": 160,
+  "islandRadius": 90,
+  "wideRadius": 125,
+  "deckWidth": 82,
+  "targetSpeed": 10.8,
+  "launchSpeed": 10,
+  "jumpGap": 75,
+  "radiusOverrides": {
+    "JL1": 42,
+    "JT1": 52,
+    "JL2": 42,
+    "JT2": 52,
+    "W2_1": 55,
+    "W3_1": 55,
+    "W4_1": 55,
+    "W4_2": 55,
+    "W5_1": 55,
+    "W8_1": 55,
+    "W9_1": 55,
+    "Z": 55,
+    "RC": 55,
+    "RC1": 45
+  },
+  "edgeControls": {
+    "S A": [
+      16.0,
+      86.71698
+    ],
+    "A G1": [
+      32.95023,
+      84.5997
+    ],
+    "G1 W2_1": [
+      47.0636,
+      81.43327
+    ],
+    "W2_1 B": [
+      58.9364,
+      70.56673
+    ],
+    "B W3_1": [
+      71.41341,
+      68.69357
+    ],
+    "W3_1 G2": [
+      77,
+      55
+    ],
+    "G2 W4_1": [
+      66.5,
+      46
+    ],
+    "W4_1 W4_2": [
+      54.31213,
+      51.20592
+    ],
+    "W4_2 C": [
+      42.35453,
+      42.12741
+    ],
+    "C W5_1": [
+      39.69521,
+      38.82949
+    ],
+    "W5_1 G3": [
+      31.30479,
+      25.17051
+    ],
+    "G1 W8_1": [
+      45.28621,
+      75.37561
+    ],
+    "W8_1 T": [
+      45.71379,
+      62.62439
+    ],
+    "T W9_1": [
+      58.19081,
+      60.75123
+    ],
+    "W9_1 G2": [
+      69.19081,
+      54.75123
+    ],
+    "G2 JL1": [
+      71.44522,
+      43.63161
+    ],
+    "JT1 J": [
+      60.24818,
+      34.41052
+    ],
+    "J JL2": [
+      53.79457,
+      28.41889
+    ],
+    "JT2 G3": [
+      40.52493,
+      19.17924528301887
+    ],
+    "G3 Z": [
+      42.5,
+      14
+    ],
+    "Z D": [
+      57.5,
+      22
+    ],
+    "RC C": [
+      33,
+      38
+    ],
+    "R RC1": [
+      58,
+      33
+    ],
+    "RC1 RC": [
+      47,
+      45
+    ]
+  },
+  "longStraightEdges": [
+    "D F"
+  ]
+}

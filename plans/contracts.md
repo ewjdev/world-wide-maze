@@ -9,7 +9,7 @@
 
 The orchestrator applies the change and notifies the other agents.
 
-**Contract version: `0.3.3`** (URL catalog, 2026-09-26). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
+**Contract version: `0.3.6`** (Race elevation and charge eligibility, 2026-09-27). Changes are recorded in `packages/schema/CHANGELOG.md` and §9. The numbers come from the recovered 2013 build. See `docs/reference/fidelity-spec.md` (E = evidenced) and `docs/reference/contract-deltas.md`.
 
 ---
 
@@ -480,3 +480,41 @@ No simulation, renderer or worker implementation is claimed here. The proposed s
 - Every `/api/admin/*` endpoint verifies a Cloudflare Access RS256 JWT, issuer, audience, expiry, subject and an operator email allowlist. Mutations require same-origin requests, bounded JSON and a reason. API responses and evidence are `private, no-store`.
 - Routes: `GET session`, `GET catalog`, `GET attempts`, `GET runs/:runId`, `GET runs/:runId/evidence/:item`, `GET rules`; `POST runs/:runId/decision`, `POST rules`, `POST runs/:runId/refresh`, `POST runs/:runId/remove`.
 - Public wire types remain unchanged; pending/blocked builds use `CAPTURE_BLOCKED`. D1 policy gates all hosted source-content reads; public user captures use `private, no-store`. URL cache keys hash normalized URL, effective seed, difficulty and builder version. Local upload identity includes complete capture content and texture bytes, excluding the untrusted claimed ID.
+
+
+### Phase 24 Race contract (implemented; straight-course release)
+
+The lead accepted the controller CCR: `StateMessage.race?: RaceState` and two additive control messages, `{t:'capabilities-request'}` and `{t:'capabilities', raceVersion:1}`. `RaceState` version 1 carries host-authoritative phase (`loading|ready|countdown|racing|paused|finished`), elapsedTicks, simHz, sector, totalSectors, practice, and optional splitDeltaTicks. The existing relay passes the payload unchanged. New phones advertise only after a request; legacy hosts retain their existing flow. Race waits for capability and calibration, with refresh/keyboard fallback on failure. Ready maps to the legacy intro phase for the outer message; the Race payload is authoritative for a compatible controller.
+
+Race course/attempt/input schemas live in `@wwm/race`; see its README for exact bounded buffers and compatibility. Course gates are world metres, with unit horizontal forward normals. Input samples retain the shared format. Tick zero is the loaded pose; sample index zero produces completed tick one. `LockstepDriver.advance` accepts an optional post-step observer: sample input, capture current pre-step pose (after a queued recovery), step physics, increment tick, dispatch events, observe Race gates. Returning true halts catch-up immediately. Replay uses this same Race reducer independently of Original goal events. Recoveries apply before their recorded tick; teleports never become gate sweeps.
+
+Retries reload the cached stage into a fresh Rapier world. The shared load path now resets grounded/jump-edge history to match a newly created simulation; normal fresh-run physics parameters and version remain unchanged. Race itself owns pause/eligibility, finish, local history and ghosts, and never submits Original scores or Education progress. StageData, straight-ramp physics and standard engine rendering contracts remain unchanged; curved-ramp schema work is deferred.
+
+
+### Phase 25 Race stunt contract (implemented experiment)
+
+Lead-approved additive CCR: `CapabilitiesMessage.stuntVersion?:1`, `{t:'race-turbo'}` and optional `RaceState.boost` with `ready`, `chargeTicks`, `chargeRequired`, `turboTicks`. A stunt host requires both Race and stunt capability plus calibration before GO; old-course hosts retain Race-v1 support. Phone presses queue a request consumed once at a host physics tick, and source changes, pause, recovery and disconnect discard pending requests. Host mechanics remain authoritative; no client-supplied velocity or charge is trusted.
+
+The optional `RaceCourse.stunts` contract and `RaceInputSample.turbo` live in `@wwm/race`. Stunt course IDs include resolved tuning, geometry, gates and captured texture identity. Stunt recordings use `wwm.race-input/2`, retaining three exact float64 values and one byte (POWER bit0, JUMP bit1, TURBO bit2). Old courses continue to write v1 and use rules v1. Stunt compatibility uses rules v2; no old ghost is silently remapped.
+
+`createRaceSimulation(course)` wraps the ordinary simulation for both play and replay. It handles three-second forward speed charging, one banked turbo, designated launch crossings and validated first landings. Turbo is applied before a step; launch and landing velocity deltas are applied after the physical step and returned in that step's ball state. Positions are never teleported by a boost. Ordered shared gates are evaluated on the same physical segment in live play and replay; optional islands are not mandatory gates.
+
+`RapierSimulation.applyVelocityDelta` is an additive local API with finite bounded velocity changes, preserving rotation and contact/fall history. No standard physics parameters, step ordering or ordinary colliders changed, so the shared PHYSICS_VERSION is retained; stunt mechanics are versioned separately. Recovery clears charge and flight provenance while retaining consumed launch IDs and progress high-water marks. New runs reset all stunt state. Authored ramps use valid existing straight geometry; the upward launch assist is explicitly a Race mechanic, not a claim of purely passive ramp ballistics.
+
+
+### Phase 27–28 Race curves, turbo inventory and lives
+
+Optional bridge `control`, `bank` and `rails` fields describe a shared tessellated surface for rendering and physics. Directed `StageData.flightLinks` describe authored jump reachability without adding walkable colliders. Layered height queries preserve lower overpass slabs.
+
+`RaceState` adds optional lives/maxLives and an exhausted phase; its boost payload includes stored turboCharges. Every uninterrupted 360 ticks at qualifying cruise speed banks one charge, including turns and flight. A fresh request consumes one effective boost. Falls and manual recovery deduct one stored turbo (floored at zero) and one of three lives; the fall/lost pair deducts once. Recovery preserves remaining stock, zero lives halts the attempt, and retry starts fresh. Current Race replay compatibility uses base rules v3 / stunt rules v4; prior rules are not replayed as new runs.
+
+
+### Phase 29 Race elevation and momentum
+
+`Bridge.elevationProfile?: 'smoothstep'` is a structural contract in TypeScript and Zod. At normalized horizontal arc distance u, height interpolates with `u*u*(3-2*u)`; absence preserves linear height. The shared surface is selected for any profile, curve or bank in collision, rendering and camera heightfields. Race validation uses an explicit caller policy, never a stage-supplied exemption: local maximum grade (including analytic centerline maximum and actual top triangles with banking) must be at most tan(20°). Float32 collider triangles are checked separately with a 0.01° numerical tolerance; authored geometry has no added angular allowance. Mean grades below tan(5°) require at most 4 m horizontal arc length. Brief eased endpoints are part of the ramp profile, not separate long shallow connectors. Default validation retains the original slope bound.
+
+`RaceCourse.physicsProfile?: 'elevation-v1'` selects trusted Race physics and timed-charge rules. Unknown profiles reject. Profile geometry, course identity, physics fingerprint and rules version must agree for a ghost to be eligible. Original/Education continue to use their unchanged default simulation path. Beta rollout has no archive UI, data migration or rollback infrastructure; incompatible records are not compared with new courses.
+
+Timed turbo charging requires grounded qualifying-speed travel on a non-descending support surface. Actual contact normal projected along horizontal velocity identifies descent, with the small numerical grade deadband defined by the versioned physics profile. Downhill or airborne travel resets partial charge but preserves stock; one effective button press can still spend a stored charge. Existing landing speed rewards are separate from timed charges. Falls retain the one-charge/one-life penalty. Optional `RaceState.boost.chargingReason` reports `charging`, `slow`, `downhill`, `airborne`, `recovering` or `disabled` to desktop/phone views.
+
+The new Race profile permits downhill momentum up to 48 m/s horizontal speed, retains vertical airborne motion, and lets excess momentum decay after a descent. Existing turbo impulse ceilings remain 24/26 m/s; pressing turbo at higher terrain speed does not consume a charge. Calibration evidence pins the profile parameters and attainable speed/braking envelope. The actual resolved profile participates in replay compatibility.

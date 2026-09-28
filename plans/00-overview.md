@@ -90,6 +90,9 @@ Education is an additive product track authorized September 26, 2026. [Phase 20]
 | 16 | [phase-16-build-story.md](phase-16-build-story.md) | Build clock + AI-found-bugs gallery for the LinkedIn series | 10 | 5 |
 | 12 | [phase-12-launch.md](phase-12-launch.md) | Perf and device matrix, load and abuse testing, deploy, observability | 08, 09, 10 | 4 |
 | 21 | [phase-21-url-catalog-and-content-review.md](phase-21-url-catalog-and-content-review.md) | Durable URL catalog, approved-run reuse, content review, and operator controls (proposal) | 07, 10, 14 | pending policy decisions |
+| 24 | [phase-24-race-mode.md](phase-24-race-mode.md) | Race as a third gameplay mode: three authored courses, local personal ghosts, Race route builder; straight-course preview implemented, human/device gates open, curves deferred | 03, 04, 05, 06, 08, 09, 10 | local review |
+| 25 | [phase-25-race-jumps.md](phase-25-race-jumps.md) | Island Leap: automatic ramp launches, earned turbo, safe/near/far routes and deterministic stunt ghosts | 24 | local review |
+| 26 | [phase-26-race-route-balance.md](phase-26-race-route-balance.md) | Eight-island rebalance: competing ground/hop/skip routes, lower catch return, complete-section timing and imperfect approaches | 25 | local review |
 
 ### Execution waves
 ```
@@ -166,6 +169,8 @@ Notes for dependent phases:
 
 | Phase | Status | Branch | Last gate | Notes |
 |---|---|---|---|---|
+| 26 | local preview | codex/race-mode | 8-island routes + catch recovery + sensitivity matrix + browser review | human flow and physical phone gates open |
+| 24 | local preview | codex/race-mode | 3 courses + replay + browser review | straight ramps; physical phone, human flow and deployment gates open |
 | 01 | merged | main | G0 | fidelity spec + contract deltas; contracts → v0.2 |
 | 02 | merged (+02b v0.2.1) | main | G0 ✅ | 106 tests green; CRs logged in contracts §9 |
 | 03 | merged | main | G1 ✅ (own criteria) | 315/315 stages valid; recognizable islands; builder 0.3.0 |

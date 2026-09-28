@@ -109,6 +109,7 @@ jobs:
         run: pnpm --filter @wwm/web build
         env:
           VITE_TELEMETRY_URL: ""
+          VITE_RACE_ENABLED: "true"
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews

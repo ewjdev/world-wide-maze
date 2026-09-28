@@ -1,0 +1,46 @@
+{
+  "courseId": "0394bbfb036058076af0d77ef892fc6863e0d3fe3457b02ad290371a2c5f8d20",
+  "definition": "More than 24m (3 seconds at this course's cruise speed) before accumulating 20 degrees of heading change; includes island-centre approaches, full jump spans and catch returns. Shared spans are deduplicated; Island Leap's three overlapping opening branches use one shared runway.",
+  "limitMetres": 24,
+  "turnDegrees": 20,
+  "longStraights": [
+    {
+      "from": [
+        1080,
+        170
+      ],
+      "to": [
+        1080,
+        770
+      ],
+      "metres": 44.44444444444444,
+      "edges": [
+        "island-6 island-7",
+        "island-7 island-8"
+      ]
+    }
+  ],
+  "routes": [
+    {
+      "label": "Main route",
+      "longStraights": [
+        {
+          "from": [
+            1080,
+            170
+          ],
+          "to": [
+            1080,
+            770
+          ],
+          "metres": 44.44444444444444,
+          "edges": [
+            "island-6 island-7",
+            "island-7 island-8"
+          ]
+        }
+      ]
+    }
+  ],
+  "pass": true
+}
