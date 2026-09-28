@@ -17,6 +17,9 @@ const inputs = JSON.parse(
 ) as InputSample[];
 const png = readFileSync(new URL('../../../fixtures/stages/handmade-simple.png', import.meta.url));
 const available = existsSync(chromium.executablePath()) || !!process.env.CI;
+// Temporary CI quarantine: https://github.com/ewjdev/world-wide-maze/issues/35
+// Restore required coverage after the P1 repair; opt in with WWM_RUN_QUARANTINED_TESTS=1.
+const quarantineInCI = !!process.env.CI && process.env.WWM_RUN_QUARANTINED_TESTS !== '1';
 let server: ViteDevServer;
 let browser: Browser;
 let base: string;
@@ -75,7 +78,7 @@ test.skipIf(!available)(
   60_000,
 );
 
-test.skipIf(!available)(
+test.skipIf(!available || quarantineInCI)(
   'game stays playable, retries cancel preparation, and unmount terminates workers',
   async () => {
     const ctx = await browser.newContext();
@@ -238,7 +241,7 @@ test.skipIf(!available)(
   120_000,
 );
 
-test.skipIf(!available)(
+test.skipIf(!available || quarantineInCI)(
   'late network response cannot replace a newer same-stage ghost',
   async () => {
     // Exercise both a valid obsolete replay and an incompatible obsolete response:

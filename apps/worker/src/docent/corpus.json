@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "be9a85d7a9d3ba5d",
+  "hash": "c42d677853037e3c",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -22,6 +22,7 @@
     "docs/build-log/performance-render-p1.md",
     "docs/build-log/performance-resources-p2.md",
     "docs/build-log/performance-startup-p2.md",
+    "docs/build-log/performance-test-quarantine.md",
     "docs/build-log/phase-01.md",
     "docs/build-log/phase-02.md",
     "docs/build-log/phase-03.md",
@@ -794,6 +795,23 @@
       "url": "/log#performance-startup-p2",
       "kind": "build-log",
       "text": "September 27, 2026. Continues epic #19, research #30 and regression tooling #28 on the performance worktree.\n\n- Captured 18 source-bound production startup/first-input traces: native and 6× page stress, cold/warm HTTP cache, explicit slow network, practice and learning. First audio unlock includes context creation, synthesis, buffer copy and resume. Native median 46.3 ms and stressed medians 341.1/369.1 ms; all raw profiles and outliers retained. No product audio changes.\n- Compared exact synthesis on main versus a fresh worker in 12 diagnostic runs. All 18 cues/2,273,788 PCM bytes match. Native rAF gaps 32.2–35.3 → 16.7–18.7 ms, with slower total worker preparation. Page-only CPU stress is not device emulation. See [report](../launch/performance-startup-p2.md).\n- Added opt-in strict resource plateau mode: every post-warmup allocation checkpoint must remain at or below its warm value; missing samples fail. Historical P1 leak waiver remains available only for reproducing old results. Current P2 staging will require strict mode.\n- Validation: 25 regression-gate tests pass, including deliberately injected small leaks, intermediate peaks, historical non-attribute growth and missing samples. Collector syntax/Biome and peer review passed. No browser errors in startup or synthesis runs. Combined staging checks and physical device acceptance are recorded separately."
+    },
+    {
+      "id": "docs/build-log/performance-test-quarantine.md",
+      "title": "Performance browser-test quarantine · Request and scope",
+      "path": "docs/build-log/performance-test-quarantine.md",
+      "url": "/log#performance-test-quarantine",
+      "kind": "build-log",
+      "text": "September 27, 2026. Codex, with a separate issue-grooming agent. Continues PR #34 after merging main at `fedb9bc`.\n\n## Request and scope\nEric requested a test-hardening plan and high-priority GitHub issues, and explicitly authorized temporarily skipping failing tests so they do not block performance work. Exactly two ghost lifecycle tests and one initial portal travel test are quarantined in CI. Ordinary local runs still execute them; `WWM_RUN_QUARANTINED_TESTS=1` opts CI-mode diagnostic runs in. Test bodies, assertions, timeouts and game code remain unchanged. The remaining ghost parity and portal decline/offline checks stay required.\n\nThe [hardening plan](../../plans/performance-test-hardening.md) covers guaranteed cleanup, explicit lifecycle transitions, failure-state capture, negative controls and evidence required to remove the quarantine. The P1 follow-ups are [#35, ghost lifecycle](https://github.com/ewjdev/world-wide-maze/issues/35) and [#36, portal travel](https://github.com/ewjdev/world-wide-maze/issues/36), both children of epic #19. These follow-ups are separate from performance requalification after the merge of main. Source-fingerprint checks are retained; stale measurements are not an accepted waiver."
+    },
+    {
+      "id": "docs/build-log/performance-test-quarantine.md#validation",
+      "title": "Performance browser-test quarantine › Validation · Remaining work",
+      "path": "docs/build-log/performance-test-quarantine.md",
+      "anchor": "validation",
+      "url": "/log#performance-test-quarantine",
+      "kind": "build-log",
+      "text": "## Validation\n- Before changes: serial local CI-mode run passed all six tests in 82.17 seconds; hosted failures remain real and their exact triggers unresolved.\n- Quarantine mode: three tests passed and exactly three skipped, 17.17 seconds.\n- Opt-in diagnostic run: all six tests passed, zero skipped, 82.82 seconds.\n- Full `CI=true pnpm check`: typecheck and lint passed; 144 test files / 1,560 tests passed, six files / 47 tests skipped, 203.56 seconds. Exactly three skips are newly authorized by this quarantine; 44 were pre-existing in CI mode.\n- Runtime fingerprint remains `b420b32e2c08409ee28e057cfda81c6e622548f29eb4f69a1ade05dc0d723584` (1,036 files), unchanged from the merged head.\n- Generated documentation corpus rebuilt and freshness checked before publication.\n- Independent review confirmed the quarantine scope and preserved assertions.\n- macOS/Node 26 local results are separate from hosted Linux/Node 24 acceptance.\n\n## Remaining work\nImplement the linked P1 repairs, remove each quarantine with evidence, and collect fresh native evidence for the merged runtime under #28. No flaky-test root cause is claimed fixed by skipping it. No production merge is part of this change."
     },
     {
       "id": "docs/build-log/phase-01.md",

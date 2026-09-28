@@ -22,6 +22,9 @@ import { afterAll, beforeAll, describe, expect, test } from 'vitest';
 import { browserEnv, CHROMIUM_ARGS, CI_HOOKS } from './browser-env.ts';
 
 const HAS_CHROMIUM = existsSync(chromium.executablePath()) || !!process.env.CI;
+// Temporary CI quarantine: https://github.com/ewjdev/world-wide-maze/issues/36
+// Restore required coverage after the P1 repair; opt in with WWM_RUN_QUARANTINED_TESTS=1.
+const quarantineInCI = !!process.env.CI && process.env.WWM_RUN_QUARANTINED_TESTS !== '1';
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
 const HANDMADE = JSON.parse(
   readFileSync(new URL('../../../fixtures/stages/handmade-simple.json', import.meta.url), 'utf8'),
@@ -192,72 +195,76 @@ describe.skipIf(!HAS_CHROMIUM)('link portals e2e (Chromium, mocked /api)', () =>
       ).__wwmGame.debugRollIntoPortal(0, 4),
     );
 
-  test('roll into a portal, confirm, and the linked site’s maze loads with the score carried over', async () => {
-    const { page, posts, ctx } = await open(true);
-    await page.waitForFunction(
-      () =>
-        (window as unknown as { __wwmGame: { debugState(): { api: string } } }).__wwmGame.debugState().api !==
-        'unknown',
-    );
-    expect(await roll(page)).toBe(true);
-    await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
-    const s1 = await state(page);
-    expect(s1.phase).toBe('play');
-    expect(s1.portal).toMatchObject({ label: 'The second site', host: 'second.example', offline: false });
-    await expect
-      .poll(async () => (await page.textContent('#portal-h')) ?? '', { timeout: 15_000 })
-      .toContain('Travel to The second site?');
-    // paused: the sim doesn't step while the prompt shows
-    const t0 = (await state(page)).tick;
-    await page.waitForTimeout(400);
-    expect((await state(page)).tick).toBe(t0);
+  test.skipIf(quarantineInCI)(
+    'roll into a portal, confirm, and the linked site’s maze loads with the score carried over',
+    async () => {
+      const { page, posts, ctx } = await open(true);
+      await page.waitForFunction(
+        () =>
+          (window as unknown as { __wwmGame: { debugState(): { api: string } } }).__wwmGame.debugState()
+            .api !== 'unknown',
+      );
+      expect(await roll(page)).toBe(true);
+      await page.waitForSelector('[data-testid="portal-prompt"]', { timeout: 15_000 });
+      const s1 = await state(page);
+      expect(s1.phase).toBe('play');
+      expect(s1.portal).toMatchObject({ label: 'The second site', host: 'second.example', offline: false });
+      await expect
+        .poll(async () => (await page.textContent('#portal-h')) ?? '', { timeout: 15_000 })
+        .toContain('Travel to The second site?');
+      // paused: the sim doesn't step while the prompt shows
+      const t0 = (await state(page)).tick;
+      await page.waitForTimeout(400);
+      expect((await state(page)).tick).toBe(t0);
 
-    const before = await state(page);
-    await page.click('[data-testid="portal-travel"]');
-    await page.waitForSelector('[data-testid="travel-iris"]');
-    await waitPhase(page, 'building', 15_000);
-    expect(await page.textContent('[data-testid="building"]')).toContain('Rolling to second.example');
-    await waitPhase(page, 'play', 60_000);
-    const after = await state(page);
-    expect(posts).toEqual(['https://second.example/page']);
-    expect(after.stageId).toBe(B);
-    expect(after.total).toBe(before.total);
-    expect(after.spares).toBe(before.spares);
-    expect(after.journey.map((s) => [s.host, s.via])).toEqual([
-      ['first.example', 'start'],
-      ['second.example', 'portal'],
-    ]);
-    expect(after.journey[1]?.ref).toBe(B);
-    await page.waitForSelector('[data-testid="journey-hud"]');
+      const before = await state(page);
+      await page.click('[data-testid="portal-travel"]');
+      await page.waitForSelector('[data-testid="travel-iris"]');
+      await waitPhase(page, 'building', 15_000);
+      expect(await page.textContent('[data-testid="building"]')).toContain('Rolling to second.example');
+      await waitPhase(page, 'play', 60_000);
+      const after = await state(page);
+      expect(posts).toEqual(['https://second.example/page']);
+      expect(after.stageId).toBe(B);
+      expect(after.total).toBe(before.total);
+      expect(after.spares).toBe(before.spares);
+      expect(after.journey.map((s) => [s.host, s.via])).toEqual([
+        ['first.example', 'start'],
+        ['second.example', 'portal'],
+      ]);
+      expect(after.journey[1]?.ref).toBe(B);
+      await page.waitForSelector('[data-testid="journey-hud"]');
 
-    // finish the second stop → the ranking offers the journey's share link, which renders the card
-    const goal = await page.evaluate(() =>
-      (
-        window as unknown as { __wwmGame: { debugRollIntoGoal(m: number): boolean } }
-      ).__wwmGame.debugRollIntoGoal(4),
-    );
-    expect(goal).toBe(true);
-    await waitPhase(page, 'result', 60_000);
-    await page.waitForSelector('[data-testid="journey-section"]');
-    await page.click('[data-testid="res-finish"]');
-    await waitPhase(page, 'ranking');
-    const href = await page.getAttribute('[data-testid="journey-link"]', 'href');
-    expect(href).toMatch(/\/j\/[A-Za-z0-9_-]+$/);
-    const card = await ctx.newPage();
-    await card.goto(href as string);
-    await card.waitForSelector('[data-testid="journey-page"]');
-    const text = (await card.textContent('main')) ?? '';
-    expect(text).toContain('first.example');
-    expect(text).toContain('second.example');
-    expect(await card.getAttribute('[data-testid="journey-start"]', 'href')).toBe(`/play/${A}`);
-    // the share page stays light: no renderer
-    const three = await card.evaluate(() =>
-      performance.getEntriesByType('resource').some((r) => /three|rapier|engine/.test(r.name)),
-    );
-    expect(three).toBe(false);
-    await ctx.close();
-    expect(problems).toEqual([]);
-  }, 180_000);
+      // finish the second stop → the ranking offers the journey's share link, which renders the card
+      const goal = await page.evaluate(() =>
+        (
+          window as unknown as { __wwmGame: { debugRollIntoGoal(m: number): boolean } }
+        ).__wwmGame.debugRollIntoGoal(4),
+      );
+      expect(goal).toBe(true);
+      await waitPhase(page, 'result', 60_000);
+      await page.waitForSelector('[data-testid="journey-section"]');
+      await page.click('[data-testid="res-finish"]');
+      await waitPhase(page, 'ranking');
+      const href = await page.getAttribute('[data-testid="journey-link"]', 'href');
+      expect(href).toMatch(/\/j\/[A-Za-z0-9_-]+$/);
+      const card = await ctx.newPage();
+      await card.goto(href as string);
+      await card.waitForSelector('[data-testid="journey-page"]');
+      const text = (await card.textContent('main')) ?? '';
+      expect(text).toContain('first.example');
+      expect(text).toContain('second.example');
+      expect(await card.getAttribute('[data-testid="journey-start"]', 'href')).toBe(`/play/${A}`);
+      // the share page stays light: no renderer
+      const three = await card.evaluate(() =>
+        performance.getEntriesByType('resource').some((r) => /three|rapier|engine/.test(r.name)),
+      );
+      expect(three).toBe(false);
+      await ctx.close();
+      expect(problems).toEqual([]);
+    },
+    180_000,
+  );
 
   test('declining a portal lets the ball roll through it again without interrupting play', async () => {
     const { page, ctx } = await open(true);
