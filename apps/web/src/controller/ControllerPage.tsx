@@ -151,23 +151,22 @@ function HostHud({ view }: { view: ControllerView }) {
     const seconds = race.elapsedTicks / race.simHz;
     const split = race.splitDeltaTicks;
     return (
-      <section className="wwmc-hud wwmc-hud-race" data-testid="race-host-hud" aria-label="Race status">
+      <section className="wwmc-hud wwmc-hud-race" data-testid="race-host-hud" aria-label={t.race}>
         <span>
-          {race.practice ? 'Practice' : 'Race'}{' '}
-          <b>{race.phase === 'exhausted' ? 'Out of lives' : race.phase}</b>
+          {race.practice ? t.racePractice : t.race} <b>{t.racePhases[race.phase]}</b>
         </span>
         <span>
           {t.time} <b>{seconds.toFixed(2)}s</b>
         </span>
         <span>
-          Sector{' '}
+          {t.raceSector}{' '}
           <b>
             {Math.min(race.sector + 1, race.totalSectors)}/{race.totalSectors}
           </b>
         </span>
         {race.lives !== undefined && (
           <span>
-            Lives{' '}
+            {t.raceLives}{' '}
             <b>
               {race.lives} / {race.maxLives ?? 3}
             </b>
@@ -175,7 +174,7 @@ function HostHud({ view }: { view: ControllerView }) {
         )}
         {split !== undefined && (
           <span>
-            Split{' '}
+            {t.raceSplit}{' '}
             <b>
               {split > 0 ? '+' : ''}
               {(split / race.simHz).toFixed(2)}s
@@ -289,11 +288,7 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
           <p className={`wwmc-warn ${view.tooTilted ? 'on' : ''}`} aria-live="polite">
             {view.tooTilted ? t.tooTilted : ' '}
           </p>
-          <p className="wwmc-hint">
-            {view.host?.race?.boost
-              ? 'Hold POWER and tilt to roll. Every 3 seconds at full speed through eligible sections earns another turbo. Elevation courses do not charge downhill or in the air. Store them and tap Turbo any time. Falling costs 1 life and 1 turbo.'
-              : t.powerHint}
-          </p>
+          <p className="wwmc-hint">{view.host?.race?.boost ? t.racePowerHint : t.powerHint}</p>
           <button type="button" className="wwmc-link" onClick={() => session?.retryCalibration()}>
             {t.recalibrate}
           </button>
@@ -303,6 +298,7 @@ function Body({ view, session }: { view: ControllerView; session: ControllerSess
 }
 
 function TurboButton({ session, view }: { session: ControllerSession | null; view: ControllerView }) {
+  const t = strings();
   const race = view.host?.race;
   const boost = race?.boost;
   if (!boost) return null;
@@ -316,14 +312,16 @@ function TurboButton({ session, view }: { session: ControllerSession | null; vie
       disabled={!ready}
       onClick={() => session?.turbo()}
     >
-      <strong>Turbo × {boost.turboCharges ?? (boost.ready ? 1 : 0)}</strong>
+      <strong>
+        {t.raceTurbo} × {boost.turboCharges ?? (boost.ready ? 1 : 0)}
+      </strong>
       <span>
-        {boost.ready ? 'Ready · tap · ' : ''}
+        {boost.ready ? t.raceTurboReady : ''}
         {boost.chargingReason === 'downhill'
-          ? 'Downhill · no charge'
+          ? t.raceTurboDownhill
           : boost.chargingReason === 'airborne'
-            ? 'Airborne · no charge'
-            : `${charge}% next`}
+            ? t.raceTurboAirborne
+            : `${charge}% ${t.raceTurboNext}`}
       </span>
     </button>
   );
