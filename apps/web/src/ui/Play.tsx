@@ -6,10 +6,11 @@
 
 import { pairingUrl } from '@wwm/net';
 import { NUM_BALLS } from '@wwm/schema';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
+import { TouchControls } from '../input/TouchControls.tsx';
 import { LearningGateCard } from '../learning/LearningGateCard.tsx';
 import { LearningHud, LearningOverride } from '../learning/LearningPanel.tsx';
 import { useGame, useView } from './GameApp.tsx';
@@ -28,6 +29,21 @@ const IN_STAGE = new Set([
   'timeup',
   'gameover',
 ]);
+
+/** Same-device controls; live only while play owns input (not for a Pip card, portal prompt or travel). */
+function TouchLayer() {
+  const g = useGame();
+  const v = useView();
+  const gate = useSyncExternalStore(g.learning.subscribe, g.learning.getView, g.learning.getView).gate;
+  if (v.inputMode !== 'touch' || !g.touch) return null;
+  return (
+    <TouchControls
+      source={g.touch}
+      onPause={() => g.menu()}
+      live={v.phase === 'play' && !v.portal && !v.travel && !gate}
+    />
+  );
+}
 
 export function PlayLayer() {
   const v = useView();
@@ -51,6 +67,7 @@ export function PlayLayer() {
           <Icon name="ghost" size={16} /> {t('ghost.racing', { name: v.ghost.run.name })}
         </p>
       )}
+      <TouchLayer />
       {hudVisible && <Hud />}
       {hudVisible && <JourneyHud />}
       {hudVisible && <LearningHud />}
@@ -145,7 +162,7 @@ function Hud() {
   const v = useView();
   const { t } = useTranslation();
   const tut = v.tutorial;
-  const variant = v.inputMode === 'phone' ? 'mobile' : 'pc';
+  const variant = v.inputMode === 'phone' ? 'mobile' : v.inputMode === 'touch' ? 'touch' : 'pc';
   return (
     <div className="wwm-hud" data-testid="hud">
       <div className="wwm-hud__tl">
@@ -191,19 +208,21 @@ function Hud() {
           </span>
         )}
       </div>
-      <div className="wwm-hud__bl">
-        <TiltRing game={g} size={104} />
-        <TooTilted />
-        <button type="button" className="wwm-hud__menu" onClick={() => g.menu()} data-testid="hud-menu">
-          <Icon name="map" size={18} /> {t('hud.menu')}
-        </button>
-        {v.inputMode === 'phone' && v.room.rttMs !== null && (
-          <span className="wwm-hud__rtt" title={t('hud.phoneLink')}>
-            <span className={`wwm-dot${v.room.rttMs > 120 ? ' is-warn' : ' is-on'}`} aria-hidden="true" />
-            {t('hud.rtt', { ms: v.room.rttMs })}
-          </span>
-        )}
-      </div>
+      {v.inputMode !== 'touch' && (
+        <div className="wwm-hud__bl">
+          <TiltRing game={g} size={104} />
+          <TooTilted />
+          <button type="button" className="wwm-hud__menu" onClick={() => g.menu()} data-testid="hud-menu">
+            <Icon name="map" size={18} /> {t('hud.menu')}
+          </button>
+          {v.inputMode === 'phone' && v.room.rttMs !== null && (
+            <span className="wwm-hud__rtt" title={t('hud.phoneLink')}>
+              <span className={`wwm-dot${v.room.rttMs > 120 ? ' is-warn' : ' is-on'}`} aria-hidden="true" />
+              {t('hud.rtt', { ms: v.room.rttMs })}
+            </span>
+          )}
+        </div>
+      )}
       {tut !== null && (
         <p className="wwm-hud__inst" aria-live="polite" key={tut} data-testid="tutorial">
           <Glyphs text={t(`tutorial.${variant}.step${tut}`)} />

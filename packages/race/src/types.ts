@@ -63,7 +63,7 @@ export interface RaceAttempt {
   id: string;
   createdAt: number;
   compatibility: RaceCompatibility;
-  inputSource: 'keyboard' | 'phone' | 'mixed';
+  inputSource: 'keyboard' | 'phone' | 'touch' | 'mixed';
   outcome: 'finished' | 'abandoned';
   progress: RaceProgress;
   recording: RaceRecording;

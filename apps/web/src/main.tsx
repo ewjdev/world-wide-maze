@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
+import { touchCapable } from './input/capability.ts';
 import { routes } from './routes.tsx';
 import { servicesResting } from './service-mode.ts';
 import { installEngagement } from './telemetry/engagement.ts';
@@ -36,12 +37,13 @@ function showResting() {
   const notice = document.createElement('aside');
   notice.id = 'service-status';
   notice.setAttribute('role', 'status');
-  notice.style.cssText =
-    'position:fixed;bottom:12px;left:12px;right:12px;z-index:10000;padding:12px;background:#fff;color:#222;border:1px solid #aaa;font:14px system-ui;text-align:center';
+  // On a touch device the bottom edge belongs to the game controls: the notice sits at the top there.
+  const touch = touchCapable();
+  notice.style.cssText = `position:fixed;${touch ? 'top' : 'bottom'}:12px;left:12px;right:12px;z-index:10000;padding:12px;background:#fff;color:#222;border:1px solid #aaa;font:14px system-ui;text-align:center`;
   notice.append('Online services are resting. ');
   const link = document.createElement('a');
   link.href = '/play/practice?offline=1';
-  link.textContent = 'Play the practice maze with keyboard controls';
+  link.textContent = touch ? 'Play the practice maze' : 'Play the practice maze with keyboard controls';
   notice.append(link);
   const dismiss = document.createElement('button');
   dismiss.type = 'button';

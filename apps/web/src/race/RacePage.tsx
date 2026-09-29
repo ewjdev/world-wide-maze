@@ -10,11 +10,13 @@ import '@fontsource-variable/unbounded';
 import '@fontsource-variable/figtree';
 import { isEligible, type RaceCourse } from '@wwm/race';
 import { PX_PER_METER } from '@wwm/schema';
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import { Link, useParams } from 'react-router';
 import { QrCode } from '../controller/QrCode.tsx';
 import { createI18n } from '../i18n/index.ts';
+import { touchCapable } from '../input/capability.ts';
+import { TouchControls } from '../input/TouchControls.tsx';
 import { Icon } from '../ui/parts.tsx';
 import '../ui/game.css';
 import { loadRaceCourse, RACE_COURSES } from './courses.ts';
@@ -246,12 +248,31 @@ function RaceScreens({ session }: { session: RaceSession }) {
   const sectors = session.course.gates.filter((gate) => gate.kind === 'sector').length;
   const eligible = v.result && isEligible(v.result);
   const resultTitle = !eligible ? 'race.practiceFinish' : v.newBest ? 'race.newBest' : 'race.finish';
+  const touch = v.input === 'touch' && session.touch;
   const controls = useMemo(
-    () => t(session.course.stunts ? 'race.stuntControls' : 'race.controls'),
-    [t, session.course.stunts],
+    () => t(touch ? 'race.touchControls' : session.course.stunts ? 'race.stuntControls' : 'race.controls'),
+    [t, session.course.stunts, touch],
   );
+  const onTurbo = useCallback(() => session.turbo(), [session]);
   return (
     <>
+      {touch && v.phase !== 'loading' && v.phase !== 'error' && (
+        <TouchControls
+          source={touch}
+          onPause={() => session.pause()}
+          live={racing || v.phase === 'countdown'}
+          {...(v.mechanics?.enabled
+            ? {
+                turbo: {
+                  available: true,
+                  ready: racing && v.mechanics.ready,
+                  count: v.mechanics.turboCharges,
+                  onTurbo,
+                },
+              }
+            : {})}
+        />
+      )}
       <header className="race-game-header">
         <Link to="/race" className="race-back">
           <Icon name="back" size={18} />
@@ -449,13 +470,24 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 >
                   {t('race.phone')}
                 </button>
+                {session.touch && touchCapable() && v.input !== 'touch' && (
+                  <button
+                    type="button"
+                    className="wwm-btn wwm-btn--ghost"
+                    data-testid="race-use-touch"
+                    onClick={() => session.setInput('touch')}
+                  >
+                    {t('race.touch')}
+                  </button>
+                )}
                 <p className="race-controls">{controls}</p>
+                {touch && <p className="race-controls">{t('race.orientationTip')}</p>}
               </>
             )}
             {v.phase === 'paused' && (
               <>
                 <h1>{t('race.paused')}</h1>
-                <p>{t('race.pausedHint')}</p>
+                <p>{t(touch ? 'race.pausedTouchHint' : 'race.pausedHint')}</p>
                 <strong className="race-result-time">{raceTime(v.progress.tick)}</strong>
                 <div className="race-actions">
                   <button

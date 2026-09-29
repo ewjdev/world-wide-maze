@@ -15,6 +15,7 @@ const state = vi.hoisted(() => ({
   clearFails: false,
   events: [] as SimEvent[],
   resetCount: 0,
+  stepped: [] as { jump: boolean; power: boolean; tiltX: number }[],
 }));
 vi.mock('@wwm/engine', () => ({
   createEngine: async () => ({
@@ -51,14 +52,20 @@ vi.mock('@wwm/physics', async (importOriginal) => ({
       dispose() {},
       setLock() {},
       getBallState: ball,
-      step: () => {
+      step: (input?: { jump?: boolean; power?: boolean; tiltX?: number }) => {
+        state.stepped.push({
+          jump: !!input?.jump,
+          power: !!input?.power,
+          tiltX: input?.tiltX ?? 0,
+        });
         x += 0.01;
         return { ball: ball(), events: state.events.splice(0), elevators: [] };
       },
     };
   },
 }));
-vi.mock('@wwm/net', () => {
+vi.mock('@wwm/net', async (importOriginal) => {
+  const { TouchInputSource } = await importOriginal<typeof import('@wwm/net')>();
   class Input {
     sample() {
       return { tiltX: 0, tiltZ: 0, frameYaw: 0, power: false, jump: false };
@@ -71,6 +78,7 @@ vi.mock('@wwm/net', () => {
   return {
     KeyboardInputSource: Input,
     GamepadInputSource: Input,
+    TouchInputSource,
     neutralSample: (frameYaw: number) => ({ tiltX: 0, tiltZ: 0, frameYaw, power: false, jump: false }),
   };
 });
@@ -151,6 +159,7 @@ beforeEach(async () => {
   state.clearFails = false;
   state.events = [];
   state.resetCount = 0;
+  state.stepped = [];
   state.prepare.mockClear();
   state.engineDispose.mockClear();
   vi.stubGlobal('window', new EventTarget());
@@ -312,6 +321,9 @@ test.each(['blur', 'hidden'])('focus latch blocks GO after %s during asynchronou
   Object.defineProperty(document, 'hidden', { value: false, configurable: true });
   window.dispatchEvent(new Event('focus'));
   game.resume();
+  // an interrupted countdown resumes as a countdown; the next frame finishes it and the one after steps
+  expect(game.getView().phase).toBe('countdown');
+  frame();
   frame();
   expect(game.debugState().tick).toBeGreaterThan(0);
 });
@@ -383,4 +395,121 @@ test('manual recovery costs one life, debounces pending requests, and stops befo
   expect(game.getView().phase).toBe('exhausted');
   expect(state.resetCount).toBe(2);
   expect(game.getView().progress.reasons).toContain('recovery');
+});
+
+// ── same-device touch: presentation reads never consume a press; only a fixed tick does ───────────────
+
+async function touching() {
+  session = new RaceSession(course, { countdownSec: 0, noAutoPause: true });
+  await session.mount({
+    append() {},
+    replaceChildren() {},
+    clientWidth: 1000,
+    clientHeight: 800,
+  } as unknown as HTMLElement);
+  session.setInput('touch');
+  await session.start();
+  frame(); // countdown → racing (no tick yet)
+  expect(session.getView().phase).toBe('racing');
+  expect(state.stepped).toHaveLength(0);
+  return session;
+}
+function frameAt(ms: number) {
+  now += ms;
+  state.frame?.(now);
+}
+
+test('a quick tap survives render frames that run no simulation tick, then fires exactly once', async () => {
+  const game = await touching();
+  const touch = game.touch;
+  if (!touch) throw new Error('touch source missing');
+  touch.setJump(true);
+  touch.setJump(false); // finger already lifted before any tick
+  frameAt(3); // 3 ms < one 120 Hz tick: zero-step frame
+  frameAt(3);
+  expect(state.stepped).toHaveLength(0);
+  expect(touch.peek(0).jump).toBe(true); // still pending; rendering never acknowledged it
+  frameAt(9); // now at least one tick
+  expect(state.stepped.length).toBeGreaterThan(0);
+  expect(state.stepped[0]?.jump).toBe(true);
+  frameAt(40); // catch-up ticks after the acknowledgement see no new press
+  expect(state.stepped.slice(1).every((s) => !s.jump)).toBe(true);
+});
+
+test('a held Jump is true on every tick without new edges; release ends it; catch-up ticks share held state', async () => {
+  const game = await touching();
+  const touch = game.touch;
+  if (!touch) throw new Error('touch source missing');
+  touch.setStick(1, 0);
+  touch.setJump(true);
+  frameAt(50); // ~6 catch-up ticks in one render frame
+  expect(state.stepped.length).toBeGreaterThan(3);
+  expect(state.stepped.every((s) => s.jump && s.power && s.tiltX !== 0)).toBe(true);
+  touch.setJump(false);
+  const before = state.stepped.length;
+  frameAt(50);
+  expect(state.stepped.slice(before).every((s) => !s.jump && s.power)).toBe(true);
+});
+
+test.each([30, 60, 120, 144])(
+  'a single tap fires exactly one Jump tick at a %i Hz render rate',
+  async (hz) => {
+    const game = await touching();
+    const touch = game.touch;
+    if (!touch) throw new Error('touch source missing');
+    const dt = 1000 / hz;
+    for (let i = 0; i < 3; i++) frameAt(dt);
+    touch.setJump(true);
+    touch.setJump(false); // a tap that begins and ends between two render frames
+    for (let i = 0; i < hz; i++) frameAt(dt);
+    expect(state.stepped.filter((s) => s.jump)).toHaveLength(1);
+  },
+);
+
+test('a press held into the countdown cannot fire at Go; pause releases every contact', async () => {
+  session = new RaceSession(course, { countdownSec: 1, noAutoPause: true });
+  await session.mount({
+    append() {},
+    replaceChildren() {},
+    clientWidth: 1000,
+    clientHeight: 800,
+  } as unknown as HTMLElement);
+  session.setInput('touch');
+  await session.start();
+  const touch = session.touch;
+  if (!touch) throw new Error('touch source missing');
+  touch.setJump(true); // finger down during the countdown
+  for (let i = 0; i < 12; i++) frameAt(100); // countdown → racing (a frame is capped at 100 ms)
+  frameAt(50);
+  expect(session.getView().phase).toBe('racing');
+  expect(state.stepped.length).toBeGreaterThan(0);
+  expect(state.stepped.some((s) => s.jump)).toBe(false);
+  touch.setStick(1, 0);
+  session.pause();
+  expect(touch.peek(0)).toMatchObject({ power: false, jump: false });
+  expect(session.getView().progress.reasons).toContain('pause');
+});
+
+test('pausing a countdown resumes the countdown, keeps the practice mark, and a retry restores eligibility', async () => {
+  session = new RaceSession(course, { countdownSec: 2, noAutoPause: true });
+  await session.mount({
+    append() {},
+    replaceChildren() {},
+    clientWidth: 1000,
+    clientHeight: 800,
+  } as unknown as HTMLElement);
+  session.setInput('touch');
+  await session.start();
+  frameAt(500);
+  session.pause();
+  expect(session.getView().phase).toBe('paused');
+  frameAt(5000); // time passes while paused: the countdown must not advance
+  session.resume();
+  expect(session.getView().phase).toBe('countdown');
+  expect(session.getView().countdown).toBeGreaterThan(0);
+  expect(session.getView().progress.reasons).toContain('pause');
+  session.pause();
+  await session.start(); // retry from the pause menu: a fresh, eligible attempt
+  expect(session.getView().phase).toBe('countdown');
+  expect(session.getView().progress.reasons).toEqual([]);
 });

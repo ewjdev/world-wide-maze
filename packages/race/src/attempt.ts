@@ -67,7 +67,7 @@ export function validateAttempt(value: unknown): value is RaceAttempt {
     a.id.length < 1 ||
     a.id.length > 128 ||
     !Number.isFinite(a.createdAt) ||
-    !['keyboard', 'phone', 'mixed'].includes(a.inputSource) ||
+    !['keyboard', 'phone', 'touch', 'mixed'].includes(a.inputSource) ||
     !['finished', 'abandoned'].includes(a.outcome) ||
     !c ||
     !p ||

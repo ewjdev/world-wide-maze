@@ -10,6 +10,7 @@ import { formatCode, QrCode } from '../controller/index.ts';
 import { type CatalogEntry, FIXTURES, PRACTICE } from '../game/catalog.ts';
 import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
+import { touchCapable } from '../input/capability.ts';
 import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { ModeNav } from '../race/ModeNav.tsx';
@@ -129,10 +130,14 @@ function Title() {
 
 function HowTo() {
   const g = useGame();
+  const v = useView();
   const { t } = useTranslation();
   const go = useRef<HTMLButtonElement>(null);
   useEffect(() => go.current?.focus(), []);
-  const steps = [t('howto.step1'), t('howto.step2'), t('howto.step3'), t('howto.step4')];
+  const touch = v.inputMode === 'touch';
+  const steps = touch
+    ? [t('touch.howto.step1'), t('touch.howto.step2'), t('touch.howto.step3'), t('touch.howto.step4')]
+    : [t('howto.step1'), t('howto.step2'), t('howto.step3'), t('howto.step4')];
   return (
     <section className="wwm-panel wwm-howto" aria-labelledby="howto-h">
       <h2 id="howto-h" className="wwm-h2">
@@ -149,6 +154,7 @@ function HowTo() {
           </li>
         ))}
       </ol>
+      {touch && <p className="wwm-muted">{t('touch.orientationTip')}</p>}
       <div className="wwm-row wwm-row--end">
         <button type="button" className="wwm-btn wwm-btn--ghost" onClick={() => g.howtoDone()}>
           {t('common.skip')}
@@ -333,6 +339,16 @@ function Pairing() {
         <button type="button" className="wwm-btn wwm-btn--ghost" onClick={() => g.back()}>
           <Icon name="back" /> {t('common.back')}
         </button>
+        {g.touch && touchCapable() && (
+          <button
+            type="button"
+            className="wwm-btn wwm-btn--primary"
+            onClick={() => g.playOnDevice()}
+            data-testid="play-on-device"
+          >
+            <Icon name="phone" /> {t('touch.playHere')}
+          </button>
+        )}
         <button
           type="button"
           className="wwm-btn wwm-btn--secondary"

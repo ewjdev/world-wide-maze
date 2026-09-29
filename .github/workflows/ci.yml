@@ -110,6 +110,9 @@ jobs:
         env:
           VITE_TELEMETRY_URL: ""
           VITE_RACE_ENABLED: "true"
+          # Same-device touch play (plans/mobile-browser-game-execution.md): on in Previews so phones can qualify it.
+          # The production build step stays without this variable, so production keeps legacy controls until G4/G5.
+          VITE_MOBILE_CONTROLS_ENABLED: "true"
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews

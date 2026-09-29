@@ -306,22 +306,200 @@ describe('TouchInputSource', () => {
     expect(menus).toBe(1);
   });
 
-  test('attachStick maps pointer drags from the element centre', () => {
+  test('peek never acknowledges a pending JUMP; sample does, once', () => {
     const src = new TouchInputSource();
-    const el = Object.assign(new EventTarget(), {
-      getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 200 }),
+    src.setJump(true);
+    src.setJump(false); // a tap that finished before any simulation tick
+    expect(src.peek(0).jump).toBe(true);
+    expect(src.peek(1).jump).toBe(true);
+    expect(src.sample(2).jump).toBe(true);
+    expect(src.peek(3).jump).toBe(false);
+    expect(src.sample(4).jump).toBe(false);
+  });
+
+  test('a held JUMP is one rising edge; catch-up ticks see the held state, release ends it', () => {
+    const src = new TouchInputSource();
+    src.setJump(true);
+    src.setJump(true); // repeated press events cannot re-arm
+    expect(src.sample(0).jump).toBe(true);
+    expect(src.sample(1).jump).toBe(true); // still held
+    src.setJump(false);
+    expect(src.sample(2).jump).toBe(false);
+    src.setJump(true);
+    src.setJump(false);
+    src.setJump(true);
+    src.setJump(false); // two complete taps before consumption coalesce into one press
+    expect(src.sample(3).jump).toBe(true);
+    expect(src.sample(4).jump).toBe(false);
+  });
+
+  test('clearPending drops a press and ignores a held JUMP until it is pressed again', () => {
+    const src = new TouchInputSource();
+    src.setJump(true);
+    src.clearPending(); // countdown: finger already down
+    expect(src.peek(0).jump).toBe(false);
+    expect(src.sample(1).jump).toBe(false);
+    src.setJump(false);
+    src.setJump(true);
+    expect(src.sample(2).jump).toBe(true);
+  });
+
+  test('reset gives a neutral next sample, with no latent JUMP or stick', () => {
+    const src = new TouchInputSource();
+    src.setStick(1, 1);
+    src.setJump(true);
+    src.reset();
+    expect(src.peek(0)).toMatchObject({ tiltX: 0, tiltZ: 0, power: false, jump: false });
+    expect(src.sample(1)).toMatchObject({ power: false, jump: false });
+    expect(src.active).toBe(false);
+  });
+
+  test('dead zone, diagonal normalisation and bounded sensitivity', () => {
+    const src = new TouchInputSource();
+    src.setStick(0.1, 0);
+    expect(src.peek(0)).toMatchObject({ power: false, tiltX: 0 });
+    src.setStick(1, 1);
+    const d = src.peek(1);
+    expect(Math.hypot(d.tiltX, d.tiltZ)).toBeCloseTo(KEYBOARD_TILT, 9);
+    expect(d.tiltX).toBeCloseTo(d.tiltZ, 9);
+    src.setSensitivity(99);
+    src.setStick(0.5, 0);
+    expect(src.peek(2).tiltX).toBeGreaterThan(0);
+    src.setSensitivity(Number.NaN); // malformed values fall back to 1
+    expect(Number.isFinite(src.peek(3).tiltX)).toBe(true);
+  });
+
+  test('frameYaw comes from the camera and is applied at read time', () => {
+    let yaw = 0.25;
+    const src = new TouchInputSource({ frameYaw: () => yaw });
+    expect(src.peek(0).frameYaw).toBe(0.25);
+    yaw = -1;
+    expect(src.sample(1).frameYaw).toBe(-1);
+  });
+
+  describe('bound controls', () => {
+    const stickEl = () =>
+      Object.assign(new EventTarget(), {
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 200 }),
+        captured: [] as number[],
+        setPointerCapture(id: number) {
+          this.captured.push(id);
+        },
+      });
+    const pe = (el: EventTarget, type: string, id: number, x = 0, y = 0) =>
+      el.dispatchEvent(Object.assign(new Event(type), { pointerId: id, clientX: x, clientY: y }));
+
+    test('fixed origin reads deflection from the visible home and clamps at the rim', () => {
+      const src = new TouchInputSource();
+      const el = stickEl();
+      const detach = src.attachStick(el, { origin: 'fixed' });
+      pe(el, 'pointerdown', 1, 200, 100); // right rim
+      expect(el.captured).toEqual([1]);
+      expect(src.peek(0)).toMatchObject({ power: true, tiltX: KEYBOARD_TILT });
+      pe(el, 'pointermove', 1, 100, 0); // top rim = forward
+      expect(src.peek(1).tiltZ).toBeCloseTo(KEYBOARD_TILT, 9);
+      pe(el, 'pointermove', 1, 900, 100); // dragged far beyond the bounds
+      expect(Math.hypot(src.peek(2).tiltX, src.peek(2).tiltZ)).toBeCloseTo(KEYBOARD_TILT, 9);
+      pe(el, 'pointerup', 1);
+      expect(src.peek(3).power).toBe(false);
+      detach();
+      pe(el, 'pointerdown', 1, 200, 100);
+      expect(src.peek(4).power).toBe(false);
     });
-    const detach = src.attachStick(el);
-    const pe = (type: string, x: number, y: number) =>
-      el.dispatchEvent(Object.assign(new Event(type), { pointerId: 1, clientX: x, clientY: y }));
-    pe('pointerdown', 200, 100); // right rim
-    expect(src.sample(0)).toMatchObject({ power: true, tiltX: KEYBOARD_TILT });
-    pe('pointermove', 100, 0); // top rim = forward
-    expect(src.sample(1).tiltZ).toBeCloseTo(KEYBOARD_TILT, 9);
-    pe('pointerup', 100, 0);
-    expect(src.sample(2).power).toBe(false);
-    detach();
-    pe('pointerdown', 200, 100);
-    expect(src.sample(3).power).toBe(false);
+
+    test('adaptive origin: no deflection from an off-centre first contact, origin fixed for the gesture', () => {
+      const src = new TouchInputSource();
+      const el = stickEl();
+      const seen: { originX: number; originY: number }[] = [];
+      src.attachStick(el, { onChange: (v) => seen.push({ originX: v.originX, originY: v.originY }) });
+      pe(el, 'pointerdown', 1, 190, 100); // 90 px right of home, radius 100
+      expect(src.peek(0).power).toBe(false); // no initial acceleration
+      expect(seen[0]?.originX).toBeCloseTo(60, 9); // shifted, bounded to 0.6 × radius
+      pe(el, 'pointermove', 1, 290, 100); // one radius from the first contact
+      expect(src.peek(1)).toMatchObject({ power: true, tiltX: KEYBOARD_TILT });
+      const last = seen.at(-1);
+      expect(last?.originX).toBeCloseTo(60, 9); // origin held for the whole gesture
+      pe(el, 'pointerup', 1);
+      expect(seen.at(-1)).toMatchObject({ originX: 0, originY: 0 });
+    });
+
+    test('a second contact cannot steal the stick; unrelated releases are ignored', () => {
+      const src = new TouchInputSource();
+      const el = stickEl();
+      src.attachStick(el, { origin: 'fixed' });
+      pe(el, 'pointerdown', 1, 200, 100);
+      pe(el, 'pointerdown', 2, 0, 100);
+      pe(el, 'pointermove', 2, 0, 100);
+      expect(src.peek(0).tiltX).toBeCloseTo(KEYBOARD_TILT, 9); // still pointer 1
+      pe(el, 'pointerup', 2);
+      expect(src.peek(1).power).toBe(true);
+      pe(el, 'pointercancel', 1);
+      expect(src.peek(2).power).toBe(false);
+    });
+
+    test('lost capture releases the stick and the button; a missing capture API falls back to leave', () => {
+      const src = new TouchInputSource();
+      const stick = stickEl();
+      const jump = stickEl();
+      src.attachStick(stick, { origin: 'fixed' });
+      src.attachButton(jump);
+      pe(stick, 'pointerdown', 1, 200, 100);
+      pe(jump, 'pointerdown', 2);
+      expect(src.peek(0)).toMatchObject({ power: true, jump: true });
+      pe(stick, 'lostpointercapture', 1);
+      pe(jump, 'lostpointercapture', 2);
+      expect(src.sample(1)).toMatchObject({ power: false, jump: true }); // the press itself was real
+      expect(src.sample(2).jump).toBe(false);
+      const bare = Object.assign(new EventTarget(), {
+        getBoundingClientRect: () => ({ left: 0, top: 0, width: 200, height: 200 }),
+      });
+      src.attachStick(bare, { origin: 'fixed' });
+      pe(bare, 'pointerdown', 3, 200, 100);
+      expect(src.peek(3).power).toBe(true);
+      pe(bare, 'pointerleave', 3);
+      expect(src.peek(4).power).toBe(false);
+    });
+
+    test('steer and jump work together; JUMP contacts cannot move the stick', () => {
+      const src = new TouchInputSource();
+      const stick = stickEl();
+      const jump = stickEl();
+      src.attachStick(stick, { origin: 'fixed' });
+      src.attachButton(jump);
+      pe(stick, 'pointerdown', 1, 100, 0);
+      pe(jump, 'pointerdown', 2, 500, 500);
+      pe(jump, 'pointermove', 2, 0, 0);
+      expect(src.sample(0)).toMatchObject({ power: true, jump: true });
+      pe(jump, 'pointerup', 2);
+      expect(src.sample(1)).toMatchObject({ power: true, jump: false });
+    });
+
+    test('reset releases owning pointers: old contacts are ignored until a new one lands', () => {
+      const src = new TouchInputSource();
+      const el = stickEl();
+      src.attachStick(el, { origin: 'fixed' });
+      pe(el, 'pointerdown', 1, 200, 100);
+      src.reset();
+      pe(el, 'pointermove', 1, 200, 100); // the old finger keeps moving
+      expect(src.peek(0).power).toBe(false);
+      pe(el, 'pointerup', 1);
+      pe(el, 'pointerdown', 4, 200, 100);
+      expect(src.peek(1).power).toBe(true);
+    });
+
+    test('dispose detaches and releases every bound control; teardown then remount starts clean', () => {
+      const el = stickEl();
+      const a = new TouchInputSource();
+      a.attachStick(el, { origin: 'fixed' });
+      pe(el, 'pointerdown', 1, 200, 100);
+      a.dispose();
+      expect(a.peek(0).power).toBe(false);
+      pe(el, 'pointerdown', 2, 200, 100);
+      expect(a.peek(1).power).toBe(false);
+      const b = new TouchInputSource();
+      b.attachStick(el, { origin: 'fixed' });
+      pe(el, 'pointerdown', 3, 200, 100);
+      expect(b.peek(0).power).toBe(true);
+    });
   });
 });
