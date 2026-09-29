@@ -61,7 +61,9 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
       let last = '';
       setInterval(() => {
         const now = document.body?.dataset.phase ?? '';
-        if (now !== last) log.push(`phase ${(last = now)}`);
+        if (now === last) return;
+        last = now;
+        log.push(`phase ${now}`);
       }, 40);
     });
     page.on('console', (m) => {
