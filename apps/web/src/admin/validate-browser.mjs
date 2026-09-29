@@ -15,6 +15,18 @@ page.on('pageerror', (error) => failures.push(error.message));
 let mode = 'ready';
 const mutations = [];
 let imageRequests = 0;
+const budget = {
+  initialized: true,
+  month: '2026-09',
+  level: 'normal',
+  spent: 10_040_000,
+  storedBytes: 0,
+  staticOnly: false,
+  telemetryReady: false,
+  disabled: ['jev'],
+  daily: {},
+  monthly: {},
+};
 const run = {
   runId: 'review-fixture',
   submittedUrl: 'https://example.com/learning',
@@ -64,6 +76,10 @@ await page.route('**/api/admin/**', async (route) => {
         status: 409,
         json: { error: 'The run changed. Reload and review its current state.' },
       });
+    if (path.endsWith('/budget')) {
+      Object.assign(budget, request.postDataJSON());
+      return route.fulfill({ json: budget });
+    }
     if (path.endsWith('/decision')) run.status = request.postDataJSON().status;
     return route.fulfill({ json: { ok: true } });
   }
@@ -74,6 +90,7 @@ await page.route('**/api/admin/**', async (route) => {
       body: '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="320"><rect width="800" height="320" fill="#efece4"/><text x="32" y="80" font-family="sans-serif" font-size="32" fill="#16181d">Owned test site</text><text x="32" y="135" font-family="sans-serif" font-size="20" fill="#353a44">Synthetic capture evidence for UI validation</text></svg>',
     });
   }
+  if (path.endsWith('/budget')) return route.fulfill({ json: budget });
   if (path.endsWith('/rules')) return route.fulfill({ json: { items: run.rules } });
   if (path.endsWith('/attempts'))
     return route.fulfill({
@@ -103,7 +120,7 @@ try {
   await page.getByText('Loading catalog…', { exact: true }).waitFor();
   await page.getByRole('button', { name: /Learning garden/ }).waitFor();
   mode = 'ready';
-  await page.getByRole('button', { name: 'Manage URL and domain policy' }).click();
+  await page.getByRole('link', { name: 'URL & domain rules', exact: true }).click();
   await page.getByLabel('Rule target').fill('https://never-captured.example/');
   await page.getByLabel('Rule reason').fill('Prevent first capture');
   const ruleForm = page.getByRole('form', { name: 'Set URL or domain rule' });
@@ -120,21 +137,39 @@ try {
       reason: 'Prevent first capture',
     },
   });
-  await page.getByRole('button', { name: 'Hide URL and domain policy' }).click();
-  await page.getByRole('button', { name: 'Inspect capture attempts' }).click();
+  await page.getByRole('link', { name: 'Review captures', exact: true }).click();
+  await page.getByRole('link', { name: 'Capture attempts', exact: true }).click();
   await page.getByText('Capture timed out', { exact: true }).waitFor();
-  await page.getByRole('button', { name: 'Hide capture attempts' }).click();
+  await page.getByRole('link', { name: 'Review captures', exact: true }).click();
   await page.getByRole('button', { name: /Learning garden/ }).click();
   await page.getByRole('heading', { name: 'Capture evidence' }).waitFor();
   assert.equal(imageRequests, 0, 'Evidence must not load before disclosure');
   await page.getByText('Show screenshot and 1 slice previews').click();
   await page.getByAltText('Full capture of example.com').waitFor();
+  assert.equal(imageRequests, 1, 'Only the selected evidence image loads');
+  await page.getByLabel('Evidence image').selectOption('1');
+  await page.getByAltText('Capture slice 1 of example.com').waitFor();
+  await page.getByLabel('Evidence image').selectOption('0');
   await page.screenshot({ path: `${output}/desktop.png`, fullPage: true });
+  await page.getByText('URL rules, capture operations & history', { exact: true }).click();
   await page.getByRole('button', { name: 'Remove artifacts', exact: true }).click();
   const confirm = page.getByRole('button', { name: 'Confirm remove artifacts' });
   assert.equal(await confirm.isDisabled(), true);
   await page.getByLabel('Reason for this action').fill('Synthetic removal check');
   assert.equal(await confirm.isDisabled(), true, 'A reason alone cannot remove content');
+  await page.getByRole('link', { name: 'Services & budget', exact: true }).click();
+  await page.getByRole('link', { name: 'Skip to main content', exact: true }).focus();
+  await page.getByRole('link', { name: 'Skip to main content', exact: true }).press('Enter');
+  await page.getByRole('heading', { name: 'Services & budget', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Pause Website capture', exact: true }).click();
+  await page.getByRole('button', { name: 'Enable Website capture', exact: true }).waitFor();
+  assert.deepEqual(mutations.pop(), { path: '/api/admin/budget', body: { disabled: ['jev', 'build'] } });
+  await page.getByRole('button', { name: 'Enable Website capture', exact: true }).click();
+  await page.getByRole('button', { name: 'Pause Website capture', exact: true }).waitFor();
+  mutations.pop();
+  await page.getByRole('link', { name: 'Review captures', exact: true }).click();
+  assert.equal(await page.getByLabel('Reason for this action').inputValue(), 'Synthetic removal check');
+  assert.equal(await confirm.isDisabled(), true, 'Navigation preserves draft and confirmation requirement');
   await page.getByRole('button', { name: 'Cancel', exact: true }).click();
   assert.equal(mutations.length, 0, 'Opening and cancelling must never mutate');
   await page.getByRole('button', { name: 'Block run', exact: true }).click();
@@ -163,13 +198,14 @@ try {
     'Mobile must not overflow horizontally',
   );
   await page.screenshot({ path: `${output}/mobile.png`, fullPage: true });
+  await page.getByRole('button', { name: 'Back to capture queue', exact: true }).click();
   await page.getByRole('button', { name: 'Next', exact: true }).click();
   await page.getByText('Page 2', { exact: true }).waitFor();
   await page.getByRole('button', { name: 'Previous', exact: true }).click();
-  await page.getByText('Page 1', { exact: true }).waitFor();
+  await page.getByRole('region', { name: 'Catalog results' }).getByText('Page 1', { exact: true }).waitFor();
   mode = 'unauthorized';
   await page.reload();
-  await page.getByRole('alert').filter({ hasText: 'Operator access required' }).waitFor();
+  await page.getByRole('alert').filter({ hasText: 'Operator access required' }).first().waitFor();
   assert.equal(await page.getByRole('button', { name: 'Approve run', exact: true }).count(), 0);
   mode = 'unconfigured';
   await page.getByRole('button', { name: 'Retry catalog' }).click();
@@ -180,7 +216,10 @@ try {
       result: 'passed',
       checks: [
         'loading',
-        'evidence disclosure',
+        'evidence disclosure and single selected image',
+        'draft preservation across task navigation',
+        'keyboard skip link preserves active section',
+        'shared service pause and enable',
         'desktop and mobile',
         'no horizontal overflow',
         'reason and confirmation',

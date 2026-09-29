@@ -44,7 +44,7 @@ export function PolicyRules({ onUpdated }: { onUpdated: (message: string) => voi
   }
   return (
     <section className="admin-policy" aria-label="Manage all policy rules">
-      <h2>URL and domain policy</h2>
+      <h1>URL and domain policy</h1>
       <p className="admin-help">
         Block a URL before its first capture, or clear an existing rule. Clearing a rule leaves individual run
         decisions in place.

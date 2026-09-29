@@ -1,10 +1,17 @@
 import { type FormEvent, useCallback, useEffect, useState } from 'react';
 import type { Availability } from '../jev/client.ts';
 import { adminRequest, errorMessage } from './api.ts';
+import { type BudgetSnapshot, budgetPause } from './budget.ts';
 
 const money = (micros: number) => `$${(micros / 1e6).toFixed(4)}`;
 
-export function JevSettings() {
+export function JevSettings({
+  budgetSnapshot,
+  active = true,
+}: {
+  budgetSnapshot: BudgetSnapshot | null;
+  active?: boolean;
+}) {
   const [state, setState] = useState<Availability | null>(null);
   const [enabled, setEnabled] = useState(false);
   const [limit, setLimit] = useState('0.00');
@@ -30,6 +37,7 @@ export function JevSettings() {
     [dirty],
   );
   useEffect(() => {
+    if (!active) return;
     const abort = new AbortController();
     void refresh(abort.signal);
     const timer = setInterval(() => void refresh(abort.signal), 10000);
@@ -37,7 +45,7 @@ export function JevSettings() {
       abort.abort();
       clearInterval(timer);
     };
-  }, [refresh]);
+  }, [refresh, active]);
   async function save(event: FormEvent) {
     event.preventDefault();
     if (busy) return;
@@ -62,13 +70,30 @@ export function JevSettings() {
   return (
     <section className="admin-jev" aria-labelledby="jev-settings-title">
       <div className="admin-section-heading">
-        <h2 id="jev-settings-title">Jev maze player</h2>
-        <span>{budget?.enabled ? 'Enabled for admins' : 'Off'}</span>
+        <h1 id="jev-settings-title">Jev maze player</h1>
+        <span className="admin-status">
+          {budgetPause(budgetSnapshot, 'jev') ||
+            (!state
+              ? 'Loading…'
+              : !state.configured
+                ? 'Provider not configured'
+                : !budget?.enabled
+                  ? 'Provider calls off'
+                  : !state.available
+                    ? 'Provider currently unavailable'
+                    : 'Enabled for admins')}
+        </span>
       </div>
       <p>
         Watch Jev play, inspect decisions, and replay saved runs. Access is restricted to signed-in
         administrators.
       </p>
+      {budgetPause(budgetSnapshot, 'jev') && (
+        <p className="admin-help">
+          The shared service budget currently prevents Jev calls. Changing the provider setting below does not
+          override that gate. <a href="#services">Review services &amp; budget</a>.
+        </p>
+      )}
       {error && <p role="alert">{error}</p>}
       {!state ? (
         <button type="button" onClick={() => void refresh()}>
@@ -95,7 +120,7 @@ export function JevSettings() {
                     setDirty(true);
                   }}
                 />
-                Enable Jev provider calls
+                Allow Jev provider calls
               </label>
               <label>
                 Daily provider limit (USD)
