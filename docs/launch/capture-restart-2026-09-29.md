@@ -89,3 +89,5 @@ These are not prerequisites for the current manual capture mode.
 ## Repository verification
 
 `pnpm check` passed: typecheck, lint (existing warnings), 144 test files / 1,566 tests passed, 6 files / 43 tests skipped. Focused infrastructure tests passed (18 tests), and production/preview configuration checks passed. The new production deployment guard rejects enabled or unspecified alternate-host flags. No performance, phone, provider exhaustion, or paid load-test claim is made by this restart receipt.
+
+CI follow-up: a saved JSON receipt needed formatting, then the first full CI run hit a goal-banner timing race in an existing gameplay test. The test now observes the brief banner concurrently with the goal phase rather than starting after multiple browser round trips; all score and completion assertions remain. The focused keyboard replay passed locally with `CI=true` (software WebGL2). Final PR and production workflow results are recorded in GitHub.
