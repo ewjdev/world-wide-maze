@@ -51,6 +51,21 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
       { ...CI_HOOKS, noAutoPause: true, ...hooks },
     );
     const page = await ctx.newPage();
+    // Failure diagnostics: every phase change and orientation event, dumped by the assertions that need them.
+    await page.addInitScript(() => {
+      const log: string[] = [];
+      (window as unknown as { __log: string[] }).__log = log;
+      screen.orientation?.addEventListener('change', () =>
+        log.push(`orientation ${screen.orientation.type}`),
+      );
+      let last = '';
+      setInterval(() => {
+        const now = document.body?.dataset.phase ?? '';
+        if (now === last) return;
+        last = now;
+        log.push(`phase ${now}`);
+      }, 40);
+    });
     page.on('console', (m) => {
       const t = m.text();
       if ((m.type() === 'error' || m.type() === 'warning') && !SOFTWARE_GL_NOISE.test(t))
@@ -146,7 +161,15 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
     }
     await dispatch(cdp, 'touchEnd', [right]); // CDP ends exactly the listed points: lift the jump finger first
     await page.waitForTimeout(150);
-    expect(await page.evaluate(() => window.__wwmGame?.tilt().power)).toBe(true); // still steering
+    const still = await page.evaluate(() => ({
+      power: window.__wwmGame?.tilt().power,
+      phase: document.body.dataset.phase,
+      log: (window as unknown as { __log: string[] }).__log.slice(-12),
+    }));
+    expect(
+      { power: still.power, phase: still.phase },
+      `still steering after the jump finger lifted: ${JSON.stringify(still.log)}`,
+    ).toEqual({ power: true, phase: 'play' });
     await dispatch(cdp, 'touchEnd', [{ ...left, x: stick.x + 70 }]);
     await page.waitForFunction(() => window.__wwmGame?.tilt().power === false, null, { timeout: 5_000 });
     const after = await ball(page);
