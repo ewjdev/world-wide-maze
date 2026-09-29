@@ -1,6 +1,6 @@
 # WWM cost-control execution plan
 
-Prepared September 27, 2026. **Eric approved $50/month and implementation in one worktree/PR.** Application controls are implemented for review; provider settings and production activation remain outstanding. The original work packages below are consolidated into one PR; [the operator procedure](../docs/launch/cost-controls.md) is authoritative for the implemented limits and activation steps. Supporting audit: [cost-controls.md](cost-controls.md).
+Prepared September 27, 2026. **Eric approved $50/month and implementation in one worktree/PR.** Application controls are deployed; capture/writes resumed with manual review on September 29 UTC. The [restart receipt](../docs/launch/capture-restart-2026-09-29.md) records live controls and feature-specific outstanding gates. The original work packages below are consolidated into one PR; [the operator procedure](../docs/launch/cost-controls.md) is authoritative for the implemented limits and activation steps. Supporting audit: [cost-controls.md](cost-controls.md).
 
 ## Outcome and ownership
 
@@ -10,7 +10,7 @@ Keep normal usage near $50/month, automatically stop optional paid work at a con
 
 **Eric handles only where owner access is needed:** signing in/MFA, choosing the budget and billing-alert recipient, resolving settings shared with other projects, provider billing controls inaccessible to engineering, and physical phone acceptance. The manual steps below are a fallback for those access boundaries, not a requirement to do work that authenticated tooling can perform.
 
-No settings have been read from the signed-in provider dashboards in this planning pass. Documentation paths below were checked against current provider documentation; account-specific menus and plan capabilities must be verified during execution.
+The original planning pass used provider documentation. The September 29 restart subsequently verified and changed settings through signed-in Cloudflare dashboards; use the dated receipt for applied state.
 
 ## Execution order
 
@@ -202,19 +202,20 @@ During execution replace each `Pending` with `Verified`, `Not applicable — rea
 
 | Control | Status | Evidence required |
 | --- | --- | --- |
-| Budget and alert recipient | $50 confirmed; recipient still required | User approval in this task; no notification address assumed |
-| M1 Gateway limits | Manual — OAuth API returned 403 | Save/read back $1/day and $10/month rules in gateway wwm |
-| M2 Billing backstop | Manual — active billing attribution not established | Gateway token exists; no direct Anthropic Worker secret; BYOK vs Unified requires owner inspection |
-| M3 PostHog | Manual — billing access not available | Forwarding defaults paused until explicit operator attestation |
-| M4 Cloudflare alerts | Manual — billing settings/recipient required | $25/$35/$40 account-wide thresholds; application snapshot/logs implemented |
-| M5 Edge protection | Manual — ruleset API returned 403 | Zone Free Website plan verified; exact emergency expression/rehearsal in operator procedure |
-| M6 Voice billing | Manual — provider subscription access required | CLI character cap and no retries implemented; no public TTS generation |
-| Work packages 1–5 | Application implementation consolidated in one PR | Validation evidence in build log; no production deploy performed |
-| Phone acceptance | No transport-cadence change | Local real WebSocket expiry test; physical phone acceptance remains a rollout check |
-| Cost reconciliation | Manual before activation, then every UTC month | New ledger starts uninitialized and cannot enable without spend + storage inputs |
+| Budget and alert recipient | Verified | $50 target retained; Cloudflare prefilled account recipient used |
+| M1 Gateway limits | Verified configuration | $1/day Sliding, $10/month Fixed, no dimensions; required credentials ON; no exhaustion test |
+| M2 Billing backstop | Partial; AI remains paused | Stored Anthropic key alias and recharge OFF verified; key workspace and payer cap unverified |
+| M3 PostHog | Blocked on provider billing readback | Forwarding paused, operator attestation unchecked |
+| M4 Cloudflare alerts | Verified configuration | $25/$35/$40 added; existing alerts retained; email delivery not tested |
+| M5 Edge protection | Verified configuration and bounded emergency response | API rule active; emergency block rehearsed and disabled; invocation metrics not collected |
+| M6 Voice billing | Blocked on provider subscription readback | CLI cap/no retries implemented; no public TTS generation |
+| Work packages 1–5 | Deployed | Tested main 013c2872; capture/build/storage/manual approval/playback control passed |
+| ESPN | Unresolved hosted capture failure | Admission passed; extracting then generic CAPTURE_BLOCKED; cause not established |
+| Phone acceptance | Not performed in restart | Desktop browser gameplay only |
+| Cost reconciliation | September verified; repeat each UTC month | $10 upward reconciliation, latest acceptance $10.02014; 16,060,009 reserved stage bytes |
 
-Implementation choices: fixed conservative debits replace reserve/settle/refund complexity; failures never refund. The $10 room pool binds at 20,000 minutes before the original 50,000-minute ceiling. UTC monthly rollover pauses rather than automatically granting a fresh allowance. Artifact caching is behind authoritative catalog checks. All new public preview APIs are closed, including rooms; static practice is the preview acceptance path. Threshold logs and dashboard states are implemented, but no email integration was configured.
+Implementation choices: fixed conservative debits replace reserve/settle/refund complexity; failures never refund. The $10 room pool binds at 20,000 minutes before the original 50,000-minute ceiling. UTC monthly rollover pauses rather than automatically granting a fresh allowance. Artifact caching is behind authoritative catalog checks. All new public preview APIs are closed, including rooms; static practice is the preview acceptance path. Threshold logs and dashboard states are implemented; Cloudflare account billing alerts were added during restart.
 
-Reference-aware orphan/history purging, production-sized D1 row-cost measurements and measured cleanup throughput remain operational follow-ups. They are not prerequisites to bounded new write admission: the 20 GiB storage ceiling and conservative no-credit counter stop growth until manual reconciliation. This PR preserves existing catalog/score history instead of introducing an unreviewed destructive migration. Provider/edge enforcement and end-to-end production acceptance remain manual rollout gates, not completed work. The Worker preview-list API returned no existing previews at inspection; recheck at rollout.
+Reference-aware orphan/history purging, production-sized D1 row-cost measurements and measured cleanup throughput remain operational follow-ups. They are not prerequisites to bounded new write admission: the 20 GiB storage ceiling and conservative no-credit counter stop growth until manual reconciliation. This PR preserves existing catalog/score history instead of introducing an unreviewed destructive migration. Use the receipt to distinguish verified configuration, bounded production acceptance and remaining provider gates. Preview inventory was empty and alternate hosts were disabled during restart.
 
 Only after this record is complete should we describe the site as protected by the new controls. Until then, communicate separately what is planned, locally tested, deployed, and verified at each provider.

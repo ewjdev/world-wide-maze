@@ -176,6 +176,18 @@ describe('id patching + deploy checks', () => {
     expect(checkDeployConfig('production', w, m, cfg).problems).toEqual([]);
     expect(checkDeployConfig('previews', w, m, cfg).problems).toEqual([]);
   });
+  test.each(['workers_dev', 'preview_urls'])(
+    'production refuses public alternate hosts through %s',
+    (key) => {
+      for (const value of [true, undefined]) {
+        const w = parseJsonc(WRANGLER) as { env: { production: Record<string, unknown> } };
+        w.env.production[key] = value;
+        expect(checkDeployConfig('production', w, parseJsonc(MIGRATIONS), cfg).problems).toContain(
+          'env.production: workers.dev and Preview URLs must stay disabled until alternate-host protection is reviewed',
+        );
+      }
+    },
+  );
   test('after provisioning both targets pass, and comments survive', () => {
     const { c, w, m } = provisioned();
     const wc = parseJsonc(w.text);

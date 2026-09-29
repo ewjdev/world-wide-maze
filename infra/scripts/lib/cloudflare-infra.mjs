@@ -432,8 +432,10 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
       problems.push(
         `${where}: no custom domain route (set "domain" in infra/cloudflare.config.json, re-run provision)`,
       );
-    if (env.preview_urls !== true)
-      warnings.push(`${where}.preview_urls is not true: Preview URLs on workers.dev stay off`);
+    if (env.workers_dev !== false || env.preview_urls !== false)
+      problems.push(
+        `${where}: workers.dev and Preview URLs must stay disabled until alternate-host protection is reviewed`,
+      );
   } else {
     // Previews must never touch production data.
     const prod = env;

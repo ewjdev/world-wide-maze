@@ -1,0 +1,23 @@
+: wwm job stream
+
+event: progress
+data: {"step":"queued","pct":0}
+
+event: progress
+data: {"step":"capturing","pct":5}
+
+event: progress
+data: {"step":"extracting","pct":30}
+
+event: progress
+data: {"step":"building","pct":50}
+
+event: progress
+data: {"step":"validating","pct":70}
+
+event: progress
+data: {"step":"storing","pct":85}
+
+event: error
+data: {"code":"CAPTURE_BLOCKED","message":"This page is awaiting content review before it can be shared."}
+
