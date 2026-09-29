@@ -4,6 +4,8 @@
 
 This file is the **single source of truth for scope and coordination**. Each phase has its own plan file (linked below), written so one sub-agent can execute it without reading the others.
 
+**Mobile browser track (planned, 2026-09-29):** [First-class mobile browser game execution plan](mobile-browser-game-execution.md) covers same-device touch play across Original/practice and Race, complete mobile flows, and physical-device release gates. For this track, its same-device entry and both-orientation defaults supersede the older pairing-first/portrait-lock assumptions below; the separate paired-phone controller remains supported. Implementation and device qualification are pending.
+
 **Required reading for every agent:**
 1. This file.
 2. [contracts.md](contracts.md), the shared types and protocols. **Never change these unilaterally.**
