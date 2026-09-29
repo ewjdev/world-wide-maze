@@ -35,7 +35,7 @@ export function CaptureAttempts({ onSelect }: { onSelect: (runId: string) => voi
   }
   return (
     <section className="admin-policy" aria-label="Capture attempts">
-      <h2>Capture attempts</h2>
+      <h1>Capture attempts</h1>
       <p className="admin-help">
         Inspect jobs and failures, including captures that never produced a saved maze. Times show the most
         recent update.
