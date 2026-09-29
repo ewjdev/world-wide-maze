@@ -1,0 +1,14 @@
+: wwm job stream
+
+event: progress
+data: {"step":"queued","pct":0}
+
+event: progress
+data: {"step":"capturing","pct":5}
+
+event: progress
+data: {"step":"extracting","pct":30}
+
+event: error
+data: {"code":"CAPTURE_BLOCKED","message":"could not load the page"}
+

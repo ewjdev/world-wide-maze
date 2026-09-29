@@ -248,12 +248,16 @@ describe.skipIf(!HAS_CHROMIUM)('game e2e (Chromium + workerd)', () => {
     await waitPhase(page, 'play', 30_000);
     // WebGPU on a real GPU (locally); WebGL2 in CI, where the pages have no WebGPU (browser-env.ts).
     expect((await engineStats(page))?.backend).toBe(EXPECTED_BACKEND);
-    await waitPhase(page, 'goal', 90_000);
+    // Observe the brief sign while waiting for the goal, before further browser round trips.
+    // At 3x speed its 1.6-second display can finish during sequential CI assertions.
+    await Promise.all([
+      waitPhase(page, 'goal', 90_000),
+      page.getByTestId('sign-goal').waitFor({ timeout: 90_000 }),
+    ]);
     const atGoal = await state(page);
     expect(atGoal?.driver).toBe('lockstep');
     expect(atGoal?.tick).toBe(goalTick);
     expect(atGoal?.timer.int).toBe(timeInt);
-    await page.getByTestId('sign-goal').waitFor({ timeout: 20_000 });
     await waitPhase(page, 'result', 20_000);
     const total = page.locator('[data-testid=res-total][data-final]:not([data-final=""])');
     await total.waitFor({ timeout: 20_000 });

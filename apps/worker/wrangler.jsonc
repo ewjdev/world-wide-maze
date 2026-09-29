@@ -137,8 +137,9 @@
       // [{ "pattern": "<domain>", "custom_domain": true }]. Needs the "Workers Routes: Edit" zone permission once.
       "routes": [{ "pattern": "wwm.ewj.dev", "custom_domain": true }],
       "workers_dev": false,
-      // Required for Preview URLs on workers.dev: pr-<N>-wwm.<account-subdomain>.workers.dev (HTTPS).
-      "preview_urls": true,
+      // Keep alternate workers.dev hosts closed: the WWM zone's edge rules do not cover them.
+      // Reopening PR previews also requires reviewed access controls and WWM_PREVIEWS_ENABLED.
+      "preview_urls": false,
       "observability": { "enabled": true, "head_sampling_rate": 0.1 },
       "limits": { "cpu_ms": 300000 },
       // Web app. `assets` stays here (not in `previews`): each Preview uploads the assets of its own branch.

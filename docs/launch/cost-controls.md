@@ -1,6 +1,6 @@
 # $50 cost controls: operator procedure
 
-Approved by Eric on September 27, 2026. This change is delivered for PR review; it has not been deployed. **$50 is an operating target, not a guaranteed maximum invoice.** Denied Worker requests, existing storage, independent CLI runs and shared provider accounts can still incur charges. Complete the provider settings and emergency edge procedure below before enabling paid work.
+Approved by Eric on September 27, 2026. Application controls are deployed. Capture and writes resumed with manual review on September 29 UTC; see the [restart receipt and remaining provider steps](capture-restart-2026-09-29.md). **$50 is an operating target, not a guaranteed maximum invoice.** Denied Worker requests, existing storage, independent CLI runs and shared provider accounts can still incur charges. Complete the provider settings and emergency edge procedure below before enabling paid work.
 
 ## What the application enforces
 
@@ -28,11 +28,11 @@ Home and `/log` are static assets; `/play/practice?offline=1` uses bundled geome
 
 Artifact caching happens **behind** a current catalog authorization on every request. Browser responses stay `private, no-store`; warm cached stages/textures do not bypass a subsequent takedown. Cleanup keeps the existing reference-aware catalog deletion rules and now runs six times/day. It does not blanket-expire a bucket, delete curated content, erase review history or remove audio.
 
-## Before merge and paid activation
+## Reconciliation and paid activation
 
-Merging to main currently triggers the production deployment workflow. The new production ledger starts **uninitialized**, so public dynamic routes return 429 while static pages work. Telemetry also starts unapproved. Plan for this intentional pause; do not “fix” it by setting `COST_CONTROLS=0` (production ignores that bypass).
+Merging to main triggers the production deployment workflow when `WWM_DEPLOY_ENABLED=true`. A new production ledger starts **uninitialized**, so public dynamic routes return 429 while static pages work. Telemetry also starts unapproved. Plan for this intentional pause; do not “fix” it by setting `COST_CONTROLS=0` (production ignores that bypass).
 
-1. Complete M1–M6 in [the execution checklist](../../plans/cost-controls-execution.md). AI Gateway and WAF API access were denied (403) to the available Wrangler OAuth login. The `ewj.dev` zone is on the Free Website plan. No provider limits were changed during implementation.
+1. Check the dated [restart receipt](capture-restart-2026-09-29.md) and M1–M6 in [the execution checklist](../../plans/cost-controls-execution.md). Gateway limits, edge rules and billing alerts are now configured through authenticated dashboards. AI payer, analytics and voice gates still apply to those features.
 2. Record actual billing mode, current-month usage, fixed fees, shared-account allowances, existing preview usage and storage. Worker secret **names** include `AI_GATEWAY_TOKEN`, `IP_HASH_SALT`, `TYPESAFE_API_KEY`; this does not establish whether the gateway holds a BYOK key or uses Unified Billing. Never paste key values into chat, source files or the PR.
 3. Verify the deployed commit/version and complete smoke checks. Preview smoke explicitly expects a shutdown; production smoke reports intentional budget pause separately from normal online service. A passing paused smoke is not provider acceptance.
 4. Sign in at `https://wwm.ewj.dev/admin` through the existing Cloudflare Access application. Select **Load cost controls**. Before enabling, verify month, uninitialized status and saved switches.
@@ -59,18 +59,18 @@ For a request flood, application rejection is insufficient: Workers still execut
 
 Check rule ordering and any Skip rules, save disabled, and record its ID. Rehearse during a controlled window after static practice is deployed: pause application services, enable the rule, confirm `/api/health` and a POST to `/api/stages` are blocked at the edge while `/`, `/log` and `/play/practice?offline=1` still load/play. Verify Security Events and Worker invocation metrics. The rule blocks the budget API too; disable it in Cloudflare to regain that API. Restoring the edge rule does not restore the budget automatically.
 
-This expression does not protect alternative hosts. Disable the production `workers.dev` route if it is unused, or protect it with Access; do the same for published preview URLs. At inspection, the Cloudflare Worker preview-list API returned no previews. Recheck **Workers & Pages → wwm → Previews** before rollout and delete only obsolete ones after identifying their owning PR. Wrangler 4.140.0 does not provide a `preview list` command. Existing previews retain old code until updated/deleted. Production and shared-account provider settings must not be copied into arbitrary previews. The current login cannot verify or install WAF rules; Eric must complete the UI configuration or supply an appropriately scoped credential through the secret store.
+This expression does not protect alternative hosts. Disable the production `workers.dev` route if it is unused, or protect it with Access; do the same for published preview URLs. At inspection, the Cloudflare Worker preview-list API returned no previews. Recheck **Workers & Pages → wwm → Previews** before rollout and delete only obsolete ones after identifying their owning PR. Wrangler 4.140.0 does not provide a `preview list` command. Existing previews retain old code until updated/deleted. Production and shared-account provider settings must not be copied into arbitrary previews. The restart receipt records the dashboard-installed rules. Production alternate hosts and GitHub preview automation are disabled; a deployment guard preserves that setting.
 
 For routine per-IP edge limiting on the Free zone, use its available rate-limiting rule with hostname `wwm.ewj.dev`, path starts with `/api/`, IP counter, **100 requests per 10 seconds**, **Block for 10 seconds**, if these fields are offered. [Parameter reference](https://developers.cloudflare.com/waf/rate-limiting-rules/parameters/). Verify plan-supported fields before saving; do not purchase an upgrade or replace an unrelated rule. Start by observing normal pairing, uploads and page loading. If the plan cannot express this rule, retain the application guard and the custom emergency block and record the missing preventative layer. This rate limit is per IP, not a global dollar cap.
 
-## Manual billing configuration still required
+## Billing controls and remaining provider configuration
 
 Detailed click paths and evidence requirements are in [M1–M6](../../plans/cost-controls-execution.md#manual-setup-m1--cloudflare-ai-spend-rules):
 
-- **AI Gateway `wwm`:** aggregate $1/day and $10/month spend rules; no dimensions; confirm tracked models/callers. [Provider instructions](https://developers.cloudflare.com/ai-gateway/features/spend-limits/).
+- **AI Gateway `wwm` (saved/read back):** aggregate $1/day and $10/month spend rules; no dimensions; confirm tracked models/callers. [Provider instructions](https://developers.cloudflare.com/ai-gateway/features/spend-limits/).
 - **Actual AI payer:** dedicated Anthropic workspace $10/month cap if BYOK; otherwise inspect Unified Billing/recharge. Preserve settings for unrelated projects sharing the account. Gateway limits are estimated and can overshoot.
 - **PostHog project 260845:** organization billing, Product analytics limit $0 if supported and verified to mean free allowance only; inspect every enabled product. Otherwise keep forwarding paused. [Billing limits](https://posthog.com/docs/billing/limits-alerts).
-- **Cloudflare account alerts:** $25/$35/$40 with Eric's chosen monitored recipient. These are account-wide usage notifications, not WWM-only caps. No recipient has been assumed or configured. Application threshold logs are sampled and the operator snapshot is on-demand; neither is an email alert.
+- **Cloudflare account alerts (saved/read back):** $25/$35/$40 using the recipient prefilled by Cloudflare. Existing alerts were retained. These are account-wide usage notifications, not WWM-only caps. Email delivery has not been tested. Application threshold logs are sampled and the operator snapshot is on-demand; neither is an email alert.
 - **ElevenLabs:** verify usage-based billing / PAYG recharge for the owning account. Public visitors only play existing audio. For a reviewed CLI run, first use `pnpm learning:voice` (dry run), then explicitly set `WWM_VOICE_MAX_CHARACTERS` to 1–10,000 for `--write` or `--audition`; each attempted call consumes that invocation's allowance and retries are off. This is not a monthly provider cap.
 
 ## Retention, monitoring and rollback
