@@ -64,6 +64,23 @@ export const ja: Resources = {
     step4: 'スマートフォンでボールを操作して、ゴールを目指そう。', // E
     go: 'はじめる',
   },
+  touch: {
+    pause: 'ポーズ',
+    steer: '操作',
+    jump: 'ジャンプ',
+    turbo: 'ターボ',
+    turboReady: '使用可',
+    turboCharging: 'チャージ中',
+    playHere: 'この端末でプレイ',
+    playHereHint: 'ペアリングは不要です。画面のスティックで操作します。',
+    orientationTip: 'ヨコ向きだと広く遊べます。タテ向きでも遊べます。',
+    howto: {
+      step1: 'この端末でそのままプレイ。ペアリングは不要です',
+      step2: 'プレイするサイトを選ぶ',
+      step3: 'サイトが3Dの迷路に変身',
+      step4: 'スティックで転がし、ジャンプをタップしてゴールを目指そう',
+    },
+  },
   connect: {
     title: 'World Wide Maze に接続', // E
     code: 'コード',
@@ -177,6 +194,13 @@ export const ja: Resources = {
       step4: '__JUMP__ を押してジャンプしてみましょう。', // E
       step5: 'スマートフォン画面上部の __MENU__ を押すと、全体マップを見る事ができます。', // E
       step6: 'さぁ、ゴールを目指して、立体迷路を駆け抜けよう！', // E
+    },
+    touch: {
+      step2: 'ここがスタート地点です。',
+      step3: '左のスティックをドラッグしてボールを転がそう',
+      step4: '右の __JUMP__ をタップしてジャンプ',
+      step5: '画面上部の __MENU__ をタップしてマップを表示',
+      step6: 'ゴールを目指そう!',
     },
     pc: {
       step2: 'これが基本ポジションになります。', // E

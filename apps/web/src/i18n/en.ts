@@ -67,6 +67,23 @@ export const en = {
     step4: 'Use your phone to control the ball and find the goal', // E
     go: 'Let’s go',
   },
+  touch: {
+    pause: 'Pause', // N: touch controls (plans/mobile-browser-game-execution.md)
+    steer: 'Steer',
+    jump: 'Jump',
+    turbo: 'Turbo',
+    turboReady: 'Ready',
+    turboCharging: 'Charging',
+    playHere: 'Play on this device',
+    playHereHint: 'No pairing needed. Steer with the on-screen stick.',
+    orientationTip: 'Landscape gives you more room. Portrait works too.',
+    howto: {
+      step1: 'Play right here on this device: no pairing needed',
+      step2: 'Choose a site to play',
+      step3: 'The site transforms into a 3D maze',
+      step4: 'Drag the stick to steer, tap Jump to leap, and find the goal',
+    },
+  },
   connect: {
     title: 'Connect to World Wide Maze', // E: connect.title
     code: 'Code',
@@ -182,6 +199,13 @@ export const en = {
       step4: 'Press __JUMP__ on your phone to jump', // E
       step5: 'Press __MENU__ at the top of your phone to view the map', // E
       step6: 'Now head for the goal!', // E
+    },
+    touch: {
+      step2: 'This is your starting position.',
+      step3: 'Drag the stick on the left to roll the ball', // N
+      step4: 'Tap __JUMP__ on the right to jump', // N
+      step5: 'Tap __MENU__ at the top to view the map', // N
+      step6: 'Now head for the goal!',
     },
     pc: {
       step2: 'This is your starting position.', // E (mobile step2, shared)

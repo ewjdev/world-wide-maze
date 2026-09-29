@@ -1,5 +1,5 @@
 import { createEngine, type Engine } from '@wwm/engine';
-import { GamepadInputSource, KeyboardInputSource, neutralSample } from '@wwm/net';
+import { GamepadInputSource, KeyboardInputSource, neutralSample, TouchInputSource } from '@wwm/net';
 import {
   advanceProgress,
   createProgress,
@@ -20,6 +20,9 @@ import { PX_PER_METER, SIM_HZ, type Vec2 } from '@wwm/schema';
 import { AudioManager } from '../audio/audio.ts';
 import { RaceControllerHost } from '../controller/race-host.ts';
 import { LockstepDriver, type ObservedStep } from '../game/sim-driver.ts';
+import { preferTouch } from '../input/capability.ts';
+import { MOBILE_CONTROLS_ENABLED } from '../input/flags.ts';
+import { observeSize, watchOrientation } from '../input/layout.ts';
 import { GhostClient } from './ghost-client.ts';
 import { RaceHistory } from './storage.ts';
 import { courseMarkers, raceGhost } from './visuals.ts';
@@ -46,7 +49,7 @@ export interface RaceView {
   result: RaceAttempt | null;
   newBest: boolean;
   split: number | null;
-  input: 'keyboard' | 'phone';
+  input: 'keyboard' | 'phone' | 'touch';
   ghosts: 'off' | 'best' | 'both';
   ghostCount: number;
   ghostError: boolean;
@@ -96,6 +99,8 @@ export class RaceSession {
   #driver: LockstepDriver | null = null;
   #keyboard: KeyboardInputSource | null = null;
   #gamepad: GamepadInputSource | null = null;
+  /** Same-device touch: the UI binds its elements here; frames `peek()`, the tick callback `sample()`s. */
+  readonly touch: TouchInputSource | null;
   #phone: RaceControllerHost | null = null;
   #phoneLoading = false;
   #focusLost = false;
@@ -122,6 +127,8 @@ export class RaceSession {
   #createdAt = 0;
   #jumpArmed = false;
   #turboRequested = false;
+  /** The phase a pause interrupted: `resume()` returns there instead of skipping a running countdown. */
+  #pausedFrom: 'countdown' | 'racing' = 'racing';
   #stuntEventUntil = 0;
   #inputSource: RaceAttempt['inputSource'] = 'keyboard';
   #host: HTMLElement | null = null;
@@ -131,6 +138,10 @@ export class RaceSession {
   constructor(course: RaceCourse, test: RaceTestHooks = {}) {
     this.course = course;
     this.#test = test;
+    this.touch = MOBILE_CONTROLS_ENABLED
+      ? new TouchInputSource({ frameYaw: () => this.#engine?.cameraYaw() ?? 0 })
+      : null;
+    if (this.touch && preferTouch()) this.#view = { ...this.#view, input: 'touch' };
   }
   getView = () => this.#view;
   subscribe = (listener: () => void) => {
@@ -155,6 +166,16 @@ export class RaceSession {
       this.#gamepad.on('menu', () => this.togglePause()),
     );
     const resize = () => this.#engine?.resize(host.clientWidth, host.clientHeight);
+    // The observed host owns engine sizing; a collapsed host releases input and pauses.
+    const collapse = () => {
+      this.touch?.reset();
+      this.pause('pause');
+    };
+    const orientation = () => {
+      if (this.#view.input !== 'touch') return;
+      this.touch?.reset();
+      this.pause('pause');
+    };
     this.#focusLost = document.hidden && !this.#test.noAutoPause;
     const blur = () => {
       if (this.#test.noAutoPause) return;
@@ -176,13 +197,15 @@ export class RaceSession {
       if (event.code === 'KeyR' && !event.repeat && !(event.target instanceof HTMLInputElement))
         void this.start();
     };
-    window.addEventListener('resize', resize);
     window.addEventListener('blur', blur);
     window.addEventListener('focus', focus);
     window.addEventListener('keydown', key);
     document.addEventListener('visibilitychange', hidden);
+    this.#cleanups.push(
+      observeSize(host, { onSize: resize, onCollapse: collapse }),
+      watchOrientation(orientation),
+    );
     this.#cleanups.push(() => {
-      window.removeEventListener('resize', resize);
       window.removeEventListener('blur', blur);
       window.removeEventListener('focus', focus);
       window.removeEventListener('keydown', key);
@@ -272,10 +295,12 @@ export class RaceSession {
       this.#phoneLoading = false;
     }
   }
-  setInput(input: 'keyboard' | 'phone') {
+  setInput(input: 'keyboard' | 'phone' | 'touch') {
     if (input === 'phone' && !this.#phone?.canStart) return;
+    if (input === 'touch' && !this.touch) return;
     if (this.#view.phase === 'racing') this.pause('pause');
     if (input !== this.#view.input) {
+      this.touch?.reset();
       this.#phone?.discardTurboRequest();
       this.#turboRequested = false;
       if (!this.#saved) this.#inputSource = 'mixed';
@@ -329,6 +354,7 @@ export class RaceSession {
     }
     const gen = ++this.#generation;
     driver.setPaused(true);
+    this.touch?.reset();
     this.audio.unlock();
     this.audio.setRoll(0, false);
     this.#save('abandoned');
@@ -415,6 +441,8 @@ export class RaceSession {
   pause(reason: PracticeReason = 'pause') {
     if (this.#view.phase !== 'racing' && this.#view.phase !== 'countdown') return;
     this.#turboRequested = false;
+    this.touch?.reset();
+    this.#pausedFrom = this.#view.phase;
     this.#progress = markPractice(this.#progress, reason);
     this.#driver?.setPaused(true);
     this.audio.setRoll(0, false);
@@ -424,9 +452,11 @@ export class RaceSession {
   resume() {
     if (this.#view.phase !== 'paused' || this.#focusLost) return;
     if (this.#view.input === 'phone' && !this.#phone?.canStart) return;
-    this.#set({ phase: 'racing' });
+    // A paused countdown resumes its remaining countdown (the frame loop keeps counting); racing resumes racing.
+    const to = this.#pausedFrom;
+    this.#set({ phase: to });
     this.#lastFrame = performance.now();
-    this.#driver?.setPaused(false);
+    this.#driver?.setPaused(to !== 'racing');
     this.#syncPhone();
   }
   togglePause() {
@@ -562,10 +592,24 @@ export class RaceSession {
     const keyboard = this.#keyboard?.sample(now) ?? neutralSample(0);
     const gamepad = this.#gamepad?.sample(now) ?? neutralSample(0);
     const phone = this.#phone?.sample(now);
+    // Touch is read without acknowledging anything; only a simulation tick consumes a press (below).
+    if (this.touch && this.#view.phase !== 'racing') this.touch.clearPending();
+    const touch = this.#view.input === 'touch' ? (this.touch?.peek(now) ?? null) : null;
+    const fromTouch =
+      !!touch &&
+      !(gamepad.power || gamepad.jump) &&
+      !(keyboard.power || keyboard.jump || keyboard.tiltX || keyboard.tiltZ);
     let sample =
-      this.#view.input === 'phone' && phone ? phone : gamepad.power || gamepad.jump ? gamepad : keyboard;
+      this.#view.input === 'phone' && phone
+        ? phone
+        : gamepad.power || gamepad.jump
+          ? gamepad
+          : fromTouch && touch
+            ? touch
+            : keyboard;
     if (!sample.jump) this.#jumpArmed = true;
-    if (!this.#jumpArmed) sample = { ...sample, jump: false };
+    // Touch needs no arming: its source drops any press held into a non-racing phase (`clearPending`).
+    if (!this.#jumpArmed && !fromTouch) sample = { ...sample, jump: false };
     if (this.#view.phase === 'countdown') {
       this.#countdown -= dt;
       const countdown = Math.max(0, Math.ceil(this.#countdown));
@@ -606,8 +650,13 @@ export class RaceSession {
           const phoneTurbo = this.#view.input === 'phone' && !!this.#phone?.takeTurboRequest();
           const turbo = this.#turboRequested || phoneTurbo;
           this.#turboRequested = false;
+          // The first eligible tick acknowledges a pending Jump; catch-up ticks see the held state only.
+          let stepSample = sample;
+          if (fromTouch && this.touch) {
+            stepSample = this.touch.sample(performance.now());
+          }
           const input: RaceInputSample = this.#test.inputs?.[tick] ?? {
-            ...(this.#falling ? neutralSample(sample.frameYaw) : sample),
+            ...(this.#falling ? neutralSample(stepSample.frameYaw) : stepSample),
             ...(this.course.stunts ? { turbo: !this.#falling && turbo } : {}),
           };
           if (!this.#recorder.record(input)) this.#progress = markPractice(this.#progress, 'recording-limit');
@@ -665,6 +714,7 @@ export class RaceSession {
     this.#keyboard?.dispose();
     this.#gamepad?.dispose();
     this.#phone?.dispose();
+    this.touch?.dispose();
     this.#ghostClient.dispose();
     this.#ghosts.forEach((ghost) => {
       ghost.dispose();

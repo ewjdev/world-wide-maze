@@ -1,0 +1,261 @@
+/*
+ * Same-device touch controls (plans/mobile-browser-game-execution.md). Same visual roles as the rest of the
+ * shell: fog-white plates, ink text, teal input feedback, yellow Jump, cut-corner action plates. The stick is
+ * round because its motion is radial. Sizes are tuning candidates to validate on devices, not constants.
+ */
+
+.wwm-root {
+  --tc-stick: 120px;
+  --tc-zone: 220px;
+  --tc-jump: 72px;
+  --tc-action: 56px;
+  --tc-gap: 16px;
+  --tc-deck: clamp(238px, 30svh, 292px);
+  --tc-inset-l: max(var(--tc-gap), env(safe-area-inset-left));
+  --tc-inset-r: max(var(--tc-gap), env(safe-area-inset-right));
+  --tc-inset-b: max(10px, env(safe-area-inset-bottom));
+}
+@media (max-height: 430px) {
+  .wwm-root {
+    --tc-stick: 104px;
+    --tc-zone: 176px;
+    --tc-jump: 64px;
+    --tc-action: 52px;
+  }
+}
+
+.wwm-touch {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Portrait: the game view fits above a reserved control deck instead of sitting under translucent buttons. */
+.wwm-touch__deck {
+  display: none;
+}
+@media (orientation: portrait) {
+  .wwm-root:has(.wwm-touch) .wwm-stage-host {
+    height: auto; /* the base rule's height: 100% would otherwise win over `bottom` */
+    bottom: calc(var(--tc-deck) + env(safe-area-inset-bottom));
+  }
+  .wwm-touch__deck {
+    display: block;
+    position: absolute;
+    inset: auto 0 0;
+    height: calc(var(--tc-deck) + env(safe-area-inset-bottom));
+    background: var(--sky);
+    border-top: 2px solid var(--ink);
+  }
+}
+
+.wwm-touch__zone {
+  position: absolute;
+  bottom: var(--tc-inset-b);
+  left: var(--tc-inset-l);
+  width: var(--tc-zone);
+  height: min(var(--tc-zone), calc(var(--tc-deck) - 16px));
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  touch-action: none;
+}
+.wwm-touch[data-hand="left"] .wwm-touch__zone {
+  left: auto;
+  right: var(--tc-inset-r);
+}
+@media (orientation: landscape) {
+  .wwm-touch__zone {
+    height: var(--tc-zone);
+  }
+}
+
+.wwm-touch__stick {
+  position: relative;
+  width: var(--tc-stick);
+  height: var(--tc-stick);
+  pointer-events: none;
+}
+.wwm-touch__base,
+.wwm-touch__thumb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  will-change: transform;
+}
+.wwm-touch__base {
+  background: rgba(255, 255, 255, 0.78);
+  border: 3px solid var(--ink);
+  box-shadow: 0 6px 14px rgba(32, 38, 45, 0.16);
+}
+.wwm-touch__thumb {
+  inset: 34%;
+  background: var(--ink);
+  border: 3px solid #fff;
+  transition: background 90ms linear;
+}
+.wwm-touch__zone[data-active="true"] .wwm-touch__thumb {
+  background: var(--teal);
+  border-color: var(--ink);
+}
+.wwm-touch__label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 4px);
+  transform: translateX(-50%);
+  font: 800 12px / 1 var(--display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.wwm-touch__actions {
+  position: absolute;
+  bottom: var(--tc-inset-b);
+  right: var(--tc-inset-r);
+  display: flex;
+  flex-direction: column; /* Turbo stacks above Jump, clear of the stick */
+  align-items: flex-end;
+  gap: 12px;
+  pointer-events: none;
+}
+.wwm-touch[data-hand="left"] .wwm-touch__actions {
+  right: auto;
+  left: var(--tc-inset-l);
+  align-items: flex-start;
+}
+.wwm-touch__action {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: none;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 2px;
+  font: 800 15px / 1 var(--display);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+  transition: transform 70ms linear;
+}
+.wwm-touch__action--jump {
+  width: calc(var(--tc-jump) * 1.5);
+  height: var(--tc-jump);
+  background: var(--yellow);
+}
+.wwm-touch__action--jump[data-pressed="true"] {
+  background: #d9a91c;
+  transform: translateY(3px);
+}
+.wwm-touch__action--turbo {
+  width: calc(var(--tc-action) * 1.6);
+  min-height: var(--tc-action);
+  padding: 6px 8px;
+  background: var(--ink);
+  color: #fff;
+}
+.wwm-touch__action--turbo b {
+  font-size: 16px;
+}
+.wwm-touch__action--turbo i {
+  font: 600 11px / 1 var(--ui);
+  font-style: normal;
+  letter-spacing: 0.04em;
+}
+.wwm-touch__action--turbo[data-ready="true"] {
+  background: var(--teal);
+  color: var(--ink);
+}
+.wwm-touch__action--turbo:disabled {
+  background: #e3e6e8;
+  color: var(--ink-2);
+  cursor: default;
+}
+.wwm-touch__action:focus-visible,
+.wwm-touch__pause:focus-visible {
+  outline: 3px solid var(--blue-deep);
+  outline-offset: 3px;
+}
+
+/* Pause lives at the top, away from both thumbs. */
+.wwm-touch__pause {
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  position: absolute;
+  top: max(10px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0 16px;
+  font: 800 14px / 1 var(--display);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--ink);
+  clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
+}
+.race-root .wwm-touch {
+  z-index: 6; /* above the Race header, which would otherwise swallow taps on Pause */
+}
+/* Landscape: Pause stays top-centre (Original) or beside the sound button (Race header). */
+@media (orientation: landscape) {
+  .race-root .wwm-touch__pause {
+    top: 9px;
+    left: auto;
+    right: calc(max(14px, env(safe-area-inset-right)) + 56px);
+    transform: none;
+  }
+}
+/* Portrait: the top edge is full of HUD, so Pause sits in the control deck above the right thumb. */
+@media (orientation: portrait) {
+  .wwm-root .wwm-touch__pause {
+    top: auto;
+    left: auto;
+    right: var(--tc-inset-r);
+    bottom: calc(var(--tc-deck) + env(safe-area-inset-bottom) - 58px);
+    transform: none;
+  }
+}
+
+/* Touch replaces the keyboard-shaped HUD pieces. */
+.race-root:has(.wwm-touch) .race-play-bottom,
+.race-root:has(.wwm-touch) .race-boost-button {
+  display: none;
+}
+
+/* Countdown, pause and results keep the deck reserved but take the controls out of play. */
+.wwm-touch[data-live="false"] .wwm-touch__zone,
+.wwm-touch[data-live="false"] .wwm-touch__actions,
+.wwm-touch[data-live="false"] .wwm-touch__pause {
+  visibility: hidden;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wwm-touch__action,
+  .wwm-touch__thumb {
+    transition: none;
+  }
+}
+
+/* The "services are resting" notice (main.tsx) is fixed above everything: keep it off the controls in play. */
+body:has(.wwm-touch) #service-status {
+  display: none;
+}

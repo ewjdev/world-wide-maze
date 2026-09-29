@@ -14,7 +14,8 @@ import type { GamePhase } from '@wwm/schema';
 export type GameEvent =
   /** Title "Start". `howtoSeen`: first visit shows how-to (E). `ready`: input already chosen/paired. */
   | { type: 'START'; howtoSeen: boolean; ready: boolean }
-  | { type: 'HOWTO_DONE' }
+  /** `ready`: same-device touch play needs no pairing, so the how-to leads straight to the stage list. */
+  | { type: 'HOWTO_DONE'; ready?: boolean }
   /** Phone paired (E: "Connected!" then calibrate on the first game). */
   | { type: 'PAIRED' }
   /** E: "No smartphone? Play with PC only". Also the calibration-timeout keyboard fallback. */
@@ -67,7 +68,10 @@ export const TRANSITIONS: Table = {
     },
     CHOOSE: 'building', // deep link /play/:stageId
   },
-  howto: { HOWTO_DONE: 'pairing', BACK: 'title' },
+  howto: {
+    HOWTO_DONE: (e) => ((e as Extract<GameEvent, { type: 'HOWTO_DONE' }>).ready ? 'select' : 'pairing'),
+    BACK: 'title',
+  },
   pairing: { PAIRED: 'calibrate', KEYBOARD: 'select', BACK: 'title' },
   calibrate: { CALIBRATED: 'select', KEYBOARD: 'select', BACK: 'pairing' },
   select: { CHOOSE: 'building', BACK: 'title', TITLE: 'title' },

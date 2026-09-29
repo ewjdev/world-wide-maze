@@ -16,6 +16,7 @@ import {
   KeyboardInputSource,
   neutralSample,
   PhoneInputSource,
+  TouchInputSource,
 } from '@wwm/net';
 import { PHYSICS_VERSION } from '@wwm/physics';
 import {
@@ -38,6 +39,9 @@ import {
 } from '@wwm/schema';
 import type { AudioManager, Bgm } from '../audio/audio.ts';
 import { openHostRoom } from '../controller/useHostRoom.ts';
+import { preferTouch, savePreference, touchCapable } from '../input/capability.ts';
+import { MOBILE_CONTROLS_ENABLED } from '../input/flags.ts';
+import { observeSize, watchOrientation } from '../input/layout.ts';
 import { type GateOutcome, LearningGates } from '../learning/gates.ts';
 import { isLearningHref } from '../learning/href.ts';
 import { createLockPort } from '../learning/port.ts';
@@ -82,7 +86,7 @@ import {
   StageLoadError,
 } from './stages.ts';
 
-export type InputMode = 'keyboard' | 'phone';
+export type InputMode = 'keyboard' | 'phone' | 'touch';
 export type SignKind = 'goal' | 'timeup' | 'gameover';
 export type TutorialStep = 2 | 3 | 4 | 5 | 6;
 
@@ -219,7 +223,7 @@ export interface TiltReadout {
   z: number;
   power: boolean;
   tooTilted: boolean;
-  source: 'phone' | 'keyboard' | 'gamepad' | 'none';
+  source: 'phone' | 'keyboard' | 'gamepad' | 'touch' | 'none';
 }
 
 export interface GameTestHooks {
@@ -317,6 +321,11 @@ export class Game {
   #keyboard: KeyboardInputSource | null = null;
   #gamepad: GamepadInputSource | null = null;
   #phone: PhoneInputSource | null = null;
+  /**
+   * Same-device touch (plans/mobile-browser-game-execution.md). The UI binds its stick/Jump elements to this
+   * source; per-frame reads use `peek()`, and only `#stepInput` consumes a press (`sample()`).
+   */
+  readonly touch: TouchInputSource | null;
   #conn: HostConnection | null = null;
   #lastSample: InputSample = neutralSample();
   #lastSource: TiltReadout['source'] = 'none';
@@ -385,6 +394,7 @@ export class Game {
     this.#boards = opts.boards;
     this.#storage = opts.storage ?? (typeof localStorage === 'undefined' ? memoryStorage() : localStorage);
     this.#replay = opts.test?.replay ?? null;
+    this.touch = MOBILE_CONTROLS_ENABLED ? new TouchInputSource({ frameYaw: () => this.#yaw() }) : null;
     const sens = Number(this.#get(SENS_KEY) ?? '1');
     this.#view = {
       phase: 'title',
@@ -533,6 +543,7 @@ export class Game {
         this.#autoPause();
         this.#driver?.setPaused(true);
         this.#keyboard?.reset();
+        this.touch?.reset();
         this.#inputNeedsRelease = true;
         this.#lastSample = neutralSample(this.#yaw());
         this.#prevJump = false;
@@ -545,7 +556,6 @@ export class Game {
         if (this.#engine && !this.#raf && !this.#disposed) this.#raf = requestAnimationFrame(this.#frame);
       }
     };
-    const onResize = () => this.#resize();
     const onGesture = () => {
       this.audio.unlock();
       this.learning.unlock();
@@ -553,14 +563,17 @@ export class Game {
     addEventListener('keydown', onKey);
     addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVis);
-    addEventListener('resize', onResize);
     addEventListener('pointerdown', onGesture, { capture: true });
     addEventListener('keydown', onGesture, { capture: true });
+    // One observer on the gameplay container owns engine sizing (window resizes reach it through the host)
+    this.#cleanups.push(
+      observeSize(host, { onSize: () => this.#resize(), onCollapse: () => this.#hostCollapsed() }),
+      watchOrientation(() => this.#orientationChanged()),
+    );
     this.#cleanups.push(() => {
       removeEventListener('keydown', onKey);
       removeEventListener('blur', onBlur);
       document.removeEventListener('visibilitychange', onVis);
-      removeEventListener('resize', onResize);
       removeEventListener('pointerdown', onGesture, { capture: true });
       removeEventListener('keydown', onGesture, { capture: true });
     });
@@ -595,7 +608,7 @@ export class Game {
 
     if (this.#opts.roomCode) void this.#ensureRoom();
     if (this.#opts.localRun) {
-      this.#set({ inputMode: this.#view.inputMode ?? 'keyboard' });
+      this.#setInputMode(this.#view.inputMode ?? this.#defaultInputMode());
       this.#beginRun(this.#opts.localRun, 0);
     } else if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
     else void this.#loadAttract();
@@ -607,7 +620,7 @@ export class Game {
    */
   #ensureDriver(): Promise<SimDriver> {
     if (!this.#driverLoad) {
-      const p = createDriver(this.#driverKind).then((d) => {
+      const p = createDriver(this.#view.inputMode === 'touch' ? 'lockstep' : this.#driverKind).then((d) => {
         if (this.#disposed) {
           d.dispose();
           throw new DOMException('Obsolete build', 'AbortError');
@@ -633,6 +646,7 @@ export class Game {
     for (const c of this.#cleanups) c();
     this.#cleanups = [];
     this.#phone?.dispose();
+    this.touch?.dispose();
     this.#conn?.close();
     this.#ghostBall?.dispose();
     this.#ghostBall = null;
@@ -652,6 +666,19 @@ export class Game {
     const prev = this.#engineImage;
     this.#engineImage = img;
     if (prev && prev !== img) prev.close();
+  }
+
+  /** The gameplay host has no size (hidden, collapsed): release input and pause until it is usable again. */
+  #hostCollapsed(): void {
+    this.touch?.reset();
+    this.#autoPause();
+  }
+
+  /** A real orientation change: cancel gestures (their geometry is stale) and pause explicitly. */
+  #orientationChanged(): void {
+    if (this.#view.inputMode !== 'touch') return;
+    this.touch?.reset();
+    this.#autoPause();
   }
 
   #resize(): void {
@@ -785,6 +812,7 @@ export class Game {
         if (from === 'intro' || from === 'countdown') this.#startGhost();
         break;
       case 'paused':
+        this.touch?.reset();
         this.#set({ portal: null });
         this.#timer.stop();
         d?.setPaused(true);
@@ -948,13 +976,17 @@ export class Game {
     if (this.#view.phase === 'title') telemetry.track({ name: 'start_clicked' });
     this.audio.unlock();
     this.audio.play('click');
-    const ready = this.#view.inputMode === 'keyboard' || this.#view.room.controllerConnected;
+    if (this.#view.inputMode === null && this.touch && preferTouch()) this.#setInputMode('touch');
+    const ready =
+      this.#view.inputMode === 'keyboard' ||
+      this.#view.inputMode === 'touch' ||
+      this.#view.room.controllerConnected;
     this.#send({ type: 'START', howtoSeen: this.#get(HOWTO_KEY) === '1', ready });
   }
 
   howtoDone(): void {
     this.audio.play('click');
-    this.#send({ type: 'HOWTO_DONE' });
+    this.#send({ type: 'HOWTO_DONE', ready: this.#view.inputMode === 'touch' });
   }
 
   back(): void {
@@ -966,8 +998,36 @@ export class Game {
   /** E: "No smartphone? Play with PC only" (also the calibration-timeout fallback and the disconnect overlay). */
   playKeyboard(): void {
     this.audio.play('click');
-    this.#set({ inputMode: 'keyboard', hold: null });
+    if (touchCapable()) savePreference('keyboard');
+    this.#set({ hold: null });
+    this.#setInputMode('keyboard');
     this.#send({ type: 'KEYBOARD' });
+  }
+
+  /** Same-device play (no pairing, no relay room, no calibration). The primary path on a phone. */
+  playOnDevice(): void {
+    if (!this.touch) return;
+    this.audio.play('click');
+    savePreference('touch');
+    this.#set({ hold: null });
+    this.#setInputMode('touch');
+    this.#send({ type: 'KEYBOARD' });
+  }
+
+  /**
+   * Switch the one active input owner at a neutral boundary: whatever the old owner held is released, and touch
+   * always runs on the lockstep driver (the worker driver can't acknowledge a press per tick).
+   */
+  #setInputMode(mode: InputMode): void {
+    const prev = this.#view.inputMode;
+    if (prev !== null && prev !== mode) {
+      this.touch?.reset();
+      this.#keyboard?.reset();
+      this.#inputNeedsRelease = true;
+      this.#lastSample = neutralSample(this.#yaw());
+    }
+    if (mode === 'touch') this.#driverKind = 'lockstep';
+    this.#set({ inputMode: mode });
   }
 
   retryCalibrate(): void {
@@ -1181,7 +1241,13 @@ export class Game {
     let x = s.tiltX / MAX_TILT_ROLL;
     let z = s.tiltZ / MAX_TILT_PITCH;
     let src = this.#lastSource;
-    if (phone && this.#view.inputMode !== 'keyboard' && src !== 'keyboard' && src !== 'gamepad') {
+    if (
+      phone &&
+      this.#view.inputMode === 'phone' &&
+      src !== 'keyboard' &&
+      src !== 'gamepad' &&
+      src !== 'touch'
+    ) {
       const raw = phone.debug(performance.now()).raw;
       if (raw) {
         x = raw.tiltX / MAX_TILT_ROLL;
@@ -1287,8 +1353,12 @@ export class Game {
     void this.#loadSlice(ac, this.#clock);
   }
 
+  #defaultInputMode(): InputMode {
+    return this.touch && preferTouch() ? 'touch' : 'keyboard';
+  }
+
   async #openDeepLink(ref: string): Promise<void> {
-    this.#set({ inputMode: this.#view.inputMode ?? 'keyboard' });
+    this.#setInputMode(this.#view.inputMode ?? this.#defaultInputMode());
     try {
       const { run, slice } = await runFromRef(ref, this.#opts.origin, this.#pool);
       telemetry.track({ name: 'stage_selected', run: analyticsRun(run.kind) });
@@ -2130,7 +2200,10 @@ export class Game {
     if (this.#opts.test?.noAutoPause) return;
     if (this.#view.travel || this.learning.isOpen) return;
     const p = this.#view.phase;
-    if (p === 'play' || p === 'countdown') this.#send({ type: 'MENU' });
+    if (p === 'play' || p === 'countdown') {
+      this.touch?.reset();
+      this.#send({ type: 'MENU' });
+    }
   }
 
   #sample(now: number): InputSample {
@@ -2138,6 +2211,7 @@ export class Game {
     const kb = this.#keyboard?.sample(now) ?? neutralSample(yaw);
     const gp = this.#gamepad?.sample(now) ?? neutralSample(yaw);
     const ph = this.#phone?.sample(now) ?? null;
+    const tc = this.#touchFrame(now);
     const active = (s: InputSample) => s.power || s.jump || s.tiltX !== 0 || s.tiltZ !== 0;
     if (this.#inputNeedsRelease) {
       // Poll physical controls normally, but require a release after returning from
@@ -2146,8 +2220,10 @@ export class Game {
         this.#view.inputMode === 'phone' &&
         this.#phone &&
         (!this.#phone.connected || this.#phone.debug(now).stale || ph?.power || ph?.jump);
-      const held = active(kb) || active(gp) || phoneHeld;
+      const held = active(kb) || active(gp) || phoneHeld || !!this.touch?.active;
       if (!held) this.#inputNeedsRelease = false;
+      // no source owns this frame: a tick must not consume a fresh touch while we wait for the release
+      this.#lastSource = 'none';
       return neutralSample(yaw);
     }
     let s: InputSample;
@@ -2157,6 +2233,9 @@ export class Game {
     } else if (active(gp)) {
       s = gp;
       this.#lastSource = 'gamepad';
+    } else if (tc) {
+      s = tc;
+      this.#lastSource = 'touch';
     } else if (ph && this.#view.inputMode === 'phone') {
       const k = this.#view.sensitivity;
       s = { ...ph, tiltX: clamp(ph.tiltX * k, MAX_TILT_ROLL), tiltZ: clamp(ph.tiltZ * k, MAX_TILT_PITCH) };
@@ -2168,6 +2247,22 @@ export class Game {
     if (this.#view.phase === 'play' && (s.power || s.jump || (this.#lastSource !== 'phone' && active(s))))
       gameActivity();
     return s;
+  }
+
+  /**
+   * Touch, read for this frame without acknowledging anything (`peek`). While a Pip card, portal prompt or
+   * travel owns input, or the simulation isn't in play, contacts are released and nothing can fire later.
+   */
+  #touchFrame(now: number): InputSample | null {
+    const touch = this.touch;
+    if (!touch || this.#view.inputMode !== 'touch') return null;
+    const v = this.#view;
+    if (this.learning.isOpen || v.portal || v.travel) {
+      touch.reset();
+      return null;
+    }
+    if (v.phase !== 'play') touch.clearPending();
+    return touch.peek(now);
   }
 
   /** Input for one sim step; also advances the game timer and delayed small-item credits in step time. */
@@ -2184,6 +2279,8 @@ export class Game {
     const v = this.#view;
     if (v.phase !== 'play') return neutralSample(this.#yaw());
     let s = this.#lastSample;
+    // The first eligible tick acknowledges the pending press; catch-up ticks see the held state only.
+    if (this.#lastSource === 'touch' && this.touch && !this.#replay) s = this.touch.sample(performance.now());
     if (this.#replay) s = this.#replay[tick] ?? neutralSample(s.frameYaw);
     if (this.#autopilot) {
       s = { ...this.#autopilot.sample, frameYaw: this.#yaw() };
@@ -2284,7 +2381,12 @@ export class Game {
     // Pip gate card: phone / gamepad tilt moves the choice, JUMP confirms; the ball doesn't move meanwhile
     const gate = this.learning.isOpen;
     if (gate && !hold)
-      this.learning.input(sample.tiltX / MAX_TILT_ROLL, sample.jump, this.#lastSource, performance.now());
+      this.learning.input(
+        sample.tiltX / MAX_TILT_ROLL,
+        sample.jump,
+        this.#lastSource === 'touch' ? 'none' : this.#lastSource,
+        performance.now(),
+      );
     const stepping =
       !!d && !hold && !gate && !v.portal && !v.travel && (v.phase === 'play' || v.phase === 'falling');
     if (stepping) {

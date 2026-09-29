@@ -8,9 +8,17 @@ import {
 import { gameEngagement, stopGameEngagement } from './engagement.ts';
 import { type Telemetry, telemetry } from './index.ts';
 
+/**
+ * The telemetry contract has no `touch` input yet (client and server schemas change together, M5); until then
+ * same-device touch reports as `unknown` rather than emitting an event the server would reject.
+ */
+function telemetryInput(mode: FunnelView['inputMode']): 'keyboard' | 'phone' | 'unknown' {
+  return mode === 'touch' || mode === null ? 'unknown' : mode;
+}
+
 export interface FunnelView {
   phase: string;
-  inputMode: 'keyboard' | 'phone' | null;
+  inputMode: 'keyboard' | 'phone' | 'touch' | null;
   room: { controllerConnected: boolean; status?: string };
   run: { kind: string; index: number } | null;
   error: { code: string } | null;
@@ -74,7 +82,7 @@ export function observeGame(
         t.track({ name: 'stage_loaded', ...stage, duration_ms: Math.round(now() - buildAt) });
       if (v.phase === 'play' && !started) {
         started = true;
-        t.track({ name: 'played', ...stage, input: v.inputMode ?? 'unknown' });
+        t.track({ name: 'played', ...stage, input: telemetryInput(v.inputMode) });
       }
       if (v.phase === 'goal') t.track({ name: 'finished', ...stage });
       if (v.phase === 'gameover' || v.phase === 'timeup')
@@ -84,7 +92,8 @@ export function observeGame(
       t.track({ name: 'paired', input: 'phone' });
     if (!v.room.controllerConnected && p?.room.controllerConnected)
       t.track({ name: 'controller_disconnected' });
-    if (v.inputMode && v.inputMode !== p?.inputMode) t.track({ name: 'input_selected', input: v.inputMode });
+    if (v.inputMode && v.inputMode !== p?.inputMode)
+      t.track({ name: 'input_selected', input: telemetryInput(v.inputMode) });
     if (v.room.status === 'error' && p?.room.status !== 'error')
       t.track({ name: 'pairing_failed', reason: 'room_error' });
     if (v.calibrateTimedOut && !p?.calibrateTimedOut)
