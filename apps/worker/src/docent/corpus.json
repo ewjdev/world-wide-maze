@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "f2593ef1f0acef48",
+  "hash": "15c30f9459da0531",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -61,6 +61,7 @@
     "docs/build-log/phase-27-race-mazes.md",
     "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/phase-29-race-elevation-flow.md",
+    "docs/build-log/pip-rocket-lab.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
     "docs/build-log/race-review/ghost-performance-native.json",
@@ -3491,6 +3492,41 @@
       "url": "/log#phase-29-race-elevation-flow",
       "kind": "build-log",
       "text": "## Beta review limits\nAutomated driving establishes traversal, deterministic replay and visible rendering. It does not establish human flow, optimal route choice or physical-phone handling. Most ten-maze reference routes take about a minute; Sky Weave remains roughly 77–79 seconds and one Skipping Stones route is about 73 seconds. The four earlier courses remain short introductions (about 13–25 seconds). Higher-speed racing and aggressive turbo strategies need beta playtesting; the conservative completion driver does not spend turbo on most maze routes.\n\nStatic validation does not exhaustively detect bridge-to-bridge intersections. Actual traversal caught and resolved the observed Skipping Stones overlap; future junction edits still require collision and browser verification.\n\nThe original HTML and maze specifications remain base authoring inputs. The explicit elevation design pass produces the current playable courses; run it after rebuilding base fixtures. Reproduction commands and the distinction between frozen course identity and physics compatibility are documented in [the elevation review README](../../fixtures/race/elevation-review/README.md). This work is local and has not been deployed."
+    },
+    {
+      "id": "docs/build-log/pip-rocket-lab.md",
+      "title": "Pip’s Rocket Lab review candidate · Data and completion",
+      "path": "docs/build-log/pip-rocket-lab.md",
+      "url": "/log#pip-rocket-lab",
+      "kind": "build-log",
+      "text": "September 30, 2026. Branch: `codex/pip-rocket-lab`. Plan-first commit: `6dafbe8`. This is a review candidate with production disabled.\n\nPip teaches a balloon experiment before asking four predictions: escaping air to either side, a tied balloon on a level string, then gas down / rocket up. A space example is optional. The same validated data, SVG scene and finite explanation controller serve the standalone lesson and maze checkpoint card.\n\n- Standalone: `/education/lessons/rocket-lab/`.\n- Game: `/play/practice?learn=rocket-lab`.\n- Build with `VITE_ROCKET_LAB_ENABLED=true`; the default and production build are off.\n\n## Data and completion\nThe curated `pip-discoveries` path uses strict `wwm-learning/0.5` data with three required capabilities. Trusted scene enums derive starting motion, and marker identity/order must agree. Existing 0.1–0.3 exports and six-activity family storage retain their legacy reader; the separate 0.4 encounter/inventory contract is unchanged.\n\nA correct choice creates a pending explanation. Only the current effect token can count the discovery and complete its maze lock. Replay, double taps and stale callbacks cannot count again. Later cancels the card's work while preserving the accepted choice, and reopening replays the explanation. A mandatory introduction precedes every first-entry route. Required progress excludes the optional space round.\n\nThe handmade practice stage supplies four physical posts. Required rounds also remain dependencies of the goal when placement supplies zero or one post; a frozen sparse fixture and lock tests cover this fallback and the grown-up override. No rocket vehicle or new physics loop is involved."
+    },
+    {
+      "id": "docs/build-log/pip-rocket-lab.md#delivery-and-interface",
+      "title": "Pip’s Rocket Lab review candidate › Delivery and interface",
+      "path": "docs/build-log/pip-rocket-lab.md",
+      "anchor": "delivery-and-interface",
+      "url": "/log#pip-rocket-lab",
+      "kind": "build-log",
+      "text": "## Delivery and interface\nThe web build also builds education with `/education/` as its base and copies the entire artifact into the existing Worker asset tree. The strict deployed CSP exposed inline answer-position attributes in the shared education scene; CSSOM hydration now applies trusted numeric geometry. Rocket and Gems remain playable under the same policy.\n\nThe existing daylight WWM system uses Figtree, Unbounded, silver Pip and teal/blue/yellow geometric scenes. Choice labels wrap on narrow screens, and color has redundant shape markers. Reduced motion shows before/after frames; audio failure retains a visible paced explanation. Hidden or disposed effects release frames, timers and visibility listeners.\n\nThe independent finish review requested removal of the Rocket game's eyebrow and colored explanation side stripe and a documentation update. The named Impeccable roles were unavailable in this harness; fresh generic agents used the equivalent finish-review and documenter contracts. The detector reported only the intentional Rocket typography steps, now recorded in design documentation. The reviewer scored all three fixes resolved and returned **ship**, with no visible regressions: [verdict](../education/rocket-lab-review.md)."
+    },
+    {
+      "id": "docs/build-log/pip-rocket-lab.md#validation",
+      "title": "Pip’s Rocket Lab review candidate › Validation",
+      "path": "docs/build-log/pip-rocket-lab.md",
+      "anchor": "validation",
+      "url": "/log#pip-rocket-lab",
+      "kind": "build-log",
+      "text": "## Validation\n| Check | Result |\n| --- | --- |\n| Full local `pnpm check` | Pass after integrating main `bf6c9b8`: typecheck, lint, 1,626 tests; 48 skipped without their external acceptance inputs |\n| Final shared/game lock and effect regression | Pass: the focused 56-case run and final full suite cover motion timing, stale/replay, sparse goal/override and restart cancellation |\n| Built Rocket Chromium acceptance | Pass: all five cases; two-app route and compiled assets, full desktop flow with help/replay/skip/restart, 320px keyboard/reduced-motion flow with space, real marble first gate and all required locks, portable-file import and 390px game card |\n| Existing education Chromium acceptance | Pass: all 19 tests, including Gems, family versions, keyboard, narrated cue stubs, download and baseline storage |\n| Disabled artifact | Pass: unavailable Rocket page, Gems retained; bundled and imported Rocket loader rejection tested |\n| Production-CSP run | Pass: no CSP violations in tested Rocket standalone/game routes |\n| Effect ownership | Pass: finite motion, reduced frames, hidden/disposal cancellation, slower narration wait and bounded provider failure |\n\nLocal execution used Node 26 / pnpm 11.5. CI repeats checks on Node 24 and exercises the enabled built review artifact before rebuilding baseline education. CI status belongs to the exact review commit and is reported in the PR."
+    },
+    {
+      "id": "docs/build-log/pip-rocket-lab.md#review-screenshots",
+      "title": "Pip’s Rocket Lab review candidate › Review screenshots · Remaining release gates",
+      "path": "docs/build-log/pip-rocket-lab.md",
+      "anchor": "review-screenshots",
+      "url": "/log#pip-rocket-lab",
+      "kind": "build-log",
+      "text": "## Review screenshots\n![Standalone balloon prediction](assets/rocket-lab/standalone-balloon.png)\n\n![Standalone upright rocket](assets/rocket-lab/standalone-upright-rocket.png)\n\n![Mobile optional space prediction](assets/rocket-lab/standalone-mobile-space.png)\n\n![Rocket in the game](assets/rocket-lab/game-upright-rocket.png)\n\n![Mobile game card](assets/rocket-lab/game-mobile-balloon.png)\n\n## Remaining release gates\nNo paid narration was generated. The reviewed dry run reuses 82 existing clips and needs 32 unique new clips / 2,140 characters; the allowance question remains pending. Browser narration and silent explanation fallback are available for review. Complete authored-clip coverage, actual listening and physical first-tap audio remain unaccepted.\n\nPhysical iOS Safari / Android Chrome, an observed parent-guided child session, educator review and same-device performance comparison remain release gates. Automated choices do not establish learning mastery. Hosted PR previews are currently disabled by `WWM_PREVIEWS_ENABLED=false`; this branch does not change that setting. The production flag is explicitly false, and no merge or deployment was performed.\n\nMain `bf6c9b8`, including PR #44’s mobile-control improvements, is incorporated. The generated documentation index was rebuilt to preserve both branches’ content. The original mobile-controls checkout and the other nine concept lessons are preserved separately. Rollback is the previous two-app build artifact; no database or family-storage migration is required."
     },
     {
       "id": "docs/build-log/race-review/course-review.json",
