@@ -28,7 +28,7 @@ The independent finish review requested removal of the Rocket game's eyebrow and
 
 | Check | Result |
 | --- | --- |
-| Full local `pnpm check` | Pass: typecheck, lint, 1,624 tests; 48 skipped without their external acceptance inputs |
+| Full local `pnpm check` | Pass after integrating main `bf6c9b8`: typecheck, lint, 1,626 tests; 48 skipped without their external acceptance inputs |
 | Final shared/game lock and effect regression | Pass: the focused 56-case run and final full suite cover motion timing, stale/replay, sparse goal/override and restart cancellation |
 | Built Rocket Chromium acceptance | Pass: all five cases; two-app route and compiled assets, full desktop flow with help/replay/skip/restart, 320px keyboard/reduced-motion flow with space, real marble first gate and all required locks, portable-file import and 390px game card |
 | Existing education Chromium acceptance | Pass: all 19 tests, including Gems, family versions, keyboard, narrated cue stubs, download and baseline storage |
@@ -56,4 +56,4 @@ No paid narration was generated. The reviewed dry run reuses 82 existing clips a
 
 Physical iOS Safari / Android Chrome, an observed parent-guided child session, educator review and same-device performance comparison remain release gates. Automated choices do not establish learning mastery. Hosted PR previews are currently disabled by `WWM_PREVIEWS_ENABLED=false`; this branch does not change that setting. The production flag is explicitly false, and no merge or deployment was performed.
 
-The original mobile-controls checkout and the other nine concept lessons are preserved separately. Rollback is the previous two-app build artifact; no database or family-storage migration is required.
+Main `bf6c9b8`, including PR #44’s mobile-control improvements, is incorporated. The generated documentation index was rebuilt to preserve both branches’ content. The original mobile-controls checkout and the other nine concept lessons are preserved separately. Rollback is the previous two-app build artifact; no database or family-storage migration is required.

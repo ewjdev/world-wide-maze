@@ -293,7 +293,7 @@ The release handoff contains the exact commit/PR, rendered intro and five scene 
 
 ## 9. Execution receipt — September 30, 2026
 
-The hardened plan and Rocket reference pack were committed first as `6dafbe8`. Implementation uses the isolated `codex/pip-rocket-lab` branch in `/Users/ewj/.codex/worktrees/pip-rocket-lab/wwm`, based on current main. The separate mobile-controls PR and the other nine concepts remain outside this branch.
+The hardened plan and Rocket reference pack were committed first as `6dafbe8`. Implementation uses the isolated `codex/pip-rocket-lab` branch in `/Users/ewj/.codex/worktrees/pip-rocket-lab/wwm`, including main `bf6c9b8` and its merged mobile-control improvements. The original mobile-controls checkout and the other nine concept outputs are preserved separately.
 
 | Gate | Current evidence | Remaining acceptance |
 | --- | --- | --- |
@@ -301,7 +301,7 @@ The hardened plan and Rocket reference pack were committed first as `6dafbe8`. I
 | M1 / balloon slice | Mandatory demonstration, R1/R2, replay, hint ladder, tokenized explanation completion | Physical audio/interaction review |
 | M2 / standalone | R1–R4 plus optional R5, both bonus paths, keyboard/tap, reduced motion, portable before/after HTML, preserved family keys, compiled `/education/` artifact | Physical iOS Safari / Android Chrome |
 | M3 / maze | Four posts on the existing handmade practice fixture; zero/one-post binding tests and a frozen zero-post fixture; finish requires all four; Later/reopen and stale completion cases; portable-file import; real-marble first entry | Physical controller and broader device acceptance |
-| M4 / automated | Full local check: 1,624 tests passed; final targeted lock/effect regressions passed; complete built Rocket browser cases and all 19 legacy education browser cases passed | New paid clips, listening review, physical devices, child pilot and measured same-device performance comparison |
+| M4 / automated | Full local check after main integration: 1,626 tests passed; final targeted lock/effect regressions passed; complete built Rocket browser cases and all 19 legacy education browser cases passed | New paid clips, listening review, physical devices, child pilot and measured same-device performance comparison |
 | M5 / delivery | Screenshots and implementation prepared for review PR; default/off artifact verified; production flag remains false | Exact-candidate CI; hosted preview unavailable while `WWM_PREVIEWS_ENABLED=false`; merge/release not authorized |
 
 The browser effect now holds its readable after-frame until narration completes, within a bounded fallback window, and cancels frames/timers on hide or disposal. Returning replays interrupted work. Correct answers count and unlock only after the matching explanation completes. Before/after frames serve reduced motion. No lesson physics/WebGL loop or dependency was added. Effect ownership and cancellation have timer tests; this is not a measured physical-device performance certificate.
