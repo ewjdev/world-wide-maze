@@ -58,6 +58,10 @@ Screenshots were inspected by eye. They are layout evidence only, not iOS Safari
 - The base `.wwm-stage-host` rule sets `height: 100%`, which beat `bottom`, so the portrait deck was ignored until the touch rule set `height: auto`.
 - CDP `Input.dispatchTouchEvent` `touchEnd` ends exactly the points listed, not the remaining ones. The e2e helper is written for that.
 
+## Layout decision: stick under the right thumb (2026-09-30)
+
+Most players are right-handed, so the stick (the precise control) sits under the right thumb and Jump, Turbo and Pause share one width (`--tc-btn-w`) in a column under the left thumb. `data-hand="left"` mirrors it for left-handed players; the setting UI is still to come (M3). Race's charge/speed readout moved up out of the stick's area in touch play. This reverses the earlier left-stick default; the `touch.css` header records it. Emulated layout only: no physical-device confirmation of reach or comfort yet.
+
 ## Landed early from later milestones
 
 - The container observer and orientation pause (M3 §3).
