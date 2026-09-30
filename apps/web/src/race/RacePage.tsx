@@ -260,7 +260,7 @@ function RaceScreens({ session }: { session: RaceSession }) {
         <TouchControls
           source={touch}
           onPause={() => session.pause()}
-          live={racing || v.phase === 'countdown'}
+          mode={racing ? 'live' : v.phase === 'countdown' ? 'ready' : 'off'}
           {...(v.mechanics?.enabled
             ? {
                 turbo: {

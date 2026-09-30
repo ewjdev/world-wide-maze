@@ -23,8 +23,11 @@ export interface TouchControlsProps {
   source: TouchInputSource;
   onPause: () => void;
   turbo?: TurboControl;
-  /** Controls stay visible but inert (countdown shows them; nothing accumulates for "Go"). */
-  live?: boolean;
+  /**
+   * `live`: takes input. `ready`: shown dimmed and inert (the countdown lets the player see the controls before
+   * "Go", and nothing accumulates for it). `off`: hidden (pause, results, panels).
+   */
+  mode?: 'live' | 'ready' | 'off';
   /** Swap thumbs (persisted preference, M3). */
   leftHanded?: boolean;
 }
@@ -33,7 +36,7 @@ export function TouchControls({
   source,
   onPause,
   turbo,
-  live = true,
+  mode = 'live',
   leftHanded = false,
 }: TouchControlsProps) {
   const { t } = useTranslation();
@@ -98,8 +101,8 @@ export function TouchControls({
 
   // Anything that changes what the contacts mean cancels them: they must lift and land again.
   useEffect(() => {
-    if (!live) source.reset();
-  }, [live, source]);
+    if (mode !== 'live') source.reset();
+  }, [mode, source]);
   useEffect(() => () => source.reset(), [source]);
 
   return (
@@ -107,7 +110,7 @@ export function TouchControls({
       ref={root}
       className="wwm-touch"
       data-testid="touch-controls"
-      data-live={live}
+      data-mode={mode}
       data-hand={leftHanded ? 'left' : 'right'}
     >
       <div className="wwm-touch__deck" aria-hidden="true" />
@@ -132,8 +135,11 @@ export function TouchControls({
             disabled={!turbo.ready}
             aria-label={`${t('touch.turbo')} ×${turbo.count}`}
           >
-            <span>{t('touch.turbo')}</span>
-            <b aria-hidden="true">×{turbo.count}</b>
+            <span className="wwm-touch__row">
+              <BoltIcon />
+              <span>{t('touch.turbo')}</span>
+              <b aria-hidden="true">×{turbo.count}</b>
+            </span>
             <i aria-hidden="true">{turbo.ready ? t('touch.turboReady') : t('touch.turboCharging')}</i>
           </button>
         )}
@@ -144,9 +150,39 @@ export function TouchControls({
           data-testid="touch-jump"
           data-pressed="false"
         >
+          <ChevronIcon />
           {t('touch.jump')}
         </button>
       </div>
     </div>
+  );
+}
+
+const icon = {
+  width: 22,
+  height: 22,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2.6,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+} as const;
+
+/** Drawn to match the shell's icon stroke (ui/parts.tsx). */
+function ChevronIcon() {
+  return (
+    <svg {...icon} aria-hidden="true">
+      <path d="M5 15l7-7 7 7" />
+      <path d="M5 21l7-7 7 7" opacity="0.4" />
+    </svg>
+  );
+}
+
+function BoltIcon() {
+  return (
+    <svg {...icon} width={16} height={16} aria-hidden="true">
+      <path d="M13 3L5 13.5h6L10 21l8-10.5h-6z" fill="currentColor" strokeWidth="1.6" />
+    </svg>
   );
 }

@@ -89,9 +89,17 @@
   will-change: transform;
 }
 .wwm-touch__base {
-  background: rgba(255, 255, 255, 0.78);
+  /* a hairline inner ring marks the dead zone: the thumb starts steering once it leaves it */
+  background:
+    radial-gradient(circle, transparent 0 22%, rgba(32, 38, 45, 0.16) 22.5% 24%, transparent 24.5%),
+    rgba(255, 255, 255, 0.9);
   border: 3px solid var(--ink);
   box-shadow: 0 6px 14px rgba(32, 38, 45, 0.16);
+  transition: background-color 90ms linear;
+}
+.wwm-touch__zone[data-active="true"] .wwm-touch__base {
+  background:
+    radial-gradient(circle, transparent 0 22%, rgba(32, 38, 45, 0.16) 22.5% 24%, transparent 24.5%), #e7f4f3;
 }
 .wwm-touch__thumb {
   inset: 34%;
@@ -119,15 +127,14 @@
   bottom: var(--tc-inset-b);
   right: var(--tc-inset-r);
   display: flex;
-  flex-direction: column; /* Turbo stacks above Jump, clear of the stick */
-  align-items: flex-end;
+  flex-direction: column; /* Turbo stacks above Jump, clear of the stick; both share the wider width */
+  align-items: stretch;
   gap: 12px;
   pointer-events: none;
 }
 .wwm-touch[data-hand="left"] .wwm-touch__actions {
   right: auto;
   left: var(--tc-inset-l);
-  align-items: flex-start;
 }
 .wwm-touch__action {
   appearance: none;
@@ -138,7 +145,7 @@
   display: grid;
   place-items: center;
   align-content: center;
-  gap: 2px;
+  gap: 4px;
   font: 800 15px / 1 var(--display);
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -154,7 +161,7 @@
   transition: transform 70ms linear;
 }
 .wwm-touch__action--jump {
-  width: calc(var(--tc-jump) * 1.5);
+  min-width: calc(var(--tc-jump) * 1.5);
   height: var(--tc-jump);
   background: var(--yellow);
 }
@@ -163,19 +170,31 @@
   transform: translateY(3px);
 }
 .wwm-touch__action--turbo {
-  width: calc(var(--tc-action) * 1.6);
+  min-width: calc(var(--tc-jump) * 1.5);
   min-height: var(--tc-action);
-  padding: 6px 8px;
+  padding: 8px 12px;
   background: var(--ink);
   color: #fff;
 }
-.wwm-touch__action--turbo b {
+.wwm-touch__row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+.wwm-touch__row b {
+  margin-left: 4px;
   font-size: 16px;
+  font-variant-numeric: tabular-nums;
 }
 .wwm-touch__action--turbo i {
-  font: 600 11px / 1 var(--ui);
+  font: 650 12px / 1 var(--ui);
   font-style: normal;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
+  text-transform: none;
+}
+.wwm-touch__action:not(:disabled):active {
+  transform: translateY(3px);
 }
 .wwm-touch__action--turbo[data-ready="true"] {
   background: var(--teal);
@@ -204,8 +223,8 @@
   transform: translateX(-50%);
   min-width: 48px;
   min-height: 48px;
-  padding: 0 16px;
-  font: 800 14px / 1 var(--display);
+  padding: 0 14px;
+  font: 800 13px / 1 var(--display);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #fff;
@@ -241,11 +260,20 @@
   display: none;
 }
 
-/* Countdown, pause and results keep the deck reserved but take the controls out of play. */
-.wwm-touch[data-live="false"] .wwm-touch__zone,
-.wwm-touch[data-live="false"] .wwm-touch__actions,
-.wwm-touch[data-live="false"] .wwm-touch__pause {
+/* Pause, results and panels keep the deck reserved but take the controls out of play. */
+.wwm-touch[data-mode="off"] .wwm-touch__zone,
+.wwm-touch[data-mode="off"] .wwm-touch__actions,
+.wwm-touch[data-mode="off"] .wwm-touch__pause {
   visibility: hidden;
+}
+/* The countdown shows the controls dimmed and inert, so the player sees them before "Go". */
+.wwm-touch[data-mode="ready"] .wwm-touch__zone,
+.wwm-touch[data-mode="ready"] .wwm-touch__actions {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.wwm-touch[data-mode="ready"] .wwm-touch__action {
+  pointer-events: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

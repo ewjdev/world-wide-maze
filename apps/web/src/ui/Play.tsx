@@ -44,7 +44,13 @@ function TouchLayer() {
       onPause={() => g.menu()}
       // A fall, the respawn and the time-up sign keep the contacts (the sim reads neutral input meanwhile); only
       // countdown, panels and pause take input away.
-      live={LIVE_PHASES.has(v.phase) && !v.portal && !v.travel && !gate}
+      mode={
+        LIVE_PHASES.has(v.phase) && !v.portal && !v.travel && !gate
+          ? 'live'
+          : v.phase === 'countdown'
+            ? 'ready'
+            : 'off'
+      }
     />
   );
 }

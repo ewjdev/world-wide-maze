@@ -134,6 +134,10 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
     await waitPhase(page, 'intro');
     await page.waitForFunction(() => !!document.querySelector('.wwm-intro__skip'), null, { timeout: 15_000 });
     await page.getByTestId('intro-skip').click();
+    await waitPhase(page, 'countdown', 8_000).then(
+      () => shot(page, 'original-portrait-countdown'),
+      () => {},
+    );
     await waitPhase(page, 'play', 30_000);
 
     await page.getByTestId('touch-controls').waitFor();
@@ -155,6 +159,8 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
     const right: Point = { x: jump.x, y: jump.y, id: 2 };
     let peak = before?.[1] ?? 0;
     await dispatch(cdp, 'touchStart', [{ ...left, x: stick.x + 40 }, right]);
+    await page.waitForTimeout(120);
+    await shot(page, 'original-portrait-active');
     // Sample briefly (a long hold can roll off the practice island on a slow runner)
     for (let i = 0; i < 12 && peak <= (before?.[1] ?? 0) + 0.02; i++) {
       peak = Math.max(peak, (await ball(page))?.[1] ?? 0);
