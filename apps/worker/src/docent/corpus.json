@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "7531b78c26b8a7c3",
+  "hash": "f2593ef1f0acef48",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -342,13 +342,13 @@
       "text": "## Landed\n- Hardened touch source and bound controls, with unit tests for peek/consume, held-vs-tap edges, coalescing, reset, dead zone, sensitivity, pointer theft, lost capture and dispose/remount (`packages/net/test/sources.test.ts`).\n- Both sessions wired: Original (`game.ts`, machine `HOWTO_DONE{ready}`, `playOnDevice`) and Race (`session.ts`).\n- Race session tests for zero-step frames, held/released Jump, 30/60/120/144 Hz render schedules, a press held into the countdown, pause releasing contacts, paused-countdown resume and practice/retry eligibility (`apps/web/test/race-session.test.ts`).\n- Shared `TouchControls` (stick, Jump, contextual Turbo, top Pause) with a reserved portrait control deck and safe-area insets.\n- Emulated real-touch E2E: `apps/web/test/mobile-play.e2e.test.ts`.\n\n## Findings from the emulated run (emulated, mobile Chromium 390×844 and 844×390)\nScreenshots were inspected by eye. They are layout evidence only, not iOS Safari or Android Chrome.\n\n- The fixed \"Online services are resting\" notice (`main.tsx`) sat exactly on the Jump button, and `elementFromPoint` proved it swallowed the touch. On touch devices it now sits at the top, drops the \"keyboard controls\" wording, and is hidden while the touch controls are on screen.\n- Pause at top-centre collided with the TIME digits and LIFE in portrait, and with the Race title. In portrait it now sits in the control deck above the right thumb. In landscape it stays top-centre (Race: beside the sound button, above the Race header).\n- Turbo overlapped the stick ring when placed beside Jump, so it now stacks above Jump.\n- The base `.wwm-stage-host` rule sets `height: 100%`, which beat `bottom`, so the portrait deck was ignored until the touch rule set `height: auto`.\n- CDP `Input.dispatchTouchEvent` `touchEnd` ends exactly the points listed, not the remaining ones. The e2e helper is written for that."
     },
     {
-      "id": "docs/build-log/mobile-browser-game.md#landed-early-from-later-milestones",
-      "title": "Mobile browser game: build log › Landed early from later milestones · Not done yet",
+      "id": "docs/build-log/mobile-browser-game.md#layout-decision-stick-under-the-right-thumb-2026-09-30",
+      "title": "Mobile browser game: build log › Layout decision: stick under the right thumb (2026-09-30) · Landed early from later milestones · Not done yet",
       "path": "docs/build-log/mobile-browser-game.md",
-      "anchor": "landed-early-from-later-milestones",
+      "anchor": "layout-decision-stick-under-the-right-thumb-2026-09-30",
       "url": "/log#mobile-browser-game",
       "kind": "build-log",
-      "text": "## Landed early from later milestones\n- The container observer and orientation pause (M3 §3).\n- Paused-countdown restoration (M3 §7).\n- Touch tutorial strings and the how-to copy (partial M3 §3).\n\n## Not done yet\nM0 screenshots, device inventory and baselines; settings (handedness, size, sensitivity UI, fixed/adaptive toggle) with persistence; panel ownership beyond releasing input; broader overlay/result/name-entry coverage; audio/renderer-loss handling; fullscreen and wake lock; accessibility review; physical-device qualification (G4); release wiring, four-way flag build matrix and rollback rehearsal (G5)."
+      "text": "## Layout decision: stick under the right thumb (2026-09-30)\nMost players are right-handed, so the stick (the precise control) sits under the right thumb and Jump, Turbo and Pause share one width (`--tc-btn-w`) in a column under the left thumb. `data-hand=\"left\"` mirrors it for left-handed players; the setting UI is still to come (M3). Race's charge/speed readout moved up out of the stick's area in touch play. This reverses the earlier left-stick default; the `touch.css` header records it. Emulated layout only: no physical-device confirmation of reach or comfort yet.\n\n## Landed early from later milestones\n- The container observer and orientation pause (M3 §3).\n- Paused-countdown restoration (M3 §7).\n- Touch tutorial strings and the how-to copy (partial M3 §3).\n\n## Not done yet\nM0 screenshots, device inventory and baselines; settings (handedness, size, sensitivity UI, fixed/adaptive toggle) with persistence; panel ownership beyond releasing input; broader overlay/result/name-entry coverage; audio/renderer-loss handling; fullscreen and wake lock; accessibility review; physical-device qualification (G4); release wiring, four-way flag build matrix and rollback rehearsal (G5)."
     },
     {
       "id": "docs/build-log/performance-audio-p2.md",

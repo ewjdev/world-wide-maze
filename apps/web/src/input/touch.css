@@ -1,4 +1,7 @@
 /*
+ * Layout: the stick sits under the dominant (right) thumb, where precision matters most; Jump, Turbo and
+ * Pause stack under the other thumb. `data-hand="left"` mirrors everything for left-handed players.
+ *
  * Same-device touch controls (plans/mobile-browser-game-execution.md). Same visual roles as the rest of the
  * shell: fog-white plates, ink text, teal input feedback, yellow Jump, cut-corner action plates. The stick is
  * round because its motion is radial. Sizes are tuning candidates to validate on devices, not constants.
@@ -9,6 +12,8 @@
   --tc-zone: 220px;
   --tc-jump: 72px;
   --tc-action: 56px;
+  /* Jump, Turbo and Pause share one width so the action column reads as a single block */
+  --tc-btn-w: 140px;
   --tc-gap: 16px;
   --tc-deck: clamp(238px, 30svh, 292px);
   --tc-inset-l: max(var(--tc-gap), env(safe-area-inset-left));
@@ -21,6 +26,7 @@
     --tc-zone: 176px;
     --tc-jump: 64px;
     --tc-action: 52px;
+    --tc-btn-w: 136px;
   }
 }
 
@@ -57,7 +63,7 @@
 .wwm-touch__zone {
   position: absolute;
   bottom: var(--tc-inset-b);
-  left: var(--tc-inset-l);
+  right: var(--tc-inset-r);
   width: var(--tc-zone);
   height: min(var(--tc-zone), calc(var(--tc-deck) - 16px));
   display: grid;
@@ -66,12 +72,17 @@
   touch-action: none;
 }
 .wwm-touch[data-hand="left"] .wwm-touch__zone {
-  left: auto;
-  right: var(--tc-inset-r);
+  right: auto;
+  left: var(--tc-inset-l);
 }
 @media (orientation: landscape) {
   .wwm-touch__zone {
     height: var(--tc-zone);
+  }
+}
+@media (orientation: landscape) and (max-height: 430px) {
+  .wwm-touch__zone {
+    height: 160px; /* keeps the stick ring low enough to clear Race's charge readout */
   }
 }
 
@@ -125,16 +136,16 @@
 .wwm-touch__actions {
   position: absolute;
   bottom: var(--tc-inset-b);
-  right: var(--tc-inset-r);
+  left: var(--tc-inset-l);
   display: flex;
-  flex-direction: column; /* Turbo stacks above Jump, clear of the stick; both share the wider width */
+  flex-direction: column; /* Turbo stacks above Jump */
   align-items: stretch;
   gap: 12px;
   pointer-events: none;
 }
 .wwm-touch[data-hand="left"] .wwm-touch__actions {
-  right: auto;
-  left: var(--tc-inset-l);
+  left: auto;
+  right: var(--tc-inset-r);
 }
 .wwm-touch__action {
   appearance: none;
@@ -161,7 +172,7 @@
   transition: transform 70ms linear;
 }
 .wwm-touch__action--jump {
-  min-width: calc(var(--tc-jump) * 1.5);
+  width: var(--tc-btn-w);
   height: var(--tc-jump);
   background: var(--yellow);
 }
@@ -170,17 +181,18 @@
   transform: translateY(3px);
 }
 .wwm-touch__action--turbo {
-  min-width: calc(var(--tc-jump) * 1.5);
+  width: var(--tc-btn-w);
   min-height: var(--tc-action);
-  padding: 8px 12px;
+  padding: 8px 10px;
   background: var(--ink);
   color: #fff;
 }
 .wwm-touch__row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 5px;
+  font-size: 13px;
+  letter-spacing: 0.04em;
 }
 .wwm-touch__row b {
   margin-left: 4px;
@@ -211,7 +223,7 @@
   outline-offset: 3px;
 }
 
-/* Pause lives at the top, away from both thumbs. */
+/* Pause lives away from both thumbs: top-centre in landscape, the top of the action column in portrait. */
 .wwm-touch__pause {
   appearance: none;
   border: 0;
@@ -221,9 +233,9 @@
   top: max(10px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
-  min-width: 48px;
+  width: var(--tc-btn-w);
   min-height: 48px;
-  padding: 0 14px;
+  padding: 0;
   font: 800 13px / 1 var(--display);
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -243,14 +255,53 @@
     transform: none;
   }
 }
-/* Portrait: the top edge is full of HUD, so Pause sits in the control deck above the right thumb. */
+/* Portrait: the top edge is full of HUD, so Pause sits at the top of the control deck, over the action column. */
 @media (orientation: portrait) {
   .wwm-root .wwm-touch__pause {
     top: auto;
-    left: auto;
-    right: var(--tc-inset-r);
+    right: auto;
+    left: var(--tc-inset-l);
     bottom: calc(var(--tc-deck) + env(safe-area-inset-bottom) - 58px);
     transform: none;
+  }
+  .wwm-root .wwm-touch[data-hand="left"] .wwm-touch__pause {
+    left: auto;
+    right: var(--tc-inset-r);
+  }
+}
+
+/*
+ * Race's charge/speed readout sat bottom-right, which is now under the stick (landscape) or behind the control
+ * deck (portrait): in touch play it moves up into the free space under the HUD.
+ */
+.race-root:has(.wwm-touch) .race-boost {
+  top: 268px;
+  left: 24px;
+  right: auto;
+  bottom: auto;
+  width: min(230px, calc(100% - 48px));
+}
+/* Landscape is short: a compact two-row readout in the gap between the Gates cell and the stick. */
+@media (orientation: landscape) {
+  .race-root:has(.wwm-touch) .race-boost {
+    top: 196px;
+    left: auto;
+    right: 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    column-gap: 12px;
+    padding: 8px 12px;
+  }
+  .race-root:has(.wwm-touch) .race-boost progress {
+    grid-column: 1 / -1;
+    margin: 0 0 5px;
+  }
+  .race-root:has(.wwm-touch) .race-boost small {
+    font-size: 12px;
+  }
+  .race-root:has(.wwm-touch) .race-boost small[role="status"] {
+    grid-column: 1 / -1;
   }
 }
 

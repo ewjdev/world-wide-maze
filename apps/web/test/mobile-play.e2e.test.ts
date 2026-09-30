@@ -257,6 +257,53 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
     await ctx.close();
   }, 180_000);
 
+  test.each([
+    ['portrait', PORTRAIT],
+    ['landscape', LANDSCAPE],
+  ])(
+    'Race stunt course, %s: stick under the right thumb, Jump/Turbo/Pause one width, nothing overlaps',
+    async (name, viewport) => {
+      const { ctx, page } = await phone(viewport, {});
+      await page.goto(`${base}/race/island-leap`);
+      await page.getByTestId('race-ready').waitFor({ timeout: 60_000 });
+      await page.getByTestId('race-start').tap();
+      await page.waitForFunction(() => window.__wwmRace?.getView().phase === 'racing', null, {
+        timeout: 30_000,
+      });
+      await page.getByTestId('touch-turbo').waitFor();
+      await shot(page, `race-stunts-${name}`);
+      const box = async (id: string) => {
+        const b = await page.getByTestId(id).boundingBox();
+        if (!b) throw new Error(`${id} not visible`);
+        return b;
+      };
+      const [stick, jump, turbo, pause] = await Promise.all(
+        ['touch-stick', 'touch-jump', 'touch-turbo', 'touch-pause'].map(box),
+      );
+      if (!stick || !jump || !turbo || !pause) throw new Error('control missing');
+      // dominant (right) thumb steers; the action column is on the other side
+      expect(stick.x + stick.width / 2).toBeGreaterThan(viewport.width / 2);
+      expect(jump.x + jump.width / 2).toBeLessThan(viewport.width / 2);
+      expect(turbo.x + turbo.width / 2).toBeLessThan(viewport.width / 2);
+      // one width
+      expect(Math.abs(jump.width - turbo.width)).toBeLessThan(1.5);
+      if (name === 'portrait') expect(Math.abs(jump.width - pause.width)).toBeLessThan(1.5);
+      // no two controls overlap (the stick's activation zone is invisible, so compare visible plates only)
+      const plates = [jump, turbo, pause];
+      for (let i = 0; i < plates.length; i++)
+        for (let j = i + 1; j < plates.length; j++) {
+          const a = plates[i];
+          const b = plates[j];
+          if (!a || !b) continue;
+          const overlap =
+            a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+          expect(overlap, `${i} overlaps ${j}`).toBe(false);
+        }
+      await ctx.close();
+    },
+    180_000,
+  );
+
   test('Race: touch entry, steer, Turbo course controls, pause shows the practice consequence, no room traffic', async () => {
     const { ctx, page, cdp } = await phone(PORTRAIT, {});
     await page.goto(`${base}/race/flow-sprint`);
