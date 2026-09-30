@@ -30,6 +30,8 @@ const IN_STAGE = new Set([
   'gameover',
 ]);
 
+const LIVE_PHASES = new Set(['play', 'falling', 'restarting', 'timeup']);
+
 /** Same-device controls; live only while play owns input (not for a Pip card, portal prompt or travel). */
 function TouchLayer() {
   const g = useGame();
@@ -40,7 +42,9 @@ function TouchLayer() {
     <TouchControls
       source={g.touch}
       onPause={() => g.menu()}
-      live={v.phase === 'play' && !v.portal && !v.travel && !gate}
+      // A fall, the respawn and the time-up sign keep the contacts (the sim reads neutral input meanwhile); only
+      // countdown, panels and pause take input away.
+      live={LIVE_PHASES.has(v.phase) && !v.portal && !v.travel && !gate}
     />
   );
 }

@@ -150,27 +150,28 @@ describe.skipIf(!HAS_CHROMIUM)('mobile play e2e (touch Chromium)', () => {
     const before = await ball(page);
     const left: Point = { x: stick.x, y: stick.y, id: 1 };
     await dispatch(cdp, 'touchStart', [left]);
-    await dispatch(cdp, 'touchMove', [{ ...left, x: stick.x + 70 }]);
+    await dispatch(cdp, 'touchMove', [{ ...left, x: stick.x + 40 }]);
     await page.waitForFunction(() => window.__wwmGame?.tilt().power === true, null, { timeout: 5_000 });
     const right: Point = { x: jump.x, y: jump.y, id: 2 };
     let peak = before?.[1] ?? 0;
-    await dispatch(cdp, 'touchStart', [{ ...left, x: stick.x + 70 }, right]);
-    for (let i = 0; i < 25; i++) {
+    await dispatch(cdp, 'touchStart', [{ ...left, x: stick.x + 40 }, right]);
+    // Sample briefly (a long hold can roll off the practice island on a slow runner)
+    for (let i = 0; i < 12 && peak <= (before?.[1] ?? 0) + 0.02; i++) {
       peak = Math.max(peak, (await ball(page))?.[1] ?? 0);
       await page.waitForTimeout(30);
     }
     await dispatch(cdp, 'touchEnd', [right]); // CDP ends exactly the listed points: lift the jump finger first
-    await page.waitForTimeout(150);
     const still = await page.evaluate(() => ({
       power: window.__wwmGame?.tilt().power,
       phase: document.body.dataset.phase,
       log: (window as unknown as { __log: string[] }).__log.slice(-12),
     }));
+    // Contacts survive a fall (phase 'falling'): only the Jump finger left, so the stick is still steering.
     expect(
-      { power: still.power, phase: still.phase },
-      `still steering after the jump finger lifted: ${JSON.stringify(still.log)}`,
-    ).toEqual({ power: true, phase: 'play' });
-    await dispatch(cdp, 'touchEnd', [{ ...left, x: stick.x + 70 }]);
+      still.power,
+      `still steering after the jump finger lifted (phase ${still.phase}): ${JSON.stringify(still.log)}`,
+    ).toBe(true);
+    await dispatch(cdp, 'touchEnd', [{ ...left, x: stick.x + 40 }]);
     await page.waitForFunction(() => window.__wwmGame?.tilt().power === false, null, { timeout: 5_000 });
     const after = await ball(page);
     expect(
