@@ -61,6 +61,20 @@ jobs:
 
       - run: pnpm check
 
+      - name: Build and exercise the Rocket review artifact
+        env:
+          VITE_ROCKET_LAB_ENABLED: 'true'
+        run: |
+          pnpm --filter @wwm/web build
+          pnpm --filter @wwm/web preview --host 127.0.0.1 --port 4173 > /tmp/wwm-rocket-preview.log 2>&1 &
+          rocket_pid=$!
+          trap 'kill "$rocket_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4173/education/lessons/rocket-lab/ > /dev/null; then break; fi
+            sleep 1
+          done
+          WWM_ROCKET_E2E_BASE=http://127.0.0.1:4173 pnpm vitest run --project @wwm/web rocket.e2e
+
       - name: Build standalone education pages
         run: pnpm build:education
 
@@ -109,6 +123,7 @@ jobs:
         run: pnpm --filter @wwm/web build
         env:
           VITE_TELEMETRY_URL: ""
+          VITE_ROCKET_LAB_ENABLED: "true"
           VITE_RACE_ENABLED: "true"
           # Same-device touch play (plans/mobile-browser-game-execution.md); production sets it explicitly too.
           VITE_MOBILE_CONTROLS_ENABLED: "true"
@@ -246,6 +261,7 @@ jobs:
         run: pnpm --filter @wwm/web build
         env:
           VITE_TELEMETRY_URL: /api/t
+          VITE_ROCKET_LAB_ENABLED: "false"
           # Both switches explicit (plans/mobile-browser-game-execution.md M5): same-device touch play and Race.
           # Roll back independently by setting either to "false" and redeploying.
           VITE_MOBILE_CONTROLS_ENABLED: "true"

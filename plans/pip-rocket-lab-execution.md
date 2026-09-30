@@ -1,8 +1,8 @@
 # Pip’s Rocket Lab — integration execution plan
 
-**Status:** Authorized for implementation and a review PR; release remains gated.  
-**Prepared:** September 30, 2026. Source audit: local HEAD `008c1407dce4`.  
-**Audience:** Ages 4–6, English, parent-guided.  
+**Status:** Implemented for local review; automated gates passed. Local final checks passed, including all five built Rocket browser cases. Review PR and exact-candidate CI are the current delivery step. Production release remains gated.
+**Prepared:** September 30, 2026. Source audit: local HEAD `008c1407dce4`.
+**Audience:** Ages 4–6, English, parent-guided.
 **Scope:** One lesson in the standalone education app and the WWM maze, using the same content, renderer, demonstrations, answers and hint ladder.
 
 The first reviewable deliverable is a balloon demonstration followed by two opposite-direction predictions in the standalone lesson. The final deliverable adds the tied balloon, upright rocket, optional space example, Pip’s voice and four reliable maze checkpoints. On September 30, Eric authorized updating and committing this plan, executing it, testing, delivering screenshots and opening a review PR. Merge, production release and child/device acceptance remain later gates. Paid narration uses the existing bounded generation path only after a reviewed dry run and provider allowance; it must not block a locally testable review candidate.
@@ -289,3 +289,34 @@ The implementation handoff contains this plan, the Rocket concept pack, frozen c
 The release handoff contains the exact commit/PR, rendered intro and five scene states, portable HTML, script/manifest coverage, test/build results, four-post and sparse-stage walkthroughs, physical-device/audio notes, child pilot observations, deployment readback and rollback receipt. Record each as passed, failed or pending with its evidence location.
 
 **Done means:** Rocket Lab teaches the gas/opposite-push relationship before testing it, presents all four required rounds in both consumers, offers a genuinely optional space round, explains each answer with matching visuals and voice, and ships without breaking existing guided lessons or family data. Local tests, CI, preview, physical acceptance, learning observation and production delivery remain separate evidence gates.
+
+
+## 9. Execution receipt — September 30, 2026
+
+The hardened plan and Rocket reference pack were committed first as `6dafbe8`. Implementation uses the isolated `codex/pip-rocket-lab` branch in `/Users/ewj/.codex/worktrees/pip-rocket-lab/wwm`, based on current main. The separate mobile-controls PR and the other nine concepts remain outside this branch.
+
+| Gate | Current evidence | Remaining acceptance |
+| --- | --- | --- |
+| M0 / shared contracts | Strict guided 0.5 reader, bounded motion truth, semantic marker/order validation, explicit capabilities, independent legacy readers | Educator and observed learning review |
+| M1 / balloon slice | Mandatory demonstration, R1/R2, replay, hint ladder, tokenized explanation completion | Physical audio/interaction review |
+| M2 / standalone | R1–R4 plus optional R5, both bonus paths, keyboard/tap, reduced motion, portable before/after HTML, preserved family keys, compiled `/education/` artifact | Physical iOS Safari / Android Chrome |
+| M3 / maze | Four posts on the existing handmade practice fixture; zero/one-post binding tests and a frozen zero-post fixture; finish requires all four; Later/reopen and stale completion cases; portable-file import; real-marble first entry | Physical controller and broader device acceptance |
+| M4 / automated | Full local check: 1,624 tests passed; final targeted lock/effect regressions passed; complete built Rocket browser cases and all 19 legacy education browser cases passed | New paid clips, listening review, physical devices, child pilot and measured same-device performance comparison |
+| M5 / delivery | Screenshots and implementation prepared for review PR; default/off artifact verified; production flag remains false | Exact-candidate CI; hosted preview unavailable while `WWM_PREVIEWS_ENABLED=false`; merge/release not authorized |
+
+The browser effect now holds its readable after-frame until narration completes, within a bounded fallback window, and cancels frames/timers on hide or disposal. Returning replays interrupted work. Correct answers count and unlock only after the matching explanation completes. Before/after frames serve reduced motion. No lesson physics/WebGL loop or dependency was added. Effect ownership and cancellation have timer tests; this is not a measured physical-device performance certificate.
+
+The initial production-CSP browser run exposed the shared answer hit areas' inline style attributes. They now receive trusted numeric positioning through CSSOM, which also preserves baseline behavior under the same strict policy. Mobile labels use wrapped geometric scene text. Independent finish review requested Rocket-only removal of the game eyebrow and colored explanation side stripe, plus design documentation; those changes were resolved in the finish batch. The final independent review disposition is **ship** for the review interface, with all three findings resolved; release gates remain pending.
+
+Narration dry run: 115 script lines, 82 existing clips reusable, 33 missing lines / 32 unique new clips, 2,140 characters. The operator allowance question is pending; no paid generation was performed. The review build uses browser narration with readable silent fallback. Do not mark complete clip coverage or physical first-tap playback as accepted.
+
+See [implementation and browser evidence](../docs/build-log/pip-rocket-lab.md) and [screenshots](../docs/build-log/assets/rocket-lab/). Local validation used Node 26 and pinned pnpm 11.5; CI uses Node 24.
+
+Review build commands:
+
+```sh
+VITE_ROCKET_LAB_ENABLED=true pnpm --filter @wwm/web build
+pnpm --filter @wwm/web preview --host 127.0.0.1 --port 4173
+WWM_ROCKET_E2E_BASE=http://127.0.0.1:4173 pnpm vitest run --project @wwm/web rocket.e2e
+WWM_EDUCATION_E2E_BASE=http://127.0.0.1:4173/education pnpm vitest run --project @wwm/education education.e2e
+```

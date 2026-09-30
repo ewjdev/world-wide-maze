@@ -309,6 +309,7 @@ export function bindLevel(
   plan: readonly PlanStep[],
   config: Pick<ResolvedLocks, 'mode' | 'connectors' | 'goal'>,
   spots: readonly GateSpot[] = gateSpots(stage),
+  requireAllRounds = false,
 ): LockBinding {
   const g = islandGraph(stage);
   const path = islandPath(g);
@@ -401,7 +402,11 @@ export function bindLevel(
       return id;
     });
     const number = !spot ? 0 : s.kind === 'round' ? ++rounds : ++missions;
-    const goal = lock === 'goal' || (lock === 'path' && config.goal) || fallback !== null;
+    const goal =
+      (requireAllRounds && s.kind === 'round') ||
+      lock === 'goal' ||
+      (lock === 'path' && config.goal) ||
+      fallback !== null;
     return { index: s.index, step: s, lock, fallback, spot, number, edges, lockIds, goal };
   });
   let goalLockId: number | null = null;

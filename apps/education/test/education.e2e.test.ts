@@ -400,7 +400,9 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await page.locator('#stage').isVisible()).toBe(false);
     expect(await page.locator('#end-heading').textContent()).toBe('You built the whole bridge!');
     expect(await page.locator('#end').textContent()).toContain(compare.offlineActivity);
-    expect(await page.locator('#next-activity').getAttribute('href')).toBe('/lessons/find-triangle/');
+    expect(await page.locator('#next-activity').getAttribute('href')).toBe(
+      `${new URL(base ?? 'http://localhost').pathname.replace(/\/$/, '')}/lessons/find-triangle/`,
+    );
     await shot(page, `compare-groups-${device}-9-end`);
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.locator('#again').click();

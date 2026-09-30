@@ -37,6 +37,8 @@ export function pickLevel(
   override?: string | null,
 ): Level {
   const levels = gameLevels(activity);
+  if (activity.demonstration && levels.length === 0)
+    throw new Error('No supported level for this guided lesson.');
   const chosen = override ? levels.find((level) => level.id === override) : undefined;
   if (chosen) return chosen;
   const resolved = resolveLevel(path, activity);
