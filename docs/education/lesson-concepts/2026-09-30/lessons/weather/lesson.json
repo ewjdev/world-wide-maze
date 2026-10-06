@@ -1,0 +1,218 @@
+{
+  "id": "weather",
+  "number": 10,
+  "category": "Weather",
+  "title": "Ready for Outside",
+  "tagline": "Look, listen, and help Pip choose for today.",
+  "accent": "#317daf",
+  "targetMinutes": "2–4",
+  "learningGoal": "Use visible weather and a spoken temperature clue to choose an item that helps with a specific outdoor task.",
+  "childTakeaway": "I look at the weather and choose something that helps.",
+  "story": "Pip wants a short walk to the park bench. The same park feels different as weather changes, so Pip needs help choosing useful clothing and equipment.",
+  "introPip": "I’m going outside! Look at the weather with me. We can choose something that helps for today.",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "Pip, a smiling silver-gray ball with blue seams, sits on a dry porch beside a blue umbrella, green hooded raincoat, and yellow brimmed hat. Gentle rain falls over a leafy park and bench outside.",
+  "ageSupport": {
+    "entry": "Offer two choices, name both aloud, and model looking at the sky. State cold or warm in speech; do not expect the child to read weather symbols.",
+    "stretch": "Ask the child to explain a useful choice, then notice that the same place can need a different item after weather changes. Round five accepts either of two sensible choices."
+  },
+  "misconception": "A sunny sky always means the air is warm, or there is only one correct outfit for every kind of weather.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "A roof for the rain",
+      "prompt": "It is raining. Pip wants to open a wide cover and hold it above him. Which item can do that?",
+      "scene": "round-1.svg",
+      "sceneAlt": "Pip in a park with visible falling raindrops and a puddle. Below are a brimmed hat on the left and an open umbrella on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Brimmed hat",
+          "spokenLabel": "A brimmed hat"
+        },
+        {
+          "id": "b",
+          "label": "Umbrella",
+          "spokenLabel": "An umbrella"
+        }
+      ],
+      "correctChoiceIds": [
+        "b"
+      ],
+      "success": "The open umbrella makes a wide cover above Pip. Falling rain hits the cover.",
+      "hints": [
+        "Look at the falling drops. Pip wants a cover that opens above him.",
+        "Imagine each item opened or worn. Which makes a wide roof above Pip?",
+        "The umbrella opens into a wide cover. Hold it above Pip to catch the falling drops."
+      ],
+      "visualHint": "Place the umbrella above Pip, then animate drops hitting its canopy. No cue is present before the hint.",
+      "whyThisRound": "An easy functional match between visible rain and an opening overhead cover; the task wording distinguishes the umbrella from the rigid pictured hat."
+    },
+    {
+      "id": "r2",
+      "title": "A warmer layer",
+      "prompt": "It is cold and dry today. Which layer could help Pip feel warmer outside?",
+      "scene": "round-2.svg",
+      "sceneAlt": "Pip in a dry cloudy park. Below are shorts on the left, a toy ball in the middle, and a warm coat on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Shorts",
+          "spokenLabel": "Shorts"
+        },
+        {
+          "id": "b",
+          "label": "Toy ball",
+          "spokenLabel": "A toy ball"
+        },
+        {
+          "id": "c",
+          "label": "Warm coat",
+          "spokenLabel": "A warm coat"
+        }
+      ],
+      "correctChoiceIds": [
+        "c"
+      ],
+      "success": "A warm coat adds a layer around Pip. That layer can help him feel warmer in the cold air.",
+      "hints": [
+        "Listen to the weather clue: it is cold. Pip needs a warmer layer.",
+        "Look for clothing that covers much of the body. The ball is for playing.",
+        "The warm coat covers the body and adds a warm layer. Shorts cover much less."
+      ],
+      "visualHint": "Show the coat wrapping around a neutral mannequin beside Pip, then compare how much body it covers with the shorts.",
+      "whyThisRound": "Transfers from keeping rain off to adding warmth. The spoken temperature clue supplies information that a cloudy sky alone cannot give."
+    },
+    {
+      "id": "r3",
+      "title": "Sunshine can be cold",
+      "prompt": "The sun is shining, but the air is cold. Which layer could help Pip feel warmer?",
+      "scene": "round-3.svg",
+      "sceneAlt": "Pip in the same park with a visible sun and small patches of snow on the ground. Below are a warm coat on the left, a thin short-sleeved shirt in the middle, and an umbrella on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Warm coat",
+          "spokenLabel": "A warm coat"
+        },
+        {
+          "id": "b",
+          "label": "Thin shirt",
+          "spokenLabel": "A thin short-sleeved shirt"
+        },
+        {
+          "id": "c",
+          "label": "Umbrella",
+          "spokenLabel": "An umbrella"
+        }
+      ],
+      "correctChoiceIds": [
+        "a"
+      ],
+      "success": "The coat adds a warmer layer. Sunshine and cold air can happen together, so we listen to how the air feels too.",
+      "hints": [
+        "We can see sunshine. What did Pip say about the air?",
+        "Pip said the air is cold. Think about a layer that covers his body and helps keep warmth close.",
+        "Choose the warm coat for the cold air. A sunny sky does not tell us the air is warm."
+      ],
+      "visualHint": "Replay the words “the air is cold,” then compare the coat and shirt coverage. Keep the sun visible throughout.",
+      "whyThisRound": "Reveals the misconception that sunshine always means warm weather without asking children to read a thermometer."
+    },
+    {
+      "id": "r4",
+      "title": "Shade for a face",
+      "prompt": "The sun is shining. Pip wants shade over his face while he walks. Which item helps?",
+      "scene": "round-4.svg",
+      "sceneAlt": "Pip in a sunny park beside the bench and tree. Below are a boot on the left, a broad-brimmed hat in the middle, and a warm coat on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Boot",
+          "spokenLabel": "A boot"
+        },
+        {
+          "id": "b",
+          "label": "Brimmed hat",
+          "spokenLabel": "A brimmed hat"
+        },
+        {
+          "id": "c",
+          "label": "Warm coat",
+          "spokenLabel": "A warm coat"
+        }
+      ],
+      "correctChoiceIds": [
+        "b"
+      ],
+      "success": "The hat’s brim sticks out over Pip’s face and makes some shade there.",
+      "hints": [
+        "Pip wants shade on his face. Look for something worn above the face.",
+        "Imagine wearing each item. Which has a part that sticks out over the eyes?",
+        "The brimmed hat has a wide edge. That edge can make shade on Pip’s face."
+      ],
+      "visualHint": "Place the hat on Pip and show a simple face-shadow patch beneath the brim. Explain partial shade only.",
+      "whyThisRound": "Transfer to a clearly stated sun-related task. It asks about making shade, not inferring temperature or providing complete sun protection."
+    },
+    {
+      "id": "r5",
+      "title": "Two sensible rain helpers",
+      "prompt": "Rain has started in this same park. Pip wants to keep falling rain off his clothes. Choose one item that could help.",
+      "scene": "round-5.svg",
+      "sceneAlt": "Pip beside the same bench and tree as the previous round, now under rain clouds with falling drops and a puddle. Below are a hooded raincoat on the left, a brimmed hat in the middle, and an umbrella on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Raincoat",
+          "spokenLabel": "A raincoat"
+        },
+        {
+          "id": "b",
+          "label": "Brimmed hat",
+          "spokenLabel": "A brimmed hat"
+        },
+        {
+          "id": "c",
+          "label": "Umbrella",
+          "spokenLabel": "An umbrella"
+        }
+      ],
+      "correctChoiceIds": [
+        "a",
+        "c"
+      ],
+      "success": "A raincoat covers clothes; an umbrella makes a cover above them. Either can help with this gentle falling rain. You can choose one.",
+      "hints": [
+        "The place is the same, but the weather has changed. What is falling from the clouds?",
+        "Pip wants to cover his clothes. A cover can be worn around them or held above them.",
+        "A raincoat covers clothes, and an umbrella catches rain above them. Both are sensible choices here. Choose either one."
+      ],
+      "visualHint": "After the choice, offer a demonstration of either strategy: drops hit the raincoat, or drops hit the umbrella overhead. Never require selecting both.",
+      "whyThisRound": "An optional stretch checks a changed weather condition and accepts two reasonable solutions to the same functional task."
+    }
+  ],
+  "finale": "Pip checks the weather again, chooses a useful item, and reaches the park bench ready for the short walk. The child can explain one choice in words or by pointing.",
+  "offlineActivity": "With a grown-up, look through a window and name what you can see. Have the grown-up say whether the air feels cold or warm, then choose one useful item for a planned short outing and explain what it helps with.",
+  "reviewQuestions": [
+    "Does “which item helps with this task?” feel more inviting than testing a single correct outfit, and is the task understandable without reading?",
+    "Should the sunny-but-cold example stay in the core five rounds, or become an optional stretch for children who are ready?",
+    "In the last round, should we show both sensible rain strategies after one selection, or let the child request the second demonstration?"
+  ],
+  "designNotes": [
+    "Adult review concept only; no game integration, voice service calls, child testing, or curriculum validation has occurred.",
+    "Spoken weather conditions are part of the stimulus: sunshine alone does not establish temperature, and clouds alone do not establish cold.",
+    "Question scenes have no answer-revealing highlights, arrows, checkmarks, or selected styling. Choice order changes.",
+    "Pip is a fantasy ball character; garment demonstrations would need a simple mannequin or clear symbolic dressing interaction, not a claim about ball anatomy.",
+    "The functional task narrows each choice. Accept culturally reasonable clothing alternatives in a future implementation rather than treating one pictured outfit as universal.",
+    "Round five accepts raincoat OR umbrella as an individual answer. It is not a hidden multi-select task. The brimmed hat alone does not cover Pip’s clothes as requested.",
+    "Hat feedback describes partial face shade. This pack does not present any one item as complete sun protection or offer medical advice.",
+    "Gentle ordinary weather is used. Severe-weather safety, wind-driven rain, weather forecasting, temperature reading, and cloud taxonomy are outside this short lesson.",
+    "The NOAA source supports observing separate weather features and noticing change; it does not validate this preschool lesson or prescribe particular outfits."
+  ],
+  "sources": [
+    {
+      "title": "NOAA: Be a Citizen Weather Reporter",
+      "url": "https://oceanservice.noaa.gov/education/dyw-weather-reporter.html",
+      "supports": "Weather observations include temperature, precipitation, and sky conditions as separate features. Repeated observations reveal changes over time; adapted here into looking and listening before choosing a useful item."
+    }
+  ]
+}

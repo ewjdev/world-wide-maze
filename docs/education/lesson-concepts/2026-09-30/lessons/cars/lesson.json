@@ -1,0 +1,205 @@
+{
+  "id": "cars",
+  "number": 2,
+  "category": "Cars",
+  "title": "Pip’s Rolling Garage",
+  "tagline": "Choose wheels for a smooth parcel delivery.",
+  "accent": "#317daf",
+  "targetMinutes": "2–4",
+  "learningGoal": "Choose wheels with a round outer edge for a smoother ride on a smooth ramp, even when their size, decoration, or vehicle changes.",
+  "childTakeaway": "Round wheels have no corners, so they can give a smooth ride on our smooth ramp.",
+  "story": "Pip needs to deliver a parcel down a gentle smooth ramp. The toy car has its wheels off, and the child helps choose replacements before trying a parcel wagon.",
+  "introPip": "My parcel needs a ride! Let’s choose some wheels for our smooth ramp.",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "Pip, a small silver-gray smiling ball with blue seams, stands beside a blue toy delivery car on a gentle ramp. A tray holds round and square spare wheels, and a parcel waits at an open blue garage.",
+  "ageSupport": {
+    "entry": "Say each choice aloud and let the child tap a whole wheel card. Begin by watching one round and one square wheel turn slowly on a smooth surface.",
+    "stretch": "Ask the child to trace the outer edge and explain a choice. The fifth round compares a circle with an eight-sided wheel without needing the word octagon."
+  },
+  "misconception": "A colorful picture or a bigger wheel must be the best wheel. The outer edge matters for this smooth-ride question; decoration does not make corners disappear.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "Repair the car",
+      "prompt": "Which wheels would give my car a smoother ride on this smooth ramp?",
+      "scene": "round-1.svg",
+      "sceneAlt": "A blue toy car with empty wheel positions waits on a gentle smooth ramp. Below are two equal-size sets of spare wheels: square wheels on the left and round wheels on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Square wheels",
+          "spokenLabel": "Square wheels"
+        },
+        {
+          "id": "b",
+          "label": "Round wheels",
+          "spokenLabel": "Round wheels"
+        }
+      ],
+      "correctChoiceIds": [
+        "b"
+      ],
+      "success": "These wheels have a round edge. They can turn smoothly on our smooth ramp.",
+      "hints": [
+        "Look at the outside edge of each wheel.",
+        "Let’s turn one wheel from each set slowly on our smooth ramp.",
+        "The square’s corners lift the car up and down. The round edge gives the car a smoother ride."
+      ],
+      "visualHint": "After requesting a hint, show slow rotations over the same straight surface. Track each center with an identical small marker: the square center rises and falls; the circle center stays level. Do not pre-mark the correct card.",
+      "whyThisRound": "Connects round wheel geometry to a concrete job, rather than asking only for a shape name."
+    },
+    {
+      "id": "r2",
+      "title": "Look past the picture",
+      "prompt": "Which wheels have a round outside edge, even with a star picture inside?",
+      "scene": "round-2.svg",
+      "sceneAlt": "The same blue toy car and smooth ramp appear above two wheel sets: round wheels with yellow stars inside on the left and plain square wheels on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Wheels with star pictures",
+          "spokenLabel": "Wheels with star pictures"
+        },
+        {
+          "id": "b",
+          "label": "Plain square wheels",
+          "spokenLabel": "Plain square wheels"
+        }
+      ],
+      "correctChoiceIds": [
+        "a"
+      ],
+      "success": "The star is a picture inside. The outside edge is still round, so these wheels can turn smoothly here.",
+      "hints": [
+        "The picture is inside. Follow the outside edge.",
+        "Let’s trace around each wheel, without tracing its picture.",
+        "The star picture does not change the wheel’s round outside edge."
+      ],
+      "visualHint": "Trace only the wheel’s outside edge, then hide and reveal the star decoration while the circular silhouette stays unchanged.",
+      "whyThisRound": "Changes appearance while preserving the useful property. Avoids teaching children to choose only plain or familiar wheels."
+    },
+    {
+      "id": "r3",
+      "title": "Small and big",
+      "prompt": "Which set has wheels with no corners? More than one set can work.",
+      "scene": "round-3.svg",
+      "sceneAlt": "The same car and ramp appear above three sets of wheels: small round wheels on the left, medium square wheels in the middle, and large round wheels on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Small round wheels",
+          "spokenLabel": "Small round wheels"
+        },
+        {
+          "id": "b",
+          "label": "Square wheels",
+          "spokenLabel": "Square wheels"
+        },
+        {
+          "id": "c",
+          "label": "Big round wheels",
+          "spokenLabel": "Big round wheels"
+        }
+      ],
+      "correctChoiceIds": [
+        "a",
+        "c"
+      ],
+      "success": "Yes, those wheels have a round edge. Small and big wheels can both be round.",
+      "hints": [
+        "Look for an outside edge with no corners.",
+        "Let’s trace the small wheels and then the big wheels.",
+        "Both round sets have no corners. You can choose either one."
+      ],
+      "visualHint": "On request, trace both circular silhouettes with the same line style. Accept either single choice and allow the other round set to be tried after the answer.",
+      "whyThisRound": "Checks whether size distracts from roundness. Does not compare speeds, distances, or claim all sizes work equally well on every car."
+    },
+    {
+      "id": "r4",
+      "title": "A new parcel wagon",
+      "prompt": "This wagon needs a smoother ride on the same ramp. Which wheels would you choose?",
+      "scene": "round-4.svg",
+      "sceneAlt": "A simple green parcel wagon with empty wheel positions waits on the same gentle smooth ramp. Below it are square wheels on the left and round wheels on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Square wheels",
+          "spokenLabel": "Square wheels"
+        },
+        {
+          "id": "b",
+          "label": "Round wheels",
+          "spokenLabel": "Round wheels"
+        }
+      ],
+      "correctChoiceIds": [
+        "b"
+      ],
+      "success": "The wagon can use round wheels too. Their round edge helps give a smoother ride on our smooth ramp.",
+      "hints": [
+        "The vehicle changed. Look at the wheels’ outside edges.",
+        "Let’s turn the wheels slowly under the wagon, just as we did under the car.",
+        "Round wheels have no corners lifting this wagon up and down on our smooth ramp."
+      ],
+      "visualHint": "Repeat the slow wheel comparison with the wagon body and the same surface, release position, parcel, and scale. Avoid winner animations based on speed or distance.",
+      "whyThisRound": "Transfers the idea to a different vehicle while holding the ramp and parcel task constant."
+    },
+    {
+      "id": "r5",
+      "title": "Closer look — optional stretch",
+      "prompt": "These wheels look almost alike. Which set has a round edge with no corners?",
+      "scene": "round-5.svg",
+      "sceneAlt": "The blue car and smooth ramp return. Below are circular wheels on the left and eight-sided wheels on the right, with the same color and approximate size.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Round-edge wheels",
+          "spokenLabel": "These round-edge wheels"
+        },
+        {
+          "id": "b",
+          "label": "Many-cornered wheels",
+          "spokenLabel": "These many-cornered wheels"
+        }
+      ],
+      "correctChoiceIds": [
+        "a"
+      ],
+      "success": "This edge curves all the way around. The other wheels have little corners. The round edge gives a smoother ride on our smooth ramp.",
+      "hints": [
+        "Look slowly around the outside edge.",
+        "Let’s trace each edge. One keeps curving; one has short straight pieces.",
+        "Choose the edge that curves all the way around without corners."
+      ],
+      "visualHint": "Zoom or trace equal-size outer edges. Then demonstrate their slow rotations on the same straight surface with an identical center marker. Keep the many-sided wheel's rise-and-fall subtle and geometrically honest.",
+      "whyThisRound": "An optional close comparison reveals whether the child recognizes continuous roundness rather than any roughly wheel-like silhouette."
+    }
+  ],
+  "finale": "The chosen round wheels are attached to the toy car. Pip releases it from the same marked spot on the gentle ramp, and the parcel reaches the garage. The child can replay the wheel turn or try another set without a score penalty.",
+  "offlineActivity": "With a grown-up, slowly turn a large round cardboard disk and a same-width square cardboard piece along a smooth tabletop. Keep fingers at the center and notice how that center moves. Then release an existing toy car from the same low book-ramp spot twice. Observe rather than race; the adult cuts the cardboard and holds the ramp.",
+  "reviewQuestions": [
+    "Does the smoother-ride goal feel more useful and understandable than a fastest-car question?",
+    "Should round three accept either round wheel set, or should the first version use only two choices for easier visual scanning?",
+    "Is the circle-versus-eight-sided stretch worth keeping as an optional fifth round, or should that round instead invite a free wheel experiment?"
+  ],
+  "designNotes": [
+    "Review concept only; no game integration or child playtesting has occurred. The generated concept image introduces the story; the SVGs define the exact question stimuli.",
+    "The phrase 'smooth ramp' limits the conclusion to the straight smooth surface shown. Square wheels can move, and specially shaped tracks can let them roll smoothly; never say square wheels cannot move.",
+    "Wheel size, axle friction, mass, fit, ramp slope, surface and release conditions can change performance. Round three classifies outer shape only; it makes no equal-speed or equal-distance claim.",
+    "Any future shape-comparison demonstration must use matched toy bodies, parcel mass, axle friction, equal-width wheel shapes, the same smooth ramp and release point. Shape changes the center height during rotation; no engine or faster-release trick should determine the answer.",
+    "The missing-wheel vehicles are a parts-selection schematic, not an exact mechanical drawing. A future fit test needs axles that turn freely and enough body clearance for every set tried.",
+    "Use spoken labels and whole-card taps. No reading, dragging, timed responses, or penalties are required. An adult can skip the fifth round."
+  ],
+  "sources": [
+    {
+      "title": "NASA JPL Education — Make a Cardboard Rover",
+      "url": "https://www.jpl.nasa.gov/edu/resources/lesson-plan/make-a-cardboard-rover/",
+      "supports": "Supports testing wheel shape under consistent conditions and notes that wheel size, friction, axle alignment and surface affect vehicle performance. This grade 6–12 resource informs engineering accuracy; it does not validate this preschool lesson."
+    },
+    {
+      "title": "Exploratorium — Square Wheel exhibit explanation",
+      "url": "https://annex.exploratorium.edu/texnet/exhibits/motion/square_wheels/media/square_gb.pdf",
+      "supports": "Explains the constant center height of a round wheel on flat ground, rising and falling of a square wheel’s center, and the special-track exception for square wheels."
+    }
+  ]
+}

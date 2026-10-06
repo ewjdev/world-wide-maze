@@ -2,11 +2,13 @@
 
 **Date:** 2026-09-29
 
-**Status:** Planned; implementation and device acceptance have not started.
+**Status:** Original planning baseline. Touch integration now exists in the local source; release and physical-device acceptance must be verified separately.
+
+**2026-10-06 interaction update:** [Mobile tilt steering and tap-to-jump execution plan](mobile-tilt-controls-execution.md) supersedes this document's joystick-first controls, reserved control deck, and deferred same-device gyro scope. Tilt becomes the intended default on supported touch devices, with an explicit joystick fallback after a warning or player choice. The remaining mobile journey, regression and physical-device gates below continue to apply; this document retains the original joystick implementation brief.
 
 **Outcome:** A player opens WWM on a phone, chooses a maze or race, learns the controls, completes a run, and plays again using that device alone.
 
-This is the canonical plan for same-device mobile play. It extends the existing game identity and mechanics. Its mobile entry and orientation decisions supersede the older pairing-first and portrait-lock assumptions for same-device play only. The separate `/c/:code` phone controller remains a supported experience.
+This is the baseline plan for same-device mobile play, with the interaction update above taking precedence. It extends the existing game identity and mechanics. Its mobile entry and orientation decisions supersede the older pairing-first and portrait-lock assumptions for same-device play only. The separate `/c/:code` phone controller remains a supported experience.
 
 ## 1. Product contract
 

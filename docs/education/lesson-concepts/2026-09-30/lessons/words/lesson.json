@@ -1,0 +1,219 @@
+{
+  "id": "words",
+  "number": 5,
+  "category": "Words & associations",
+  "title": "Pip’s Picnic Pack",
+  "tagline": "Hear the word. Find what helps.",
+  "accent": "#31a4ae",
+  "targetMinutes": "2–4",
+  "learningGoal": "Use a spoken everyday word or short functional description to choose a suitable pictured object, including a changed example.",
+  "childTakeaway": "Things can look different and still help us do the same job.",
+  "story": "Pip is packing a picnic and needs help finding objects for a drink, soup, and a small spill.",
+  "introPip": "Will you help me pack my picnic? Listen, then point to a thing that can help.",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "A smiling silver-gray ball with blue seams sits beside an open picnic basket, a blue handled cup, a yellow handleless cup, a plate and bread roll, a bowl of smooth soup, a spoon, a cloth napkin, and an apple on a teal blanket in a sunny park.",
+  "ageSupport": {
+    "entry": "A grown-up may say the prompt in the child’s home language, name every pictured option neutrally, or demonstrate the action with real objects. Accept pointing, signing, or speech; repeat freely.",
+    "stretch": "After a choice, invite the child to name another thing that can do that job or explain the choice. Round five is optional; accepting either sensible vessel is enough."
+  },
+  "misconception": "An object’s color, handle, or familiar appearance is not its whole meaning. A cup can look different, and more than one object can do the same job.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "A drink for Pip",
+      "prompt": "Pip is thirsty. Which thing helps Pip drink water?",
+      "scene": "round-1.svg",
+      "sceneAlt": "Pip and a water droplet above two equally sized choice panels: a blue handled cup on the left and a shallow white plate on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Blue handled cup",
+          "spokenLabel": "A cup"
+        },
+        {
+          "id": "b",
+          "label": "Shallow plate",
+          "spokenLabel": "A plate"
+        }
+      ],
+      "correctChoiceIds": [
+        "a"
+      ],
+      "success": "The cup holds a drink. Pip can lift it and take a sip.",
+      "hints": [
+        "Look for a place to hold Pip’s drink.",
+        "Pretend to lift each thing and take a sip. Which is made to hold a drink?",
+        "This is a cup. Water stays inside its deep sides, ready for a sip."
+      ],
+      "visualHint": "After help is requested, show water going into the cup and a simple tipping-for-a-sip demonstration; show the plate’s shallow surface without declaring all plates incapable of holding any liquid.",
+      "whyThisRound": "Starts with a familiar functional association and two distinct silhouettes; no reading or naming aloud is required."
+    },
+    {
+      "id": "r2",
+      "title": "A cup can look different",
+      "prompt": "Find a cup for Pip’s drink.",
+      "scene": "round-2.svg",
+      "sceneAlt": "Pip and a picnic basket above three equal choice panels: a shallow white plate on the left, a red apple in the middle, and a yellow handleless cup on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Shallow plate",
+          "spokenLabel": "A plate"
+        },
+        {
+          "id": "b",
+          "label": "Apple",
+          "spokenLabel": "An apple"
+        },
+        {
+          "id": "c",
+          "label": "Yellow handleless cup",
+          "spokenLabel": "A cup"
+        }
+      ],
+      "correctChoiceIds": [
+        "c"
+      ],
+      "success": "This cup has no handle, and it is still a cup. Its sides hold a drink.",
+      "hints": [
+        "A cup does not have to be blue.",
+        "Look at the open top and deep sides. Try imagining a drink inside.",
+        "The yellow one is a cup too. Cups can have different colors and shapes, with or without a handle."
+      ],
+      "visualHint": "On request, place the earlier blue cup beside the new yellow cup outside the choice area; trace the opening and deep sides on both, then fill them equally.",
+      "whyThisRound": "Changes color, shape, handle, and position so a remembered blue-cup picture is insufficient."
+    },
+    {
+      "id": "r3",
+      "title": "Scoop smooth soup",
+      "prompt": "Pip has smooth soup. Which tool can scoop it?",
+      "scene": "round-3.svg",
+      "sceneAlt": "Pip and a bowl of smooth orange soup above two equal choice panels: a silver fork on the left and a silver spoon on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Fork",
+          "spokenLabel": "A fork"
+        },
+        {
+          "id": "b",
+          "label": "Spoon",
+          "spokenLabel": "A spoon"
+        }
+      ],
+      "correctChoiceIds": [
+        "b"
+      ],
+      "success": "The spoon’s little bowl can scoop the smooth soup. A fork’s gaps let it run through.",
+      "hints": [
+        "Think about lifting some smooth soup.",
+        "Look closely at the end of each tool. One has a little bowl; one has gaps.",
+        "The spoon can hold a scoop of smooth soup in its little bowl. Choose the spoon."
+      ],
+      "visualHint": "Only after requesting help, animate each listed tool dipping into the same smooth soup: a spoon lifts liquid while liquid passes between the fork’s tines. Do not use chunky soup or imply that people must use spoons to eat all soup.",
+      "whyThisRound": "A closer comparison between two eating tools checks function rather than broad picnic membership."
+    },
+    {
+      "id": "r4",
+      "title": "Clean a little spill",
+      "prompt": "Pip spilled water. Choose one thing that can wipe it up.",
+      "scene": "round-4.svg",
+      "sceneAlt": "Pip and a small blue water puddle above three equal panels: a sponge on the left, a folded cloth napkin in the middle, and a silver fork on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Sponge",
+          "spokenLabel": "A sponge"
+        },
+        {
+          "id": "b",
+          "label": "Cloth napkin",
+          "spokenLabel": "A cloth"
+        },
+        {
+          "id": "c",
+          "label": "Fork",
+          "spokenLabel": "A fork"
+        }
+      ],
+      "correctChoiceIds": [
+        "a",
+        "b"
+      ],
+      "success": "A sponge or a cloth can wipe up this little spill. You found a thing that helps.",
+      "hints": [
+        "Look for something that can soak up a little water.",
+        "Imagine pressing the sponge or cloth onto the spill. They can take up water.",
+        "The sponge and the cloth can both help. Choose either one."
+      ],
+      "visualHint": "After help, show both the sponge and cloth in separate equal demonstrations absorbing a portion of a small water spill; neither should be treated as the only approved household method.",
+      "whyThisRound": "Transfers from naming containers and tools to an action word, and explicitly accepts two appropriate objects."
+    },
+    {
+      "id": "r5",
+      "title": "More than one way",
+      "prompt": "Choose one thing that can hold water for drinking.",
+      "scene": "round-5.svg",
+      "sceneAlt": "Pip and a water droplet above three equal panels: a blue handled cup on the left, a silver fork in the middle, and a deep teal bowl on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Blue handled cup",
+          "spokenLabel": "A cup"
+        },
+        {
+          "id": "b",
+          "label": "Fork",
+          "spokenLabel": "A fork"
+        },
+        {
+          "id": "c",
+          "label": "Deep bowl",
+          "spokenLabel": "A bowl"
+        }
+      ],
+      "correctChoiceIds": [
+        "a",
+        "c"
+      ],
+      "success": "The cup and the bowl can both hold water. People can drink from different kinds of vessels.",
+      "hints": [
+        "Look for an open inside with sides around it.",
+        "Imagine pouring a little water into the cup and the bowl. Where can it stay?",
+        "The cup and the bowl can both hold a drink. Choose either one."
+      ],
+      "visualHint": "On help request, add an equal water level to the cup and bowl. Show sipping from each as optional examples, with no hierarchy between the two.",
+      "whyThisRound": "Optional stretch separates the functional category from the word cup and welcomes familiar drinking practices from different households."
+    }
+  ],
+  "finale": "Pip has a drink, a tool for the soup, and something to clean the spill. The basket opens onto a calm picnic; Pip uses the chosen suitable objects.",
+  "offlineActivity": "With a grown-up, put out a cup, a bowl, a spoon, a fork, and a small cloth. Ask, 'What could help us have a drink?' and 'What could wipe up a little spill?' Accept a child’s sensible explanation; use a small amount of cool water only if wanted.",
+  "reviewQuestions": [
+    "Should the lesson mainly practice object names, or functional language such as drink, scoop, and wipe? The current version mixes both; which emphasis fits the Gems lesson’s scope?",
+    "Do you want both sensible answers visible in rounds four and five, with any single choice accepted, or would a simpler first release use only one suitable option per question?",
+    "Are these vessels and picnic objects familiar to the intended children, and which home-language words or household alternatives should the review include?"
+  ],
+  "designNotes": [
+    "The generated picture introduces the story. The five deterministic SVGs are the exact question scenes and contain no instructional text.",
+    "Prompts are proposed spoken copy. This review pack has no voice files, scoring, maze, game wiring, or child-testing results.",
+    "Round three asks about a tool for smooth liquid soup; a bowl can also be lifted to drink soup. It is intentionally not a test of universal eating etiquette.",
+    "Multiple correct IDs mean any one listed choice is acceptable, not a hidden multi-select task. Round five avoids excluding drinking from a bowl.",
+    "A child who identifies an unusual sensible use should receive adult acknowledgment rather than a punitive failure. Picture recognition and English familiarity must not be mistaken for total vocabulary knowledge.",
+    "A future child interface should allow replay, home-language narration, pointing or large taps, and generous time. This adult review pack does not establish developmental validation.",
+    "Keep contrastive comparisons about object functions; do not make color matching or basket membership the answer.",
+    "Hints are proposed demonstrations, described here for review; the unassisted SVGs do not include answer-revealing arrows or highlight a correct option."
+  ],
+  "sources": [
+    {
+      "title": "Head Start — Language Preschool",
+      "url": "https://www.headstart.gov/school-readiness/article/language-preschool",
+      "supports": "P-LC 2 addresses understanding simple spoken questions; P-LC 6 and 7 address meaningful everyday vocabulary and relationships among words. Used to inform the goal, not to certify this lesson."
+    },
+    {
+      "title": "Head Start — Language and Literacy",
+      "url": "https://headstart.gov/school-readiness/effective-practice-guides/language-literacy",
+      "supports": "Distinguishes receptive and expressive language, supports culturally and linguistically responsive teaching, and recommends family routines and home materials."
+    }
+  ]
+}
+

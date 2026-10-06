@@ -4,7 +4,7 @@
 
 This file is the **single source of truth for scope and coordination**. Each phase has its own plan file (linked below), written so one sub-agent can execute it without reading the others.
 
-**Mobile browser track (planned, 2026-09-29):** [First-class mobile browser game execution plan](mobile-browser-game-execution.md) covers same-device touch play across Original/practice and Race, complete mobile flows, and physical-device release gates. For this track, its same-device entry and both-orientation defaults supersede the older pairing-first/portrait-lock assumptions below; the separate paired-phone controller remains supported. Implementation and device qualification are pending.
+**Mobile browser track (updated, 2026-10-06):** [First-class mobile browser game execution plan](mobile-browser-game-execution.md) defines the complete same-device mobile flow and physical-device release gates; joystick integration exists in local source. [Mobile tilt steering and tap-to-jump execution plan](mobile-tilt-controls-execution.md) supersedes its joystick-first interaction with planned tilt steering, a full-viewport playfield, tap Jump and an explicit joystick fallback when motion is unavailable or declined. Tilt implementation and qualification are pending. The track's same-device entry and both-orientation defaults supersede the older pairing-first/portrait-lock assumptions below; the separate paired-phone controller remains supported. Release/device acceptance must be checked independently of source implementation.
 
 **Required reading for every agent:**
 1. This file.
