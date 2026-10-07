@@ -1,0 +1,190 @@
+{
+  "id": "trains",
+  "number": 3,
+  "category": "Trains",
+  "title": "Track Rescue",
+  "tagline": "Join the rails and bring Pip’s train to its station.",
+  "accent": "#317daf",
+  "targetMinutes": "2–4",
+  "learningGoal": "Choose or identify connected track by checking that the rails join from the train to the station.",
+  "childTakeaway": "The train needs joined track all the way.",
+  "story": "Pip has a package on a toy train, but its railway has a missing piece. Help repair the track and choose a route that reaches the station.",
+  "introPip": "I'm Pip! My toy train needs to get to the station. Can you help me join its track?",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "Pip, a silver-gray ball with blue seams and a smiling face, sits beside a straight and curved wooden toy track piece. A blue locomotive and yellow carriage wait at a visible gap, with a blue-roofed station beyond.",
+  "ageSupport": {
+    "entry": "Offer two large pictured choices, speak each label, and let the child point. A grown-up can trace each route without requiring the child to know left and right.",
+    "stretch": "Use the optional fifth round, then invite the child to explain or show how the straight and curved pieces connect."
+  },
+  "misconception": "A train can reach the station just because the route is shorter, points toward it, or looks mostly complete. The route must remain connected.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "A straight repair",
+      "prompt": "Which piece joins the track: the straight piece or the curved piece?",
+      "scene": "round-1.svg",
+      "sceneAlt": "A train waits before a horizontal gap in the rails. A station is at the far end. A straight piece and a curved piece are shown in separate cards below.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Straight piece",
+          "spokenLabel": "The straight piece"
+        },
+        {
+          "id": "b",
+          "label": "Curved piece",
+          "spokenLabel": "The curved piece"
+        }
+      ],
+      "correctChoiceIds": ["a"],
+      "success": "The straight piece joins both ends. Now there is track all the way to the station.",
+      "hints": [
+        "Look at the two ends of the gap.",
+        "Imagine sliding each piece between the ends. Does it touch both?",
+        "Both ends point across. The straight piece connects them."
+      ],
+      "visualHint": "After a requested hint, move a ghost copy of each piece into the gap. Only the straight piece aligns both rail ends. Then trace the completed centerline from train to station.",
+      "whyThisRound": "An easy start checks whether the child can match a single piece to two visible rail ends."
+    },
+    {
+      "id": "r2",
+      "title": "A bend to the station",
+      "prompt": "This track needs to turn. Which piece joins the ends?",
+      "scene": "round-2.svg",
+      "sceneAlt": "The train track runs across and ends before a station track pointing upward. A straight piece is on the left card and a curved piece on the right card.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Straight piece",
+          "spokenLabel": "The straight piece"
+        },
+        {
+          "id": "b",
+          "label": "Curved piece",
+          "spokenLabel": "The curved piece"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "The curved piece turns the track and joins both ends. The train can follow the bend to the station.",
+      "hints": [
+        "The train needs to go across, then up.",
+        "Follow the direction of each rail end with your finger.",
+        "The curve starts across and turns upward. Its two ends join the waiting rails."
+      ],
+      "visualHint": "After a requested hint, place a full-size curved ghost piece with centerline (450,205) to (550,105). Trace across then upward. Show the straight piece failing to meet the upward end.",
+      "whyThisRound": "A changed example checks that the child attends to the direction of both ends rather than always choosing straight."
+    },
+    {
+      "id": "r3",
+      "title": "Connected beats short",
+      "prompt": "Which route can take the train all the way to the station: the upper route or the lower route?",
+      "scene": "round-3.svg",
+      "sceneAlt": "Two separate panels show a train and station. The upper route is a short straight route. The lower route is longer and bends down and back up.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Upper route",
+          "spokenLabel": "The upper route"
+        },
+        {
+          "id": "b",
+          "label": "Lower route",
+          "spokenLabel": "The lower route"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "The lower route is joined all the way. The upper route has a gap, so its train must stop there.",
+      "hints": [
+        "Check each route all the way from its train.",
+        "Trace the upper route, then the lower route. Does your finger meet a gap?",
+        "The short route is broken. The longer route stays joined, so that train reaches its station."
+      ],
+      "visualHint": "After a requested hint, animate the same train at the same speed along each route. Stop the upper train before x=340; let the lower train follow the uninterrupted centerline to x=700. Do not show preselected colors.",
+      "whyThisRound": "A misconception check reveals whether the child chooses a shorter or straighter route despite a visible break."
+    },
+    {
+      "id": "r4",
+      "title": "Find the hidden stop",
+      "prompt": "Where is the break: the left circle or the right circle?",
+      "scene": "round-4.svg",
+      "sceneAlt": "Two equal dashed circles mark places along a single rail route between a train and station. One circle is nearer the train; the other is nearer the station.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Left circle",
+          "spokenLabel": "The circle on the left"
+        },
+        {
+          "id": "b",
+          "label": "Right circle",
+          "spokenLabel": "The circle on the right"
+        }
+      ],
+      "correctChoiceIds": ["a"],
+      "success": "The left circle has the gap. A piece of track needs to go there before the train can reach the station.",
+      "hints": [
+        "Start at the train and look along the rails.",
+        "Stop tracing when the rails stop.",
+        "The rails stop inside the left circle. The right circle already has joined rails."
+      ],
+      "visualHint": "After a requested hint, use a slow tracing dot from (80,190) to (300,190), ending before the gap. Show an enlarged view of each circle using the same scale.",
+      "whyThisRound": "Transfer: the child diagnoses a new route instead of choosing a supplied repair shape. Spoken left/right may be supported with gestures."
+    },
+    {
+      "id": "r5",
+      "title": "Two-piece rescue · optional stretch",
+      "prompt": "Which pair joins this gap: two curves, two straights, or a straight and a curve?",
+      "scene": "round-5.svg",
+      "sceneAlt": "A train rail points across toward a separated station rail pointing downward. Three cards show two curved pieces, two straight pieces, and a straight piece paired with a curved piece.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Two curves",
+          "spokenLabel": "Two curved pieces"
+        },
+        {
+          "id": "b",
+          "label": "Two straights",
+          "spokenLabel": "Two straight pieces"
+        },
+        {
+          "id": "c",
+          "label": "Straight + curve",
+          "spokenLabel": "A straight piece and a curved piece"
+        }
+      ],
+      "correctChoiceIds": ["c"],
+      "success": "The straight piece reaches across. The curved piece turns down and joins the station track. Together they fill the gap.",
+      "hints": [
+        "The train needs to go across, then turn down.",
+        "Try a pair in your mind. Is there a piece to reach across and one to make the turn?",
+        "Put the straight piece first. Then the curve turns down to meet the station track."
+      ],
+      "visualHint": "After a requested hint, demonstrate the straight centerline (300,145) to (420,145), then a radius-100 quarter curve centered (420,245), from (420,145) to (520,245). Both joins must be tangent-continuous.",
+      "whyThisRound": "An optional stretch combines two previously shown shapes in one prediction. Skip freely when the child is ready to finish."
+    }
+  ],
+  "finale": "The repaired toy train follows the rails into the station. Pip unloads the package and gives a happy wave; no score or speed bonus is needed.",
+  "offlineActivity": "With a grown-up, lay strips of paper on the floor as a toy railway. Leave one visible gap. Ask the child to join it, then move a toy along the whole path. Make a bend and try again. A finger can stand in for a train.",
+  "reviewQuestions": [
+    "Are single-piece repairs followed by route comparison the right difficulty progression, or should the broken-route comparison come earlier?",
+    "Should round four use two spoken position choices, or should a future version let the child tap the break anywhere along the track?",
+    "Does the two-piece fifth round feel like a useful optional stretch, or should the finale arrive after four rounds for most children?"
+  ],
+  "designNotes": [
+    "Review-only content and visuals; no game integration, voice generation, or child-testing claim. The 2–4 minute duration is a design target.",
+    "The generated concept image introduces the story. The exact top-down SVG rail geometry governs the questions and answers.",
+    "The lesson uses toy railway continuity and spatial reasoning; it does not teach how real locomotives are powered, railway switching, signaling, or safety.",
+    "Choice-card pieces are scaled display symbols. A future placement animation must replace them with the exact full-size repair geometry specified in each visual hint.",
+    "All rails in round three are separate routes with no intersections; the lower route is continuously joined. Round four circles have equal visual styling.",
+    "The final stretch assumes two standard pieces: a 120-pixel straight and a radius-100 quarter curve. No hidden rotation task or multi-select is required.",
+    "Real toys may have connector shapes and permitted orientations that differ; playtesting should check whether children interpret the overhead train and station silhouettes."
+  ],
+  "sources": [
+    {
+      "title": "NAEYC — Developing Your Preschooler’s Spatial Thinking",
+      "url": "https://www.naeyc.org/node/3881",
+      "supports": "A preschool spatial-thinking rationale for using diagrams, tracing paths, puzzles, and spatial language. It does not validate these rounds, their timing, or their effectiveness."
+    }
+  ]
+}

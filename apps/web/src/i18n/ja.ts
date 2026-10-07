@@ -1,8 +1,10 @@
 /** 日本語 UI strings. E = the 2013 translation-ja.json string (quoted or adapted), N = new. */
 import type { Resources } from './en.ts';
+import { motionJa } from './motion.ts';
 import { raceJa } from './race.ts';
 
 export const ja: Resources = {
+  motion: motionJa,
   race: raceJa,
   analytics: {
     title: 'アクセス解析とプライバシー',

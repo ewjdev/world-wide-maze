@@ -1,0 +1,201 @@
+{
+  "id": "letters",
+  "number": 4,
+  "category": "Letters",
+  "title": "Pip’s Alphabet Post Office",
+  "tagline": "Deliver a letter by looking closely.",
+  "accent": "#317daf",
+  "targetMinutes": "2–4",
+  "learningGoal": "Recognize a named uppercase M across size, color, position, and simple print variations; distinguish it from a different upright letter.",
+  "childTakeaway": "I can find M even when it looks a little different.",
+  "story": "Pip has envelopes to deliver. Each mailbox has a letter, and the child helps find the matching letter so the mail reaches its home.",
+  "introPip": "Welcome to my post office! Today we’re looking for one letter. This is M. Can you say M with me? Help me find M on the mailboxes.",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "Silver-gray spherical Pip with blue curved seams beside a wooden sorting table and envelopes; three blue, teal, and yellow mailboxes have completely blank panels in a bright outdoor scene.",
+  "ageSupport": {
+    "entry": "Name and display M before the first choice. Keep the target visible, begin with two options, accept pointing or a large tap, and replay the spoken prompt. A grown-up can say the letter name with the child.",
+    "stretch": "Round five explicitly shows and names uppercase M and lowercase m before a supported match. Skip it when the child is still exploring uppercase M; later sessions can use a familiar letter from the child’s name."
+  },
+  "misconception": "A letter is defined by color or size, or every turned shape keeps the same letter name. M and W are different letters; uppercase M and lowercase m are a taught pair, not simple size variants.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "Meet M",
+      "prompt": "This envelope shows M. Which mailbox also shows M?",
+      "scene": "round-1.svg",
+      "sceneAlt": "An envelope marked with a large M above two mailboxes marked M and S.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "M — left mailbox",
+          "spokenLabel": "Left mailbox"
+        },
+        {
+          "id": "b",
+          "label": "S — right mailbox",
+          "spokenLabel": "Right mailbox"
+        }
+      ],
+      "correctChoiceIds": ["a"],
+      "success": "The envelope and this mailbox both show M. The letter matches, so the envelope can go here.",
+      "hints": [
+        "Look at the letter on the envelope, then look at each mailbox.",
+        "Watch Pip trace the tall sides and the middle lines of M. Look for those lines on a mailbox.",
+        "This mailbox has M, just like the envelope. Let’s deliver it together."
+      ],
+      "visualHint": "Trace the target M once in a slow blue stroke, then trace both choices without changing their position. On the worked hint, place a copy of the target beside the matching M.",
+      "whyThisRound": "An easy visual match establishes one letter and the delivery action without assuming previous alphabet knowledge."
+    },
+    {
+      "id": "r2",
+      "title": "A new-looking M",
+      "prompt": "This red letter is M. Which mailbox shows M, even in a different color?",
+      "scene": "round-2.svg",
+      "sceneAlt": "A small red M on an envelope above three mailboxes showing red B, yellow S, and larger green M.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "B — left mailbox",
+          "spokenLabel": "Left mailbox"
+        },
+        {
+          "id": "b",
+          "label": "S — middle mailbox",
+          "spokenLabel": "Middle mailbox"
+        },
+        {
+          "id": "c",
+          "label": "M — right mailbox",
+          "spokenLabel": "Right mailbox"
+        }
+      ],
+      "correctChoiceIds": ["c"],
+      "success": "The green letter is also M. A letter can change color or size and keep its name.",
+      "hints": [
+        "Look at the lines of M. Its color does not tell us its name.",
+        "Show the red M changing to green and growing while its lines stay the same. Then return to the choices.",
+        "The large green M has the same letter shape as the little red M. That mailbox is the match."
+      ],
+      "visualHint": "Animate only the target glyph’s color and scale, preserving an upright M; reset the unassisted question before selection. Do not use mailbox colors as answer cues.",
+      "whyThisRound": "Separates letter identity from color and size, with a same-color distractor and a changed answer location."
+    },
+    {
+      "id": "r3",
+      "title": "M and W",
+      "prompt": "These letters look a little alike. Which mailbox shows M?",
+      "scene": "round-3.svg",
+      "sceneAlt": "An upright M on an envelope above two mailboxes showing W on the left and M on the right.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "W — left mailbox",
+          "spokenLabel": "Left mailbox"
+        },
+        {
+          "id": "b",
+          "label": "M — right mailbox",
+          "spokenLabel": "Right mailbox"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "This letter is M. The other letter is W. We look at the whole letter and the way it stands.",
+      "hints": [
+        "Start with the M on the envelope. Compare its outside lines with each mailbox letter.",
+        "Trace the two tall straight outside lines of the displayed M, then compare the displayed W’s slanting outside lines.",
+        "The right mailbox shows the same upright M as the envelope. The left mailbox shows W."
+      ],
+      "visualHint": "Compare upright M and W side by side with slow outline traces. Never rotate W into M or say a turned letter keeps its name. The explanation describes these chosen simple fonts, not every decorative typeface.",
+      "whyThisRound": "Checks a plausible visual confusion while keeping letter orientation meaningful."
+    },
+    {
+      "id": "r4",
+      "title": "Another printed M",
+      "prompt": "This letter is M, with little feet on its lines. Which mailbox shows M too?",
+      "scene": "round-4.svg",
+      "sceneAlt": "A serif M printed on an envelope above three mailboxes showing plain A, M, and N.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "A — left mailbox",
+          "spokenLabel": "Left mailbox"
+        },
+        {
+          "id": "b",
+          "label": "M — middle mailbox",
+          "spokenLabel": "Middle mailbox"
+        },
+        {
+          "id": "c",
+          "label": "N — right mailbox",
+          "spokenLabel": "Right mailbox"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "Both letters are M. Some printed M letters have little feet, and some do not.",
+      "hints": [
+        "Look for M’s two tall sides and the lines meeting in the middle.",
+        "Place the serif M and a plain M side by side. Trace the main lines, then briefly show the small feet.",
+        "The middle mailbox shows M. Its main letter shape matches, even without the little feet."
+      ],
+      "visualHint": "Show serif and sans-serif M at the same size side by side; trace shared main strokes and softly mark the serif additions only during the hint. Use conventional upright fonts.",
+      "whyThisRound": "Transfers recognition across a modest familiar print variation rather than exact pixel matching."
+    },
+    {
+      "id": "r5",
+      "title": "Optional: big M, little m",
+      "prompt": "This is big M, and this is little m. They are both M. Which mailbox has little m?",
+      "scene": "round-5.svg",
+      "sceneAlt": "A demonstration card showing uppercase M beside lowercase m above mailboxes marked n, w, and m.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "n — left mailbox",
+          "spokenLabel": "Left mailbox"
+        },
+        {
+          "id": "b",
+          "label": "w — middle mailbox",
+          "spokenLabel": "Middle mailbox"
+        },
+        {
+          "id": "c",
+          "label": "m — right mailbox",
+          "spokenLabel": "Right mailbox"
+        }
+      ],
+      "correctChoiceIds": ["c"],
+      "success": "This is little m. Big M and little m are two ways to write the letter M.",
+      "hints": [
+        "Look at little m on our card. Find its shape again on a mailbox.",
+        "Trace little m’s two rounded humps on the card. Keep the card visible while we compare the choices.",
+        "The right mailbox has little m, like the card. Big M and little m can look different and share the name M."
+      ],
+      "visualHint": "Show and name M and m together before asking; retain that pair as a reference. Trace the conventional lowercase m without morphing uppercase M into it or implying it is just a scaled uppercase glyph.",
+      "whyThisRound": "Offers a supported uppercase/lowercase association only after a demonstration. Skippable; completion of the four recognition rounds is sufficient."
+    }
+  ],
+  "finale": "Each delivered envelope lands in its matching mailbox. The mailboxes gently open, and Pip says, “The mail is home! You found M in different places.” There is no score, timer, or failure screen.",
+  "offlineActivity": "With a grown-up, look for M on a cereal box, a book, or a handwritten card. Say its name and compare its appearance. Make a paper mailbox and deliver a homemade M envelope. Use familiar letters from the child’s name in a later session.",
+  "reviewQuestions": [
+    "Should the first play session focus on M for everyone, or let a grown-up choose a familiar letter from the child’s name? Personalization would need equivalent reviewed scenes.",
+    "Does the M-versus-W comparison feel useful and clear, or should a first-play version keep a more visually distinct distractor and reserve W for repeat play?",
+    "Should the optional M/m pairing appear only after the four uppercase rounds, or become a separate later lesson to keep the first session focused?"
+  ],
+  "designNotes": [
+    "Independent adult review concept; no game integration or child-validation claim. The generated illustration is atmospheric. The five SVGs contain the exact instructional stimuli.",
+    "English alphabet recognition is the current scope. This session teaches one named letter, not the whole alphabet, word decoding, letter-sound mastery, handwriting, or postal addressing.",
+    "Uppercase M remains upright in all rounds. M and W are compared in conventional fonts; rotating or mirroring a glyph is never treated as a harmless appearance change.",
+    "Round five is optional and demonstrated first. Lowercase m is not described as a shrunken uppercase M.",
+    "SVG letters remain editable text, using Arial/Helvetica sans-serif and Times New Roman/Georgia serif fallbacks. Final child delivery must lock and verify fonts on target devices; a font substitution can change the M/W cues.",
+    "The answer positions vary. Mailbox bodies stay the same neutral blue in the question diagrams so color does not disclose the correct answer. Adult choice labels name letters, while child spoken choice labels refer only to position.",
+    "The visible target supports matching; later testing must distinguish recognition from identical-image matching. Round four changes font, but five rounds do not prove durable alphabet knowledge.",
+    "No paid speech service was used. All introductions, questions, feedback, and hints are written scripts for future review."
+  ],
+  "sources": [
+    {
+      "title": "Head Start: Literacy Preschool — Print and Alphabet Knowledge",
+      "url": "https://headstart.gov/school-readiness/article/literacy-preschool",
+      "supports": "Supports letter awareness, recognizing and naming familiar letters, and attention to uppercase and lowercase forms. It does not validate this particular five-round concept, establish mastery after one session, or justify a mandatory age-based pass threshold."
+    }
+  ]
+}

@@ -13,3 +13,11 @@ export function mobileControlsEnabled(env: {
 }
 
 export const MOBILE_CONTROLS_ENABLED = mobileControlsEnabled(import.meta.env);
+
+/** Experimental sensor controls require an explicit opt-in even in development. */
+export function mobileTiltEnabled(env: { VITE_MOBILE_TILT_ENABLED?: string }): boolean {
+  return env.VITE_MOBILE_TILT_ENABLED === 'true';
+}
+export const MOBILE_TILT_ENABLED =
+  MOBILE_CONTROLS_ENABLED &&
+  mobileTiltEnabled({ VITE_MOBILE_TILT_ENABLED: import.meta.env.VITE_MOBILE_TILT_ENABLED });
