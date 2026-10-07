@@ -130,6 +130,7 @@ jobs:
           # Same-device touch play (plans/mobile-browser-game-execution.md); production sets it explicitly too.
           VITE_MOBILE_CONTROLS_ENABLED: "true"
           VITE_MOBILE_TILT_ENABLED: "true"
+          VITE_PREVIEW_COMMIT: ${{ github.sha }}
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews

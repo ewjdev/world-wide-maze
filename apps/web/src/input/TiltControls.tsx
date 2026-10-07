@@ -2,6 +2,7 @@
 import type { TiltInputSource } from '@wwm/net';
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MotionDebugReport, MotionDiagnostics } from './MotionDiagnostics.tsx';
 import { readMotionPreferences, saveMotionPreferences } from './motion-preferences.ts';
 import type { MotionSession } from './motion-session.ts';
 import type { TurboControl } from './TouchControls.tsx';
@@ -34,7 +35,9 @@ export function MotionSetup({
     if (!visible) return;
     const trap = (event: KeyboardEvent) => {
       if (event.key !== 'Tab') return;
-      const items = root.current?.querySelectorAll<HTMLButtonElement>('button:not(:disabled)');
+      const items = Array.from(
+        root.current?.querySelectorAll<HTMLElement>('button:not(:disabled), summary') ?? [],
+      ).filter((item) => item.getClientRects().length > 0);
       if (!items?.length) return;
       const first = items[0];
       const last = items[items.length - 1];
@@ -99,6 +102,7 @@ export function MotionSetup({
           <progress max={1} value={snapshot.progress} aria-label={t('motion.hold')} />
         )}
         {state === 'idle' && <p className="wwm-muted">{t('motion.privacy')}</p>}
+        {state !== 'idle' && <MotionDiagnostics session={session} />}
         {state === 'calibrating' && (
           <button
             type="button"
@@ -131,6 +135,7 @@ export function MotionSetup({
           {t(fallbackLabel)}
         </button>
         {state === 'denied' && <p className="wwm-muted">{t('motion.permissionHelp')}</p>}
+        {state !== 'idle' && <MotionDebugReport session={session} />}
       </section>
     </div>
   );

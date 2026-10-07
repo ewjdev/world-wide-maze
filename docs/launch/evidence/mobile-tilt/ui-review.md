@@ -55,3 +55,7 @@ The documenter inspected these saved captures alongside the source:
 These are Chromium captures using synthetic sensors and CDP touch. They support the recorded layout and focus observations; they do not qualify real-phone motion, permissions, comfort, rotation handling or sustained performance. Physical iOS Safari and Android Chrome acceptance remain unverified. Software and saved UI evidence are complete for this preview receipt; physical acceptance remains open.
 
 No global design rule was inferred from this control strip, its setup veil or its one-off sizing. No known material defect was canonized; the three reported defects were repaired before the final review.
+
+## 2026-10-07 diagnostic hardening follow-up
+
+The original independent review above remains scoped to the first candidate. The parent-run [follow-up](debugging.md) adds a visible blocker, permission/event/movement rows and a local report disclosure after recovery controls. The focus loop now includes the disclosure summary and visible report button. A batched portrait/landscape/desktop inspection and one repair/confirmation round checked wrapping, scrolling, focus and recovery ordering. Final diagnostic captures are in [screenshots/debug/](screenshots/debug/). These captures and tests use synthetic sensors; the user's physical iPhone result is still needed.

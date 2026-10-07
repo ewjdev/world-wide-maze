@@ -74,6 +74,56 @@
   flex-direction: column;
   gap: 18px;
   margin: auto;
+  min-width: 0;
+}
+.wwm-motion-debug {
+  border-block-start: 1px solid var(--ink-2);
+  padding-block-start: 14px;
+  font: 400 14px / 1.5 var(--ui);
+  overflow-wrap: anywhere;
+}
+.wwm-motion-debug__status {
+  font-size: 16px;
+  font-weight: 650;
+}
+.wwm-motion-debug dl {
+  display: grid;
+  gap: 8px;
+  margin: 14px 0;
+}
+.wwm-motion-debug dl > div {
+  display: grid;
+  grid-template-columns: 7.5em minmax(0, 1fr);
+  gap: 10px;
+}
+.wwm-motion-debug dt {
+  font-weight: 650;
+}
+.wwm-motion-debug dd {
+  margin: 0;
+}
+.wwm-motion-debug__details > summary {
+  cursor: pointer;
+  min-height: 44px;
+  align-content: center;
+  font-weight: 650;
+}
+.wwm-motion-debug__details > summary:focus-visible {
+  outline: 3px solid var(--blue-deep);
+  outline-offset: 3px;
+}
+.wwm-motion-debug__details[open] {
+  display: grid;
+  gap: 12px;
+}
+.wwm-motion-debug pre {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: text;
+  -webkit-user-select: text;
 }
 .wwm-motion-setup__panel p {
   margin: 0;

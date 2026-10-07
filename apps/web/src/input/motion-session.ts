@@ -44,6 +44,50 @@ export interface MotionReading {
   gravity: { x: number | null; y: number | null; z: number | null } | null;
   rotation: { beta: number | null; gamma: number | null } | null;
 }
+type PermissionStatus = 'unknown' | 'requesting' | 'not-required' | 'granted' | 'denied' | 'error';
+export type MotionBlocker =
+  | 'idle'
+  | 'requesting'
+  | 'secure'
+  | 'unsupported'
+  | 'permission'
+  | 'focus'
+  | 'rotation'
+  | 'noOrientation'
+  | 'invalidOrientation'
+  | 'noMotion'
+  | 'invalidMotion'
+  | 'motionLost'
+  | 'alignment'
+  | 'orientationFrozen'
+  | 'movement'
+  | 'pose'
+  | 'hold'
+  | 'ready';
+/** Local, bounded diagnostic snapshot. Never sent to telemetry or a controller room. */
+export interface MotionDiagnostics {
+  blocker: MotionBlocker;
+  orientationPermission: PermissionStatus;
+  motionPermission: PermissionStatus;
+  error: string | null;
+  orientationEvents: number;
+  motionEvents: number;
+  usableOrientation: number;
+  usableMotion: number;
+  orientationAgeMs: number | null;
+  motionAgeMs: number | null;
+  angles: OrientationAngles | null;
+  acceleration: MotionReading['gravity'];
+  magnitude: number | null;
+  convention: 'direct' | 'inverted' | null;
+  agreementDegrees: number | null;
+  movementDegrees: number;
+  elapsedMs: number;
+  secure: boolean;
+  supported: boolean;
+  visible: boolean;
+  screenAngle: number;
+}
 export interface MotionEnvironment {
   now(): number;
   secure(): boolean;
@@ -138,6 +182,23 @@ export class MotionSession {
   #lastOrientation = -Infinity;
   #lastMotion = -Infinity;
   #motionCount = 0;
+  #orientationCount = 0;
+  #orientationEvents = 0;
+  #motionEvents = 0;
+  #rawAngles: OrientationAngles | null = null;
+  #rawAcceleration: MotionReading['gravity'] = null;
+  #magnitude: number | null = null;
+  #convention: 'direct' | 'inverted' | null = null;
+  #signCandidate: 'direct' | 'inverted' | null = null;
+  #signSamples = 0;
+  #agreement: number | null = null;
+  #movement = 0;
+  #orientationPermission: PermissionStatus = 'unknown';
+  #motionPermission: PermissionStatus = 'unknown';
+  #permissionError: string | null = null;
+  #diagnostics!: MotionDiagnostics;
+  #diagnosticListeners = new Set<() => void>();
+  #publishedAt = -Infinity;
   #initial: Vec3 | null = null;
   #gravity: Vec3 | null = null;
   #angles: OrientationAngles | null = null;
@@ -150,7 +211,13 @@ export class MotionSession {
   constructor(source: TiltInputSource, env: MotionEnvironment = browserEnvironment()) {
     this.source = source;
     this.#env = env;
+    this.#publishDiagnostics();
   }
+  getDiagnostics = (): MotionDiagnostics => this.#diagnostics;
+  subscribeDiagnostics = (listener: () => void): (() => void) => {
+    this.#diagnosticListeners.add(listener);
+    return () => this.#diagnosticListeners.delete(listener);
+  };
   getSnapshot = (): MotionSnapshot => this.#snapshot;
   subscribe = (listener: () => void): (() => void) => {
     this.#listeners.add(listener);
@@ -158,7 +225,55 @@ export class MotionSession {
   };
   #set(patch: Partial<MotionSnapshot>): void {
     this.#snapshot = { ...this.#snapshot, ...patch };
+    this.#publishDiagnostics();
     for (const listener of this.#listeners) listener();
+  }
+  #blocker(now: number): MotionBlocker {
+    const { state, reason } = this.#snapshot;
+    if (state === 'idle' || state === 'requesting') return state;
+    if (reason === 'secure' || reason === 'unsupported' || reason === 'focus' || reason === 'rotation')
+      return reason;
+    if (state === 'denied') return 'permission';
+    if (!this.#orientationEvents) return 'noOrientation';
+    if (!this.#gravity || this.#invalidAt !== null) return 'invalidOrientation';
+    if (!this.#motionEvents) return 'noMotion';
+    if (!this.#motionCount) return 'invalidMotion';
+    if (now - this.#lastMotion > MOTION_LOSS_MS) return 'motionLost';
+    if (!this.#convention || this.#agreement === null || this.#agreement > 12) return 'alignment';
+    if (this.#mismatchAt !== null) return 'orientationFrozen';
+    if (!this.#changed) return 'movement';
+    if (this.#gravity[2] >= -0.2) return 'pose';
+    return state === 'ready' ? 'ready' : 'hold';
+  }
+  #publishDiagnostics(): void {
+    const now = this.#env.now();
+    this.#publishedAt = now;
+    this.#diagnostics = {
+      blocker: this.#blocker(now),
+      orientationPermission: this.#orientationPermission,
+      motionPermission: this.#motionPermission,
+      error: this.#permissionError,
+      orientationEvents: this.#orientationEvents,
+      motionEvents: this.#motionEvents,
+      usableOrientation: this.#orientationCount,
+      usableMotion: this.#motionCount,
+      orientationAgeMs: Number.isFinite(this.#lastOrientation)
+        ? Math.max(0, now - this.#lastOrientation)
+        : null,
+      motionAgeMs: Number.isFinite(this.#lastMotion) ? Math.max(0, now - this.#lastMotion) : null,
+      angles: this.#rawAngles,
+      acceleration: this.#rawAcceleration,
+      magnitude: this.#magnitude,
+      convention: this.#convention,
+      agreementDegrees: this.#agreement,
+      movementDegrees: this.#movement,
+      elapsedMs: Math.max(0, now - this.#started),
+      secure: this.#env.secure(),
+      supported: this.#env.supported(),
+      visible: this.#env.visible(),
+      screenAngle: this.#env.angle(),
+    };
+    for (const listener of this.#diagnosticListeners) listener();
   }
   #stop(): void {
     for (const cleanup of this.#cleanups.splice(0)) cleanup();
@@ -168,6 +283,19 @@ export class MotionSession {
   enableTilt = async (): Promise<void> => {
     if (this.#snapshot.state === 'disposed' || this.#snapshot.state === 'requesting') return;
     this.#stop();
+    this.#started = this.#env.now();
+    this.#lastOrientation = this.#lastMotion = -Infinity;
+    this.#motionCount = this.#orientationCount = this.#orientationEvents = this.#motionEvents = 0;
+    this.#gravity = this.#initial = this.#candidate = null;
+    this.#angles = this.#rawAngles = null;
+    this.#rawAcceleration = null;
+    this.#magnitude = this.#agreement = null;
+    this.#convention = this.#signCandidate = null;
+    this.#signSamples = this.#movement = 0;
+    this.#changed = false;
+    this.#invalidAt = this.#mismatchAt = null;
+    this.#orientationPermission = this.#motionPermission = 'unknown';
+    this.#permissionError = null;
     const generation = this.#snapshot.generation + 1;
     this.#set({
       generation,
@@ -177,6 +305,7 @@ export class MotionSession {
       progress: 0,
       captureAvailable: false,
       calibration: null,
+      permission: 'unknown',
     });
     if (!this.#env.secure()) {
       this.#set({ state: 'unavailable', reason: 'secure' });
@@ -188,25 +317,50 @@ export class MotionSession {
     }
     try {
       // Promise.resolve().then would lose the synchronous user-activation boundary.
-      const orientation = this.#env.requestOrientation?.() ?? Promise.resolve('granted');
-      const motion = this.#env.requestMotion?.() ?? Promise.resolve('granted');
+      const request = (kind: 'orientation' | 'motion', api?: () => Promise<string>) => {
+        const status = (value: PermissionStatus) => {
+          if (generation !== this.#snapshot.generation) return;
+          if (kind === 'orientation') this.#orientationPermission = value;
+          else this.#motionPermission = value;
+          this.#publishDiagnostics();
+        };
+        status(api ? 'requesting' : 'not-required');
+        let result: Promise<string>;
+        try {
+          result = api?.() ?? Promise.resolve('granted');
+        } catch (error) {
+          result = Promise.reject(error);
+        }
+        return result.then(
+          (value) => {
+            status(api ? (value === 'granted' ? 'granted' : 'denied') : 'not-required');
+            return value;
+          },
+          (error: unknown) => {
+            if (generation === this.#snapshot.generation)
+              this.#permissionError =
+                error instanceof Error
+                  ? `${error.name}: ${error.message}`.slice(0, 200)
+                  : 'Permission request failed';
+            status('error');
+            return 'denied';
+          },
+        );
+      };
+      const orientation = request('orientation', this.#env.requestOrientation);
+      const motion = request('motion', this.#env.requestMotion);
       const permissions = await Promise.all([orientation, motion]);
       if (generation !== this.#snapshot.generation) return;
       if (permissions.some((permission) => permission !== 'granted')) {
         this.#set({ state: 'denied', reason: 'permission', permission: 'denied' });
         return;
       }
+      this.#set({ permission: 'granted' });
       if (!this.#env.visible()) {
         this.suspend('focus');
         return;
       }
       this.#started = this.#env.now();
-      this.#lastOrientation = this.#lastMotion = -Infinity;
-      this.#motionCount = 0;
-      this.#gravity = this.#initial = this.#candidate = null;
-      this.#angles = null;
-      this.#changed = false;
-      this.#invalidAt = this.#mismatchAt = null;
       this.#set({ state: 'probing', permission: 'granted' });
       const current = () => generation === this.#snapshot.generation;
       this.#cleanups.push(
@@ -231,6 +385,8 @@ export class MotionSession {
   checkAgain = (): Promise<void> => this.enableTilt();
   #orientation(angles: OrientationAngles): void {
     const now = this.#env.now();
+    this.#orientationEvents++;
+    this.#rawAngles = { alpha: angles.alpha, beta: angles.beta, gamma: angles.gamma };
     const gravity = gravityFromOrientation(angles);
     if (!gravity) {
       this.#invalidAt ??= now;
@@ -238,31 +394,54 @@ export class MotionSession {
       return;
     }
     this.#invalidAt = null;
+    this.#orientationCount++;
     this.#lastOrientation = now;
     this.#angles = angles;
     this.#gravity = gravity;
     this.#initial ??= gravity;
-    if (angleBetween(gravity, this.#initial) >= 4 * DEG) this.#changed = true;
+    this.#movement = Math.max(this.#movement, angleBetween(gravity, this.#initial) / DEG);
+    if (this.#movement >= 4) this.#changed = true;
     if (this.#snapshot.state === 'ready') this.source.update(angles, this.#env.angle(), now);
     else this.#calibrate(now);
   }
   #motion(reading: MotionReading): void {
     const now = this.#env.now();
     const g = reading.gravity;
+    this.#motionEvents++;
+    this.#rawAcceleration = g ? { x: g.x, y: g.y, z: g.z } : null;
     const components = g ? [g.x, g.y, g.z] : [];
     if (
       components.length !== 3 ||
       components.some((value) => typeof value !== 'number' || !Number.isFinite(value))
-    )
+    ) {
+      this.#magnitude = null;
       return;
+    }
     const vector = components as Vec3;
     const magnitude = Math.hypot(...vector);
+    this.#magnitude = magnitude;
     // Only stable approximately-1g data can compare gravity, not a tap / shake / free fall.
     if (magnitude < 7 || magnitude > 12) return;
     this.#lastMotion = now;
     this.#motionCount++;
-    const motionGravity = normalize3(vector.map((value) => -value) as Vec3);
-    const mismatch = !!this.#gravity && angleBetween(motionGravity, this.#gravity) > 12 * DEG;
+    const direct = normalize3(vector);
+    // WebKit exposes CoreMotion gravity; other engines report its opposite. Learn the convention
+    // from three agreeing paired samples, then lock it until the next explicit check. Re-selecting
+    // a sign during play would conceal a frozen stream or a 180-degree sensor change.
+    if (!this.#convention && this.#gravity && now - this.#lastOrientation <= 200) {
+      const directError = angleBetween(direct, this.#gravity) / DEG;
+      const candidate = directError <= 12 ? 'direct' : directError >= 168 ? 'inverted' : null;
+      this.#signSamples =
+        candidate && candidate === this.#signCandidate ? this.#signSamples + 1 : candidate ? 1 : 0;
+      this.#signCandidate = candidate;
+      this.#agreement = Math.min(directError, 180 - directError);
+      if (this.#signSamples >= 3) this.#convention = candidate;
+    }
+    if (this.#convention && this.#gravity) {
+      const motionGravity = this.#convention === 'direct' ? direct : (direct.map((value) => -value) as Vec3);
+      this.#agreement = angleBetween(motionGravity, this.#gravity) / DEG;
+    }
+    const mismatch = this.#agreement !== null && this.#agreement > 12;
     const rotating = Math.hypot(reading.rotation?.beta ?? 0, reading.rotation?.gamma ?? 0) > 8;
     if (mismatch || (rotating && now - this.#lastOrientation > 200)) this.#mismatchAt ??= now;
     else this.#mismatchAt = null;
@@ -285,11 +464,15 @@ export class MotionSession {
       this.#heldAt = now;
     }
     const progress = pose ? Math.min(1, (now - this.#heldAt) / HOLD_MS) : 0;
-    this.#set({
-      progress,
-      captureAvailable: pose && now - this.#lastOrientation < MOTION_LOSS_MS,
-      reason: pose ? null : 'pose',
-    });
+    const captureAvailable = pose && now - this.#lastOrientation < MOTION_LOSS_MS;
+    if (
+      now - this.#publishedAt >= 250 ||
+      Math.abs(progress - this.#snapshot.progress) >= 0.2 ||
+      progress === 1 ||
+      captureAvailable !== this.#snapshot.captureAvailable ||
+      (pose ? null : 'pose') !== this.#snapshot.reason
+    )
+      this.#set({ progress, captureAvailable, reason: pose ? null : 'pose' });
     if (progress === 1) this.captureHere();
   }
   captureHere = (): void => {
@@ -319,6 +502,7 @@ export class MotionSession {
   #healthy(now: number): boolean {
     return (
       this.#env.visible() &&
+      this.#convention !== null &&
       now - this.#lastMotion <= MOTION_LOSS_MS &&
       this.#gravity !== null &&
       (this.#mismatchAt === null || now - this.#mismatchAt < MOTION_FROZEN_MS) &&
@@ -327,6 +511,9 @@ export class MotionSession {
   }
   #check(): void {
     const now = this.#env.now();
+    // Sensor events can arrive at 60 Hz; poll diagnostic values at most four times per second.
+    // State transitions and calibration progress can also publish immediately.
+    if (now - this.#publishedAt >= 250) this.#publishDiagnostics();
     if (!this.#env.visible()) {
       this.suspend('focus');
       return;
@@ -336,6 +523,7 @@ export class MotionSession {
       (((!this.#gravity || this.#motionCount < 3) && now - this.#started >= MOTION_PROBE_MS) ||
         now - this.#started >= MOTION_MOVEMENT_MS)
     ) {
+      this.#publishDiagnostics();
       this.#stop();
       this.#set({ state: 'unavailable', reason: 'readings' });
       return;
@@ -378,6 +566,7 @@ export class MotionSession {
       calibration: null,
     });
     this.#listeners.clear();
+    this.#diagnosticListeners.clear();
   }
 }
 

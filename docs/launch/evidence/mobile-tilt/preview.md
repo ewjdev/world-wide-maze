@@ -4,6 +4,8 @@ Date: 2026-10-06. Branch: `codex/mobile-tilt-preview`.
 
 Scope: isolated HTTPS candidate for user testing; production tilt remains disabled. Includes the earlier local lesson-review snapshot as requested. This receipt records software evidence separately from physical acceptance.
 
+The 2026-10-07 permission-success/setup-failure follow-up is documented in [debugging.md](debugging.md). It corrects the gravity-convention assumption and adds local, visible sensor diagnostics. Its publication receipt follows below once validated.
+
 ## Published identity and readback
 
 - Original: <https://wwm-preview-manual-mobile-tilt.ewjdev.workers.dev/play/practice?offline=1>.

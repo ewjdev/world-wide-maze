@@ -13,7 +13,7 @@ import {
   MotionSession,
 } from '../src/input/motion-session.ts';
 
-function rig(options: Partial<MotionEnvironment> = {}) {
+function rig(options: Partial<MotionEnvironment> = {}, convention: 'direct' | 'inverted' = 'inverted') {
   let now = 0;
   let visible = true;
   let orientation: ((reading: OrientationAngles) => void) | null = null;
@@ -66,8 +66,9 @@ function rig(options: Partial<MotionEnvironment> = {}) {
   const heartbeat = (beta = angles.beta ?? 0, gamma = angles.gamma ?? 0) => {
     const gravity = gravityFromOrientation({ alpha: null, beta, gamma });
     if (!gravity) throw new Error('Invalid synthetic gravity');
+    const sign = convention === 'direct' ? 1 : -1;
     motion?.({
-      gravity: { x: -gravity[0] * 9.8, y: -gravity[1] * 9.8, z: -gravity[2] * 9.8 },
+      gravity: { x: sign * gravity[0] * 9.8, y: sign * gravity[1] * 9.8, z: sign * gravity[2] * 9.8 },
       rotation: { beta: 0, gamma: 0 },
     });
   };
@@ -92,6 +93,7 @@ function rig(options: Partial<MotionEnvironment> = {}) {
     advance,
     emit,
     heartbeat,
+    rawMotion: (reading: MotionReading) => motion?.(reading),
     calibrate,
     hide: () => {
       visible = false;
@@ -103,6 +105,104 @@ function rig(options: Partial<MotionEnvironment> = {}) {
 }
 
 describe('motion setup and health', () => {
+  test('unreconciled streams and invalid direction report the actual blocker without arming', async () => {
+    const r = rig();
+    await r.session.enableTilt();
+    r.emit(NaN);
+    r.advance(300);
+    expect(r.session.getDiagnostics().blocker).toBe('invalidOrientation');
+    expect(r.session.getDiagnostics().usableOrientation).toBe(0);
+    await r.session.enableTilt();
+    for (let n = 0; n < 121; n++) {
+      r.emit();
+      r.heartbeat(0, 30);
+      r.advance(100);
+    }
+    expect(r.session.getSnapshot().state).toBe('unavailable');
+    expect(r.session.getDiagnostics()).toMatchObject({ blocker: 'alignment', convention: null });
+    expect(r.session.getDiagnostics().agreementDegrees).toBeCloseTo(30);
+    r.session.dispose();
+  });
+  test.each(['direct', 'inverted'] as const)(
+    '%s gravity calibrates, but cannot change convention during play',
+    async (convention) => {
+      const r = rig({}, convention);
+      await r.calibrate();
+      expect(r.session.getDiagnostics().convention).toBe(convention);
+      expect(r.session.getDiagnostics().agreementDegrees).toBeCloseTo(0);
+      r.emit(8, 14);
+      r.heartbeat();
+      expect(r.source.peek(0).power).toBe(true);
+      const gravity = gravityFromOrientation({ alpha: null, beta: 8, gamma: 14 });
+      if (!gravity) throw new Error('Missing gravity');
+      const reversedSign = convention === 'direct' ? -1 : 1;
+      for (let n = 0; n < 10; n++) {
+        r.advance(100);
+        r.rawMotion({
+          gravity: {
+            x: gravity[0] * reversedSign * 9.8,
+            y: gravity[1] * reversedSign * 9.8,
+            z: gravity[2] * reversedSign * 9.8,
+          },
+          rotation: null,
+        });
+      }
+      expect(r.session.getSnapshot().state).toBe('interrupted');
+      expect(r.session.getDiagnostics().convention).toBe(convention);
+      expect(r.session.getDiagnostics().blocker).toBe('alignment');
+      expect(r.source.peek(0).power).toBe(false);
+      r.session.dispose();
+    },
+  );
+  test('permission success, absent events, invalid values and insufficient movement remain distinguishable after timeout', async () => {
+    const r = rig({ requestOrientation: async () => 'granted', requestMotion: async () => 'granted' });
+    await r.session.enableTilt();
+    expect(r.session.getDiagnostics().orientationPermission).toBe('granted');
+    expect(r.session.getDiagnostics().blocker).toBe('noOrientation');
+    r.advance(2600);
+    expect(r.session.getDiagnostics().blocker).toBe('noOrientation');
+    await r.session.enableTilt();
+    r.emit();
+    r.advance(300);
+    expect(r.session.getDiagnostics().blocker).toBe('noMotion');
+    r.rawMotion({ gravity: { x: null, y: 0, z: NaN }, rotation: null });
+    r.advance(300);
+    expect(r.session.getDiagnostics().blocker).toBe('invalidMotion');
+    expect(r.session.getDiagnostics().motionEvents).toBe(1);
+    expect(r.session.getDiagnostics().usableMotion).toBe(0);
+    expect(r.session.getDiagnostics().magnitude).toBeNull();
+    await r.session.enableTilt();
+    for (let n = 0; n < 121; n++) {
+      r.emit();
+      r.heartbeat();
+      r.advance(100);
+    }
+    expect(r.session.getSnapshot().state).toBe('unavailable');
+    expect(r.session.getDiagnostics().blocker).toBe('movement');
+    expect(r.session.getDiagnostics().movementDegrees).toBe(0);
+    r.session.dispose();
+  });
+  test('records each permission result and an API failure, still requesting both APIs in the gesture', async () => {
+    let requestedMotion = false;
+    const r = rig({
+      requestOrientation: () => {
+        throw new Error('Sensor access failed');
+      },
+      requestMotion: async () => {
+        requestedMotion = true;
+        return 'granted';
+      },
+    });
+    await r.session.enableTilt();
+    expect(requestedMotion).toBe(true);
+    expect(r.session.getDiagnostics()).toMatchObject({
+      orientationPermission: 'error',
+      motionPermission: 'granted',
+      error: 'Error: Sensor access failed',
+      blocker: 'permission',
+    });
+    r.session.dispose();
+  });
   test('no request on construction; both permission APIs run synchronously in the Enable gesture', async () => {
     const calls: string[] = [];
     let release!: (value: string) => void;

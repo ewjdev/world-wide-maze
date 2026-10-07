@@ -39,6 +39,8 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
         keyboard?: boolean;
         slow?: boolean;
         delayedPermission?: boolean;
+        directGravity?: boolean;
+        noReadings?: boolean;
         viewport?: { width: number; height: number };
       } = {},
     ) {
@@ -76,8 +78,15 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
         });
         const state = { beta: 0, gamma: 0, running: true };
         Object.assign(window, { __motion: state });
+        // Chromium may emit one native event with null values even without a sensor. Keep the
+        // missing-event fixture separate from that distinct, diagnostically useful failure.
+        if (settings.noReadings) {
+          for (const name of ['deviceorientation', 'devicemotion'])
+            window.addEventListener(name, (event) => event.stopImmediatePropagation(), true);
+        }
         setInterval(() => {
-          if (!state.running) return;
+          if (!state.running || settings.noReadings) return;
+          const sign = settings.directGravity ? -1 : 1;
           const beta = (state.beta * Math.PI) / 180;
           const gamma = (state.gamma * Math.PI) / 180;
           window.dispatchEvent(
@@ -90,9 +99,9 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
           window.dispatchEvent(
             new DeviceMotionEvent('devicemotion', {
               accelerationIncludingGravity: {
-                x: -Math.cos(beta) * Math.sin(gamma) * 9.8,
-                y: Math.sin(beta) * 9.8,
-                z: Math.cos(beta) * Math.cos(gamma) * 9.8,
+                x: -Math.cos(beta) * Math.sin(gamma) * 9.8 * sign,
+                y: Math.sin(beta) * 9.8 * sign,
+                z: Math.cos(beta) * Math.cos(gamma) * 9.8 * sign,
               },
               rotationRate: { alpha: 0, beta: 0, gamma: 0 },
               interval: 50,
@@ -185,6 +194,70 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       await phase(page, 'play');
       expect(traffic).toEqual([]);
       await context.close();
+    }, 80_000);
+    test('CoreMotion gravity convention reaches play on Original and Race', async () => {
+      for (const route of ['/play/practice?offline=1', '/race/island-leap']) {
+        const { page, context, traffic } = await phone({ directGravity: true });
+        await page.goto(`${base}${route}`);
+        await setup(page);
+        expect(await page.getByTestId('tilt-controls').count()).toBe(1);
+        expect(traffic).toEqual([]);
+        await context.close();
+      }
+    }, 80_000);
+    test('allowed permission with no readings explains the blocker and exposes a local report', async () => {
+      for (const viewport of [
+        { width: 390, height: 844 },
+        { width: 844, height: 390 },
+        { width: 1280, height: 900 },
+      ]) {
+        const { page, context, traffic } = await phone({ noReadings: true, viewport });
+        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+        await page.goto(`${base}/play/practice?offline=1`);
+        await page.getByTestId('motion-enable').click();
+        await page.waitForFunction(
+          () =>
+            document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') ===
+            'unavailable',
+        );
+        expect(await page.getByTestId('motion-blocker').textContent()).toContain(
+          'No direction readings arrived',
+        );
+        expect(await page.getByTestId('motion-permissions').textContent()).toContain(
+          'Direction: allowed · Motion: allowed',
+        );
+        await shot(page, `diagnostics-no-data-${viewport.width}`);
+        await page.getByText('Motion details', { exact: true }).click();
+        await page.getByTestId('motion-copy').focus();
+        await page.keyboard.press('Tab');
+        expect(
+          await page.getByTestId('motion-enable').evaluate((element) => element === document.activeElement),
+        ).toBe(true);
+        await page.keyboard.press('Shift+Tab');
+        expect(
+          await page.getByTestId('motion-copy').evaluate((element) => element === document.activeElement),
+        ).toBe(true);
+        await page.getByTestId('motion-copy').click();
+        const report = JSON.parse(await page.evaluate(() => navigator.clipboard.readText()));
+        expect(report).toMatchObject({
+          blocker: 'noOrientation',
+          orientationPermission: 'granted',
+          motionPermission: 'granted',
+          orientationEvents: 0,
+          motionEvents: 0,
+        });
+        expect(report.page).not.toContain('?');
+        await shot(page, `diagnostics-report-${viewport.width}`);
+        expect(
+          await page
+            .locator('[data-testid="motion-setup"]')
+            .evaluate((element) => element.scrollWidth <= element.clientWidth),
+        ).toBe(true);
+        await page.getByTestId('motion-joystick').click();
+        await phase(page, 'play');
+        expect(traffic).toEqual([]);
+        await context.close();
+      }
     }, 80_000);
     test('denied motion offers joystick and remembers the explicit fallback across reload', async () => {
       const { page, context } = await phone({ denied: true });
