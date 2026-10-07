@@ -29,7 +29,7 @@ export type GameEvent =
   | { type: 'INTRO_DONE'; countdown: boolean }
   | { type: 'GO' }
   | { type: 'MENU' }
-  | { type: 'RESUME' }
+  | { type: 'RESUME'; destination?: 'countdown' | 'play' }
   /** Map menu: retry the stage from its intro (N). */
   | { type: 'RETRY' }
   /** Map menu / result: search another site. */
@@ -79,10 +79,16 @@ export const TRANSITIONS: Table = {
   intro: {
     INTRO_DONE: (e) => ((e as Extract<GameEvent, { type: 'INTRO_DONE' }>).countdown ? 'countdown' : 'play'),
     QUIT: 'title',
+    RETRY: 'building',
   },
   countdown: { GO: 'play', MENU: 'paused' },
   play: { MENU: 'paused', FELL: 'falling', TIMESUP: 'timeup', GOAL: 'goal', TRAVEL: 'building' },
-  paused: { RESUME: 'play', RETRY: 'building', SEARCH: 'select', QUIT: 'title' },
+  paused: {
+    RESUME: (event) => (event as Extract<GameEvent, { type: 'RESUME' }>).destination ?? 'play',
+    RETRY: 'building',
+    SEARCH: 'select',
+    QUIT: 'title',
+  },
   falling: {
     LOST: (e) => ((e as Extract<GameEvent, { type: 'LOST' }>).spares < 0 ? 'gameover' : 'restarting'),
   },

@@ -2,6 +2,7 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { type Lang, setLang } from '../i18n/index.ts';
+import { MotionOptions } from '../input/TiltControls.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { Icon } from './parts.tsx';
 
@@ -92,6 +93,23 @@ export function TopBar() {
               </span>
             </label>
             <a href="/privacy/analytics">{t('analytics.title')}</a>
+            {g.motion && (
+              <MotionOptions
+                mode={v.inputMode}
+                session={g.motion}
+                onTilt={() => {
+                  g.playTilt();
+                  setOpen(false);
+                }}
+                onJoystick={() => g.playJoystick()}
+                onKeyboard={() => g.playKeyboard()}
+                onRecenter={() => {
+                  g.recenterTilt();
+                  setOpen(false);
+                }}
+                onPreferences={() => g.refreshControls()}
+              />
+            )}
           </div>
         )}
       </div>

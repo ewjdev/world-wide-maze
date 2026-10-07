@@ -10,6 +10,7 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
+import { MotionOptions, MotionSetup, TiltControls } from '../input/TiltControls.tsx';
 import { TouchControls } from '../input/TouchControls.tsx';
 import { LearningGateCard } from '../learning/LearningGateCard.tsx';
 import { LearningHud, LearningOverride } from '../learning/LearningPanel.tsx';
@@ -37,6 +38,15 @@ function TouchLayer() {
   const g = useGame();
   const v = useView();
   const gate = useSyncExternalStore(g.learning.subscribe, g.learning.getView, g.learning.getView).gate;
+  if (v.inputMode === 'tilt' && g.motion && g.tiltSource)
+    return (
+      <TiltControls
+        source={g.tiltSource}
+        session={g.motion}
+        onPause={() => g.menu()}
+        live={v.phase === 'play' && !v.portal && !v.travel && !gate && !v.motionNeedsResume}
+      />
+    );
   if (v.inputMode !== 'touch' || !g.touch) return null;
   return (
     <TouchControls
@@ -56,6 +66,7 @@ function TouchLayer() {
 }
 
 export function PlayLayer() {
+  const g = useGame();
   const v = useView();
   const { t } = useTranslation();
   if (!IN_STAGE.has(v.phase)) return null;
@@ -88,6 +99,44 @@ export function PlayLayer() {
       {v.phase === 'paused' && <MapMenu />}
       {v.sign && <Sign kind={v.sign} />}
       {v.hold && <DisconnectHold />}
+      {g.motion && (v.inputMode === 'tilt' || v.motionRestart) && (
+        <MotionSetup
+          session={g.motion}
+          onEnable={() => g.enableTilt()}
+          onJoystick={() => (v.motionRestart ? g.keepCurrentControls() : g.playJoystick())}
+          fallbackLabel={v.motionRestart ? 'motion.keep' : 'motion.joystick'}
+        />
+      )}
+      {g.motion && v.motionRestart && g.motion.getSnapshot().state === 'ready' && (
+        <div className="wwm-motion-setup" role="dialog" aria-labelledby="motion-restart-title">
+          <section className="wwm-panel wwm-motion-setup__panel">
+            <h2 id="motion-restart-title" className="wwm-h2">
+              {t('motion.restartTitle')}
+            </h2>
+            <p>{t('motion.restartHint')}</p>
+            <button
+              type="button"
+              className="wwm-btn wwm-btn--primary"
+              onClick={() => g.restartWithTilt()}
+              data-testid="motion-restart"
+            >
+              {t('motion.restart')}
+            </button>
+            <button type="button" className="wwm-btn wwm-btn--ghost" onClick={() => g.keepCurrentControls()}>
+              {t('motion.keep')}
+            </button>
+          </section>
+        </div>
+      )}
+      {v.motionNeedsResume && v.phase !== 'paused' && g.motion?.getSnapshot().state === 'ready' && (
+        <div className="wwm-motion-setup">
+          <section className="wwm-panel wwm-motion-setup__panel">
+            <button type="button" className="wwm-btn wwm-btn--primary" onClick={() => g.resume()}>
+              {t('map.back')}
+            </button>
+          </section>
+        </div>
+      )}
     </div>
   );
 }
@@ -218,7 +267,7 @@ function Hud() {
           </span>
         )}
       </div>
-      {v.inputMode !== 'touch' && (
+      {v.inputMode !== 'touch' && v.inputMode !== 'tilt' && (
         <div className="wwm-hud__bl">
           <TiltRing game={g} size={104} />
           <TooTilted />
@@ -235,7 +284,7 @@ function Hud() {
       )}
       {tut !== null && (
         <p className="wwm-hud__inst" aria-live="polite" key={tut} data-testid="tutorial">
-          <Glyphs text={t(`tutorial.${variant}.step${tut}`)} />
+          <Glyphs text={v.inputMode === 'tilt' ? t('motion.hint') : t(`tutorial.${variant}.step${tut}`)} />
         </p>
       )}
       {v.resumedFlash > 0 && tut === null && (
@@ -314,6 +363,17 @@ function MapMenu() {
               </button>
             </div>
             <LearningOverride /> {/* Phase 22: grown-ups may open the next lock (level permitting) */}
+            {g.motion && (
+              <MotionOptions
+                mode={v.inputMode}
+                session={g.motion}
+                onTilt={() => g.playTilt()}
+                onJoystick={() => g.playJoystick()}
+                onKeyboard={() => g.playKeyboard()}
+                onRecenter={() => g.recenterTilt()}
+                onPreferences={() => g.refreshControls()}
+              />
+            )}
           </>
         ) : (
           <div role="alertdialog" aria-labelledby="confirm-h" className="wwm-confirm">

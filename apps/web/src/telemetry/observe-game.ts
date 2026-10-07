@@ -13,12 +13,12 @@ import { type Telemetry, telemetry } from './index.ts';
  * same-device touch reports as `unknown` rather than emitting an event the server would reject.
  */
 function telemetryInput(mode: FunnelView['inputMode']): 'keyboard' | 'phone' | 'unknown' {
-  return mode === 'touch' || mode === null ? 'unknown' : mode;
+  return mode === 'touch' || mode === 'tilt' || mode === null ? 'unknown' : mode;
 }
 
 export interface FunnelView {
   phase: string;
-  inputMode: 'keyboard' | 'phone' | 'touch' | null;
+  inputMode: 'keyboard' | 'phone' | 'touch' | 'tilt' | null;
   room: { controllerConnected: boolean; status?: string };
   run: { kind: string; index: number } | null;
   error: { code: string } | null;

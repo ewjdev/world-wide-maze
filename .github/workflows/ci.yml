@@ -5,12 +5,13 @@
 #   pull_request closed                          → preview-cleanup (`wrangler preview delete`)
 #   push to main (every merged PR)               → check → deploy-production (D1 migrations, `wrangler deploy`, smoke)
 #   workflow_dispatch on main                    → check → deploy-production (re-deploy the current main by hand)
+#   workflow_dispatch on a branch + deploy_preview → check → isolated static preview (explicit opt-in)
 #
 # Branch pushes without a PR run nothing: open a (draft) PR to get CI. There is no second trigger on `push` for PR
 # branches, so a PR push is never checked twice.
 #
-# Deploy jobs are inert until the repository variables WWM_PREVIEWS_ENABLED / WWM_DEPLOY_ENABLED are "true"
-# (infra/README.md, one-time setup); without them only `check` runs. PRs from forks get no secrets and no Preview.
+# Automatic deployments require WWM_PREVIEWS_ENABLED / WWM_DEPLOY_ENABLED (infra/README.md).
+# An explicit branch-only manual preview leaves those global policies unchanged. Fork PRs get no Preview.
 #
 # Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (repository secrets; production may also use `production`
 # environment secrets), exposed only to the steps that talk to Cloudflare. Worker secrets (IP_HASH_SALT,
@@ -24,6 +25,15 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      deploy_preview:
+        description: Deploy a static test preview from a non-main branch
+        type: boolean
+        default: false
+      preview_name:
+        description: Preview name (lowercase letters, numbers and hyphens)
+        type: string
+        default: manual-mobile-tilt
 
 # One run per PR (a new push, or closing the PR, cancels the run in progress: its check result would be stale).
 # On main, runs queue instead: a production deploy is never interrupted half-way.
@@ -80,9 +90,10 @@ jobs:
   preview:
     needs: check
     if: >-
-      github.event_name == 'pull_request' && github.event.action != 'closed' &&
-      vars.WWM_PREVIEWS_ENABLED == 'true' &&
-      github.event.pull_request.head.repo.full_name == github.repository
+      (github.event_name == 'pull_request' && github.event.action != 'closed' &&
+       vars.WWM_PREVIEWS_ENABLED == 'true' &&
+       github.event.pull_request.head.repo.full_name == github.repository) ||
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_preview && github.ref != 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -101,9 +112,15 @@ jobs:
         id: names
         env:
           PR: ${{ github.event.pull_request.number }}
+          MANUAL_NAME: ${{ inputs.preview_name }}
         run: |
           echo "env=$(jq -er .wranglerEnv infra/cloudflare.config.json)" >> "$GITHUB_OUTPUT"
-          echo "preview=$(jq -er .previews.namePrefix infra/cloudflare.config.json)${PR}" >> "$GITHUB_OUTPUT"
+          if [ -n "$PR" ]; then
+            echo "preview=$(jq -er .previews.namePrefix infra/cloudflare.config.json)${PR}" >> "$GITHUB_OUTPUT"
+          else
+            [[ "$MANUAL_NAME" =~ ^[a-z0-9][a-z0-9-]{0,39}$ ]] || { echo 'Invalid preview name'; exit 1; }
+            echo "preview=$MANUAL_NAME" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Build the web app (static assets; telemetry off in Previews)
         run: pnpm --filter @wwm/web build
@@ -112,6 +129,7 @@ jobs:
           VITE_RACE_ENABLED: "true"
           # Same-device touch play (plans/mobile-browser-game-execution.md); production sets it explicitly too.
           VITE_MOBILE_CONTROLS_ENABLED: "true"
+          VITE_MOBILE_TILT_ENABLED: "true"
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews
@@ -131,10 +149,10 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           WENV: ${{ steps.names.outputs.env }}
           NAME: ${{ steps.names.outputs.preview }}
-          SHA: ${{ github.event.pull_request.head.sha }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
           set -o pipefail
-          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
+          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "Preview head $SHA" --json)"
           printf '%s\n' "$output"
           # wrangler prints asset-upload progress before the JSON even with --json: parse from the first line that is "{".
           url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
@@ -148,7 +166,7 @@ jobs:
         run: node infra/scripts/smoke.mjs "$URL" --expect-static
 
       - name: Sticky PR comment
-        if: always() && steps.preview.outputs.url != ''
+        if: always() && github.event_name == 'pull_request' && steps.preview.outputs.url != ''
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
@@ -174,6 +192,20 @@ jobs:
           else
             gh api -X POST "repos/$REPO/issues/$PR/comments" -f body="$body" > /dev/null
           fi
+
+      - name: Preview test links
+        if: always() && steps.preview.outputs.url != ''
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          SMOKE: ${{ steps.smoke.outcome }}
+        run: |
+          printf '%s\n' "## Mobile tilt preview" "" \
+            "- Commit: $SHA; static smoke: $SMOKE" \
+            "- Original: $URL/play/practice?offline=1" \
+            "- Race: $URL/race/island-leap" \
+            "- Mobile, tilt and Race flags explicitly enabled. Physical sensor acceptance remains open." \
+            "- Dynamic APIs, phone pairing and telemetry remain disabled." >> "$GITHUB_STEP_SUMMARY"
 
   preview-cleanup:
     if: >-
@@ -213,6 +245,7 @@ jobs:
     needs: check
     if: >-
       github.ref == 'refs/heads/main' && github.event_name != 'pull_request' &&
+      inputs.deploy_preview != true &&
       vars.WWM_DEPLOY_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -249,6 +282,7 @@ jobs:
           # Both switches explicit (plans/mobile-browser-game-execution.md M5): same-device touch play and Race.
           # Roll back independently by setting either to "false" and redeploying.
           VITE_MOBILE_CONTROLS_ENABLED: "true"
+          VITE_MOBILE_TILT_ENABLED: "false"
           VITE_RACE_ENABLED: "true"
 
       - name: Refuse placeholder ids, dev switches, missing domain

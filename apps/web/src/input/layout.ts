@@ -61,11 +61,21 @@ export function observeSize(el: HTMLElement, opts: SizeObserverOptions): () => v
  * available, else the layout-orientation media query. Keyboard and browser-toolbar resizes are not orientation
  * signals. Returns a disposer.
  */
+export function screenAngle(): number {
+  const angle = typeof screen === 'undefined' ? undefined : screen.orientation?.angle;
+  const legacy = typeof window === 'undefined' ? undefined : window.orientation;
+  return typeof angle === 'number' ? angle : typeof legacy === 'number' ? legacy : 0;
+}
+
 export function watchOrientation(onChange: () => void): () => void {
   const o = typeof screen === 'undefined' ? undefined : (screen.orientation as ScreenOrientation | undefined);
   if (o) {
     o.addEventListener('change', onChange);
     return () => o.removeEventListener('change', onChange);
+  }
+  if (typeof window !== 'undefined' && typeof window.orientation === 'number') {
+    window.addEventListener('orientationchange', onChange);
+    return () => window.removeEventListener('orientationchange', onChange);
   }
   if (typeof matchMedia === 'function') {
     const mq = matchMedia('(orientation: portrait)');

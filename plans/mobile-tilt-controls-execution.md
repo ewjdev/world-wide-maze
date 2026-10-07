@@ -2,7 +2,7 @@
 
 **Date:** 2026-10-06
 
-**Status:** Planning only. The four system-design-review findings have been incorporated; T0 physical feasibility and health-policy decisions remain open. No tilt implementation or physical-device qualification is claimed by this document.
+**Status:** Preview implementation authorized on 2026-10-06 and implemented on `codex/mobile-tilt-preview`. Shared local motion, Original/Race, tap Jump, warning/fallback, driver conversion and countdown recovery are implemented behind an explicit flag. Validation and candidate readback are recorded in [the preview receipt](../docs/launch/evidence/mobile-tilt/preview.md). T0 physical feasibility, final health/tuning decisions and device qualification remain open; production tilt stays disabled.
 
 **Outcome:** On a supported touch device, the player tilts the device to steer and taps the playfield to jump. Gameplay fills the available viewport. When tilt is unavailable or permission is denied, a clear warning offers the existing joystick as an explicit fallback.
 
@@ -169,7 +169,7 @@ Modify `game/game.ts` and the local transition table in `game/machine.ts`; the s
 
 ## 5. Sequence, responsibilities and gates
 
-Dependencies run T0 → T1 → T2 → T3 → T4 → T5. Responsibilities describe work ownership; this plan does not dispatch agents or authorize implementation.
+Release dependencies run T0 → T1 → T2 → T3 → T4 → T5. The subsequent implementation request authorizes a preview candidate so physical T0 evidence can be gathered. T1–T3 software work uses provisional thresholds and automated sensor fixtures; this does not close the physical or release gates below.
 
 | Milestone | Responsibility and deliverable | Exit gate |
 | --- | --- | --- |
@@ -180,7 +180,7 @@ Dependencies run T0 → T1 → T2 → T3 → T4 → T5. Responsibilities describ
 | **T4 — Device qualification** | Validation owner: automated failure/compatibility suites and sustained physical play on target devices, with comparative joystick evidence for comfort/accuracy and full-viewport performance. | **G4:** Required matrix below passes with device/build receipts; resolved tuning is committed. No skipped device test is represented as passed. |
 | **T5 — Candidate and release** | Release owner: explicit flag builds, candidate HTTPS header/browser checks, reviewable change and release evidence, approved activation, production readback and rollback verification. | **G5:** Approval authorizes activation; exact deployed candidate and post-deploy flow are verified. Original-only or emulation-only delivery is partial. |
 
-**Planning boundary:** Review this plan before feature implementation. This request authorizes the plan and its documentation links; implementation and production activation require a subsequent instruction. Physical/browser acceptance is an additional release gate, not something planning checks can satisfy.
+**Current authorization boundary:** The user requested implementation and a testable preview branch. Implement, validate and publish that isolated candidate. Production activation still requires physical qualification and a subsequent activation instruction. Automated browser evidence cannot satisfy the physical gates.
 
 ## 6. Validation and success measures
 

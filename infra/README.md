@@ -123,6 +123,7 @@ deploy is never interrupted.
 | PR closed | `preview-cleanup` (only if `WWM_PREVIEWS_ENABLED`, not for forks) |
 | push to `main` | `check` → `deploy-production` (only if `WWM_DEPLOY_ENABLED`) |
 | *Run workflow* by hand (`workflow_dispatch`) | `check`; on `main` also `deploy-production` (a manual re-deploy) |
+| Manual branch run with `deploy_preview=true` | `check` → named static preview; never production |
 
 - **Open or update a PR.** After `check`, the `preview` job builds the web app, migrates `wwm-preview`, runs
   `wrangler preview --env production --name pr-<N>`, smoke-tests it, and posts or updates **one** PR comment with the
@@ -132,6 +133,15 @@ deploy is never interrupted.
 - **Merge.** The push to `main` runs `check` on the merged commit, then `deploy-production` migrates `wwm`, runs
   `wrangler deploy --env production`, and smoke-tests `https://<domain>`. It waits for approval first if you added
   required reviewers. Closing the PR deletes its Preview (`wrangler preview delete`).
+- **Explicit test preview.** With a trusted branch pushed, run
+  `gh workflow run ci.yml --ref <branch> -f deploy_preview=true -f preview_name=manual-mobile-tilt`.
+  This opts into one isolated static preview without enabling automatic PR previews globally.
+  The workflow summary contains the HTTPS Original/Race links and commit. Dynamic APIs, paid captures,
+  pairing and telemetry stay disabled; test `/play/practice?offline=1` and `/race/island-leap` at top level.
+  Mobile, tilt and Race flags are explicitly enabled in the preview; production keeps tilt disabled pending
+  device qualification and activation approval. Updating the same name replaces its candidate.
+  Manual previews persist until explicitly deleted with `wrangler preview delete --env production
+  --name manual-mobile-tilt --skip-confirmation`; PR-close cleanup only owns `pr-<N>` names.
 - **Permissions.** The workflow defaults to no token permissions; each job asks for `contents: read`, plus
   `pull-requests: write` for the Preview comment. The Cloudflare secrets reach only the migrate / deploy / preview /
   delete steps.

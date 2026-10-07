@@ -16,6 +16,7 @@ import { Link, useParams } from 'react-router';
 import { QrCode } from '../controller/QrCode.tsx';
 import { createI18n } from '../i18n/index.ts';
 import { touchCapable } from '../input/capability.ts';
+import { MotionOptions, MotionSetup, TiltControls } from '../input/TiltControls.tsx';
 import { TouchControls } from '../input/TouchControls.tsx';
 import { Icon } from '../ui/parts.tsx';
 import '../ui/game.css';
@@ -249,13 +250,50 @@ function RaceScreens({ session }: { session: RaceSession }) {
   const eligible = v.result && isEligible(v.result);
   const resultTitle = !eligible ? 'race.practiceFinish' : v.newBest ? 'race.newBest' : 'race.finish';
   const touch = v.input === 'touch' && session.touch;
+  const tilt = v.input === 'tilt' && session.motion && session.tiltSource;
   const controls = useMemo(
-    () => t(touch ? 'race.touchControls' : session.course.stunts ? 'race.stuntControls' : 'race.controls'),
-    [t, session.course.stunts, touch],
+    () =>
+      t(
+        tilt
+          ? 'motion.hint'
+          : touch
+            ? 'race.touchControls'
+            : session.course.stunts
+              ? 'race.stuntControls'
+              : 'race.controls',
+      ),
+    [t, session.course.stunts, touch, tilt],
   );
   const onTurbo = useCallback(() => session.turbo(), [session]);
   return (
     <>
+      {tilt && session.motion && (
+        <>
+          <TiltControls
+            source={tilt}
+            session={session.motion}
+            live={racing}
+            onPause={() => session.pause()}
+            {...(v.mechanics?.enabled
+              ? {
+                  turbo: {
+                    available: true,
+                    ready: racing && v.mechanics.ready,
+                    count: v.mechanics.turboCharges,
+                    onTurbo,
+                  },
+                }
+              : {})}
+          />
+          {v.phase !== 'loading' && v.phase !== 'error' && (
+            <MotionSetup
+              session={session.motion}
+              onEnable={() => session.enableTilt()}
+              onJoystick={() => session.setInput('touch')}
+            />
+          )}
+        </>
+      )}
       {touch && v.phase !== 'loading' && v.phase !== 'error' && (
         <TouchControls
           source={touch}
@@ -609,6 +647,17 @@ function RaceScreens({ session }: { session: RaceSession }) {
                 )}
                 <p>{t('race.pairHint')}</p>
               </div>
+            )}
+            {(v.phase === 'ready' || v.phase === 'paused') && session.motion && (
+              <MotionOptions
+                mode={v.input}
+                session={session.motion}
+                onTilt={() => session.setInput('tilt')}
+                onJoystick={() => session.setInput('touch')}
+                onKeyboard={() => session.setInput('keyboard')}
+                onRecenter={() => session.recenterTilt()}
+                onPreferences={() => session.refreshControls()}
+              />
             )}
             {(v.phase === 'ready' || v.phase === 'finished') &&
               v.error &&
