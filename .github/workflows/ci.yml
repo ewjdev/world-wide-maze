@@ -207,7 +207,16 @@ jobs:
           URL: ${{ steps.preview.outputs.url }}
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
         run: |
-          curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha'
+          # A completed deploy can briefly serve the previous version while it propagates.
+          matched=false
+          for _attempt in $(seq 1 15); do
+            if curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha'; then
+              matched=true
+              break
+            fi
+            sleep 2
+          done
+          [ "$matched" = true ] || { echo 'Static preview did not serve the expected commit within 30 seconds'; exit 1; }
           curl --fail --silent "$URL/education/lessons/rocket-lab/" | grep 'data-learning-activity="rocket-lab"' > /dev/null
 
       - name: Preview review links
