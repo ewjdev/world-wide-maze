@@ -1,0 +1,196 @@
+{
+  "id": "plants",
+  "number": 9,
+  "category": "Plants",
+  "title": "Pip’s Little Garden",
+  "tagline": "Check the soil. Find suitable light. Help a seedling grow.",
+  "accent": "#318545",
+  "targetMinutes": "2–4",
+  "learningGoal": "Choose suitable water and light for an already-growing seedling, using a stated soil condition and a demonstrated light comparison.",
+  "childTakeaway": "A growing plant needs light and water. I check the soil before adding more water.",
+  "story": "Pip is caring for a small garden. The child helps check what each young plant needs, then revisits the garden over pretend days.",
+  "introPip": "These little plants are already growing! Let's help them get water and light. Growing takes time, so we'll visit again on pretend days.",
+  "conceptImage": "concept.png",
+  "conceptImageAlt": "Pip, a smiling silver-gray ball with blue seams, sits beside two green seedlings in terracotta pots and a blue watering can in a bright garden.",
+  "ageSupport": {
+    "entry": "Read every question aloud, name the pictured choices, and let the child point or tap. Start with the watering-can round and demonstrate the comparison before asking round two.",
+    "stretch": "Use the optional fifth round to combine light and water. Ask the child to explain or show what is still missing after a one-step plan."
+  },
+  "misconception": "More water or a taller stem always means a healthier plant; the lesson distinguishes suitable moisture and sturdy growth from excess water and low-light stretching.",
+  "rounds": [
+    {
+      "id": "r1",
+      "title": "A drink for the seedling",
+      "prompt": "This seedling's soil is dry. Which thing can give it water?",
+      "scene": "round-1.svg",
+      "sceneAlt": "A young plant in dry cracked soil, with a watering can and a hat offered below.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Watering can",
+          "spokenLabel": "Watering can"
+        },
+        {
+          "id": "b",
+          "label": "Hat",
+          "spokenLabel": "Hat"
+        }
+      ],
+      "correctChoiceIds": ["a"],
+      "success": "The watering can gives water to the dry soil. We add a little, then check the soil.",
+      "hints": [
+        "Look at the soil. Pip tells us it is dry.",
+        "Imagine tipping each thing. Which one can pour water?",
+        "A hat does not pour water. The watering can does."
+      ],
+      "visualHint": "Show a measured small pour into the soil; the soil becomes damp. Keep the plant size unchanged in this moment.",
+      "whyThisRound": "Establishes the concrete water-care action before asking the child to diagnose a new plant."
+    },
+    {
+      "id": "r2",
+      "title": "Light makes a difference",
+      "prompt": "Both seedlings got water for several pretend days. Which place helped one grow sturdy green leaves?",
+      "scene": "round-2.svg",
+      "sceneAlt": "Two watered seedlings after pretend days: one in a dark cupboard and one in a lit garden spot. The stems and leaves differ.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Dark cupboard",
+          "spokenLabel": "Dark cupboard"
+        },
+        {
+          "id": "b",
+          "label": "Lit garden spot",
+          "spokenLabel": "Lit garden spot"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "The garden spot gave this seedling suitable light. Its leaves stayed green and its stem grew sturdy.",
+      "hints": [
+        "Look at the leaves and stems, not just how tall the plants are.",
+        "Compare the pale thin plant with the sturdy green one. Both got water.",
+        "The cupboard plant got too little light. This lit garden spot helped the other grow sturdy leaves."
+      ],
+      "visualHint": "Replay matched starting seedlings, equal suitable watering, and a day-night sequence. Reveal changes only across pretend days. Outline stems and leaves after the child asks for a hint.",
+      "whyThisRound": "Uses an explained comparison to establish light as a need; checks the tempting misconception that the tallest plant must be the healthiest."
+    },
+    {
+      "id": "r3",
+      "title": "Enough water for now",
+      "prompt": "We just watered until the soil was damp. Should we check it later, or pour more now?",
+      "scene": "round-3.svg",
+      "sceneAlt": "A green seedling with damp soil in a bright spot, above a later-check icon and a pouring-water icon.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Check later",
+          "spokenLabel": "Check the soil later"
+        },
+        {
+          "id": "b",
+          "label": "Pour more now",
+          "spokenLabel": "Pour more water now"
+        }
+      ],
+      "correctChoiceIds": ["a"],
+      "success": "It has enough water for now. We check the soil later and water when it needs it.",
+      "hints": [
+        "Remember: the soil is already damp.",
+        "Picture more and more water filling the pot. Plants do not need a puddle around their roots.",
+        "Choose checking later. Extra water now could make the soil too wet."
+      ],
+      "visualHint": "On request, compare damp soil with a flooded pot; do not turn the plant instantly brown. Future feedback should show checking moisture, rather than a fixed daily watering rule.",
+      "whyThisRound": "Prevents the lesson from becoming 'always add water' and introduces looking before acting."
+    },
+    {
+      "id": "r4",
+      "title": "New plant, same need",
+      "prompt": "This different plant already has light, but its soil is dry. What should we do?",
+      "scene": "round-4.svg",
+      "sceneAlt": "A different-shaped seedling in a blue container and dry soil, with a dark-cover option and a little-water option.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Cover it",
+          "spokenLabel": "Cover it with a dark lid"
+        },
+        {
+          "id": "b",
+          "label": "Give a little water",
+          "spokenLabel": "Give the soil a little water"
+        }
+      ],
+      "correctChoiceIds": ["b"],
+      "success": "The dry soil needs a little water. A different pot and different leaves do not change that need.",
+      "hints": [
+        "What does this plant already have? Pip says it has light.",
+        "Look at the dry soil. Would a dark lid bring water?",
+        "Give the soil a little water, then check that it is damp."
+      ],
+      "visualHint": "Keep the changed container and leaf shape throughout feedback. Show a small pour reaching the soil and stop when it is damp; no immediate growth.",
+      "whyThisRound": "Tests transfer across plant and container appearance rather than repetition of the first image."
+    },
+    {
+      "id": "r5",
+      "title": "Two needs together — optional stretch",
+      "prompt": "This seedling is in a dark cupboard and its soil is dry. Which plan gives it both things it needs?",
+      "scene": "round-5.svg",
+      "sceneAlt": "A dry-soil seedling inside a dark cupboard, above three plans combining a lit place, water, or the cupboard.",
+      "choices": [
+        {
+          "id": "a",
+          "label": "Light only",
+          "spokenLabel": "Move it into suitable light only"
+        },
+        {
+          "id": "b",
+          "label": "Water in cupboard",
+          "spokenLabel": "Give a little water but keep it in the cupboard"
+        },
+        {
+          "id": "c",
+          "label": "Light and water",
+          "spokenLabel": "Move it into suitable light and give a little water"
+        }
+      ],
+      "correctChoiceIds": ["c"],
+      "success": "This plan gives suitable light and water. We keep checking it as pretend days pass.",
+      "hints": [
+        "Pip noticed two things: a dark place and dry soil.",
+        "Look for a plan with a lit place and a watering can together.",
+        "Light alone leaves the soil dry. Water alone leaves it too dark. Choose suitable light and a little water."
+      ],
+      "visualHint": "Demonstrate each plan on a duplicate of the same plant. Pause after one need is addressed to name the remaining need; then run the complete plan over pretend days.",
+      "whyThisRound": "Optional combination challenge; all action plans are single choices, with no hidden multi-select."
+    }
+  ],
+  "finale": "Pip checks the garden over several pretend days. The cared-for seedlings show new leaves. Pip says, 'We gave them what they needed, and we gave them time.'",
+  "offlineActivity": "With a grown-up, inspect an existing non-toxic potted plant. Gently feel the potting mix and ask whether it needs water; the grown-up follows the plant's own care guidance. Draw or photograph it today and again after a few days.",
+  "reviewQuestions": [
+    "Does the dark-cupboard comparison make the light need clear without teaching that the tallest plant is best?",
+    "Is the 'check later' round understandable, or should a future prototype first demonstrate damp versus soaking-wet soil?",
+    "Should the two-needs final round be optional for every child, or offered only after the single-need rounds?"
+  ],
+  "designNotes": [
+    "Review concept only: no game integration, child testing, voice generation, or claims of validated learning outcomes.",
+    "The lesson starts with living leafy seedlings. It makes no claim that every seed requires light to germinate.",
+    "Water and light are selected learning needs, not a complete plant-care recipe. Species, temperature, nutrients, oxygen, drainage, and watering needs also matter.",
+    "The lit garden is a deliberately suitable environment for this illustrative seedling; any window or any amount of sunlight is not automatically suitable.",
+    "Dryness is stated in the spoken prompt. Soil color and leaf posture alone are not reliable real-world diagnoses.",
+    "Growth and low-light changes happen across pretend days. Small pours change soil moisture, not plant size instantly.",
+    "All pictured containers have drainage holes. No universal water amount or watering schedule is prescribed.",
+    "Generated art sets the story; the five SVG scenes are the exact question references. The art does not establish species identity or biological timing."
+  ],
+  "sources": [
+    {
+      "title": "University of Minnesota Extension — Lighting for indoor plants and starting seeds",
+      "url": "https://extension.umn.edu/garden-and-home/yard-and-garden/gardening-in-minnesota/lighting-for-indoor-plants",
+      "supports": "Suitable light supports growth; insufficient light can produce pale foliage and long thin stems, while excess light can also harm plants."
+    },
+    {
+      "title": "University of Maryland Extension — Care of Vegetable Seedlings",
+      "url": "https://extension.umd.edu/resource/care-vegetable-seedlings",
+      "supports": "Growing seedlings need sufficient light and suitably moist growing medium; saturated medium can impair roots. Ordinary window light may be insufficient."
+    }
+  ]
+}

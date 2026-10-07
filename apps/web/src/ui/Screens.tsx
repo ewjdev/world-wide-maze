@@ -134,9 +134,14 @@ function HowTo() {
   const { t } = useTranslation();
   const go = useRef<HTMLButtonElement>(null);
   useEffect(() => go.current?.focus(), []);
-  const touch = v.inputMode === 'touch';
+  const touch = v.inputMode === 'touch' || v.inputMode === 'tilt';
   const steps = touch
-    ? [t('touch.howto.step1'), t('touch.howto.step2'), t('touch.howto.step3'), t('touch.howto.step4')]
+    ? [
+        t('touch.howto.step1'),
+        t('touch.howto.step2'),
+        t('touch.howto.step3'),
+        t(v.inputMode === 'tilt' ? 'motion.howto' : 'touch.howto.step4'),
+      ]
     : [t('howto.step1'), t('howto.step2'), t('howto.step3'), t('howto.step4')];
   return (
     <section className="wwm-panel wwm-howto" aria-labelledby="howto-h">

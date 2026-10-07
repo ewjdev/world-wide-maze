@@ -16,6 +16,7 @@ import {
   KeyboardInputSource,
   neutralSample,
   PhoneInputSource,
+  TiltInputSource,
   TouchInputSource,
 } from '@wwm/net';
 import { PHYSICS_VERSION } from '@wwm/physics';
@@ -40,8 +41,10 @@ import {
 import type { AudioManager, Bgm } from '../audio/audio.ts';
 import { openHostRoom } from '../controller/useHostRoom.ts';
 import { preferTouch, savePreference, touchCapable } from '../input/capability.ts';
-import { MOBILE_CONTROLS_ENABLED } from '../input/flags.ts';
+import { MOBILE_CONTROLS_ENABLED, MOBILE_TILT_ENABLED } from '../input/flags.ts';
 import { observeSize, watchOrientation } from '../input/layout.ts';
+import { localTouchMode, readMotionPreferences, saveMotionPreferences } from '../input/motion-preferences.ts';
+import { canAdvance, canResume, canStart, MotionSession } from '../input/motion-session.ts';
 import { type GateOutcome, LearningGates } from '../learning/gates.ts';
 import { isLearningHref } from '../learning/href.ts';
 import { createLockPort } from '../learning/port.ts';
@@ -54,6 +57,7 @@ import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
+import { Countdown } from './countdown.ts';
 import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
@@ -86,7 +90,7 @@ import {
   StageLoadError,
 } from './stages.ts';
 
-export type InputMode = 'keyboard' | 'phone' | 'touch';
+export type InputMode = 'keyboard' | 'phone' | 'touch' | 'tilt';
 export type SignKind = 'goal' | 'timeup' | 'gameover';
 export type TutorialStep = 2 | 3 | 4 | 5 | 6;
 
@@ -115,6 +119,9 @@ export interface GameView {
   unsupported: boolean;
   engineReady: boolean;
   inputMode: InputMode | null;
+  motionRestart: boolean;
+  motionNeedsResume: boolean;
+  controlsRevision: number;
   room: RoomView;
   /** Pairing screen: "Connected!" is showing before calibrate (E: 4 s, N: shorter). */
   justConnected: boolean;
@@ -223,7 +230,7 @@ export interface TiltReadout {
   z: number;
   power: boolean;
   tooTilted: boolean;
-  source: 'phone' | 'keyboard' | 'gamepad' | 'touch' | 'none';
+  source: 'phone' | 'keyboard' | 'gamepad' | 'touch' | 'tilt' | 'none';
 }
 
 export interface GameTestHooks {
@@ -282,7 +289,6 @@ const GHOST_KEY = 'wwm.ghost';
 const CALIBRATE_TIMEOUT_SEC = 15; // E
 const CONNECTED_SHOW_SEC = 1.4; // N (2013: 4 s)
 const TUTORIAL_STEP_SEC = 3; // E
-const COUNTDOWN_BEAT_SEC = 0.6; // N
 const MIN_BUILD_SEC = 2.2; // N (2013: ≥ 5 s)
 
 type Timer = { at: number; fn: () => void; phase: GamePhase | null };
@@ -307,6 +313,14 @@ export class Game {
   #driver: SimDriver | null = null;
   #driverKind: 'worker' | 'lockstep' = 'lockstep';
   #driverLoad: Promise<SimDriver> | null = null;
+  #driverGeneration = 0;
+  #driverRequestedKind: 'worker' | 'lockstep' | null = null;
+  #countdown: Countdown | null = null;
+  #pausedFrom: 'countdown' | 'play' = 'play';
+  #motionArmed = false;
+  #motionStartIntent = false;
+  #motionIntro: { firstGame: boolean; build: AbortController | null } | null = null;
+  #motionSpawned = false;
   #raf = 0;
   #lastFrame = 0;
   #qualityWasActive = false;
@@ -326,6 +340,8 @@ export class Game {
    * source; per-frame reads use `peek()`, and only `#stepInput` consumes a press (`sample()`).
    */
   readonly touch: TouchInputSource | null;
+  readonly tiltSource: TiltInputSource | null;
+  readonly motion: MotionSession | null;
   #conn: HostConnection | null = null;
   #lastSample: InputSample = neutralSample();
   #lastSource: TiltReadout['source'] = 'none';
@@ -395,12 +411,18 @@ export class Game {
     this.#storage = opts.storage ?? (typeof localStorage === 'undefined' ? memoryStorage() : localStorage);
     this.#replay = opts.test?.replay ?? null;
     this.touch = MOBILE_CONTROLS_ENABLED ? new TouchInputSource({ frameYaw: () => this.#yaw() }) : null;
+    this.tiltSource = MOBILE_TILT_ENABLED ? new TiltInputSource({ frameYaw: () => this.#yaw() }) : null;
+    this.motion = this.tiltSource ? new MotionSession(this.tiltSource) : null;
+    this.tiltSource?.setSensitivity(readMotionPreferences(this.#storage).sensitivity);
     const sens = Number(this.#get(SENS_KEY) ?? '1');
     this.#view = {
       phase: 'title',
       unsupported: false,
       engineReady: false,
       inputMode: null,
+      motionRestart: false,
+      motionNeedsResume: false,
+      controlsRevision: 0,
       room: {
         status: 'idle',
         code: opts.roomCode ?? null,
@@ -444,6 +466,7 @@ export class Game {
       learningRun: false,
     };
     this.#cleanups.push(opts.audio.onChange(() => this.#set({ muted: opts.audio.muted })));
+    if (this.motion) this.#cleanups.push(this.motion.subscribe(() => this.#motionChanged()));
     const seed = opts.test?.learningSeed;
     this.learning = new LearningGates({
       muted: () => this.audio.muted,
@@ -538,6 +561,7 @@ export class Game {
       this.#lastFrame = performance.now();
       this.#renderCadence.reset();
       if (document.visibilityState === 'hidden') {
+        if (this.#view.inputMode === 'tilt') this.motion?.suspend('focus');
         cancelAnimationFrame(this.#raf);
         this.#raf = 0;
         this.#autoPause();
@@ -551,7 +575,11 @@ export class Game {
       } else {
         const v = this.#view;
         this.#driver?.setPaused(
-          this.learning.isOpen || !!v.portal || !!v.travel || (v.phase !== 'play' && v.phase !== 'falling'),
+          !this.#canAdvanceMotion() ||
+            this.learning.isOpen ||
+            !!v.portal ||
+            !!v.travel ||
+            (v.phase !== 'play' && v.phase !== 'falling'),
         );
         if (this.#engine && !this.#raf && !this.#disposed) this.#raf = requestAnimationFrame(this.#frame);
       }
@@ -620,8 +648,12 @@ export class Game {
    */
   #ensureDriver(): Promise<SimDriver> {
     if (!this.#driverLoad) {
-      const p = createDriver(this.#view.inputMode === 'touch' ? 'lockstep' : this.#driverKind).then((d) => {
-        if (this.#disposed) {
+      const generation = this.#driverGeneration;
+      const kind =
+        this.#view.inputMode === 'touch' || this.#view.inputMode === 'tilt' ? 'lockstep' : this.#driverKind;
+      this.#driverRequestedKind = kind;
+      const p = createDriver(kind).then((d) => {
+        if (this.#disposed || generation !== this.#driverGeneration) {
           d.dispose();
           throw new DOMException('Obsolete build', 'AbortError');
         }
@@ -647,6 +679,8 @@ export class Game {
     this.#cleanups = [];
     this.#phone?.dispose();
     this.touch?.dispose();
+    this.motion?.dispose();
+    this.tiltSource?.dispose();
     this.#conn?.close();
     this.#ghostBall?.dispose();
     this.#ghostBall = null;
@@ -671,11 +705,16 @@ export class Game {
   /** The gameplay host has no size (hidden, collapsed): release input and pause until it is usable again. */
   #hostCollapsed(): void {
     this.touch?.reset();
+    if (this.#view.inputMode === 'tilt') this.motion?.suspend('focus');
     this.#autoPause();
   }
 
   /** A real orientation change: cancel gestures (their geometry is stale) and pause explicitly. */
   #orientationChanged(): void {
+    if (this.#view.inputMode === 'tilt') {
+      this.motion?.suspend('rotation');
+      return;
+    }
     if (this.#view.inputMode !== 'touch') return;
     this.touch?.reset();
     this.#autoPause();
@@ -695,8 +734,16 @@ export class Game {
 
   #send(ev: GameEvent): boolean {
     const from = this.#view.phase;
+    if (
+      (ev.type === 'INTRO_DONE' || ev.type === 'GO' || ev.type === 'SPAWNED') &&
+      !this.#canAdvanceMotion()
+    ) {
+      if (ev.type === 'SPAWNED' && from === 'restarting') this.#motionSpawned = true;
+      return false;
+    }
     const to = transition(from, ev);
     if (!to) return false;
+    if (ev.type === 'MENU' && (from === 'play' || from === 'countdown')) this.#pausedFrom = from;
     // Timers scoped to the phase we leave are dropped.
     this.#timers = this.#timers.filter((t) => t.phase === null || t.phase === to);
     this.#set({ phase: to });
@@ -718,6 +765,11 @@ export class Game {
   #enter(to: GamePhase, from: GamePhase): void {
     const e = this.#engine;
     const d = this.#driver;
+    // Cross-phase tutorial/presentation delays belong to this attempt, never its replacement.
+    if (to === 'title' || to === 'select' || to === 'building') {
+      this.#timers = [];
+      this.#afterGate = null;
+    }
     // a Pip gate card belongs to play (or the intro fallback); leaving the stage closes it without a resume
     if (to !== 'play' && this.learning.isOpen) {
       this.#afterGate = null;
@@ -725,6 +777,10 @@ export class Game {
     }
     switch (to) {
       case 'title':
+        this.#motionIntro = null;
+        this.#countdown = null;
+        this.#motionStartIntent = false;
+        this.motion?.reset();
         this.#cancelGhostPreparation();
         this.#endGhost();
         this.#resetSession();
@@ -755,6 +811,8 @@ export class Game {
         this.#after(CALIBRATE_TIMEOUT_SEC, () => this.#set({ calibrateTimedOut: true }));
         break;
       case 'select':
+        this.#motionIntro = null;
+        this.#countdown = null;
         this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({
@@ -771,6 +829,10 @@ export class Game {
         if (IN_STAGE.has(from) && e) e.setView('map');
         break;
       case 'building':
+        this.#motionIntro = null;
+        this.#countdown = null;
+        this.#motionSpawned = false;
+        this.#motionArmed = this.#view.inputMode !== 'tilt';
         this.#cancelGhostPreparation();
         this.#endGhost();
         this.#set({ confirm: null, sign: null, result: null, tutorial: null });
@@ -781,28 +843,19 @@ export class Game {
         this.#startIntro();
         break;
       case 'countdown':
-        this.#set({ countdown: 3 });
-        this.audio.play('tick');
-        this.#after(COUNTDOWN_BEAT_SEC, () => {
-          this.#set({ countdown: 2 });
+        if (from !== 'paused' || !this.#countdown) {
+          this.#countdown = new Countdown();
           this.audio.play('tick');
-          this.#after(COUNTDOWN_BEAT_SEC, () => {
-            this.#set({ countdown: 1 });
-            this.audio.play('tick');
-            this.#after(COUNTDOWN_BEAT_SEC, () => {
-              this.#set({ countdown: 0 });
-              this.audio.play('go');
-              this.#send({ type: 'GO' });
-            });
-          });
-        });
+        }
+        this.#set({ countdown: this.#countdown.beat });
+        d?.setPaused(true);
         break;
       case 'play':
         if (from === 'countdown') this.#after(0.7, () => this.#set({ countdown: null }), null);
         else this.#set({ countdown: null });
         this.#set({ confirm: null });
         e?.setView('chase');
-        d?.setPaused(false);
+        d?.setPaused(!this.#canAdvanceMotion());
         // E: the timer starts on entering GAME, except on the first game where the first POWER starts it.
         if (!this.#timerArmed) {
           if (this.#timerStartTick === undefined) this.#timerStartTick = this.#rec.length;
@@ -813,6 +866,9 @@ export class Game {
         break;
       case 'paused':
         this.touch?.reset();
+        this.tiltSource?.reset();
+        this.#motionArmed = false;
+        this.#set({ countdown: null });
         this.#set({ portal: null });
         this.#timer.stop();
         d?.setPaused(true);
@@ -976,17 +1032,22 @@ export class Game {
     if (this.#view.phase === 'title') telemetry.track({ name: 'start_clicked' });
     this.audio.unlock();
     this.audio.play('click');
-    if (this.#view.inputMode === null && this.touch && preferTouch()) this.#setInputMode('touch');
+    if (this.#view.inputMode === null && this.touch && preferTouch())
+      this.#setInputMode(localTouchMode(this.#storage));
     const ready =
       this.#view.inputMode === 'keyboard' ||
       this.#view.inputMode === 'touch' ||
+      this.#view.inputMode === 'tilt' ||
       this.#view.room.controllerConnected;
     this.#send({ type: 'START', howtoSeen: this.#get(HOWTO_KEY) === '1', ready });
   }
 
   howtoDone(): void {
     this.audio.play('click');
-    this.#send({ type: 'HOWTO_DONE', ready: this.#view.inputMode === 'touch' });
+    this.#send({
+      type: 'HOWTO_DONE',
+      ready: this.#view.inputMode === 'touch' || this.#view.inputMode === 'tilt',
+    });
   }
 
   back(): void {
@@ -1010,7 +1071,7 @@ export class Game {
     this.audio.play('click');
     savePreference('touch');
     this.#set({ hold: null });
-    this.#setInputMode('touch');
+    this.#setInputMode(localTouchMode(this.#storage));
     this.#send({ type: 'KEYBOARD' });
   }
 
@@ -1022,12 +1083,131 @@ export class Game {
     const prev = this.#view.inputMode;
     if (prev !== null && prev !== mode) {
       this.touch?.reset();
+      this.tiltSource?.reset();
       this.#keyboard?.reset();
       this.#inputNeedsRelease = true;
       this.#lastSample = neutralSample(this.#yaw());
     }
-    if (mode === 'touch') this.#driverKind = 'lockstep';
+    if (mode === 'touch' || mode === 'tilt') this.#driverKind = 'lockstep';
     this.#set({ inputMode: mode });
+    if (mode !== 'tilt') {
+      this.motion?.reset();
+      this.#motionArmed = true;
+      this.#set({ motionNeedsResume: false });
+    }
+  }
+
+  #motionContext(intent = false) {
+    return {
+      selected: this.#view.inputMode === 'tilt',
+      snapshot: this.motion?.getSnapshot() ?? null,
+      driverKind: this.#driver?.kind,
+      visible: document.visibilityState === 'visible' && document.hasFocus(),
+      intent,
+      armed: this.#motionArmed,
+      ownsInput: !this.learning.isOpen && !this.#view.portal && !this.#view.travel,
+      contactsReleased: !this.tiltSource?.contactsActive,
+    };
+  }
+  #canAdvanceMotion(): boolean {
+    return this.#view.inputMode !== 'tilt' || canAdvance(this.#motionContext());
+  }
+  #motionChanged(): void {
+    if (this.#disposed) return;
+    if (this.#view.inputMode === 'tilt') {
+      const state = this.motion?.getSnapshot().state;
+      if (state !== 'ready') {
+        this.#motionArmed = false;
+        this.#driver?.setPaused(true);
+        this.#timer.stop();
+        this.tiltSource?.reset();
+        this.#lastSample = neutralSample(this.#yaw());
+        if (state === 'interrupted') {
+          this.#motionStartIntent = false;
+          if (HOLD_ON_DISCONNECT.has(this.#view.phase) || this.#view.phase === 'timeup') {
+            this.#set({ motionNeedsResume: true });
+            if (
+              (this.#view.phase === 'play' || this.#view.phase === 'countdown') &&
+              !this.learning.isOpen &&
+              !this.#view.travel
+            )
+              this.#send({ type: 'MENU' });
+          }
+        }
+      } else if (this.#motionIntro && this.#motionStartIntent && !this.#view.motionNeedsResume) {
+        const pending = this.#motionIntro;
+        if (pending.build === this.#buildAbort && !pending.build?.signal.aborted)
+          this.#introDone(pending.firstGame);
+      }
+    }
+    this.refreshControls();
+  }
+  enableTilt(): void {
+    if (!this.motion) return;
+    // Setup is a start intent only for an unstarted intro; interruption recovery still requires Resume.
+    if (this.#view.phase === 'intro' && !this.#view.motionNeedsResume) this.#motionStartIntent = true;
+    void this.motion.enableTilt();
+  }
+  playTilt(): void {
+    if (!this.motion) return;
+    if (this.#view.inputMode === 'tilt') return;
+    this.#autoPause();
+    const worker = (this.#driver?.kind ?? this.#driverRequestedKind) === 'worker';
+    if (worker && this.#loaded && IN_STAGE.has(this.#view.phase)) {
+      this.motion.reset();
+      this.#set({ motionRestart: true });
+      return;
+    }
+    if (worker) this.#replaceDriver();
+    savePreference('touch');
+    saveMotionPreferences({ ...readMotionPreferences(this.#storage), mode: 'tilt' }, this.#storage);
+    this.#setInputMode('tilt');
+    this.#motionArmed = false;
+    this.motion.reset();
+    if (this.#view.phase === 'building' && this.#run) {
+      const run = this.#run;
+      const slice = this.#slice;
+      this.#buildAbort?.abort();
+      this.#send({ type: 'BACK' });
+      this.#beginRun(run, slice);
+    }
+  }
+  restartWithTilt(): void {
+    if (!this.#view.motionRestart || this.motion?.getSnapshot().state !== 'ready') return;
+    this.#set({ motionRestart: false });
+    savePreference('touch');
+    saveMotionPreferences({ ...readMotionPreferences(this.#storage), mode: 'tilt' }, this.#storage);
+    this.#setInputMode('tilt');
+    this.#replaceDriver();
+    this.retryStage(true);
+  }
+  keepCurrentControls(): void {
+    this.#set({ motionRestart: false });
+    this.motion?.reset();
+  }
+  #replaceDriver(): void {
+    ++this.#driverGeneration;
+    this.#driver?.dispose();
+    this.#driver = null;
+    this.#driverLoad = null;
+    this.#driverRequestedKind = null;
+    this.#driverKind = 'lockstep';
+  }
+  playJoystick(): void {
+    const pending = this.#motionIntro;
+    this.#autoPause();
+    this.#set({ motionRestart: false });
+    savePreference('touch');
+    saveMotionPreferences({ ...readMotionPreferences(this.#storage), mode: 'joystick' }, this.#storage);
+    this.#setInputMode('touch');
+    if (pending && pending.build === this.#buildAbort && !pending.build?.signal.aborted)
+      this.#introDone(pending.firstGame);
+  }
+  recenterTilt(): void {
+    if (this.#view.inputMode === 'tilt') this.motion?.suspend('recenter');
+  }
+  refreshControls(): void {
+    this.#set({ controlsRevision: this.#view.controlsRevision + 1 });
   }
 
   retryCalibrate(): void {
@@ -1082,12 +1262,23 @@ export class Game {
   }
 
   resume(): void {
+    if (this.#view.motionRestart) return;
+    if (!canResume(this.#motionContext(true))) return;
+    this.#motionArmed = true;
+    this.motion?.restoreInput();
+    if (this.#view.phase === 'intro') this.#motionStartIntent = true;
+    this.#lastFrame = performance.now();
     this.audio.play('click');
-    this.#set({ confirm: null });
-    this.#send({ type: 'RESUME' });
+    this.#set({ confirm: null, motionNeedsResume: false });
+    if (this.#view.phase === 'paused') this.#send({ type: 'RESUME', destination: this.#pausedFrom });
+    else if (this.#view.phase === 'intro' && this.#motionIntro) this.#introDone(this.#motionIntro.firstGame);
+    else if (this.#canAdvanceMotion() && (this.#view.phase === 'play' || this.#view.phase === 'falling')) {
+      this.#driver?.setPaused(false);
+      if (this.#view.phase === 'play' && !this.#timerArmed) this.#timer.start();
+    }
   }
 
-  retryStage(): void {
+  retryStage(preserveMotion = false): void {
     this.audio.play('click');
     if (!this.#run || !this.#loaded) return;
     telemetry.track({ name: 'stage_restarted' });
@@ -1095,6 +1286,9 @@ export class Game {
     this.#set({ total: this.#stageStartTotal });
     const loaded = this.#loaded;
     if (!this.#send({ type: 'RETRY' })) return;
+    this.#motionStartIntent = preserveMotion;
+    this.#set({ motionNeedsResume: false });
+    if (this.#view.inputMode === 'tilt' && !preserveMotion) this.motion?.reset();
     this.#buildAbort?.abort();
     const ac = new AbortController();
     this.#buildAbort = ac;
@@ -1354,7 +1548,7 @@ export class Game {
   }
 
   #defaultInputMode(): InputMode {
-    return this.touch && preferTouch() ? 'touch' : 'keyboard';
+    return this.touch && preferTouch() ? localTouchMode(this.#storage) : 'keyboard';
   }
 
   async #openDeepLink(ref: string): Promise<void> {
@@ -1536,6 +1730,9 @@ export class Game {
     this.#timer.reset(stage.timeLimitSec);
     const { largeTotal } = countItems(stage);
     const firstGame = this.#get(TUTORIAL_KEY) !== '1';
+    const build = this.#buildAbort;
+    this.#set({ motionNeedsResume: false });
+    this.#motionIntro = null;
     this.#timerArmed = firstGame && !this.#replay;
     this.#pendingSmall = [];
     this.#lastIsland = null;
@@ -1559,7 +1756,13 @@ export class Game {
     this.#after(0.4, () => this.#set({ introSkippable: true }));
     if (this.#opts.test?.skipIntro) this.#after(0.05, () => e.skipIntro());
     void done.then(() => {
-      if (this.#view.phase !== 'intro') return;
+      if (
+        this.#view.phase !== 'intro' ||
+        build !== this.#buildAbort ||
+        build?.signal.aborted ||
+        this.#disposed
+      )
+        return;
       // Phase 20 M4b: a stage with no room for a Pip gate asks its round here, before the countdown (Phase 22:
       // also a step whose gate found no room on this stage)
       if (this.learning.active && this.learning.needsStartCard() && !this.learning.isOpen) {
@@ -1573,6 +1776,13 @@ export class Game {
 
   #introDone(firstGame: boolean): void {
     if (this.#view.phase !== 'intro') return;
+    if (this.#view.inputMode === 'tilt') {
+      this.#motionIntro = { firstGame, build: this.#buildAbort };
+      if (!canStart(this.#motionContext(this.#motionStartIntent)) || this.#view.motionNeedsResume) return;
+      this.#motionArmed = true;
+      this.motion?.restoreInput();
+    }
+    this.#motionIntro = null;
     const tutorial = firstGame && !this.#replay;
     if (tutorial) this.#set({ tutorial: 2 });
     this.#send({ type: 'INTRO_DONE', countdown: !tutorial });
@@ -1770,8 +1980,15 @@ export class Game {
     this.#timerArmed = false;
     this.#set({ timeInt: this.#timer.remainsInt, last30: false, sign: null });
     this.#music('game');
+    const build = this.#buildAbort;
     void e.spawnBall(at).then(() => {
-      if (this.#view.phase === 'restarting') this.#send({ type: 'SPAWNED' });
+      if (
+        !this.#disposed &&
+        build === this.#buildAbort &&
+        !build?.signal.aborted &&
+        this.#view.phase === 'restarting'
+      )
+        this.#send({ type: 'SPAWNED' });
     });
   }
 
@@ -2045,8 +2262,7 @@ export class Game {
     this.#engine?.setPortalState(portal.id, 'used');
     this.#set({ portal: null });
     if (this.#view.phase !== 'play') return;
-    if (this.#portalTimer) this.#timer.start();
-    this.#driver?.setPaused(false);
+    this.#resumePanelWorld();
   }
 
   /**
@@ -2141,6 +2357,18 @@ export class Game {
       this.#engine?.setPortalState(id, 'used');
     }
     if (this.#view.phase !== 'play') return;
+    this.#resumePanelWorld();
+  }
+
+  #resumePanelWorld(): void {
+    this.touch?.reset();
+    this.tiltSource?.reset();
+    if (!this.#canAdvanceMotion() || !canResume(this.#motionContext(true))) {
+      if (this.#view.inputMode === 'tilt') this.#set({ motionNeedsResume: true });
+      return;
+    }
+    this.#lastFrame = performance.now();
+    this.motion?.restoreInput();
     if (this.#portalTimer) this.#timer.start();
     this.#driver?.setPaused(false);
   }
@@ -2198,6 +2426,8 @@ export class Game {
   /** E: losing window focus pauses the game (map). */
   #autoPause(): void {
     if (this.#opts.test?.noAutoPause) return;
+    if (this.#view.inputMode === 'tilt' && this.motion?.getSnapshot().state !== 'requesting')
+      this.motion?.suspend('focus');
     if (this.#view.travel || this.learning.isOpen) return;
     const p = this.#view.phase;
     if (p === 'play' || p === 'countdown') {
@@ -2212,6 +2442,7 @@ export class Game {
     const gp = this.#gamepad?.sample(now) ?? neutralSample(yaw);
     const ph = this.#phone?.sample(now) ?? null;
     const tc = this.#touchFrame(now);
+    const tilt = this.#view.inputMode === 'tilt' ? this.#tiltFrame(now) : null;
     const active = (s: InputSample) => s.power || s.jump || s.tiltX !== 0 || s.tiltZ !== 0;
     if (this.#inputNeedsRelease) {
       // Poll physical controls normally, but require a release after returning from
@@ -2227,7 +2458,10 @@ export class Game {
       return neutralSample(yaw);
     }
     let s: InputSample;
-    if (active(kb)) {
+    if (tilt) {
+      s = tilt;
+      this.#lastSource = 'tilt';
+    } else if (active(kb)) {
       s = kb;
       this.#lastSource = 'keyboard';
     } else if (active(gp)) {
@@ -2265,6 +2499,14 @@ export class Game {
     return touch.peek(now);
   }
 
+  #tiltFrame(now: number): InputSample {
+    if (!this.#canAdvanceMotion() || this.#view.phase !== 'play') {
+      this.tiltSource?.clearPending();
+      return neutralSample(this.#yaw());
+    }
+    return this.tiltSource?.peek(now) ?? neutralSample(this.#yaw());
+  }
+
   /** Input for one sim step; also advances the game timer and delayed small-item credits in step time. */
   #inputForStep = (tick: number, dt: number): InputSample => {
     const s = this.#stepInput(tick, dt);
@@ -2277,10 +2519,12 @@ export class Game {
 
   #stepInput(tick: number, dt: number): InputSample {
     const v = this.#view;
-    if (v.phase !== 'play') return neutralSample(this.#yaw());
+    if (v.phase !== 'play' || !this.#canAdvanceMotion()) return neutralSample(this.#yaw());
     let s = this.#lastSample;
     // The first eligible tick acknowledges the pending press; catch-up ticks see the held state only.
     if (this.#lastSource === 'touch' && this.touch && !this.#replay) s = this.touch.sample(performance.now());
+    if (this.#lastSource === 'tilt' && this.tiltSource && !this.#replay)
+      s = this.tiltSource.sample(performance.now());
     if (this.#replay) s = this.#replay[tick] ?? neutralSample(s.frameYaw);
     if (this.#autopilot) {
       s = { ...this.#autopilot.sample, frameYaw: this.#yaw() };
@@ -2349,8 +2593,25 @@ export class Game {
       this.audio.setRoll(0, false);
     } else if (!hold && v.hold) this.#set({ hold: null, resumedFlash: this.#clock });
 
-    const gdt = hold ? 0 : dt;
+    const blocked =
+      v.phase === 'paused' ||
+      (v.inputMode === 'tilt' &&
+        !this.#canAdvanceMotion() &&
+        (HOLD_ON_DISCONNECT.has(v.phase) || v.phase === 'timeup'));
+    const gdt = hold || blocked ? 0 : dt;
     this.#clock += gdt;
+
+    if (this.#motionSpawned && this.#view.phase === 'restarting' && this.#canAdvanceMotion()) {
+      this.#motionSpawned = false;
+      this.#send({ type: 'SPAWNED' });
+    }
+    if (v.phase === 'countdown' && this.#countdown && !hold && !blocked) {
+      for (const beat of this.#countdown.advance(gdt)) {
+        this.#set({ countdown: beat });
+        this.audio.play(beat === 0 ? 'go' : 'tick');
+        if (beat === 0) this.#send({ type: 'GO' });
+      }
+    }
 
     // delayed timers
     if (this.#timers.length) {
@@ -2384,11 +2645,17 @@ export class Game {
       this.learning.input(
         sample.tiltX / MAX_TILT_ROLL,
         sample.jump,
-        this.#lastSource === 'touch' ? 'none' : this.#lastSource,
+        this.#lastSource === 'touch' || this.#lastSource === 'tilt' ? 'none' : this.#lastSource,
         performance.now(),
       );
     const stepping =
-      !!d && !hold && !gate && !v.portal && !v.travel && (v.phase === 'play' || v.phase === 'falling');
+      !!d &&
+      !hold &&
+      this.#canAdvanceMotion() &&
+      !gate &&
+      !v.portal &&
+      !v.travel &&
+      (v.phase === 'play' || v.phase === 'falling');
     if (stepping) {
       const r = d.advance(gdt, this.#inputForStep, this.#onSimEvent);
       if (r.ball) {
@@ -2470,6 +2737,9 @@ export class Game {
       island: this.#lastIsland,
       stageId: this.#loaded?.stage.stageId ?? null,
       clock: this.#clock,
+      countdown: this.#countdown
+        ? { beat: this.#countdown.beat, remaining: this.#countdown.remaining }
+        : null,
       hold: this.#view.hold,
       recording: {
         ticks: this.#rec.length,

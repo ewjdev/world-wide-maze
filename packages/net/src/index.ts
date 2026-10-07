@@ -11,6 +11,7 @@ export * from './rtt.ts';
 export * from './sources/gamepad.ts';
 export * from './sources/keyboard.ts';
 export * from './sources/phone.ts';
+export * from './sources/tilt.ts';
 export * from './sources/touch.ts';
 export * from './stats.ts';
 export * from './tilt.ts';

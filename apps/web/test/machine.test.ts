@@ -27,6 +27,7 @@ const EDGES: [GamePhase, GameEvent, GamePhase][] = [
   ['intro', { type: 'INTRO_DONE', countdown: true }, 'countdown'],
   ['intro', { type: 'INTRO_DONE', countdown: false }, 'play'],
   ['intro', { type: 'QUIT' }, 'title'],
+  ['intro', { type: 'RETRY' }, 'building'],
   ['countdown', { type: 'GO' }, 'play'],
   ['countdown', { type: 'MENU' }, 'paused'],
   ['play', { type: 'MENU' }, 'paused'],
@@ -35,6 +36,7 @@ const EDGES: [GamePhase, GameEvent, GamePhase][] = [
   ['play', { type: 'GOAL' }, 'goal'],
   ['play', { type: 'TRAVEL' }, 'building'], // Phase 13: link portal
   ['paused', { type: 'RESUME' }, 'play'],
+  ['paused', { type: 'RESUME', destination: 'countdown' }, 'countdown'],
   ['paused', { type: 'RETRY' }, 'building'],
   ['paused', { type: 'SEARCH' }, 'select'],
   ['paused', { type: 'QUIT' }, 'title'],

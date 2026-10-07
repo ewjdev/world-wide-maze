@@ -1,5 +1,11 @@
 import { createEngine, type Engine } from '@wwm/engine';
-import { GamepadInputSource, KeyboardInputSource, neutralSample, TouchInputSource } from '@wwm/net';
+import {
+  GamepadInputSource,
+  KeyboardInputSource,
+  neutralSample,
+  TiltInputSource,
+  TouchInputSource,
+} from '@wwm/net';
 import {
   advanceProgress,
   createProgress,
@@ -20,9 +26,11 @@ import { PX_PER_METER, SIM_HZ, type Vec2 } from '@wwm/schema';
 import { AudioManager } from '../audio/audio.ts';
 import { RaceControllerHost } from '../controller/race-host.ts';
 import { LockstepDriver, type ObservedStep } from '../game/sim-driver.ts';
-import { preferTouch } from '../input/capability.ts';
-import { MOBILE_CONTROLS_ENABLED } from '../input/flags.ts';
+import { preferTouch, savePreference } from '../input/capability.ts';
+import { MOBILE_CONTROLS_ENABLED, MOBILE_TILT_ENABLED } from '../input/flags.ts';
 import { observeSize, watchOrientation } from '../input/layout.ts';
+import { localTouchMode, readMotionPreferences, saveMotionPreferences } from '../input/motion-preferences.ts';
+import { canAdvance, canResume, canStart, MotionSession } from '../input/motion-session.ts';
 import { GhostClient } from './ghost-client.ts';
 import { RaceHistory } from './storage.ts';
 import { courseMarkers, raceGhost } from './visuals.ts';
@@ -49,7 +57,7 @@ export interface RaceView {
   result: RaceAttempt | null;
   newBest: boolean;
   split: number | null;
-  input: 'keyboard' | 'phone' | 'touch';
+  input: 'keyboard' | 'phone' | 'touch' | 'tilt';
   ghosts: 'off' | 'best' | 'both';
   ghostCount: number;
   ghostError: boolean;
@@ -101,6 +109,9 @@ export class RaceSession {
   #gamepad: GamepadInputSource | null = null;
   /** Same-device touch: the UI binds its elements here; frames `peek()`, the tick callback `sample()`s. */
   readonly touch: TouchInputSource | null;
+  readonly tiltSource: TiltInputSource | null;
+  readonly motion: MotionSession | null;
+  #motionArmed = false;
   #phone: RaceControllerHost | null = null;
   #phoneLoading = false;
   #focusLost = false;
@@ -141,7 +152,25 @@ export class RaceSession {
     this.touch = MOBILE_CONTROLS_ENABLED
       ? new TouchInputSource({ frameYaw: () => this.#engine?.cameraYaw() ?? 0 })
       : null;
-    if (this.touch && preferTouch()) this.#view = { ...this.#view, input: 'touch' };
+    this.tiltSource = MOBILE_TILT_ENABLED
+      ? new TiltInputSource({ frameYaw: () => this.#engine?.cameraYaw() ?? 0 })
+      : null;
+    this.motion = this.tiltSource ? new MotionSession(this.tiltSource) : null;
+    this.tiltSource?.setSensitivity(readMotionPreferences().sensitivity);
+    if (this.touch && preferTouch()) this.#view = { ...this.#view, input: localTouchMode() };
+    if (this.motion)
+      this.#cleanups.push(
+        this.motion.subscribe(() => {
+          if (this.#view.input === 'tilt' && this.motion?.getSnapshot().state !== 'ready') {
+            this.#motionArmed = false;
+            this.tiltSource?.reset();
+            this.#turboRequested = false;
+            this.#driver?.setPaused(true);
+            this.pause('pause');
+          }
+          this.#set({});
+        }),
+      );
   }
   getView = () => this.#view;
   subscribe = (listener: () => void) => {
@@ -169,9 +198,14 @@ export class RaceSession {
     // The observed host owns engine sizing; a collapsed host releases input and pauses.
     const collapse = () => {
       this.touch?.reset();
+      if (this.#view.input === 'tilt') this.motion?.suspend('focus');
       this.pause('pause');
     };
     const orientation = () => {
+      if (this.#view.input === 'tilt') {
+        this.motion?.suspend('rotation');
+        return;
+      }
       if (this.#view.input !== 'touch') return;
       this.touch?.reset();
       this.pause('pause');
@@ -295,17 +329,50 @@ export class RaceSession {
       this.#phoneLoading = false;
     }
   }
-  setInput(input: 'keyboard' | 'phone' | 'touch') {
+  setInput(input: 'keyboard' | 'phone' | 'touch' | 'tilt') {
     if (input === 'phone' && !this.#phone?.canStart) return;
     if (input === 'touch' && !this.touch) return;
-    if (this.#view.phase === 'racing') this.pause('pause');
+    if (input === 'tilt' && !this.motion) return;
+    if (this.#view.phase === 'racing' || this.#view.phase === 'countdown') this.pause('pause');
     if (input !== this.#view.input) {
       this.touch?.reset();
+      this.tiltSource?.reset();
+      if (this.#view.phase === 'loading' && this.#simReady) {
+        ++this.#generation;
+        this.#ghostClient.cancel();
+        this.#set({ phase: 'ready' });
+      }
       this.#phone?.discardTurboRequest();
       this.#turboRequested = false;
       if (!this.#saved) this.#inputSource = 'mixed';
     }
     this.#set({ input });
+    if (input === 'keyboard' || input === 'touch' || input === 'tilt')
+      savePreference(input === 'keyboard' ? 'keyboard' : 'touch');
+    if (input === 'touch' || input === 'tilt')
+      saveMotionPreferences({ ...readMotionPreferences(), mode: input === 'tilt' ? 'tilt' : 'joystick' });
+    if (input !== 'tilt') this.motion?.reset();
+  }
+  #motionContext(intent = false) {
+    return {
+      selected: this.#view.input === 'tilt',
+      snapshot: this.motion?.getSnapshot() ?? null,
+      driverKind: this.#driver?.kind,
+      visible: !this.#focusLost && !document.hidden,
+      intent,
+      armed: this.#motionArmed,
+      ownsInput: this.#view.phase === 'countdown' || this.#view.phase === 'racing',
+      contactsReleased: !this.tiltSource?.contactsActive,
+    };
+  }
+  enableTilt(): void {
+    void this.motion?.enableTilt();
+  }
+  recenterTilt(): void {
+    if (this.#view.input === 'tilt') this.motion?.suspend('recenter');
+  }
+  refreshControls(): void {
+    this.#set({});
   }
   turbo() {
     if (this.#view.phase === 'racing' && this.#sim?.getMechanics().ready) this.#turboRequested = true;
@@ -348,6 +415,7 @@ export class RaceSession {
       this.#view.phase === 'countdown'
     )
       return;
+    if (!canStart(this.#motionContext(true))) return;
     if (this.#view.input === 'phone' && !this.#phone?.canStart) {
       this.#set({ error: 'Connect and calibrate your phone, or use the keyboard.' });
       return;
@@ -355,6 +423,8 @@ export class RaceSession {
     const gen = ++this.#generation;
     driver.setPaused(true);
     this.touch?.reset();
+    this.tiltSource?.reset();
+    this.#motionArmed = false;
     this.audio.unlock();
     this.audio.setRoll(0, false);
     this.#save('abandoned');
@@ -382,7 +452,7 @@ export class RaceSession {
       this.#saved = false;
       this.#attemptId = crypto.randomUUID();
       this.#createdAt = Date.now();
-      this.#inputSource = this.#view.input;
+      this.#inputSource = this.#view.input === 'tilt' ? 'touch' : this.#view.input;
       this.#recovery = null;
       this.#fallAt = null;
       this.#falling = false;
@@ -423,6 +493,8 @@ export class RaceSession {
       }
       if (this.#disposed || gen !== this.#generation) return;
       this.#countdown = this.#test.countdownSec ?? 3;
+      this.#motionArmed = canStart(this.#motionContext(true));
+      this.motion?.restoreInput();
       this.#set({
         phase: 'countdown',
         progress: this.#progress,
@@ -432,6 +504,7 @@ export class RaceSession {
       });
       if (this.#view.input === 'phone' && !this.#phone?.canStart) this.pause('controller-disconnect');
       if (this.#focusLost) this.pause('focus-loss');
+      if (!this.#motionArmed && this.#view.input === 'tilt') this.pause('pause');
       this.#syncPhone();
     } catch (error) {
       if (this.#disposed || gen !== this.#generation) return;
@@ -442,6 +515,8 @@ export class RaceSession {
     if (this.#view.phase !== 'racing' && this.#view.phase !== 'countdown') return;
     this.#turboRequested = false;
     this.touch?.reset();
+    this.tiltSource?.reset();
+    this.#motionArmed = false;
     this.#pausedFrom = this.#view.phase;
     this.#progress = markPractice(this.#progress, reason);
     this.#driver?.setPaused(true);
@@ -452,6 +527,9 @@ export class RaceSession {
   resume() {
     if (this.#view.phase !== 'paused' || this.#focusLost) return;
     if (this.#view.input === 'phone' && !this.#phone?.canStart) return;
+    if (!canResume(this.#motionContext(true))) return;
+    this.#motionArmed = true;
+    this.motion?.restoreInput();
     // A paused countdown resumes its remaining countdown (the frame loop keeps counting); racing resumes racing.
     const to = this.#pausedFrom;
     this.#set({ phase: to });
@@ -588,6 +666,12 @@ export class RaceSession {
     const rawDt = Math.max(0, (now - this.#lastFrame) / 1000);
     const dt = Math.min(0.1, rawDt) * (this.#test.timeScale ?? 1);
     this.#lastFrame = now;
+    if (
+      this.#view.input === 'tilt' &&
+      (this.#view.phase === 'countdown' || this.#view.phase === 'racing') &&
+      !canAdvance(this.#motionContext())
+    )
+      this.pause('pause');
     if (this.#frameTimes.length < 3600 && this.#view.phase === 'racing') this.#frameTimes.push(rawDt * 1000);
     const keyboard = this.#keyboard?.sample(now) ?? neutralSample(0);
     const gamepad = this.#gamepad?.sample(now) ?? neutralSample(0);
@@ -595,12 +679,15 @@ export class RaceSession {
     // Touch is read without acknowledging anything; only a simulation tick consumes a press (below).
     if (this.touch && this.#view.phase !== 'racing') this.touch.clearPending();
     const touch = this.#view.input === 'touch' ? (this.touch?.peek(now) ?? null) : null;
+    if (this.#view.phase !== 'racing' || this.#falling || this.#recovery) this.tiltSource?.clearPending();
+    const tilt = this.#view.input === 'tilt' ? this.tiltSource?.peek(now) : null;
     const fromTouch =
       !!touch &&
       !(gamepad.power || gamepad.jump) &&
       !(keyboard.power || keyboard.jump || keyboard.tiltX || keyboard.tiltZ);
-    let sample =
-      this.#view.input === 'phone' && phone
+    let sample = tilt
+      ? tilt
+      : this.#view.input === 'phone' && phone
         ? phone
         : gamepad.power || gamepad.jump
           ? gamepad
@@ -637,6 +724,7 @@ export class RaceSession {
         )
           this.#progress = markPractice(this.#progress, 'recording-limit');
         this.#turboRequested = false;
+        this.tiltSource?.clearPending();
         this.#phone?.discardTurboRequest();
         if (recovery.reason === 'recovery') this.#sim?.penalizeRecovery();
         if (this.#endExhausted()) return;
@@ -652,6 +740,10 @@ export class RaceSession {
           this.#turboRequested = false;
           // The first eligible tick acknowledges a pending Jump; catch-up ticks see the held state only.
           let stepSample = sample;
+          if (this.#view.input === 'tilt' && this.tiltSource)
+            stepSample = canAdvance(this.#motionContext())
+              ? this.tiltSource.sample(performance.now())
+              : neutralSample(sample.frameYaw);
           if (fromTouch && this.touch) {
             stepSample = this.touch.sample(performance.now());
           }
@@ -715,6 +807,8 @@ export class RaceSession {
     this.#gamepad?.dispose();
     this.#phone?.dispose();
     this.touch?.dispose();
+    this.motion?.dispose();
+    this.tiltSource?.dispose();
     this.#ghostClient.dispose();
     this.#ghosts.forEach((ghost) => {
       ghost.dispose();

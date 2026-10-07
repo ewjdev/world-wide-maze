@@ -5,7 +5,7 @@
 import type { InputSample } from '@wwm/schema';
 import type { Unsubscribe } from './emitter.ts';
 
-export type InputSourceKind = 'phone' | 'keyboard' | 'gamepad' | 'touch';
+export type InputSourceKind = 'phone' | 'keyboard' | 'gamepad' | 'touch' | 'tilt';
 export type InputSourceEvent = 'menu' | 'disconnected' | 'connected';
 
 export interface InputSource {
