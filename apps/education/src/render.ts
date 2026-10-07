@@ -11,7 +11,7 @@ import {
   type GemGroup,
   type InputPolicy,
   type LearningPath,
-  learningScript,
+  guidedLearningScript as learningScript,
   levelsFor,
   neutralLabels,
   type Orientation,
@@ -75,7 +75,8 @@ export function planksBuilt(activity: Activity, index: number, solved = false): 
 /** A short name for what a round is for, derived from its data (so it can't drift from the numbers). */
 export function roundTitle(activity: Activity, round: Round, index: number): string {
   let name: string;
-  if (round.kind === 'difference') name = 'How many more';
+  if (round.kind === 'predict-motion') name = 'Predict the push';
+  else if (round.kind === 'difference') name = 'How many more';
   else if (round.kind === 'choose')
     name = activity.rounds.length > 1 ? `Question ${index + 1}` : 'The question';
   else {
@@ -114,6 +115,8 @@ export function roundCheck(activity: Activity, round: Round, index: number): str
   } else if (round.kind === 'difference') {
     const [a, b] = round.islands;
     what = `${a.count} vs ${b.count}; choose ${round.choices.join(', ')}`;
+  } else if (round.kind === 'predict-motion') {
+    what = `${round.scene.apparatus}, gas ${round.scene.exhaust}; ${round.options.map((o) => o.label).join(', ')}`;
   } else {
     const stimulus = round.stimulus.length
       ? `after ${round.stimulus.map((token) => `${token.color} ${token.shape}`).join(', ')}; `
@@ -203,7 +206,7 @@ export function sceneBlock(
     .map((choice) => {
       const key = keys?.[choice.id];
       const label = key ? `${choice.ariaLabel}. Key ${key}` : choice.ariaLabel;
-      return `<button class="choice-hit" type="button" data-answer="${escapeHtml(choice.id)}" aria-label="${escapeHtml(label)}" style="left:${pct(choice.box.x, layout.width)};top:${pct(choice.box.y, layout.height)};width:${pct(choice.box.w, layout.width)};height:${pct(choice.box.h, layout.height)}"${options.enabled && !options.preview ? '' : ' disabled'}></button>`;
+      return `<button class="choice-hit" type="button" data-answer="${escapeHtml(choice.id)}" aria-label="${escapeHtml(label)}" data-left="${pct(choice.box.x, layout.width)}" data-top="${pct(choice.box.y, layout.height)}" data-width="${pct(choice.box.w, layout.width)}" data-height="${pct(choice.box.h, layout.height)}"${options.enabled && !options.preview ? '' : ' disabled'}></button>`;
     })
     .join('');
   let svg = sceneSvg(theme, round, {
@@ -214,7 +217,7 @@ export function sceneBlock(
   });
   if (keys) svg = svg.replace('<svg class="wwm-scene"', '<svg class="wwm-scene show-keys"');
   const ratio = Math.round((layout.width / layout.height) * 10000) / 10000;
-  return `<div class="scene${options.preview ? ' is-preview' : ''}" id="scene" data-orientation="${options.orientation}" style="--ratio:${ratio};aspect-ratio:${layout.width} / ${layout.height}">${svg}<div class="scene-choices" role="group" aria-label="Answers">${buttons}</div></div>`;
+  return `<div class="scene${options.preview ? ' is-preview' : ''}" id="scene" data-orientation="${options.orientation}" data-ratio="${ratio}" data-aspect="${layout.width} / ${layout.height}">${svg}<div class="scene-choices" role="group" aria-label="Answers">${buttons}</div></div>`;
 }
 
 /** The finished bridge: the bottom strip of a wide scene with every plank built. */
@@ -243,6 +246,18 @@ export function skyIslandsArt(theme: Theme): string {
     .map((i) => spriteSvg(theme, 'plank', { x: 158 + i * 56, y: 118, w: 52, h: 38 }, { stretch: true }))
     .join('');
   return `<svg class="sky-art" viewBox="0 0 480 190" aria-hidden="true" focusable="false">${spriteSvg(theme, 'cloud', { x: 170, y: 0, w: 110, h: 64 })}${spriteSvg(theme, 'cloud', { x: 380, y: 96, w: 90, h: 52 })}${spriteSvg(theme, 'island', { x: 18, y: 104, w: 132, h: 74 }, { stretch: true })}${gems}${planks}${spriteSvg(theme, 'island', { x: 328, y: 104, w: 132, h: 74 }, { stretch: true })}${spriteSvg(theme, 'gate', { x: 360, y: 34, w: 68, h: 68 })}${spriteSvg(theme, 'pip', { x: 214, y: 44, w: 78, h: 78 })}</svg>`;
+}
+
+/** Apply trusted numeric layout through CSSOM, compatible with style-src self. */
+export function hydrateSceneBlock(root: HTMLElement): void {
+  root.style.setProperty('--ratio', root.dataset.ratio ?? '1');
+  root.style.aspectRatio = root.dataset.aspect ?? 'auto';
+  for (const button of root.querySelectorAll<HTMLButtonElement>('.choice-hit')) {
+    button.style.left = button.dataset.left ?? '0%';
+    button.style.top = button.dataset.top ?? '0%';
+    button.style.width = button.dataset.width ?? '0%';
+    button.style.height = button.dataset.height ?? '0%';
+  }
 }
 
 // ── pages ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -363,7 +378,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
   const index = path.activities.findIndex((item) => item.id === activity.id);
   const next = path.activities[index + 1];
   const first = activity.rounds[0] as Round;
-  const hasIslands = activity.rounds.some((round) => round.kind !== 'choose');
+  const hasIslands = activity.rounds.some((round) => round.kind === 'compare' || round.kind === 'difference');
   const nextLink = next
     ? `<a class="primary" id="next-activity" href="/lessons/${next.id}/">Next activity <span aria-hidden="true">▶</span></a>`
     : '<a class="primary" id="next-activity" href="/">Back to the learning path <span aria-hidden="true">▶</span></a>';

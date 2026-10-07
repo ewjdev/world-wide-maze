@@ -341,6 +341,8 @@ export class LearningGates {
   #state: LessonState | null = null;
   #index = new Map<string, ScriptLine>();
   #voice: VoicePlayer | null = null;
+  #motionNarrationToken: string | undefined;
+  #motionNarrationDone = true;
   #unlocked = false;
   #tilt = new TiltStepper();
   #prevJump = true;
@@ -543,6 +545,10 @@ export class LearningGates {
   resetProgress(): void {
     const lesson = this.#lesson;
     if (!lesson) return;
+    if (lesson.activity.demonstration) {
+      this.abort();
+      this.#voice?.stop();
+    }
     this.#state = initialState(lesson.activity, {
       seed: this.#opts.seed?.() ?? randomSeed(),
       shuffle: lesson.path.play?.shuffle ?? 'positions',
@@ -578,7 +584,7 @@ export class LearningGates {
     const lesson = this.#lesson;
     const config = this.#config;
     if (!lesson || !config) return stage;
-    const binding = bindLevel(stage, this.#plan, config);
+    const binding = bindLevel(stage, this.#plan, config, undefined, !!lesson.activity.demonstration);
     const gateColor = lesson.path.theme.palette.gate;
     const postColor = lesson.path.theme.palette.gem;
     const portals = new Map<number, BoundStep>();
@@ -682,7 +688,9 @@ export class LearningGates {
     const run = this.#run;
     const id = run?.binding.goalLockId;
     if (!run || id === null || id === undefined || this.#openLocks.has(id)) return [];
-    const waiting = run.binding.steps.filter((b) => b.goal && b.spot && !this.#done.has(b.index));
+    const waiting = run.binding.steps.filter(
+      (b) => b.goal && (b.spot || this.#lesson?.activity.demonstration) && !this.#done.has(b.index),
+    );
     if (waiting.length > 0) return [];
     this.#openLock(id, instant);
     return [systemLineId.unlockedGoal];
@@ -770,7 +778,12 @@ export class LearningGates {
   #nextOverride(): BoundStep | null {
     if (this.#config?.override !== 'grown-up' || !this.#run) return null;
     for (const b of this.#run.binding.steps)
-      if (b.spot && !this.#done.has(b.index) && (b.lockIds.length > 0 || b.goal)) return b;
+      if (
+        (b.spot || this.#lesson?.activity.demonstration) &&
+        !this.#done.has(b.index) &&
+        (b.lockIds.length > 0 || b.goal)
+      )
+        return b;
     return null;
   }
 
@@ -975,12 +988,14 @@ export class LearningGates {
   locked(lockId: number): void {
     const run = this.#run;
     const config = this.#config;
-    if (!run || !config || this.#openLocks.has(lockId)) return;
+    if (!run || !config || this.#openLocks.has(lockId) || this.#state?.effect) return;
     const lock = run.binding.locks[lockId];
     if (!lock) return;
     const owner =
       lock.kind === 'goal'
-        ? run.binding.steps.find((b) => b.goal && b.spot && !this.#done.has(b.index))
+        ? run.binding.steps.find(
+            (b) => b.goal && (b.spot || this.#lesson?.activity.demonstration) && !this.#done.has(b.index),
+          )
         : run.binding.steps.find((b) => b.lockIds.includes(lockId));
     this.#port.pulse(lockId);
     if (!owner || this.#done.has(owner.index)) return;
@@ -1040,9 +1055,14 @@ export class LearningGates {
       bound && bound.step.kind === 'round' && this.#config?.mode !== 'none' && !this.#done.has(bound.index)
         ? bound.index
         : null;
-    const index = own ?? (gateId < 0 ? this.#unplacedRound() : null) ?? this.#pendingRound();
+    const index = activity.demonstration
+      ? bound && this.#done.has(bound.index)
+        ? bound.index
+        : this.#pendingRound()
+      : (own ?? (gateId < 0 ? this.#unplacedRound() : null) ?? this.#pendingRound());
     let s: Step;
-    if (index === null) {
+    if (activity.demonstration && state.effect) s = step(activity, state, { type: 'replay-effect' });
+    else if (index === null) {
       if (state.phase === 'intro') return false;
       s = openStep(activity, state);
     } else {
@@ -1125,7 +1145,14 @@ export class LearningGates {
     const found = ids.map((id) => lines.get(id)).filter((l): l is ScriptLine => !!l);
     this.#said.push(...ids);
     if (this.#said.length > 40) this.#said.splice(0, this.#said.length - 40);
-    if (found.length > 0) void this.#voice?.play(found);
+    if (found.length > 0) {
+      const token = state.effect?.token;
+      this.#motionNarrationToken = token;
+      this.#motionNarrationDone = false;
+      void (this.#voice?.play(found) ?? Promise.resolve()).then(() => {
+        if (this.#motionNarrationToken === token) this.#motionNarrationDone = true;
+      });
+    }
   }
 
   #dispatch(event: LessonEvent): boolean {
@@ -1138,12 +1165,42 @@ export class LearningGates {
     return true;
   }
 
+  stopMotionNarration(): void {
+    if (this.#state?.effect) this.#voice?.stop();
+  }
+
+  motionNarrationReady(token: string): boolean {
+    return this.#motionNarrationToken === token && this.#motionNarrationDone;
+  }
+
+  /** Only the current finite explanation can commit an accepted motion answer. */
+  completeMotion(token: string): void {
+    const lesson = this.#lesson;
+    const state = this.#state;
+    const gate = this.#view.gate;
+    if (!lesson || !state || !gate || state.effect?.token !== token) return;
+    if (!this.motionNarrationReady(token)) this.#voice?.stop();
+    const s = step(lesson.activity, state, { type: 'effect-complete', token });
+    if (s.state.solved && !state.solved) {
+      const index = this.#roundStep(gate.round.id);
+      if (index !== null) this.#complete(index);
+    }
+    this.#apply(s);
+  }
+
   /** Answer with `choice`, invited or not (tests; `choose` judges the input first). */
   answer(choice: string): void {
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     const state = this.#state;
-    if (!lesson || !state || gate?.mode !== 'round' || gate.state.solved || !gate.choices.includes(choice))
+    if (
+      !lesson ||
+      !state ||
+      gate?.mode !== 'round' ||
+      gate.state.solved ||
+      gate.state.effect ||
+      !gate.choices.includes(choice)
+    )
       return;
     const cursor = gate.choices.indexOf(choice);
     if (gate.cursor !== cursor) this.#set({ gate: { ...gate, cursor } });
@@ -1160,7 +1217,8 @@ export class LearningGates {
    */
   choose(choice: string, mode: InputMode): void {
     const gate = this.#view.gate;
-    if (gate?.mode !== 'round' || gate.state.solved || !gate.choices.includes(choice)) return;
+    if (gate?.mode !== 'round' || gate.state.solved || gate.state.effect || !gate.choices.includes(choice))
+      return;
     const tapOnly = !!this.#lesson?.path.family?.tapOnly;
     if (!tapOnly && judgeInput(gate.policy, mode, gate.nudges) === 'nudge') {
       this.#set({ gate: { ...gate, nudges: gate.nudges + 1, nudgeSeq: gate.nudgeSeq + 1 } });
@@ -1189,7 +1247,7 @@ export class LearningGates {
 
   move(dir: -1 | 1): void {
     const gate = this.#view.gate;
-    if (gate?.mode !== 'round' || gate.state.solved) return;
+    if (gate?.mode !== 'round' || gate.state.solved || gate.state.effect) return;
     const cursor = moveCursor(gate.cursor, dir, gate.choices.length);
     if (cursor !== gate.cursor) this.#set({ gate: { ...gate, cursor } });
   }
@@ -1197,7 +1255,7 @@ export class LearningGates {
   /** JUMP / Enter: answer with the cursor, go on after a success, take the bonus when offered. */
   confirm(mode: InputMode = 'arrows'): void {
     const gate = this.#view.gate;
-    if (!gate) return;
+    if (!gate || gate.state.effect) return;
     if (gate.mode === 'bonus-offer') this.bonus(true);
     else if (gate.mode === 'done' || gate.state.solved) this.proceed();
     else {
@@ -1212,7 +1270,7 @@ export class LearningGates {
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     const state = this.#state;
-    if (!lesson || !gate || !state) return;
+    if (!lesson || !gate || !state || state.effect) return;
     if (gate.mode === 'done' || !gate.state.solved) {
       this.rollOn();
       return;
@@ -1236,6 +1294,10 @@ export class LearningGates {
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     if (!lesson || !gate) return;
+    if (gate.round.kind === 'predict-motion' && (gate.state.effect || gate.state.solved)) {
+      this.#dispatch({ type: 'replay-effect' });
+      return;
+    }
     const a = lesson.activity.id;
     if (gate.mode === 'bonus-offer') this.#say([lineId.bonus]);
     else if (gate.mode === 'done') this.#say([lineId.finale(a)]);
@@ -1246,7 +1308,7 @@ export class LearningGates {
   /** "Roll on!": the card closes and play resumes; Pip's line carries over into the maze. */
   rollOn(): void {
     const gate = this.#view.gate;
-    if (!gate || (gate.mode === 'round' && !gate.state.solved)) return;
+    if (!gate || gate.state.effect || (gate.mode === 'round' && !gate.state.solved)) return;
     this.#say([lineId.rollOn]);
     this.#close(gate.gateId, 'rolled-on');
   }

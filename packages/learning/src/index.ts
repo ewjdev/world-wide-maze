@@ -21,3 +21,8 @@ export * from './world.ts';
 export function clipKey(text: string, voice: { voiceId: string; model: string; settings: string }): string {
   return JSON.stringify([text, voice.voiceId, voice.model, voice.settings]);
 }
+
+export * from './guided-v05.ts';
+export * from './motion.ts';
+export * from './motion-effects.ts';
+export * from './rocket-lab.ts';

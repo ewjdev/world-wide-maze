@@ -40,6 +40,8 @@ colors:
   gem-edge: "#206a71"
   bridge: "#3f9a4c"
   glow: "#f2c230"
+  ball-shell: "#dfe3e6"
+  ball-seam: "#456e93"
 typography:
   display:
     fontFamily: '"Unbounded Variable", sans-serif'
@@ -64,6 +66,15 @@ typography:
     fontSize: "clamp(26px, 2.8vw, 38px)"
     fontWeight: 650
     lineHeight: 1.22
+  rocket-prompt:
+    fontFamily: '"Unbounded Variable", sans-serif'
+    fontSize: "clamp(19px, 2.2vw, 29px)"
+    fontWeight: 650
+    lineHeight: 1.22
+  rocket-feedback-mobile:
+    fontFamily: '"Figtree Variable", sans-serif'
+    fontSize: "16px"
+    lineHeight: 1.45
   pip-start-label:
     fontFamily: '"Unbounded Variable", sans-serif'
     fontSize: "clamp(24px, 3vw, 34px)"
@@ -149,7 +160,9 @@ components:
 
 This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.
 
-The interface alternates between readable adult guidance and generous child-facing play. Lessons take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
+The interface alternates between readable adult guidance and generous child-facing play. The six baseline math activities take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
+
+**Pip’s Rocket Lab** extends this same world with a geometric experiment: a teal balloon on a level string, pale puffs representing invisible air, and a silver rocket. The standalone lesson uses the education canvas; its maze presentation uses the incumbent WWM gate shell. This addition has four required motion predictions and an optional space prediction. It does not extend the baseline personalization surface. Source authority for this addition is `src/rocket-render.ts`, `src/rocket.ts`, `src/rocket.css`, and `packages/learning/src/motion-scene.ts`. The built surface is a review pilot; child, educator, and physical-device acceptance remain open.
 
 **Key Characteristics:**
 - Fog-white pages with flat, softly tinted sections.
@@ -184,6 +197,12 @@ The scene colours are the theme palette in the learning document (`packages/lear
 - **Glow** (the brand yellow) marks match lines, lit and leftover gems, and choice halos. A dashed halo means "try again"; a solid halo with a green check means solved.
 - **Pip surface** is the soft blue behind Pip's buttons. **Spoken highlight** is the pale yellow behind the word Pip is saying.
 
+### Rocket Lab (scene)
+
+Rocket Lab reuses the theme palette. **Gem** and **Gem Edge** draw the balloon; **Ball Shell** and **Ball Seam** draw the silver rocket and Pip, the string, and the pale air-puff outlines. **Paper** and **Island Edge** define the answer cards. **Bridge** fills the four progress dots as required predictions are solved.
+
+**The Fixed Marker Rule.** In Rocket Lab, the blue circle stays on the left and the yellow triangle stays on the right when the balloon reverses. The upright rocket uses a yellow star above and a red flower below. Match each marker to its illustrated, written choice; colour alone never carries the direction. The triangle and star use theme Glow, including its brighter yellow, while the rocket flame is outlined in Shape Yellow. This scene use does not change the baseline math stimulus colours.
+
 ## Typography
 
 **Display Font:** Unbounded Variable, with sans-serif fallback.
@@ -195,6 +214,8 @@ Unbounded gives headings and the wordmark their geometric silhouette; Figtree ca
 - **Display:** the path title; balanced wrapping with a narrow measure. Custom titles and their lead text use `overflow-wrap: anywhere`.
 - **Headline:** section headings. Grown-up notes locally switch their heading to Figtree at 24px.
 - **Prompt:** the round's question, next to Pip's replay button, in Unbounded. It is 19px on phones so the question, scene and Next fit one screen. Each word is its own span so the spoken word can be highlighted.
+- **Rocket prompt:** the surface-specific fluid step in the frontmatter, with a 42ch maximum measure. It keeps the longer motion question beside Pip without taking over the experiment. Rocket prompts are plain text rather than per-word spans.
+- **Rocket phone feedback:** the intentional smaller Figtree step in the frontmatter, used at 640px and below. Its 1.45 line-height and 42px minimum reserved height keep the explanation readable below the experiment. Desktop Rocket feedback retains the existing 20px lesson treatment.
 - **Lesson title:** the page's h1, set small (17px, 15px on phones) in the lesson bar. The question carries the visual weight.
 - **Body:** prose has a maximum measure of 68ch. Mobile body text becomes 17px.
 - **Lead:** introductory adult text; mobile size becomes 19px.
@@ -214,15 +235,27 @@ Lessons use a 1040px maximum-width canvas, in this order: lesson bar (back link,
 - **Feedback** reserves about two lines.
 - **Grown-up material** sits below the activity canvas: the version note, the notes disclosure, and navigation. Navigation stacks on mobile.
 
+### Rocket Lab
+
+The standalone Rocket lesson keeps the 1040px canvas and the order of lesson bar, Pip/question row, experiment with its choices, persistent feedback, and controls. The scene is a wide 1000×620 viewBox or a tall 600×540 viewBox at 640px and below. Both orientations keep the choices in one horizontal row: two cards for required predictions, three for optional space. Labels wrap inside the taller cards. The lesson sizes the scene from available viewport height (`100svh`) with a 100% width cap and no scene minimum width, rather than inheriting the math scene's 600px floor. Controls wrap with a 12px gap; Continue spans the phone canvas.
+
+Standalone answer buttons have a 44px minimum height, controls a 52px minimum, and mute a 44px minimum. Pip replay remains 60px on wide screens and 52px on phones. The SVG choice rectangles and transparent HTML hit areas share the same layout; do not position their pictures and controls independently.
+
+The maze gate uses the same experiment renderer inside `LearningGateCard.tsx`: experiment and explanation sit side by side on wide screens, then stack at 760px or a portrait aspect ratio. At 760px and below, the scene uses the tall viewBox and a 380px width cap, with a 20px prompt. Those gate values belong to the WWM game shell, not the standalone education type scale.
+
 ## Elevation & Depth
 
 There are no shadows in the education stylesheet. Depth comes from white activity canvases, tinted section backgrounds, and thin dividers. This surface does not inherit the game shell's drop shadows or cut-corner plates. Button background transitions last 150ms with standard ease; reduced-motion preference removes transitions.
+
+Rocket Lab preserves that flat standalone treatment. Its maze dialog retains the game shell's existing chamfered white plate and depth treatment. Rocket explanations omit the gate's coloured side stripe, and the prompt leads without an overlay eyebrow.
 
 ## Shapes
 
 Large section surfaces remain rectangular. Controls use the control radius; the scene draws its own rounded islands, cards and stones. Circular stop numbers echo Pip. Triangles are CSS polygons (`50% 0, 100% 100%, 0 100%`); squares retain straight edges.
 
 Activity shapes and gems are drawn inside the scene SVG and scale with it. Brand shapes are 12px. Pip's buttons are round (replay) or 28px-radius cards (start). Scene choices follow the drawn island, card, or stone.
+
+Rocket Lab adds literal outlined balloons, string supports, air puffs, a rocket, and fixed shape markers through the shared SVG renderer. Its answer cards use softly curved corners (16 SVG units), with an outer choice halo (18 SVG units). These dimensions scale with the scene and are not page-control radius tokens. Space adds only four faint dots; scenery stays subordinate to the experiment.
 
 ## Components
 
@@ -306,6 +339,19 @@ The introduction, transparency section, saved-state strip, and activity canvas a
 The home path introduction shows a small Sky Islands picture composed from theme sprites, and a "Meet Pip" line. Each stop in the path shows its length ("5-round challenge with the match tool") in Stop Ink.
 
 The portable HTML download intentionally uses its own compact system-font reading layout, with the theme's palette and each round's scene inline. It is not the source for the interactive site's visual system.
+
+### Rocket experiment and prediction controls
+
+Pip introduces the air-and-balloon demonstration before the first prediction. Four required predictions follow: an open balloon, its reversed opening, a tied balloon that stays still on the level string, and an upright rocket with gas going down. The optional space prediction adds a third "It cannot move" choice alongside the circle and triangle. Four scene dots and the written discovery count track the required predictions; the space offer can be declined.
+
+**The Rest-Then-Push Rule.** Every Rocket prediction starts still. Motion plays once to show gas and vehicle moving in opposite directions, then holds the after state with a written explanation. Replay starts the same finite experiment again. The tied balloon stays still and the explanation adds an open-versus-tied comparison. The moving arrows and comparison are revealed during the explanation, rather than supplying the answer in the untouched prediction picture.
+
+- **Reduced motion:** show a static before frame, then a static after frame; omit interpolated travel. The cause, markers, explanation, and controls remain visible. Hidden-page effects pause/reset and restart when the page returns; disposal cancels their timers and animation frames.
+- **Answer state:** transparent buttons align with the drawn cards and expose their written labels as accessible names. Tap or arrows plus Enter selects a prediction. Choices are unavailable during the experiment, and success prevents another answer. Persistent live feedback explains hints and success; Continue becomes available after the explanation finishes.
+- **Audio:** the first Pip tap unlocks narration. The shared player uses an available matching clip, browser speech, or estimated silent timing. Mute, written prompts, replay, and help remain available. Rocket does not use the baseline's spoken-word highlight; text and the experiment carry the explanation. Narration may extend the after-state hold, with a bounded fallback. This records the fallback behavior, not completion of paid Rocket clips.
+- **Adult material:** the disclosure explains what the pale puffs represent and the model's starting conditions. The finish offers replay, the maze, and a real-balloon activity for a grown-up. The portable download includes labelled before/after pictures from the same renderer.
+
+These rules describe the built Rocket surface. Browser captures in `docs/build-log/assets/rocket-lab/` are inspection evidence; they do not establish child, educator, physical-device, or production acceptance. No approved integrated composition or QUALITY BAR card is on record.
 
 ## Do's and Don'ts
 

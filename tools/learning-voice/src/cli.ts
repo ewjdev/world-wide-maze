@@ -1,7 +1,7 @@
 /**
  * `pnpm learning:voice [--write] [--audition] [--verify]`
  *
- * Voices every line of the baseline learning path (`pathScript(baselinePath)`) as Pip:
+ * Voices every line of the baseline learning path (`pathScript(selectedPath)`) as Pip:
  * - dry run (default): lists lines whose clip is missing or stale and the characters a `--write` would spend;
  * - `--write`: generates those clips through AI Gateway `wwm` → ElevenLabs `with-timestamps`, stores
  *   `<hash>.mp3` in R2 `wwm-learning-audio` (public at DEFAULT_AUDIO_BASE), and rewrites
@@ -15,15 +15,41 @@
 import { type ChildProcess, spawn } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
-import { baselinePath, DEFAULT_AUDIO_BASE, pathScript, type ScriptLine, type VoiceClip } from '@wwm/learning';
+import {
+  baselinePath,
+  DEFAULT_AUDIO_BASE,
+  pathScript,
+  rocketPath,
+  type ScriptLine,
+  type VoiceClip,
+} from '@wwm/learning';
 import { type Alignment, clipHash, settingsHash, type VoiceConfig, wordTimings } from './timing.ts';
 
 const TOOL = new URL('../', import.meta.url);
-const MANIFEST = new URL('../../../packages/learning/src/voice-manifest.json', import.meta.url);
+const argv = process.argv.slice(2);
+const pathFlag = argv.indexOf('--path');
+const pathId = pathFlag >= 0 ? argv[pathFlag + 1] : 'little-discoveries';
+if (pathId !== 'little-discoveries' && pathId !== 'pip-discoveries')
+  throw new Error('Unknown voice path. Use little-discoveries or pip-discoveries.');
+const selectedPath = pathId === 'pip-discoveries' ? rocketPath : baselinePath;
+for (let i = 0; i < argv.length; i++) {
+  if (argv[i] === '--path') {
+    i++;
+    continue;
+  }
+  if (!['--write', '--verify', '--audition'].includes(argv[i] ?? ''))
+    throw new Error(`Unknown argument: ${argv[i]}`);
+}
+const MANIFEST = new URL(
+  `../../../packages/learning/src/${pathId === 'pip-discoveries' ? 'rocket-voice-manifest' : 'voice-manifest'}.json`,
+  import.meta.url,
+);
 const PORT = 8791;
 const args = new Set(process.argv.slice(2));
 const write = args.has('--write');
 const audition = args.has('--audition');
+if (audition && pathId !== 'little-discoveries')
+  throw new Error('Voice audition uses the baseline sample. Omit --path.');
 const verify = args.has('--verify');
 // Explicit opt-in for operator-only paid generation; never retry an ambiguous paid response.
 const maxCharacters = Number(process.env.WWM_VOICE_MAX_CHARACTERS ?? 0);
@@ -126,7 +152,7 @@ async function pool<T>(items: readonly T[], size: number, run: (item: T) => Prom
 // ── the baseline script ───────────────────────────────────────────────────────────────────────────────────
 
 async function voiceBaseline(): Promise<void> {
-  const lines = pathScript(baselinePath);
+  const lines = pathScript(selectedPath);
   const current = JSON.parse(await readFile(MANIFEST, 'utf8')) as {
     voiceId: string;
     model: string;
@@ -200,7 +226,7 @@ async function voiceBaseline(): Promise<void> {
 // ── audition ──────────────────────────────────────────────────────────────────────────────────────────────
 
 async function runAudition(): Promise<void> {
-  const byId = new Map(pathScript(baselinePath).map((line) => [line.id, line]));
+  const byId = new Map(pathScript(selectedPath).map((line) => [line.id, line]));
   const sample = [
     'pip.hello',
     'compare-groups.r1.prompt',

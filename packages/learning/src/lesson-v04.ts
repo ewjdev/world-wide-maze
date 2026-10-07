@@ -1,5 +1,6 @@
 /** Experimental 0.4 lesson contract. Kept separate from the stable 0.1–0.3 reader. */
 import { z } from 'zod';
+import { GUIDED_VERSION, type GuidedV05, parseGuidedPath } from './guided-v05.ts';
 import { LEARNING_SCRIPT_ID, type LearningPath, MAX_DOCUMENT_BYTES, parseLearningPath } from './schema.ts';
 
 export const LESSON_VERSION = 'wwm-learning/0.4' as const;
@@ -123,7 +124,8 @@ export type LessonV04 = z.infer<typeof lessonV04Schema>;
 export type BridgeEncounter = LessonV04['activities'][number]['encounters'][number];
 export type NormalizedLearningDocument =
   | { kind: 'legacy-linear'; path: LearningPath }
-  | { kind: 'v04'; path: LessonV04 };
+  | { kind: 'v04'; path: LessonV04 }
+  | { kind: 'guided-v05'; path: GuidedV05 };
 
 export function parseLessonV04(value: unknown): LessonV04 {
   const json = JSON.stringify(value);
@@ -136,6 +138,8 @@ export function parseLessonV04(value: unknown): LessonV04 {
 export function normalizeLearningDocument(value: unknown): NormalizedLearningDocument {
   if (value && typeof value === 'object' && 'format' in value && value.format === LESSON_VERSION)
     return { kind: 'v04', path: parseLessonV04(value) };
+  if (value && typeof value === 'object' && 'format' in value && value.format === GUIDED_VERSION)
+    return { kind: 'guided-v05', path: parseGuidedPath(value) as GuidedV05 };
   return { kind: 'legacy-linear', path: parseLearningPath(value) };
 }
 

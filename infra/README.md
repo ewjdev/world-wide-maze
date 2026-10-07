@@ -119,12 +119,19 @@ deploy is never interrupted.
 
 | Event | Jobs |
 |---|---|
-| PR opened / pushed / reopened | `check` → `preview` (only if `WWM_PREVIEWS_ENABLED`, not for forks) |
-| PR closed | `preview-cleanup` (only if `WWM_PREVIEWS_ENABLED`, not for forks) |
+| PR opened / pushed / reopened, or labeled `static-preview` | `check` → `preview` (if `WWM_PREVIEWS_ENABLED` or labeled `static-preview`, not for forks) |
+| PR closed | `preview-cleanup` (if `WWM_PREVIEWS_ENABLED` or labeled `static-preview`, not for forks) |
 | push to `main` | `check` → `deploy-production` (only if `WWM_DEPLOY_ENABLED`) |
 | *Run workflow* by hand (`workflow_dispatch`) | `check`; on `main` also `deploy-production` (a manual re-deploy) |
 | Manual branch run with `deploy_preview=true` | `check` → named static preview; never production |
 
+- **Review one PR while online previews are disabled.** Add the `static-preview` label to a same-repository PR.
+  After `check`, CI deploys `wwm-preview-pr-<N>` using `apps/worker/wrangler.static-preview.json`, with only an
+  `ASSETS` binding. It runs no D1 migrations and has no data, room, AI or capture bindings. Rocket Lab, Race and
+  same-device touch controls are enabled; telemetry is off. The stable HTTPS URL appears in the PR comment,
+  job summary and GitHub environment `preview-pr-<N>`. CI checks `/api/health` against the exact PR head and
+  verifies the standalone Rocket document. Each push updates that host; closing the PR deletes it. Keep the
+  label until closure so cleanup can identify the static host. `WWM_PREVIEWS_ENABLED` can remain `false`.
 - **Open or update a PR.** After `check`, the `preview` job builds the web app, migrates `wwm-preview`, runs
   `wrangler preview --env production --name pr-<N>`, smoke-tests it, and posts or updates **one** PR comment with the
   Preview URL. The URL is HTTPS, so you can open it on a computer and scan the pairing QR code with a phone (tilt
