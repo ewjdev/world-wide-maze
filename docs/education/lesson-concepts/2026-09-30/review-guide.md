@@ -844,7 +844,7 @@ This seedling is in a dark cupboard and its soil is dry. Which plan gives it bot
 
 ### Question 1: A roof for the rain
 
-It is raining. Pip wants to hold a cover over his head. Which item can do that?
+It is raining. Pip wants to open a wide cover and hold it above him. Which item can do that?
 
 **Choices:** Brimmed hat · Umbrella
 
@@ -852,9 +852,9 @@ It is raining. Pip wants to hold a cover over his head. Which item can do that?
 
 **Accepted answer:** Umbrella. The open umbrella makes a wide cover above Pip. Falling rain hits the cover.
 
-**Hints:** Look at the falling drops. Pip wants a cover he can hold above him. → Imagine each item opened or worn. Which makes a wide roof above Pip? → The umbrella opens into a wide cover. Hold it above Pip to catch the falling drops.
+**Hints:** Look at the falling drops. Pip wants a cover that opens above him. → Imagine each item opened or worn. Which makes a wide roof above Pip? → The umbrella opens into a wide cover. Hold it above Pip to catch the falling drops.
 
-**What it reveals:** An easy functional match between visible rain and an overhead cover; the task wording distinguishes a hand-held umbrella from a worn hat.
+**What it reveals:** An easy functional match between visible rain and an opening overhead cover; the task wording distinguishes the umbrella from the rigid pictured hat.
 
 ### Question 2: A warmer layer
 

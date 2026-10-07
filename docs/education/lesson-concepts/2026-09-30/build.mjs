@@ -47,15 +47,60 @@ fs.writeFileSync(
   path.join(root, 'manifest.json'),
   `${JSON.stringify({ date: '2026-09-30', audience: 'Ages 4–6', mode: 'Standalone concept review; no game integration', lessons: lessons.map(({ id, title, rounds }) => ({ id, title, rounds: rounds.length })) }, null, 2)}\n`,
 );
-const guide = ['# Pip’s next adventures — visual lesson review', '', 'Ten independent lesson concepts for ages 4–6. Each lesson has one generated story illustration, five exact question diagrams, three-stage hints, and three questions for adult review. These are proposals; no game integration or child playtesting is claimed.', ''];
+const guide = [
+  '# Pip’s next adventures — visual lesson review',
+  '',
+  'Ten independent lesson concepts for ages 4–6. Each lesson has one generated story illustration, five exact question diagrams, three-stage hints, and three questions for adult review. These are proposals; no game integration or child playtesting is claimed.',
+  '',
+];
 for (const lesson of lessons) {
   const folder = path.join(root, 'lessons', lesson.id);
-  guide.push('## ' + lesson.number + '. ' + lesson.title, '', '**Learning goal:** ' + lesson.learningGoal, '', '**A child could say or show:** ' + lesson.childTakeaway, '', '![' + lesson.conceptImageAlt + '](' + path.join(folder, lesson.conceptImage) + ')', '', '**Pip’s introduction:** ' + lesson.introPip, '', '**Story:** ' + lesson.story, '');
+  guide.push(
+    '## ' + lesson.number + '. ' + lesson.title,
+    '',
+    '**Learning goal:** ' + lesson.learningGoal,
+    '',
+    '**A child could say or show:** ' + lesson.childTakeaway,
+    '',
+    '![' + lesson.conceptImageAlt + '](' + path.join(folder, lesson.conceptImage) + ')',
+    '',
+    '**Pip’s introduction:** ' + lesson.introPip,
+    '',
+    '**Story:** ' + lesson.story,
+    '',
+  );
   for (const [index, round] of lesson.rounds.entries()) {
-    const answer = round.choices.filter(choice => round.correctChoiceIds.includes(choice.id)).map(choice => choice.label).join(' or ');
-    guide.push('### Question ' + (index + 1) + ': ' + round.title, '', round.prompt, '', '**Choices:** ' + round.choices.map(choice => choice.label).join(' · '), '', '[View the exact question scene](' + path.join(folder, round.scene) + ')', '', '**Accepted answer:** ' + answer + '. ' + round.success, '', '**Hints:** ' + round.hints.join(' → '), '', '**What it reveals:** ' + round.whyThisRound, '');
+    const answer = round.choices
+      .filter((choice) => round.correctChoiceIds.includes(choice.id))
+      .map((choice) => choice.label)
+      .join(' or ');
+    guide.push(
+      '### Question ' + (index + 1) + ': ' + round.title,
+      '',
+      round.prompt,
+      '',
+      '**Choices:** ' + round.choices.map((choice) => choice.label).join(' · '),
+      '',
+      '[View the exact question scene](' + path.join(folder, round.scene) + ')',
+      '',
+      '**Accepted answer:** ' + answer + '. ' + round.success,
+      '',
+      '**Hints:** ' + round.hints.join(' → '),
+      '',
+      '**What it reveals:** ' + round.whyThisRound,
+      '',
+    );
   }
-  guide.push('### Questions for your review', '', ...lesson.reviewQuestions.map(question => '- ' + question), '', '**Away from the screen:** ' + lesson.offlineActivity, '', '[Complete teaching brief](' + path.join(folder, 'README.md') + ')', '');
+  guide.push(
+    '### Questions for your review',
+    '',
+    ...lesson.reviewQuestions.map((question) => '- ' + question),
+    '',
+    '**Away from the screen:** ' + lesson.offlineActivity,
+    '',
+    '[Complete teaching brief](' + path.join(folder, 'README.md') + ')',
+    '',
+  );
 }
 fs.writeFileSync(path.join(root, 'review-guide.md'), guide.join('\n') + '\n');
 console.log(
