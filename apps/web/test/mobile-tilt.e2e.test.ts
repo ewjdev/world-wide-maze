@@ -205,60 +205,67 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
         await context.close();
       }
     }, 80_000);
-    test('allowed permission with no readings explains the blocker and exposes a local report', async () => {
-      for (const viewport of [
-        { width: 390, height: 844 },
-        { width: 844, height: 390 },
-        { width: 1280, height: 900 },
-      ]) {
+    // Each viewport loads a complete game. Give each its own normal flow budget on the
+    // software-rendered CI runner, and always close it even if an assertion times out.
+    test.each([
+      { name: 'portrait', viewport: { width: 390, height: 844 } },
+      { name: 'landscape', viewport: { width: 844, height: 390 } },
+      { name: 'desktop', viewport: { width: 1280, height: 900 } },
+    ])(
+      'allowed permission with no readings explains the blocker and exposes a local report ($name)',
+      async ({ viewport }) => {
         const { page, context, traffic } = await phone({ noReadings: true, viewport });
-        await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-        await page.goto(`${base}/play/practice?offline=1`);
-        await page.getByTestId('motion-enable').click();
-        await page.waitForFunction(
-          () =>
-            document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') ===
-            'unavailable',
-        );
-        expect(await page.getByTestId('motion-blocker').textContent()).toContain(
-          'No direction readings arrived',
-        );
-        expect(await page.getByTestId('motion-permissions').textContent()).toContain(
-          'Direction: allowed · Motion: allowed',
-        );
-        await shot(page, `diagnostics-no-data-${viewport.width}`);
-        await page.getByText('Motion details', { exact: true }).click();
-        await page.getByTestId('motion-copy').focus();
-        await page.keyboard.press('Tab');
-        expect(
-          await page.getByTestId('motion-enable').evaluate((element) => element === document.activeElement),
-        ).toBe(true);
-        await page.keyboard.press('Shift+Tab');
-        expect(
-          await page.getByTestId('motion-copy').evaluate((element) => element === document.activeElement),
-        ).toBe(true);
-        await page.getByTestId('motion-copy').click();
-        const report = JSON.parse(await page.evaluate(() => navigator.clipboard.readText()));
-        expect(report).toMatchObject({
-          blocker: 'noOrientation',
-          orientationPermission: 'granted',
-          motionPermission: 'granted',
-          orientationEvents: 0,
-          motionEvents: 0,
-        });
-        expect(report.page).not.toContain('?');
-        await shot(page, `diagnostics-report-${viewport.width}`);
-        expect(
-          await page
-            .locator('[data-testid="motion-setup"]')
-            .evaluate((element) => element.scrollWidth <= element.clientWidth),
-        ).toBe(true);
-        await page.getByTestId('motion-joystick').click();
-        await phase(page, 'play');
-        expect(traffic).toEqual([]);
-        await context.close();
-      }
-    }, 80_000);
+        try {
+          await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+          await page.goto(`${base}/play/practice?offline=1`);
+          await page.getByTestId('motion-enable').click();
+          await page.waitForFunction(
+            () =>
+              document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') ===
+              'unavailable',
+          );
+          expect(await page.getByTestId('motion-blocker').textContent()).toContain(
+            'No direction readings arrived',
+          );
+          expect(await page.getByTestId('motion-permissions').textContent()).toContain(
+            'Direction: allowed · Motion: allowed',
+          );
+          await shot(page, `diagnostics-no-data-${viewport.width}`);
+          await page.getByText('Motion details', { exact: true }).click();
+          await page.getByTestId('motion-copy').focus();
+          await page.keyboard.press('Tab');
+          expect(
+            await page.getByTestId('motion-enable').evaluate((element) => element === document.activeElement),
+          ).toBe(true);
+          await page.keyboard.press('Shift+Tab');
+          expect(
+            await page.getByTestId('motion-copy').evaluate((element) => element === document.activeElement),
+          ).toBe(true);
+          await page.getByTestId('motion-copy').click();
+          const report = JSON.parse(await page.evaluate(() => navigator.clipboard.readText()));
+          expect(report).toMatchObject({
+            blocker: 'noOrientation',
+            orientationPermission: 'granted',
+            motionPermission: 'granted',
+            orientationEvents: 0,
+            motionEvents: 0,
+          });
+          expect(report.page).not.toContain('?');
+          await shot(page, `diagnostics-report-${viewport.width}`);
+          expect(
+            await page
+              .locator('[data-testid="motion-setup"]')
+              .evaluate((element) => element.scrollWidth <= element.clientWidth),
+          ).toBe(true);
+          await page.getByTestId('motion-joystick').click();
+          await phase(page, 'play');
+          expect(traffic).toEqual([]);
+        } finally {
+          await context.close();
+        }
+      },
+      80_000,
+    );
     test('denied motion offers joystick and remembers the explicit fallback across reload', async () => {
       const { page, context } = await phone({ denied: true });
       await page.goto(`${base}/play/practice?offline=1`);

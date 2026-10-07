@@ -26,6 +26,12 @@ Reload the same preview and enable tilt. If it still stops, use **Motion details
 
 ## Initial publication evidence
 
+### Merge preparation, 2026-10-07
+
+The subsequent manual run `37670540165` and PR-head run `37671394390` both failed only the diagnostic browser flow's aggregate 80-second timeout while loading three complete game viewports on the software-rendered GitHub runner. The PR run passed 1,630 other tests. Before merging, this flow was split into named portrait, landscape and desktop cases, each retaining the existing 80-second flow budget and every assertion. Each context now closes in `finally`, including on failure. No runtime behavior or production feature flag changed.
+
+The targeted three-case run with `CI=true` (software rendering, WebGPU disabled) passed in 32.02 seconds locally. Web typechecks, scoped lint and whitespace checks passed. The replacement PR-head CI must pass before merging; its current result is available on [PR #46](https://github.com/ewjdev/world-wide-maze/pull/46). Historical publication evidence below retains its original scope.
+
 Live readback confirmed HTTP 200 over HTTPS for home, Original, Race and health. HTML carries the strict existing CSP and self-origin accelerometer/gyroscope policy with magnetometer denied; API responses carry the API CSP. The static-policy smoke passed all eight checks, including extension ZIP/checksum, disabled dynamic work, pairing refusal and share refusal. Browser contexts on both live routes confirmed no permission request before Enable, synthetic granted tilt entry, denied-permission joystick fallback and no online API traffic. Original recorded exactly one Jump from a released CDP touch at zero simulation ticks; both games paused after readings stopped. These are software checks using Chromium and synthetic readings, not physical acceptance.
 
 ## Implemented behavior
