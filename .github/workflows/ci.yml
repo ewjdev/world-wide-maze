@@ -134,7 +134,12 @@ jobs:
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews
 
+      - name: Refuse online bindings and production routing in the manual static host
+        if: github.event_name == 'workflow_dispatch'
+        run: node infra/scripts/check-static-preview-config.mjs
+
       - name: D1 migrations (shared preview database)
+        if: github.event_name == 'pull_request'
         working-directory: apps/worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -150,12 +155,20 @@ jobs:
           WENV: ${{ steps.names.outputs.env }}
           NAME: ${{ steps.names.outputs.preview }}
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          MANUAL: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           set -o pipefail
-          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "Preview head $SHA" --json)"
-          printf '%s\n' "$output"
-          # wrangler prints asset-upload progress before the JSON even with --json: parse from the first line that is "{".
-          url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
+          if [ "$MANUAL" = 'true' ]; then
+            # Production preview hosts stay closed. This dedicated Worker has only an ASSETS binding.
+            output="$(pnpm exec wrangler deploy --config wrangler.static-preview.json --name "wwm-preview-$NAME" --var "PREVIEW_COMMIT:$SHA" --message "Preview head $SHA")"
+            printf '%s\n' "$output"
+            url="$(printf '%s\n' "$output" | sed -nE 's/^[[:space:]]*(https:\/\/[A-Za-z0-9.-]+\.workers\.dev)[[:space:]]*$/\1/p' | tail -n 1)"
+          else
+            output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "Preview head $SHA" --json)"
+            printf '%s\n' "$output"
+            # wrangler prints upload progress before JSON: parse from the first line that is "{".
+            url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
+          fi
           [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
           echo "url=${url%/}" >> "$GITHUB_OUTPUT"
 
@@ -164,6 +177,13 @@ jobs:
         env:
           URL: ${{ steps.preview.outputs.url }}
         run: node infra/scripts/smoke.mjs "$URL" --expect-static
+
+      - name: Verify the manual preview commit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.sha }}
+        run: curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha'
 
       - name: Sticky PR comment
         if: always() && github.event_name == 'pull_request' && steps.preview.outputs.url != ''

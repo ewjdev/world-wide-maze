@@ -42,6 +42,8 @@ The fresh [UI review](ui-review.md) has final disposition **ship**, with all thr
 
 The earlier lesson-review snapshot initially blocked repository lint. Its JSON/scripts were formatted and its dynamic template received meaningful initial headings/links, semantic question navigation and a fieldset. Generated gallery/guide were rebuilt from the existing authored lesson data. No lesson was integrated into gameplay.
 
+The first GitHub run passed its full check and standalone education acceptance, but the Worker Preview deployment returned an empty URL list: the production Worker's preview hosts are deliberately disabled. The manual workflow now uses a dedicated static Worker (`wwm-preview-manual-mobile-tilt`) with only an ASSETS binding. Dynamic paths are denied before reading bodies or assets; health reports the exact deployed commit. The production host flags stay disabled, and automatic PR previews retain their existing policy. The dedicated host does not run migrations or bind preview/production databases, rooms, AI or capture services. Its targeted security/config tests, worker typechecks and Wrangler dry-run validate this boundary.
+
 ## Testing the candidate
 
 Open the preview directly in Safari or Chrome, rather than an embedded panel. Use Original `/play/practice?offline=1` and Race `/race/island-leap`. Enable tilt, allow motion if prompted, gently move both axes, then hold the desired grip still. Tilt to drive and tap empty gameplay space to jump.

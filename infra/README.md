@@ -135,13 +135,19 @@ deploy is never interrupted.
   required reviewers. Closing the PR deletes its Preview (`wrangler preview delete`).
 - **Explicit test preview.** With a trusted branch pushed, run
   `gh workflow run ci.yml --ref <branch> -f deploy_preview=true -f preview_name=manual-mobile-tilt`.
-  This opts into one isolated static preview without enabling automatic PR previews globally.
+  This opts into one isolated static preview without enabling automatic PR previews globally. It deploys a
+  dedicated `wwm-preview-<preview_name>` Worker using `wrangler.static-preview.json`, with only an ASSETS binding.
+  Its entry point denies all dynamic paths before accessing assets or request bodies; `/api/health` identifies
+  the exact deployed commit. It has no storage, AI, capture, room or production bindings and uses no D1 migration.
+  The production Worker's `workers_dev=false` and `preview_urls=false` remain in force. This separate host is
+  needed because the production Worker has no public Preview host configured; opening its Preview URLs would
+  also reopen old production versions outside the zone's edge rules.
   The workflow summary contains the HTTPS Original/Race links and commit. Dynamic APIs, paid captures,
   pairing and telemetry stay disabled; test `/play/practice?offline=1` and `/race/island-leap` at top level.
   Mobile, tilt and Race flags are explicitly enabled in the preview; production keeps tilt disabled pending
   device qualification and activation approval. Updating the same name replaces its candidate.
-  Manual previews persist until explicitly deleted with `wrangler preview delete --env production
-  --name manual-mobile-tilt --skip-confirmation`; PR-close cleanup only owns `pr-<N>` names.
+  Manual static hosts persist until explicitly deleted with `wrangler delete --config wrangler.static-preview.json
+  --name wwm-preview-<preview_name>`. Automatic PR Previews keep the existing deployment and cleanup path.
 - **Permissions.** The workflow defaults to no token permissions; each job asks for `contents: read`, plus
   `pull-requests: write` for the Preview comment. The Cloudflare secrets reach only the migrate / deploy / preview /
   delete steps.
