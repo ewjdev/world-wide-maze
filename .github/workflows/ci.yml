@@ -1,16 +1,18 @@
 # The one pipeline (CI stability, Phase 17 follow-up): `pnpm check` runs exactly once per PR head and once per push
 # to `main`, and everything that deploys `needs:` that single check job.
 #
-#   pull_request opened / synchronize / reopened → check → preview (Worker Preview `pr-<N>`, smoke test, sticky comment)
-#   pull_request closed                          → preview-cleanup (`wrangler preview delete`)
+#   pull_request opened / synchronize / reopened → check → preview (stable URL, smoke test, sticky comment)
+#   pull_request labeled static-preview          → check → assets-only preview
+#   pull_request closed                          → preview-cleanup (delete the PR host)
 #   push to main (every merged PR)               → check → deploy-production (D1 migrations, `wrangler deploy`, smoke)
 #   workflow_dispatch on main                    → check → deploy-production (re-deploy the current main by hand)
 #
 # Branch pushes without a PR run nothing: open a (draft) PR to get CI. There is no second trigger on `push` for PR
 # branches, so a PR push is never checked twice.
 #
-# Deploy jobs are inert until the repository variables WWM_PREVIEWS_ENABLED / WWM_DEPLOY_ENABLED are "true"
-# (infra/README.md, one-time setup); without them only `check` runs. PRs from forks get no secrets and no Preview.
+# Online previews need WWM_PREVIEWS_ENABLED=true. The static-preview label opts a same-repository PR into an
+# assets-only review host even while online previews are disabled. Production needs WWM_DEPLOY_ENABLED=true.
+# PRs from forks get no secrets and no Preview.
 #
 # Secrets: CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID (repository secrets; production may also use `production`
 # environment secrets), exposed only to the steps that talk to Cloudflare. Worker secrets (IP_HASH_SALT,
@@ -20,7 +22,7 @@ name: CI
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened, closed, labeled]
   push:
     branches: [main]
   workflow_dispatch:
@@ -35,7 +37,7 @@ permissions: {}
 
 jobs:
   check:
-    if: github.event.action != 'closed'
+    if: github.event.action != 'closed' && (github.event.action != 'labeled' || github.event.label.name == 'static-preview')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -69,7 +71,7 @@ jobs:
           pnpm --filter @wwm/web preview --host 127.0.0.1 --port 4173 > /tmp/wwm-rocket-preview.log 2>&1 &
           rocket_pid=$!
           trap 'kill "$rocket_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 30); do
+          for _attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4173/education/lessons/rocket-lab/ > /dev/null; then break; fi
             sleep 1
           done
@@ -83,27 +85,33 @@ jobs:
           pnpm --filter @wwm/education preview > /tmp/wwm-education-preview.log 2>&1 &
           education_pid=$!
           trap 'kill "$education_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 30); do
+          for _attempt in $(seq 1 30); do
             if curl --fail --silent http://127.0.0.1:4174/ > /dev/null; then break; fi
             sleep 1
           done
           WWM_EDUCATION_E2E_BASE=http://127.0.0.1:4174 pnpm vitest run --project @wwm/education education.e2e
 
-  # ── PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
-  # (wrangler.jsonc env.production.previews).
+  # PRs labeled static-preview use a dedicated assets-only Worker; other previews use the online preview config.
   preview:
     needs: check
     if: >-
       github.event_name == 'pull_request' && github.event.action != 'closed' &&
-      vars.WWM_PREVIEWS_ENABLED == 'true' &&
+      (vars.WWM_PREVIEWS_ENABLED == 'true' || contains(github.event.pull_request.labels.*.name, 'static-preview')) &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
       pull-requests: write # the sticky comment
+    environment:
+      name: preview-pr-${{ github.event.pull_request.number }}
+      url: ${{ steps.preview.outputs.url }}
+    env:
+      STATIC_PREVIEW: ${{ contains(github.event.pull_request.labels.*.name, 'static-preview') }}
     steps:
       - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
@@ -129,9 +137,15 @@ jobs:
           VITE_MOBILE_CONTROLS_ENABLED: "true"
 
       - name: Refuse placeholder ids / Previews bound to production data
+        if: env.STATIC_PREVIEW != 'true'
         run: node infra/scripts/check-deploy-config.mjs previews
 
+      - name: Refuse online bindings and production routing in the static host
+        if: env.STATIC_PREVIEW == 'true'
+        run: node infra/scripts/check-static-preview-config.mjs
+
       - name: D1 migrations (shared preview database)
+        if: env.STATIC_PREVIEW != 'true'
         working-directory: apps/worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -149,10 +163,16 @@ jobs:
           SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           set -o pipefail
-          output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
-          printf '%s\n' "$output"
-          # wrangler prints asset-upload progress before the JSON even with --json: parse from the first line that is "{".
-          url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
+          if [ "$STATIC_PREVIEW" = 'true' ]; then
+            output="$(pnpm exec wrangler deploy --config wrangler.static-preview.json --name "wwm-preview-$NAME" --var "PREVIEW_COMMIT:$SHA" --message "PR head $SHA")"
+            printf '%s\n' "$output"
+            url="$(printf '%s\n' "$output" | sed -nE 's/^[[:space:]]*(https:\/\/[A-Za-z0-9.-]+\.workers\.dev)[[:space:]]*$/\1/p' | tail -n 1)"
+          else
+            output="$(pnpm exec wrangler preview --env "$WENV" --name "$NAME" --message "PR head $SHA" --json)"
+            printf '%s\n' "$output"
+            # wrangler prints asset-upload progress before JSON: parse from the first line that is "{".
+            url="$(printf '%s\n' "$output" | sed -n '/^{$/,$p' | jq -er '.preview.urls[0]')"
+          fi
           [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
           echo "url=${url%/}" >> "$GITHUB_OUTPUT"
 
@@ -161,6 +181,26 @@ jobs:
         env:
           URL: ${{ steps.preview.outputs.url }}
         run: node infra/scripts/smoke.mjs "$URL" --expect-static
+
+      - name: Verify the static preview commit and Rocket lesson assets
+        if: env.STATIC_PREVIEW == 'true'
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha'
+          curl --fail --silent "$URL/education/lessons/rocket-lab/" | grep 'data-learning-activity="rocket-lab"' > /dev/null
+
+      - name: Preview review links
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          printf '%s\n' "## PR preview" "" \
+            "- Commit: $SHA" \
+            "- Rocket Lab: $URL/education/lessons/rocket-lab/" \
+            "- Rocket maze: $URL/play/practice?learn=rocket-lab" \
+            "- Static practice: $URL/play/practice?offline=1" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Sticky PR comment
         if: always() && steps.preview.outputs.url != ''
@@ -174,14 +214,21 @@ jobs:
           SMOKE: ${{ steps.smoke.outcome }}
         run: |
           marker='<!-- wwm-worker-preview -->'
+          if [ "$STATIC_PREVIEW" = 'true' ]; then
+            isolation='Assets-only Worker: no D1, R2, KV, Durable Objects, AI or capture bindings. Deleted when the PR closes.'
+          else
+            isolation='Separate from production: preview D1/R2/KV and own Durable Objects; telemetry and paid operations off. Deleted when the PR closes.'
+          fi
           body="$(printf '%s\n' "$marker" \
             "### Worker Preview \`$NAME\`" \
             "" \
             "**$URL**" \
             "" \
             "- Commit: $SHA · smoke test: **$SMOKE**" \
+            "- Rocket Lab: $URL/education/lessons/rocket-lab/" \
+            "- Rocket maze: $URL/play/practice?learn=rocket-lab" \
             "- Static practice: $URL/play/practice?offline=1. Dynamic APIs and phone pairing are deliberately disabled in previews to avoid separate spending allowances." \
-            "- Separate from production: preview D1/R2/KV, own Durable Objects (rooms, jobs), \`ROOM_STATS=0\`, telemetry and paid operations off. Deleted when the PR closes.")"
+            "- $isolation")"
           id="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
             --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | tail -n 1)"
           if [ -n "$id" ]; then
@@ -193,7 +240,7 @@ jobs:
   preview-cleanup:
     if: >-
       github.event_name == 'pull_request' && github.event.action == 'closed' &&
-      vars.WWM_PREVIEWS_ENABLED == 'true' &&
+      (vars.WWM_PREVIEWS_ENABLED == 'true' || contains(github.event.pull_request.labels.*.name, 'static-preview')) &&
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -216,10 +263,15 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           PR: ${{ github.event.pull_request.number }}
+          STATIC_PREVIEW: ${{ contains(github.event.pull_request.labels.*.name, 'static-preview') }}
         run: |
           wenv="$(jq -er .wranglerEnv ../../infra/cloudflare.config.json)"
           name="$(jq -er .previews.namePrefix ../../infra/cloudflare.config.json)${PR}"
-          pnpm exec wrangler preview delete --env "$wenv" --name "$name" --skip-confirmation
+          if [ "$STATIC_PREVIEW" = 'true' ]; then
+            pnpm exec wrangler delete "wwm-preview-$name" --force
+          else
+            pnpm exec wrangler preview delete --env "$wenv" --name "$name" --skip-confirmation
+          fi
 
   # ── Production (Phase 12, reworked in Phase 17): every push to `main` (i.e. every merged PR), after the check above
   # passed on that exact commit. Runs in the GitHub Environment `production`: add "Required reviewers" there if every
