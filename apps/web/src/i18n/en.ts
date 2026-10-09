@@ -58,6 +58,9 @@ export const en = {
     stars: '{{count}} of 5 stars difficulty',
   },
   title: {
+    reload: 'Reload game',
+    preparing: 'Preparing your game…',
+    loadError: 'The game could not load. Check your connection and try again.',
     caption: 'Turn your favorite website into a 3D maze. Play with your PC and your phone.', // E: title.caption
     start: 'Start',
     about: 'About the original',
@@ -299,6 +302,7 @@ export const en = {
     resumed: 'Reconnected',
   },
   settings: {
+    graphicsHint: 'Auto adapts for smooth play. Medium and High add glow.',
     graphics: 'Graphics',
     graphicsOptions: { auto: 'Auto', low: 'Low', medium: 'Medium', high: 'High' },
     sensitivity: 'Tilt sensitivity',

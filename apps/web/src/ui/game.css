@@ -1994,3 +1994,58 @@
     display: none;
   }
 }
+
+/* Static facets keep the existing palette while the game module is deferred. */
+.wwm-home-backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #f8f8f8;
+}
+.wwm-home-backdrop i {
+  position: absolute;
+  width: 80vw;
+  height: 80vh;
+  clip-path: polygon(0 0, 100% 30%, 35% 100%);
+  opacity: 0.3;
+}
+.wwm-home-backdrop i:nth-child(1) {
+  background: #acc4d0;
+  top: -24%;
+  right: -16%;
+}
+.wwm-home-backdrop i:nth-child(2) {
+  background: #edc9b4;
+  bottom: -40%;
+  left: -20%;
+  transform: rotate(35deg);
+}
+.wwm-home-backdrop i:nth-child(3) {
+  background: #b8ccb4;
+  bottom: -45%;
+  right: -30%;
+  transform: rotate(-30deg);
+}
+.wwm-home-backdrop i:nth-child(4) {
+  background: #cabcc3;
+  top: -48%;
+  left: -40%;
+  transform: rotate(20deg);
+}
+.wwm-home-status {
+  position: absolute;
+  left: 50%;
+  top: 67%;
+  transform: translateX(-50%);
+  width: min(90%, 36rem);
+  text-align: center;
+  color: var(--ink-2);
+}
+.wwm-field select {
+  min-height: 44px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  padding: 4px 8px;
+}

@@ -260,6 +260,9 @@ export interface GameTestHooks {
 export interface GameOptions {
   origin: string;
   audio: AudioManager;
+  /** The lightweight home owns its gesture-unlocked audio across the runtime handoff. */
+  disposeAudio?: boolean;
+  startIntent?: () => boolean;
   boards: GameBoards;
   /**
    * Physics driver. N (08b): `lockstep` (main thread, tick-exact; default) records the exact InputSample stream
@@ -610,9 +613,10 @@ export class Game {
     });
 
     try {
+      const initialQuality = this.#opts.test?.quality ?? this.#view.graphics;
       const engine = await createEngine({
         canvas,
-        quality: this.#opts.test?.quality ?? this.#view.graphics,
+        quality: initialQuality,
         titleProfile: true,
         reducedMotion: this.#opts.reducedMotion,
         forceWebGL: this.#opts.forceWebGL,
@@ -623,6 +627,8 @@ export class Game {
         return;
       }
       this.#engine = engine;
+      if (!this.#opts.test?.quality && this.#view.graphics !== initialQuality)
+        engine.setQuality(this.#view.graphics);
       this.#driverKind = this.#opts.test?.forceWorker
         ? 'worker'
         : this.#opts.test?.lockstep || this.#replay
@@ -643,6 +649,7 @@ export class Game {
       this.#setInputMode(this.#view.inputMode ?? this.#defaultInputMode());
       this.#beginRun(this.#opts.localRun, 0);
     } else if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
+    else if (this.#opts.startIntent?.()) this.start();
     else void this.#loadAttract();
   }
 
@@ -693,7 +700,7 @@ export class Game {
     this.#pool.dispose();
     this.#engineImage?.close();
     this.#canvas?.remove();
-    this.audio.dispose();
+    if (this.#opts.disposeAudio !== false) this.audio.dispose();
     this.#listeners.clear();
     this.learning.clear();
   }
@@ -1034,6 +1041,8 @@ export class Game {
   // ── actions (UI) ──────────────────────────────────────────────────────────────────────────────────────
 
   start(): void {
+    if (this.#view.phase !== 'title' || !this.#view.engineReady) return;
+    this.#attractAbort?.abort();
     if (this.#view.phase === 'title') telemetry.track({ name: 'start_clicked' });
     this.audio.unlock();
     this.audio.play('click');

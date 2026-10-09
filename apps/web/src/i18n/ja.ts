@@ -54,6 +54,9 @@ export const ja: Resources = {
     stars: '難易度 5 段階中 {{count}}',
   },
   title: {
+    reload: '再読み込み',
+    preparing: 'ゲームを準備しています…',
+    loadError: 'ゲームを読み込めませんでした。接続を確認して、もう一度お試しください。',
     caption: 'お好きなサイトを立体迷路に！ PC とスマホで遊ぶ、ボール転がしゲーム。', // E
     start: 'スタート',
     about: 'オリジナルについて',
@@ -291,6 +294,7 @@ export const ja: Resources = {
     resumed: '再接続しました',
   },
   settings: {
+    graphicsHint: '自動は滑らかさを優先します。中と高は発光効果を加えます。',
     graphics: '描画品質',
     graphicsOptions: { auto: '自動', low: '低', medium: '中', high: '高' },
     sensitivity: '傾きの感度',
