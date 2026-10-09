@@ -142,7 +142,9 @@ Auto quality ladder (`QualityLadder`): a rolling 2 s mean frame time, 1.5 s warm
 - tier 3 below 30 fps: glow off (E)
 - tier 4 below 24 fps: cheap background, with no wires, dots or motes (N)
 
-It recovers one tier after 6 s above threshold + 10 fps (N; 2013 only went down). DPR is clamped to 2 (N). `quality: 'high' | 'medium' | 'low'` pins tier 0 / 1 / 3.
+Auto starts at tier 3 and recovers one tier after 6 s above threshold + 10 fps (N; 2013 only went down). Auto retains a single-color graph with bloom disabled: enabling emissive MRT during active play otherwise recompiles scene materials and introduces a first-recovery hitch. Resolution, FXAA, reflections and background detail still adapt. `quality: 'high' | 'medium' | 'low'` pins tier 0 / 1 / 3; explicit Medium and High retain bloom. All tiers cap backing pixels (High/Medium 2560 × 1440, Low 1920 × 1080, minimum 1280 × 1024) and DPR is clamped to 2.
+
+`titleProfile` bounds Auto's title to tier 3 or lower without resetting the gameplay ladder. Apply the effective pixel ratio before sizing the renderer, including recovery. `needsFrame()` reports dirty scene state and pending loading/compilation, camera blends, intro/spawn/tweens and settling map scale; the home can retain its canvas once this work completes. Input and simulation scheduling remain owned by the game, and active phases continue rendering normally.
 
 ## Implementation notes
 - `frame()` may advance the renderer's private node frame (`renderer._nodes.nodeFrame`). Pass nodes re-render only once per node-frame id, and the only public code path that bumps it is the renderer's own rAF loop (`setAnimationLoop` and `info.autoReset` don't help). `src/three-private.ts` compares the public `renderer.info.frame` with the previous `frame()`: in a normal one-frame-per-rAF loop the private field is never touched, and only extra frames within one rAF (e.g. the manual clock) advance it. If the field disappears, it warns once and degrades. `test/polish.test.ts` fails loudly on a three.js upgrade that moves it.

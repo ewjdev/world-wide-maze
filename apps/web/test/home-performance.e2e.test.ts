@@ -188,6 +188,7 @@ describe.skipIf(!available)('progressive home', () => {
     expect(await page.evaluate(() => window.homeProbe.polls)).toBeGreaterThan(polls);
     await page.getByTestId('start').click();
     await page.waitForFunction(() => window.__wwmGame?.getView().phase !== 'title');
+    await page.waitForFunction((previous) => window.homeProbe.frames > previous, resized);
     expect(await page.evaluate(() => window.homeProbe.frames)).toBeGreaterThan(resized);
     expect(errors).toEqual([]);
     await context.close();

@@ -25,7 +25,13 @@ export function TitleLanding({
       <div className="wwm-title__block">
         <Logo />
         <p className="wwm-title__caption">{t('title.caption')}</p>
-        <ModeNav active={new URLSearchParams(location.search).has('learn') ? 'education' : 'original'} />
+        <ModeNav
+          active={
+            new URLSearchParams(typeof location === 'undefined' ? '' : location.search).has('learn')
+              ? 'education'
+              : 'original'
+          }
+        />
         <div className="wwm-title__actions">
           <button
             ref={start}
