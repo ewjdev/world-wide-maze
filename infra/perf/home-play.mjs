@@ -146,6 +146,17 @@ try {
         engineCpuMs: stat(data.raw.cpu),
         mainThreadBusyPct: (100 * (after.TaskDuration - before.TaskDuration)) / (elapsed / 1000),
       };
+      // Keep menu interactions outside the steady-play observation window.
+      if (data.state.phase === 'play') {
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => window.__wwmGame.getView().phase === 'paused');
+        await page.waitForFunction(() => window.__play.inputs.at(-1)?.nextFrame);
+        result.pauseInput = await page.evaluate(() => window.__play.inputs.at(-1));
+        await page.keyboard.press('Escape');
+        await page.waitForFunction(() => window.__wwmGame.getView().phase === 'play');
+        await page.waitForFunction(() => window.__play.inputs.at(-1)?.nextFrame);
+        result.resumeInput = await page.evaluate(() => window.__play.inputs.at(-1));
+      }
       report.runs.push(result);
       save();
       console.log(
