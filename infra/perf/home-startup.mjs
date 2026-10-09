@@ -11,7 +11,7 @@ const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const servedBuild = await verifyHomeBuild(base);
 function instrument() {
   localStorage.setItem('wwm.analytics.preference', 'off');
-  const p = (window.__startup = {
+  window.__startup = {
     phases: [],
     long: [],
     events: [],
@@ -19,7 +19,8 @@ function instrument() {
     paint: [],
     lcp: [],
     spans: [],
-  });
+  };
+  const p = window.__startup;
   new PerformanceObserver((l) =>
     p.long.push(...l.getEntries().map((e) => ({ at: e.startTime, ms: e.duration }))),
   ).observe({ type: 'longtask', buffered: true });
@@ -40,16 +41,14 @@ function instrument() {
   ).observe({ type: 'layout-shift', buffered: true });
   new PerformanceObserver((l) =>
     p.events.push(
-      ...l
-        .getEntries()
-        .map((e) => ({
-          name: e.name,
-          at: e.startTime,
-          ms: e.duration,
-          processingStart: e.processingStart,
-          processingEnd: e.processingEnd,
-          id: e.interactionId,
-        })),
+      ...l.getEntries().map((e) => ({
+        name: e.name,
+        at: e.startTime,
+        ms: e.duration,
+        processingStart: e.processingStart,
+        processingEnd: e.processingEnd,
+        id: e.interactionId,
+      })),
     ),
   ).observe({ type: 'event', buffered: true, durationThreshold: 16 });
   const watch = new MutationObserver(() => {
@@ -80,9 +79,6 @@ function instrument() {
           engine.loadStage = async function (...args) {
             const span = { name: 'loadStage', at: performance.now() };
             p.spans.push(span);
-            const specs = process.env.AUDIT_CASES
-              ? allSpecs.filter((s) => process.env.AUDIT_CASES.split(',').includes(s.name))
-              : allSpecs;
             try {
               return await orig.apply(this, args);
             } finally {
@@ -104,7 +100,7 @@ const report = {
   note: 'Real live network, fresh isolated context per pair; warm is same-context reload. All CPU limits start before navigation. No sampling profiler. MutationObserver/PerformanceObservers and loadStage timing wrappers. Event duration is scripted lab interaction latency, not field INP.',
   runs: [],
 };
-const save = () => writeFileSync(out + '/startup.json', JSON.stringify(report, null, 2));
+const save = () => writeFileSync(`${out}/startup.json`, JSON.stringify(report, null, 2));
 const allSpecs = [
   { name: 'desktop-native', viewport: { width: 1440, height: 900 }, dpr: 2, cpu: 1 },
   {
@@ -125,6 +121,9 @@ const allSpecs = [
     mobile: true,
   },
 ];
+const specs = process.env.AUDIT_CASES
+  ? allSpecs.filter((s) => process.env.AUDIT_CASES.split(',').includes(s.name))
+  : allSpecs;
 try {
   for (const spec of specs)
     for (let repeat = 0; repeat < Number(process.env.AUDIT_REPEATS ?? 3); repeat++) {

@@ -27,7 +27,8 @@ try {
         localStorage.setItem('wwm.howtoSeen', '1');
         localStorage.setItem('wwm.tutorialDone', '1');
         window.__WWM_TEST__ = { skipIntro: true, noAutoPause: true };
-        const p = (window.__homeControl = { phases: [], samples: [], frames: 0, dimensions: [], events: [] });
+        window.__homeControl = { phases: [], samples: [], frames: 0, dimensions: [], events: [] };
+        const p = window.__homeControl;
         for (const name of ['width', 'height']) {
           const descriptor = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, name);
           Object.defineProperty(HTMLCanvasElement.prototype, name, {

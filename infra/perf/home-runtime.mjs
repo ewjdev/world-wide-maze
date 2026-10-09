@@ -37,7 +37,7 @@ const report = {
   runs: [],
   assets: {},
 };
-const save = () => writeFileSync(out + '/runtime.json', JSON.stringify(report, null, 2));
+const save = () => writeFileSync(`${out}/runtime.json`, JSON.stringify(report, null, 2));
 const allSpecs = [
   { name: 'home-auto-dpr2', quality: 'auto', dpr: 2 },
   { name: 'home-medium-dpr2', quality: 'medium', dpr: 2 },
@@ -70,7 +70,7 @@ try {
           try {
             const b = await response.body();
             const sha = createHash('sha256').update(b).digest('hex');
-            const local = process.cwd() + '/apps/web/dist/assets/' + url.split('/').at(-1);
+            const local = `${process.cwd()}/apps/web/dist/assets/${url.split('/').at(-1)}`;
             report.assets[url] = {
               decodedBytes: b.length,
               sha256: sha,

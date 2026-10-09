@@ -29,7 +29,7 @@ const report = {
   note: 'Same 8-second scripted arrow cycle per run after 3-second settle, skip intro/no autopause, muted, DPR2. CDP CPU throttle applied after stage compilation. Direction changes and event observers are diagnostic; this is not deterministic replay or physical-device acceptance.',
   runs: [],
 };
-const save = () => writeFileSync(out + '/play.json', JSON.stringify(report, null, 2));
+const save = () => writeFileSync(`${out}/play.json`, JSON.stringify(report, null, 2));
 const allSpecs = [
   { name: 'play-auto-native', quality: 'auto', cpu: 1 },
   { name: 'play-low-native', quality: 'low', cpu: 1 },
@@ -60,29 +60,28 @@ try {
       await page.waitForTimeout(3000);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: spec.cpu });
       await page.evaluate(() => {
-        const p = (window.__play = {
+        window.__play = {
           at: performance.now(),
           cpu: [],
           frames: [],
           long: [],
           events: [],
           inputs: [],
-        });
+        };
+        const p = window.__play;
         new PerformanceObserver((l) =>
           p.long.push(...l.getEntries().map((x) => ({ at: x.startTime, ms: x.duration }))),
         ).observe({ type: 'longtask' });
         new PerformanceObserver((l) =>
           p.events.push(
-            ...l
-              .getEntries()
-              .map((e) => ({
-                name: e.name,
-                id: e.interactionId,
-                at: e.startTime,
-                ms: e.duration,
-                processingStart: e.processingStart,
-                processingEnd: e.processingEnd,
-              })),
+            ...l.getEntries().map((e) => ({
+              name: e.name,
+              id: e.interactionId,
+              at: e.startTime,
+              ms: e.duration,
+              processingStart: e.processingStart,
+              processingEnd: e.processingEnd,
+            })),
           ),
         ).observe({ type: 'event', durationThreshold: 16 });
         let last;
