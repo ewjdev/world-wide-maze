@@ -26,7 +26,7 @@ const report = {
   browser: browser.version(),
   url: new URL('/play/fixture-hn-front?offline=1', base).href,
   servedBuild,
-  note: 'Same 8-second scripted arrow cycle per run after 3-second settle, skip intro/no autopause, muted, DPR2. CDP CPU throttle applied after stage compilation. Direction changes and event observers are diagnostic; this is not deterministic replay or physical-device acceptance.',
+  note: 'Same configured-duration scripted arrow cycle per run after 3-second settle, skip intro/no autopause, muted, DPR2. CDP CPU throttle applied after stage compilation. Direction changes and event observers are diagnostic; this is not deterministic replay or physical-device acceptance.',
   runs: [],
 };
 const save = () => writeFileSync(`${out}/play.json`, JSON.stringify(report, null, 2));
@@ -115,7 +115,7 @@ try {
       const start = Date.now();
       const samples = [];
       await page.keyboard.down('Space');
-      for (let i = 0; i < 8; i++) {
+      for (let i = 0; i < Number(process.env.AUDIT_SECONDS ?? 8); i++) {
         const key = ['ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight'][i % 4];
         await page.keyboard.down(key);
         await page.waitForTimeout(1000);

@@ -269,6 +269,12 @@ try {
     if (!selected.length) throw new Error('No matching frame diagnostic scenario');
     if (process.env.AUDIT_FRAME_THROTTLE)
       report.diagnosticSelection = { frameThrottle: process.env.AUDIT_FRAME_THROTTLE };
+    if (process.env.AUDIT_SECONDS) {
+      const seconds = Number(process.env.AUDIT_SECONDS);
+      if (!Number.isInteger(seconds) || seconds < 1 || seconds > 60)
+        throw new Error('AUDIT_SECONDS must be an integer from 1 to 60');
+      for (const spec of selected) spec.seconds = seconds;
+    }
     for (const spec of selected) {
       let ctx;
       try {

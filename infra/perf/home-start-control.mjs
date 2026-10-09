@@ -29,6 +29,19 @@ try {
         window.__WWM_TEST__ = { skipIntro: true, noAutoPause: true };
         window.__homeControl = { phases: [], samples: [], frames: 0, dimensions: [], events: [] };
         const p = window.__homeControl;
+        addEventListener(
+          'click',
+          (event) => {
+            if (!event.target.closest?.('[data-testid=start]')) return;
+            p.clickAt = performance.now();
+            requestAnimationFrame(() => {
+              p.feedbackFrameAt = performance.now();
+              p.feedback =
+                document.querySelector('[role=status]')?.textContent ?? document.body.dataset.phase;
+            });
+          },
+          { capture: true },
+        );
         for (const name of ['width', 'height']) {
           const descriptor = Object.getOwnPropertyDescriptor(HTMLCanvasElement.prototype, name);
           Object.defineProperty(HTMLCanvasElement.prototype, name, {
@@ -122,13 +135,19 @@ try {
       await page.waitForFunction(() => window.__homeControl.playAt, { timeout: 90000 });
       await page.keyboard.down('Space');
       await page.keyboard.down('ArrowUp');
+      await page.keyboard.down('ShiftLeft');
+      await page.waitForFunction(() =>
+        window.__wwmGame.debugRecording().some((s) => s.power && s.jump && s.tiltZ !== 0),
+      );
       await page.waitForTimeout(150);
       const controlled = await page.evaluate(() => ({
         at: performance.now(),
-        control: window.__wwmGame.engine.debug().scene !== null,
+        control: window.__wwmGame.debugRecording().some((s) => s.power && s.jump && s.tiltZ !== 0),
+        receivedInput: window.__wwmGame.debugRecording().find((s) => s.power && s.jump && s.tiltZ !== 0),
         state: window.__wwmGame.debugState(),
         probe: window.__homeControl,
       }));
+      await page.keyboard.up('ShiftLeft');
       await page.keyboard.up('ArrowUp');
       await page.keyboard.up('Space');
       report.runs.push({
@@ -138,6 +157,7 @@ try {
         ...controlled,
         navigationToPlayMs: controlled.probe.playAt,
         startToPlayMs: controlled.probe.playAt - controlled.probe.startAt,
+        feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
         sampledPeakBytes: Math.max(...controlled.probe.samples.map((s) => s.bytes ?? 0)),
       });
       save();
@@ -147,6 +167,7 @@ try {
           repeat,
           navigationToPlayMs: controlled.probe.playAt,
           startToPlayMs: controlled.probe.playAt - controlled.probe.startAt,
+          feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
           initialTier: controlled.probe.initialTier,
           peakMiB: report.runs.at(-1).sampledPeakBytes / 1048576,
           errors,
