@@ -86,7 +86,7 @@ export function HomePage() {
     const firstFrame = requestAnimationFrame(() => {
       secondFrame = requestAnimationFrame(() => {
         timer = window.setTimeout(() => {
-          void load();
+          if (!intent.current) void load();
         }, 800);
       });
     });
@@ -111,7 +111,12 @@ export function HomePage() {
     else {
       audio.unlock(); // Synchronous in this gesture, before any import/await.
       setPreparing(true);
-      void load();
+      // Fast local/cached imports can evaluate before the first feedback paint. Start them after it.
+      requestAnimationFrame(() => {
+        window.setTimeout(() => {
+          if (alive.current) void load();
+        }, 0);
+      });
     }
     // Start is explicit play intent. Fetch/compile physics in parallel with the deferred game,
     // after the preparing state has had a paint opportunity. Worker mode owns another realm.
