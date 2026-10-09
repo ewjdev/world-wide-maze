@@ -102,7 +102,7 @@ try {
         addEventListener(
           'keydown',
           (e) => {
-            const shot = { code: e.code, at: performance.now() };
+            const shot = { code: e.code, at: e.timeStamp, handlerAt: performance.now() };
             p.inputs.push(shot);
             requestAnimationFrame(() => (shot.nextFrame = performance.now()));
           },
