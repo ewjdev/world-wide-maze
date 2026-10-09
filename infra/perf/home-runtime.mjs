@@ -8,7 +8,7 @@ import { prepareOutput, stats as stat, verifyHomeBuild } from './home-common.mjs
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
-const out = prepareOutput();
+const out = prepareOutput('runtime.json');
 const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const servedBuild = await verifyHomeBuild(base);
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });

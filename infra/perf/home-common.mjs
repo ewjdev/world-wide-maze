@@ -1,11 +1,13 @@
-import { mkdirSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { verifyServedBuild } from './p1-build.mjs';
 import { runtimeFingerprint } from './p1-fingerprint.mjs';
 
-export function prepareOutput() {
+export function prepareOutput(reportFile) {
   if (!process.env.AUDIT_OUT) throw new Error('Set AUDIT_OUT to a fresh evidence directory.');
   const out = resolve(process.env.AUDIT_OUT);
+  if (reportFile && existsSync(resolve(out, reportFile)))
+    throw new Error(`Evidence already exists: ${reportFile}; choose a fresh AUDIT_OUT.`);
   mkdirSync(out, { recursive: true });
   return out;
 }

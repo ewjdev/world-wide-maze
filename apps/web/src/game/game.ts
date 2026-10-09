@@ -629,6 +629,8 @@ export class Game {
         return;
       }
       this.#engine = engine;
+      // The home settings remain usable while renderer initialization is awaiting the GPU.
+      engine.setPixelLook(this.#view.pixelLook);
       if (!this.#opts.test?.quality && this.#view.graphics !== initialQuality)
         engine.setQuality(this.#view.graphics);
       this.#driverKind = this.#opts.test?.forceWorker

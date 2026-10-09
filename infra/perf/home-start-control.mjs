@@ -6,7 +6,7 @@ import { prepareOutput, stats, verifyHomeBuild } from './home-common.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
-const out = prepareOutput();
+const out = prepareOutput('start-control.json');
 const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const servedBuild = await verifyHomeBuild(base);
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
@@ -30,6 +30,13 @@ try {
         window.__homeControl = { phases: [], samples: [], frames: 0, dimensions: [], events: [] };
         const p = window.__homeControl;
         addEventListener(
+          'pointerdown',
+          (event) => {
+            if (event.target.closest?.('[data-testid=start]')) p.gestureAt = event.timeStamp;
+          },
+          { capture: true },
+        );
+        addEventListener(
           'click',
           (event) => {
             if (!event.target.closest?.('[data-testid=start]')) return;
@@ -37,7 +44,8 @@ try {
             requestAnimationFrame(() => {
               p.feedbackFrameAt = performance.now();
               p.feedback =
-                document.querySelector('[role=status]')?.textContent ?? document.body.dataset.phase;
+                document.querySelector('[data-testid=home-preparing]')?.textContent ??
+                window.__wwmGame?.getView().phase;
             });
           },
           { capture: true },
@@ -157,7 +165,8 @@ try {
         ...controlled,
         navigationToPlayMs: controlled.probe.playAt,
         startToPlayMs: controlled.probe.playAt - controlled.probe.startAt,
-        feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
+        feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.gestureAt,
+        clickFeedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
         sampledPeakBytes: Math.max(...controlled.probe.samples.map((s) => s.bytes ?? 0)),
       });
       save();
@@ -167,7 +176,8 @@ try {
           repeat,
           navigationToPlayMs: controlled.probe.playAt,
           startToPlayMs: controlled.probe.playAt - controlled.probe.startAt,
-          feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
+          feedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.gestureAt,
+          clickFeedbackFrameMs: controlled.probe.feedbackFrameAt - controlled.probe.clickAt,
           initialTier: controlled.probe.initialTier,
           peakMiB: report.runs.at(-1).sampledPeakBytes / 1048576,
           errors,

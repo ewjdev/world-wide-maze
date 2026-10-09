@@ -269,6 +269,13 @@ try {
     if (!selected.length) throw new Error('No matching frame diagnostic scenario');
     if (process.env.AUDIT_FRAME_THROTTLE)
       report.diagnosticSelection = { frameThrottle: process.env.AUDIT_FRAME_THROTTLE };
+    if (process.env.AUDIT_TOUR_SECONDS) {
+      const seconds = Number(process.env.AUDIT_TOUR_SECONDS);
+      if (!Number.isInteger(seconds) || seconds < 1 || seconds > 60)
+        throw new Error('AUDIT_TOUR_SECONDS must be an integer from 1 to 60');
+      for (const spec of selected.filter((s) => s.ref && !s.throttle && !s.backend && !s.quality && !s.dpr))
+        spec.seconds = seconds;
+    }
     if (process.env.AUDIT_SECONDS) {
       const seconds = Number(process.env.AUDIT_SECONDS);
       if (!Number.isInteger(seconds) || seconds < 1 || seconds > 60)
