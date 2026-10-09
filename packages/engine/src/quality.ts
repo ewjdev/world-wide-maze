@@ -68,9 +68,10 @@ export const TIERS: readonly TierFeatures[] = [
 export const MAX_TIER = TIERS.length - 1;
 
 // First enabling emissive MRT/bloom during active play recompiles every scene material.
-// Keep Auto on the single-color graph; resolution, FXAA, reflections and decoration still recover.
+// Keep Auto on the single-color graph; resolution, reflections and decoration still recover.
+// FXAA also rebuilds the graph and stalls the first live draw; manual profiles prepare it up front.
 // Explicit Medium/High retain the full glow profile, prepared before their first stage frame.
-const AUTO_TIERS = TIERS.map((tier) => ({ ...tier, glow: false, bloomScale: 0 }));
+const AUTO_TIERS = TIERS.map((tier) => ({ ...tier, fxaa: false, glow: false, bloomScale: 0 }));
 export function qualityFeatures(setting: QualitySetting, tier: number): TierFeatures {
   return (setting === 'auto' ? AUTO_TIERS : TIERS)[tier] as TierFeatures;
 }

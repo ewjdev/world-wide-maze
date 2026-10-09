@@ -328,7 +328,7 @@ describe('quality ladder', () => {
       expect(qualityFeatures('auto', tier).glow).toBe(false);
       expect(qualityFeatures('auto', tier).bloomScale).toBe(0);
       expect(qualityFeatures('auto', tier).renderScale).toBe(TIERS[tier]?.renderScale);
-      expect(qualityFeatures('auto', tier).fxaa).toBe(TIERS[tier]?.fxaa);
+      expect(qualityFeatures('auto', tier).fxaa).toBe(false);
     }
     expect(qualityFeatures('high', 0).glow).toBe(true);
     expect(qualityFeatures('medium', 1).glow).toBe(true);

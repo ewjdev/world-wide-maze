@@ -174,6 +174,25 @@ try {
         longTasks: data.long,
         raw: data,
       };
+      // Measure real cached-scene invalidation separately from the steady observation window.
+      // This records submission through the next rAF; physical input-to-photon remains a device gate.
+      if (spec.motion === 'cached' && !spec.frozen) {
+        result.wakeMs = await page.evaluate(async () => {
+          const e = window.__wwmGame.engine;
+          const values = [];
+          for (let i = 0; i < 30; i++) {
+            const frames = window.__run.engine.length;
+            const at = performance.now();
+            e.setPixelLook(i % 2 === 0);
+            do {
+              await new Promise(requestAnimationFrame);
+            } while (window.__run.engine.length === frames);
+            values.push(performance.now() - at);
+          }
+          return values;
+        });
+        result.wake = stat(result.wakeMs);
+      }
       report.runs.push(result);
       save();
       console.log(

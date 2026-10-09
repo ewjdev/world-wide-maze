@@ -142,7 +142,7 @@ Auto quality ladder (`QualityLadder`): a rolling 2 s mean frame time, 1.5 s warm
 - tier 3 below 30 fps: glow off (E)
 - tier 4 below 24 fps: cheap background, with no wires, dots or motes (N)
 
-Auto starts at tier 3 and recovers one tier after 6 s above threshold + 10 fps (N; 2013 only went down). Auto retains a single-color graph with bloom disabled: enabling emissive MRT during active play otherwise recompiles scene materials and introduces a first-recovery hitch. Resolution, FXAA, reflections and background detail still adapt. `quality: 'high' | 'medium' | 'low'` pins tier 0 / 1 / 3; explicit Medium and High retain bloom. All tiers cap backing pixels (High/Medium 2560 × 1440, Low 1920 × 1080, minimum 1280 × 1024) and DPR is clamped to 2.
+Auto starts at tier 3 and recovers one tier after 6 s above threshold + 10 fps (N; 2013 only went down). Auto retains a single-color graph with bloom and FXAA disabled: rebuilding postprocessing during active play otherwise introduces first-recovery shader hitches. Resolution, reflections and background detail still adapt. `quality: 'high' | 'medium' | 'low'` pins tier 0 / 1 / 3; explicit Medium and High retain bloom. All tiers cap backing pixels (High/Medium 2560 × 1440, Low 1920 × 1080, minimum 1280 × 1024) and DPR is clamped to 2.
 
 `titleProfile` bounds Auto's title to tier 3 or lower without resetting the gameplay ladder. Apply the effective pixel ratio before sizing the renderer, including recovery. `needsFrame()` reports dirty scene state and pending loading/compilation, camera blends, intro/spawn/tweens and settling map scale; the home can retain its canvas once this work completes. Input and simulation scheduling remain owned by the game, and active phases continue rendering normally.
 
