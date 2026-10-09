@@ -299,6 +299,8 @@ export const en = {
     resumed: 'Reconnected',
   },
   settings: {
+    graphics: 'Graphics',
+    graphicsOptions: { auto: 'Auto', low: 'Low', medium: 'Medium', high: 'High' },
     sensitivity: 'Tilt sensitivity',
     pixel: 'Pixel look',
     pixelHint: 'Crisp, blocky page texture, like 2013',

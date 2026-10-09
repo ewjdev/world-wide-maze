@@ -90,6 +90,8 @@ export type StageImage = ImageBitmap | HTMLImageElement | HTMLCanvasElement | Of
 export interface EngineOptions {
   canvas: HTMLCanvasElement;
   quality?: QualitySetting;
+  /** Auto keeps the title on Low without discarding the active-play ladder's history. */
+  titleProfile?: boolean;
   reducedMotion?: boolean;
   /** E: the 2013 "pixel look" (nearest-neighbour page texture 10 s into the intro). Default off. */
   pixelLook?: boolean;
@@ -182,6 +184,7 @@ export interface Engine {
   frame(dtSec: number, renderDtSec?: number | null): void;
   stats(): EngineStats;
   setQuality(q: QualitySetting): void;
+  setTitleProfile(on: boolean): void;
   setPixelLook(on: boolean): void;
   /** Escape hatch for dev tools (sandbox, Phase 10 "how it's made" view). Not a stable API. */
   debug(): { renderer: WebGPURenderer; scene: Scene; camera: PerspectiveCamera };
@@ -334,7 +337,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     }
   }
 
-  const ladder = { value: new QualityLadder(opts.quality ?? 'auto') };
+  let quality = opts.quality ?? 'auto';
+  let titleProfile = opts.titleProfile ?? false;
+  const ladder = { value: new QualityLadder(quality) };
+  const effectiveTier = () =>
+    titleProfile && quality === 'auto' ? Math.max(3, ladder.value.tier) : ladder.value.tier;
+  const features = () => TIERS[effectiveTier()] as (typeof TIERS)[number];
   const reducedMotion = opts.reducedMotion ?? false;
   let pixelLook = opts.pixelLook ?? false;
 
@@ -545,7 +553,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     // Quality/resize requests during async precompile must not dispose its live targets.
     // compileScenePass applies the latest requested setting once all builders finish.
     if (compiling > 0) return;
-    const f = ladder.value.features;
+    const f = features();
     renderer.setPixelRatio(qualityPixelRatio(baseDpr(), size.w, size.h, f));
     if (!post || post.glow !== f.glow || post.useFxaa !== f.fxaa) {
       post?.dispose();
@@ -634,7 +642,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);
       bgPivot.add(bg.group);
 
-      ball = buildBall(u, stageBin, ladder.value.tier <= 1 ? 128 : 64);
+      ball = buildBall(u, stageBin, effectiveTier() <= 1 ? 128 : 64);
       stageRoot.add(ball.mesh, ball.cage, ball.you, ball.streaks);
       scene.add(ball.cubeCamera);
       stageBin.add({ dispose: () => scene.remove(ball?.cubeCamera ?? scene) });
@@ -1148,7 +1156,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
 
       updateCamera(d);
       particles.update(time);
-      if (bg) bg.motes.visible = ladder.value.features.richBackground && motesInView();
+      if (bg) bg.motes.visible = features().richBackground && motesInView();
       if (deviceLost || compiling > 0) return; // loading/recovery keeps CPU state advancing without drawing
 
       // The renderer only re-runs pass nodes once per *its own* rAF frame id. We are driven externally
@@ -1156,7 +1164,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       nodeClock.tick();
       // env map: 2 cube faces per frame = full refresh every 3rd frame (E: `D%3===0`)
       renderer.info.reset();
-      if (ball && ladder.value.features.envMapUpdates && ballVisible) {
+      if (ball && features().envMapUpdates && ballVisible) {
         ball.cubeCamera.position.copy(ballPos);
         ball.cubeCamera.updateMatrixWorld(true);
         if (!envPrimed) {
@@ -1189,7 +1197,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         qualityStatus: ladder.value.status,
         drawCalls: last.total,
         triangles: last.triangles,
-        tier: ladder.value.tier,
+        tier: effectiveTier(),
         sceneDrawCalls: last.scene,
         envDrawCalls: last.env,
         postDrawCalls: last.post,
@@ -1205,7 +1213,14 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     setQuality(q) {
+      quality = q;
       ladder.value = new QualityLadder(q);
+      applyTier();
+    },
+
+    setTitleProfile(on) {
+      if (titleProfile === on) return;
+      titleProfile = on;
       applyTier();
     },
 

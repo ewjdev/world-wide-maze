@@ -56,6 +56,7 @@ import { serviceFetch } from '../service-mode.ts';
 import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
+import { readGraphics, saveGraphics } from '../ui/graphics-preference.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
 import { Countdown } from './countdown.ts';
 import { InputRecording, SavedRecording } from './input-recording.ts';
@@ -167,6 +168,7 @@ export interface GameView {
   muted: boolean;
   sensitivity: number;
   pixelLook: boolean;
+  graphics: QualitySetting;
   firstRun: boolean;
   /** Phase 13: the portal prompt (play is paused while it shows). */
   portal: PortalPrompt | null;
@@ -459,6 +461,7 @@ export class Game {
       muted: opts.audio.muted,
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
       pixelLook: this.#get(PIXEL_KEY) === '1',
+      graphics: readGraphics(this.#storage),
       firstRun: this.#get(HOWTO_KEY) !== '1',
       portal: null,
       travel: null,
@@ -609,7 +612,8 @@ export class Game {
     try {
       const engine = await createEngine({
         canvas,
-        quality: this.#opts.test?.quality ?? 'auto',
+        quality: this.#opts.test?.quality ?? this.#view.graphics,
+        titleProfile: true,
         reducedMotion: this.#opts.reducedMotion,
         forceWebGL: this.#opts.forceWebGL,
         pixelLook: this.#view.pixelLook,
@@ -747,6 +751,7 @@ export class Game {
     // Timers scoped to the phase we leave are dropped.
     this.#timers = this.#timers.filter((t) => t.phase === null || t.phase === to);
     this.#set({ phase: to });
+    this.#engine?.setTitleProfile(to === 'title');
     this.#enter(to, from);
     this.#opts.onPhase?.(to, this);
     this.#syncController(true);
@@ -1426,6 +1431,12 @@ export class Game {
     this.#put(PIXEL_KEY, on ? '1' : '0');
     this.#engine?.setPixelLook(on);
     this.#set({ pixelLook: on });
+  }
+
+  setGraphics(setting: QualitySetting): void {
+    saveGraphics(this.#storage, setting);
+    this.#set({ graphics: setting });
+    this.#engine?.setQuality(setting);
   }
 
   /** Tilt for the HUD / calibration indicator (read every animation frame; not part of the view). */

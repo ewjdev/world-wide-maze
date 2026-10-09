@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { type Lang, setLang } from '../i18n/index.ts';
 import { MotionOptions } from '../input/TiltControls.tsx';
 import { useGame, useView } from './GameApp.tsx';
+import { GRAPHICS_SETTINGS } from './graphics-preference.ts';
 import { Icon } from './parts.tsx';
 
 export function TopBar() {
@@ -69,6 +70,20 @@ export function TopBar() {
         </button>
         {open && (
           <div ref={pop} id={id} className="wwm-pop" role="dialog" aria-label={t('common.settings')}>
+            <label className="wwm-field">
+              <span>{t('settings.graphics')}</span>
+              <select
+                value={v.graphics}
+                onChange={(e) => g.setGraphics(e.target.value as typeof v.graphics)}
+                data-testid="graphics-setting"
+              >
+                {GRAPHICS_SETTINGS.map((setting) => (
+                  <option key={setting} value={setting}>
+                    {t(`settings.graphicsOptions.${setting}`)}
+                  </option>
+                ))}
+              </select>
+            </label>
             <label className="wwm-field">
               <span>{t('settings.sensitivity')}</span>
               <input

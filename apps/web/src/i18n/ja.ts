@@ -291,6 +291,8 @@ export const ja: Resources = {
     resumed: '再接続しました',
   },
   settings: {
+    graphics: '描画品質',
+    graphicsOptions: { auto: '自動', low: '低', medium: '中', high: '高' },
     sensitivity: '傾きの感度',
     pixel: 'ピクセル表示',
     pixelHint: '2013 年版のような、くっきりとしたドット表示',
