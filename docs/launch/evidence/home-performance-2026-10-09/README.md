@@ -14,7 +14,7 @@ Read `summary-final.json` for short-window per-trial values and `comparison.json
 - Lighthouse 13.5.0 is a separate headless simulated benchmark. Do not combine it with headed CPU/network measurements or call lab input proxies field INP.
 - Native refresh cadence varied around 60–120 Hz. FPS changes alone are not causal evidence. Scene submissions and input rAF callbacks are distinct. GPU timestamps are sampled one in ten scene frames; unsupported/no-frame samples are unavailable. Renderer bytes are estimates, not physical VRAM.
 - Three trials per short home runtime/load/control/play case; one minute observation per idle mode; three minute-long Auto CPU6 recovery runs; six minute-long normal-fixture tours per arm; single stress/fallback frame cases; one minute-long replay per CPU level per arm; three Lighthouse runs per preset per arm. Small samples do not establish population tail latency.
-- Collection was sequential without parallel local benchmarks/browser/tests. `suite.log` retains order and time. It alternates arms by core mode but is not randomized. The earlier baseline batch is preserved. Interpret desktop first-control differences with run variance and the deferred-loading tradeoff.
+- Collection was sequential without parallel local benchmarks/browser/tests. `collection-order.txt` retains final suite order and time. It alternates arms by core mode but is not randomized. The earlier baseline batch is preserved. Interpret desktop first-control differences with run variance and the deferred-loading tradeoff.
 
 ## Accepted and retained evidence
 
