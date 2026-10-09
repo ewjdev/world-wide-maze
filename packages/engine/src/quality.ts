@@ -26,7 +26,7 @@ export const TIERS: readonly TierFeatures[] = [
     glow: true,
     richBackground: true,
     bloomScale: 0.5,
-    maxPixels: Number.POSITIVE_INFINITY,
+    maxPixels: 2560 * 1440,
   },
   {
     envMapUpdates: false,
@@ -67,6 +67,15 @@ export const TIERS: readonly TierFeatures[] = [
 ];
 export const MAX_TIER = TIERS.length - 1;
 
+// First enabling emissive MRT/bloom during active play recompiles every scene material.
+// Keep Auto on the single-color graph; resolution, reflections and decoration still recover.
+// FXAA also rebuilds the graph and stalls the first live draw; manual profiles prepare it up front.
+// Explicit Medium/High retain the full glow profile, prepared before their first stage frame.
+const AUTO_TIERS = TIERS.map((tier) => ({ ...tier, fxaa: false, glow: false, bloomScale: 0 }));
+export function qualityFeatures(setting: QualitySetting, tier: number): TierFeatures {
+  return (setting === 'auto' ? AUTO_TIERS : TIERS)[tier] as TierFeatures;
+}
+
 /** fps below which a tier is no longer acceptable (index = tier that gets abandoned). */
 const DOWN_FPS = [45, 40, 30, 24];
 /** Hysteresis: to climb back to tier t, fps must exceed DOWN_FPS[t] + UP_MARGIN for UP_HOLD_SEC. */
@@ -76,6 +85,8 @@ export interface LadderOptions {
   windowSec?: number;
   warmupSec?: number;
   upHoldSec?: number;
+  /** Explicit starting rung for diagnostics. Auto otherwise starts with bounded Low graphics. */
+  initialTier?: number;
 }
 
 export class QualityLadder {
@@ -97,7 +108,9 @@ export class QualityLadder {
     this.warmupSec = opts.warmupSec ?? 1.5;
     this.upHoldSec = opts.upHoldSec ?? 6;
     this.fixed = setting !== 'auto';
-    this.tier = setting === 'low' ? 3 : setting === 'medium' ? 1 : 0;
+    const initial = Number.isFinite(opts.initialTier) ? (opts.initialTier as number) : 3;
+    this.tier = setting === 'auto' ? initial : setting === 'low' ? 3 : setting === 'medium' ? 1 : 0;
+    this.tier = Math.max(0, Math.min(MAX_TIER, Math.trunc(this.tier)));
   }
 
   get features(): TierFeatures {

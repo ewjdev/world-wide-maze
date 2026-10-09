@@ -2,6 +2,31 @@ import { describe, expect, test } from 'vitest';
 import { RenderCadence } from '../src/game/render-cadence.ts';
 
 describe('inactive render cadence', () => {
+  test('a cached title settles only after mandatory work, and invalidation wakes it immediately', () => {
+    const cadence = new RenderCadence();
+    expect(cadence.advance(0, 1 / 60, 'title', false, 'cached')).not.toBeNull();
+    expect(cadence.advance(1200, 1 / 60, 'title', true, 'cached')).not.toBeNull();
+    expect(cadence.advance(1250, 1 / 60, 'title', false, 'cached')).toBeNull();
+    for (let t = 1267; t < 60000; t += 1000 / 60)
+      expect(cadence.advance(t, 1 / 60, 'title', false, 'cached')).toBeNull();
+    expect(cadence.advance(60001, 1 / 60, 'title', true, 'cached')).toBeCloseTo(1 / 60);
+    expect(cadence.advance(60018, 1 / 60, 'play', false, 'cached')).toBeCloseTo(1 / 60);
+  });
+
+  test('cached title mode never stalls active phases or pending work', () => {
+    const cadence = new RenderCadence();
+    let now = 0;
+    for (const phase of ['intro', 'play', 'falling', 'restarting'] as const) {
+      for (let t = 0; t < 180; t++) {
+        now += 1000 / 60;
+        expect(cadence.advance(now, 1 / 60, phase, false, 'cached')).not.toBeNull();
+      }
+    }
+    cadence.reset();
+    for (let t = 0; t < 180; t++)
+      if (t % 3 === 0)
+        expect(cadence.advance((t * 1000) / 60, 1 / 60, 'title', true, 'cached')).not.toBeNull();
+  });
   test('active gameplay preserves every display frame and its animation delta', () => {
     const cadence = new RenderCadence();
     for (let frame = 0; frame < 240; frame++)

@@ -22,7 +22,7 @@ import {
 } from '../src/geom/structures.ts';
 import { clipTriangleToBand, fan, planTiles, tileUv, triArea } from '../src/geom/tiling.ts';
 import { ENGINE_NAME } from '../src/index.ts';
-import { MAX_TIER, QualityLadder, qualityPixelRatio, TIERS } from '../src/quality.ts';
+import { MAX_TIER, QualityLadder, qualityFeatures, qualityPixelRatio, TIERS } from '../src/quality.ts';
 
 const stage = JSON.parse(
   readFileSync(
@@ -323,12 +323,40 @@ describe('intro timeline', () => {
 });
 
 describe('quality ladder', () => {
+  test('Auto recovery retains the color attachment while manual profiles can enable glow', () => {
+    for (let tier = 0; tier <= MAX_TIER; tier++) {
+      expect(qualityFeatures('auto', tier).glow).toBe(false);
+      expect(qualityFeatures('auto', tier).bloomScale).toBe(0);
+      expect(qualityFeatures('auto', tier).renderScale).toBe(TIERS[tier]?.renderScale);
+      expect(qualityFeatures('auto', tier).fxaa).toBe(false);
+    }
+    expect(qualityFeatures('high', 0).glow).toBe(true);
+    expect(qualityFeatures('medium', 1).glow).toBe(true);
+  });
   const run = (l: QualityLadder, fps: number, sec: number) => {
     for (let t = 0; t < sec; t += 1 / fps) l.sample(1 / fps);
   };
 
-  test('steps down through the 2013 rungs and recovers with hysteresis', () => {
+  test('Auto begins at Low, recovers only from active samples, and every tier bounds pixels', () => {
     const l = new QualityLadder('auto');
+    expect(l.tier).toBe(3);
+    expect(l.features.glow).toBe(false);
+    l.suspend();
+    expect(l.tier).toBe(3);
+    run(l, 60, 5);
+    expect(l.tier).toBe(3);
+    run(l, 60, 60);
+    expect(l.tier).toBe(0);
+    for (const tier of TIERS) {
+      expect(Number.isFinite(tier.maxPixels)).toBe(true);
+      expect(qualityPixelRatio(2, 3840, 2160, tier) ** 2 * 3840 * 2160).toBeLessThanOrEqual(
+        tier.maxPixels + 1,
+      );
+    }
+  });
+
+  test('steps down through the 2013 rungs and recovers with hysteresis', () => {
+    const l = new QualityLadder('auto', { initialTier: 0 });
     run(l, 60, 5);
     expect(l.tier).toBe(0);
     run(l, 42, 5); // < 45: env map off
@@ -345,7 +373,7 @@ describe('quality ladder', () => {
   });
 
   test('borderline fps does not oscillate', () => {
-    const l = new QualityLadder('auto');
+    const l = new QualityLadder('auto', { initialTier: 0 });
     run(l, 44, 6);
     const t = l.tier;
     run(l, 50, 30); // above 45 but below the +10 recovery margin
@@ -353,8 +381,8 @@ describe('quality ladder', () => {
   });
 
   test('real 200 ms stalls shed all optional tiers in under eleven wall seconds', () => {
-    const real = new QualityLadder('auto');
-    const clamped = new QualityLadder('auto');
+    const real = new QualityLadder('auto', { initialTier: 0 });
+    const clamped = new QualityLadder('auto', { initialTier: 0 });
     let seconds = 0;
     while (real.tier < MAX_TIER && seconds < 20) {
       real.sample(0.2);
@@ -370,7 +398,7 @@ describe('quality ladder', () => {
   });
 
   test('active stalls over one second are measured; suspension clears stale pressure and recovery', () => {
-    const l = new QualityLadder('auto');
+    const l = new QualityLadder('auto', { initialTier: 0 });
     l.sample(2);
     expect(l.fps).toBe(0.5);
     run(l, 20, 12);

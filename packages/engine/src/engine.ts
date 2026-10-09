@@ -56,7 +56,14 @@ import {
   ITEM_SMALL,
   WU,
 } from './palette.ts';
-import { MAX_TIER, QualityLadder, type QualitySetting, qualityPixelRatio, TIERS } from './quality.ts';
+import {
+  MAX_TIER,
+  QualityLadder,
+  type QualitySetting,
+  qualityFeatures,
+  qualityPixelRatio,
+  TIERS,
+} from './quality.ts';
 import { NodeFrameClock } from './three-private.ts';
 import { type Background, buildBackground } from './world/background.ts';
 import { type Ball, buildBall } from './world/ball.ts';
@@ -90,6 +97,8 @@ export type StageImage = ImageBitmap | HTMLImageElement | HTMLCanvasElement | Of
 export interface EngineOptions {
   canvas: HTMLCanvasElement;
   quality?: QualitySetting;
+  /** Auto keeps the title on Low without discarding the active-play ladder's history. */
+  titleProfile?: boolean;
   reducedMotion?: boolean;
   /** E: the 2013 "pixel look" (nearest-neighbour page texture 10 s into the intro). Default off. */
   pixelLook?: boolean;
@@ -182,6 +191,9 @@ export interface Engine {
   frame(dtSec: number, renderDtSec?: number | null): void;
   stats(): EngineStats;
   setQuality(q: QualitySetting): void;
+  setTitleProfile(on: boolean): void;
+  /** Mandatory scene work remains pending, or an external change needs a fresh title image. */
+  needsFrame(): boolean;
   setPixelLook(on: boolean): void;
   /** Escape hatch for dev tools (sandbox, Phase 10 "how it's made" view). Not a stable API. */
   debug(): { renderer: WebGPURenderer; scene: Scene; camera: PerspectiveCamera };
@@ -252,6 +264,12 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   const tryWebGPU = wantWebGPU(opts.forceWebGL);
   let renderer = await makeRenderer(!tryWebGPU);
   let backend: 'webgpu' | 'webgl2' = isWebGPU(renderer) ? 'webgpu' : 'webgl2';
+  let quality = opts.quality ?? 'auto';
+  let titleProfile = opts.titleProfile ?? false;
+  const ladder = { value: new QualityLadder(quality) };
+  const effectiveTier = () =>
+    titleProfile && quality === 'auto' ? Math.max(3, ladder.value.tier) : ladder.value.tier;
+  const features = () => qualityFeatures(quality, effectiveTier());
   const maxDpr = opts.maxDpr ?? 2;
   const baseDpr = () => Math.min(globalThis.devicePixelRatio || 1, maxDpr);
   const w0 = opts.canvas.clientWidth || opts.canvas.width || 1280;
@@ -261,7 +279,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     r.info.autoReset = false;
     r.toneMapping = NoToneMapping;
     r.outputColorSpace = SRGBColorSpace;
-    r.setPixelRatio(baseDpr());
+    r.setPixelRatio(qualityPixelRatio(baseDpr(), size.w, size.h, features()));
     r.setSize(size.w, size.h, false);
   };
   setupRenderer(renderer);
@@ -334,7 +352,6 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     }
   }
 
-  const ladder = { value: new QualityLadder(opts.quality ?? 'auto') };
   const reducedMotion = opts.reducedMotion ?? false;
   let pixelLook = opts.pixelLook ?? false;
 
@@ -423,6 +440,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   let spawn: { resolve: () => void } | null = null;
   let tweens: Tween[] = [];
   let time = 0;
+  let titleDirty = true;
+  let loadingStage = 0;
   let envFace = 0;
   let envPrimed = false;
   const pendingFireworks = 5;
@@ -542,10 +561,11 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
   }
 
   function applyTier() {
+    titleDirty = true;
     // Quality/resize requests during async precompile must not dispose its live targets.
     // compileScenePass applies the latest requested setting once all builders finish.
     if (compiling > 0) return;
-    const f = ladder.value.features;
+    const f = features();
     renderer.setPixelRatio(qualityPixelRatio(baseDpr(), size.w, size.h, f));
     if (!post || post.glow !== f.glow || post.useFxaa !== f.fxaa) {
       post?.dispose();
@@ -588,82 +608,90 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
 
   const engine: Engine = {
     async loadStage(s, image) {
-      clearStage();
-      stage = s;
-      const iw = (image as { width: number }).width;
-      const ih = (image as { height: number }).height;
-      const scale = iw / s.size.width; // trust the actual image over the metadata
-      plan = planTiles(iw, ih, scale, maxTextureSize());
-      const loadingBin = stageBin;
-      const tileImages = await makeStageImages(image, plan);
-      if (disposed || stageBin !== loadingBin) {
-        tileImages.dispose();
-        throw new DOMException('Stage load cancelled', 'AbortError');
+      loadingStage++;
+      titleDirty = true;
+      try {
+        clearStage();
+        stage = s;
+        const iw = (image as { width: number }).width;
+        const ih = (image as { height: number }).height;
+        const scale = iw / s.size.width; // trust the actual image over the metadata
+        plan = planTiles(iw, ih, scale, maxTextureSize());
+        const loadingBin = stageBin;
+        const tileImages = await makeStageImages(image, plan);
+        if (disposed || stageBin !== loadingBin) {
+          tileImages.dispose();
+          throw new DOMException('Stage load cancelled', 'AbortError');
+        }
+        // Registered before GPU textures, so reverse disposal closes images after texture teardown.
+        stageBin.add(tileImages);
+        textures = makeStageTextures(
+          tileImages.images,
+          opts.anisotropy ?? renderer.getMaxAnisotropy(),
+          stageBin,
+        );
+        textures.setPixelLook(false);
+        objs = buildStageObjects(s, plan, textures, u, stageBin);
+        stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);
+        if (objs.elevators) stageRoot.add(objs.elevators);
+        hf = buildHeightfield(s);
+        chase.setHeightfield(hf);
+
+        stageSize = { w: s.size.width / PX_PER_METER, d: s.size.height / PX_PER_METER };
+        const low = lowestTop(s);
+        meanY = s.islands.reduce((a, i) => a + i.level * LEVEL_HEIGHT_M, 0) / Math.max(1, s.islands.length);
+        pageY = low;
+        u.pageY.value = pageY;
+        stageCenter.set(stageSize.w / 2, meanY, stageSize.d / 2);
+        startWorld.copy(toWorld(s.start.pos, levelOf(s.start.islandId)));
+        goalWorld.copy(toWorld(s.goal.pos, levelOf(s.goal.islandId)));
+
+        items = buildItems(s, u, stageBin);
+        stageRoot.add(items.small, items.large, items.largeShell);
+        goal = buildGoal(s.source.title, u, stageBin);
+        goal.group.position.copy(goalWorld);
+        stageRoot.add(goal.group);
+        portals = buildPortals(s, u, stageBin);
+        if (portals) stageRoot.add(portals.mesh);
+
+        bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);
+        bgPivot.add(bg.group);
+
+        ball = buildBall(u, stageBin, effectiveTier() <= 1 ? 128 : 64);
+        stageRoot.add(ball.mesh, ball.cage, ball.you, ball.streaks);
+        scene.add(ball.cubeCamera);
+        stageBin.add({ dispose: () => scene.remove(ball?.cubeCamera ?? scene) });
+
+        applyTier();
+
+        // default pose: ball resting on the start, chase camera behind it facing the goal
+        const bp = startWorld.clone().add(new Vector3(0, 0.5, 0));
+        for (const st of [prev, curr]) {
+          st.pos = [bp.x, bp.y, bp.z];
+          st.quat = [0, 0, 0, 1];
+          st.vel = [0, 0, 0];
+        }
+        ballVisible = true;
+        ball.materialize.value = 1;
+        chase.holdPosition = false;
+        chase.reset(bp, goalWorld);
+        camPos.copy(chase.position);
+        camTarget.copy(chase.target);
+        u.extrude.value = u.bridges.value = u.appear.value = 1;
+        if (goal) goal.visibility.value = 1;
+        view = 'chase';
+        // compile everything up front so the first frames don't hitch
+        if (recovery) await recovery;
+        if (!deviceLost) await compileScenePass();
+      } finally {
+        loadingStage--;
+        titleDirty = true;
       }
-      // Registered before GPU textures, so reverse disposal closes images after texture teardown.
-      stageBin.add(tileImages);
-      textures = makeStageTextures(
-        tileImages.images,
-        opts.anisotropy ?? renderer.getMaxAnisotropy(),
-        stageBin,
-      );
-      textures.setPixelLook(false);
-      objs = buildStageObjects(s, plan, textures, u, stageBin);
-      stageRoot.add(objs.tops, objs.sides, objs.bridges, objs.rails, objs.frame);
-      if (objs.elevators) stageRoot.add(objs.elevators);
-      hf = buildHeightfield(s);
-      chase.setHeightfield(hf);
-
-      stageSize = { w: s.size.width / PX_PER_METER, d: s.size.height / PX_PER_METER };
-      const low = lowestTop(s);
-      meanY = s.islands.reduce((a, i) => a + i.level * LEVEL_HEIGHT_M, 0) / Math.max(1, s.islands.length);
-      pageY = low;
-      u.pageY.value = pageY;
-      stageCenter.set(stageSize.w / 2, meanY, stageSize.d / 2);
-      startWorld.copy(toWorld(s.start.pos, levelOf(s.start.islandId)));
-      goalWorld.copy(toWorld(s.goal.pos, levelOf(s.goal.islandId)));
-
-      items = buildItems(s, u, stageBin);
-      stageRoot.add(items.small, items.large, items.largeShell);
-      goal = buildGoal(s.source.title, u, stageBin);
-      goal.group.position.copy(goalWorld);
-      stageRoot.add(goal.group);
-      portals = buildPortals(s, u, stageBin);
-      if (portals) stageRoot.add(portals.mesh);
-
-      bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);
-      bgPivot.add(bg.group);
-
-      ball = buildBall(u, stageBin, ladder.value.tier <= 1 ? 128 : 64);
-      stageRoot.add(ball.mesh, ball.cage, ball.you, ball.streaks);
-      scene.add(ball.cubeCamera);
-      stageBin.add({ dispose: () => scene.remove(ball?.cubeCamera ?? scene) });
-
-      applyTier();
-
-      // default pose: ball resting on the start, chase camera behind it facing the goal
-      const bp = startWorld.clone().add(new Vector3(0, 0.5, 0));
-      for (const st of [prev, curr]) {
-        st.pos = [bp.x, bp.y, bp.z];
-        st.quat = [0, 0, 0, 1];
-        st.vel = [0, 0, 0];
-      }
-      ballVisible = true;
-      ball.materialize.value = 1;
-      chase.holdPosition = false;
-      chase.reset(bp, goalWorld);
-      camPos.copy(chase.position);
-      camTarget.copy(chase.target);
-      u.extrude.value = u.bridges.value = u.appear.value = 1;
-      if (goal) goal.visibility.value = 1;
-      view = 'chase';
-      // compile everything up front so the first frames don't hitch
-      if (recovery) await recovery;
-      if (!deviceLost) await compileScenePass();
     },
 
     unloadStage() {
       clearStage();
+      titleDirty = true;
     },
 
     setBall(state, a) {
@@ -686,6 +714,8 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     setControl(c) {
+      if (control.tiltX !== c.tiltX || control.tiltZ !== c.tiltZ || control.power !== c.power)
+        titleDirty = true;
       control.tiltX = c.tiltX;
       control.tiltZ = c.tiltZ;
       control.power = c.power;
@@ -811,6 +841,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         return;
       }
       if (mode === view) return;
+      titleDirty = true;
       blendFrom = { pos: camPos.clone(), target: camTarget.clone(), t0: time, dur: 0.9 };
       if (mode === 'map') {
         mapAngle = Math.atan2(camPos.x - stageCenter.x, camPos.z - stageCenter.z);
@@ -1069,6 +1100,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     resize(w, h) {
+      titleDirty = true;
       size.w = w;
       size.h = h;
       renderer.setSize(w, h, false);
@@ -1148,7 +1180,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
 
       updateCamera(d);
       particles.update(time);
-      if (bg) bg.motes.visible = ladder.value.features.richBackground && motesInView();
+      if (bg) bg.motes.visible = features().richBackground && motesInView();
       if (deviceLost || compiling > 0) return; // loading/recovery keeps CPU state advancing without drawing
 
       // The renderer only re-runs pass nodes once per *its own* rAF frame id. We are driven externally
@@ -1156,7 +1188,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       nodeClock.tick();
       // env map: 2 cube faces per frame = full refresh every 3rd frame (E: `D%3===0`)
       renderer.info.reset();
-      if (ball && ladder.value.features.envMapUpdates && ballVisible) {
+      if (ball && features().envMapUpdates && ballVisible) {
         ball.cubeCamera.position.copy(ballPos);
         ball.cubeCamera.updateMatrixWorld(true);
         if (!envPrimed) {
@@ -1180,6 +1212,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       last.total = renderer.info.render.drawCalls;
       last.scene = sceneDraws;
       last.post = last.total - last.env - last.scene;
+      titleDirty = false;
     },
 
     stats() {
@@ -1189,7 +1222,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         qualityStatus: ladder.value.status,
         drawCalls: last.total,
         triangles: last.triangles,
-        tier: ladder.value.tier,
+        tier: effectiveTier(),
         sceneDrawCalls: last.scene,
         envDrawCalls: last.env,
         postDrawCalls: last.post,
@@ -1205,13 +1238,36 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     },
 
     setQuality(q) {
+      quality = q;
       ladder.value = new QualityLadder(q);
       applyTier();
     },
 
+    setTitleProfile(on) {
+      if (titleProfile === on) return;
+      titleProfile = on;
+      applyTier();
+    },
+
     setPixelLook(on) {
+      titleDirty = true;
       pixelLook = on;
       textures?.setPixelLook(on);
+    },
+
+    needsFrame() {
+      return (
+        titleDirty ||
+        loadingStage > 0 ||
+        compiling > 0 ||
+        deviceLost ||
+        !!intro ||
+        !!spawn ||
+        tweens.length > 0 ||
+        !!blendFrom ||
+        powerGlow > 0 ||
+        (view === 'map' && Math.abs(u.mapScale.value - 3.2) > 0.01)
+      );
     },
 
     debug() {

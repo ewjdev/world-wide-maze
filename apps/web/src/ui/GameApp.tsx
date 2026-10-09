@@ -11,6 +11,7 @@ import { I18nextProvider } from 'react-i18next';
 import { AudioManager } from '../audio/audio.ts';
 import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
 import { GameBoards } from '../game/leaderboard.ts';
+import { titleMotion } from '../game/render-cadence.ts';
 import type { RunSource } from '../game/stages.ts';
 import { createI18n } from '../i18n/index.ts';
 import { learnParam } from '../learning/LearningPanel.tsx';
@@ -45,12 +46,26 @@ export interface GameAppProps {
   roomCode?: string;
   /** Phase 14 `/play/local`: a run built from a capture made in this browser. */
   localRun?: RunSource;
+  homeTitle?: boolean;
+  homeAudio?: AudioManager;
+  homeI18n?: i18n;
+  startIntent?: () => boolean;
+  onGame?: (game: Game | null) => void;
 }
 
-export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
+export function GameApp({
+  deepLink,
+  roomCode,
+  localRun,
+  homeTitle,
+  homeAudio,
+  homeI18n,
+  startIntent,
+  onGame,
+}: GameAppProps) {
   const host = useRef<HTMLDivElement>(null);
   const [game, setGame] = useState<Game | null>(null);
-  const [i18n] = useState<i18n>(() => createI18n());
+  const [i18n] = useState<i18n>(() => homeI18n ?? createI18n());
 
   useEffect(() => {
     const el = host.current;
@@ -61,7 +76,9 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
     const test = window.__WWM_TEST__;
     const g = new Game({
       origin: '',
-      audio: new AudioManager(),
+      audio: homeAudio ?? new AudioManager(),
+      disposeAudio: !homeAudio,
+      startIntent,
       // `?offline=1`: preservation mode, scores stay on this device (no server calls for boards or ghosts).
       boards: new GameBoards(
         params.has('offline') ? { fetch: () => Promise.reject(new Error('offline')) } : {},
@@ -74,11 +91,13 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
       roomCode,
       localRun,
       test,
+      titleMotion: import.meta.env.VITE_PREVIEW_COMMIT ? titleMotion(params.get('titleMotion')) : 'cached',
       onPhase: (phase) => {
         document.body.dataset.phase = phase;
       },
     });
     window.__wwmGame = g;
+    onGame?.(g);
     // Phase 20 M4b: `?learn=<activityId>` plays that lesson of the built-in path through Pip gates
     g.learning.label = (n) => i18n.t('learning.gate.label', { n });
     // Phase 22: mission posts and lock cards in the maze
@@ -121,11 +140,12 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
       alive = false;
       stopFunnel();
       g.dispose();
+      onGame?.(null);
       if (window.__wwmGame === g) window.__wwmGame = undefined;
       document.body.classList.remove('wwm-body');
       setGame(null);
     };
-  }, [deepLink, roomCode, localRun, i18n]);
+  }, [deepLink, roomCode, localRun, i18n, homeAudio, startIntent, onGame]);
 
   return (
     <I18nextProvider i18n={i18n}>
@@ -133,10 +153,12 @@ export function GameApp({ deepLink, roomCode, localRun }: GameAppProps) {
         <div ref={host} className="wwm-stage-host" />
         {game && (
           <GameCtx.Provider value={game}>
-            <Screens />
+            <Screens homeTitle={homeTitle} />
           </GameCtx.Provider>
         )}
       </div>
     </I18nextProvider>
   );
 }
+
+export { GameMotionOptions } from './Settings.tsx';
