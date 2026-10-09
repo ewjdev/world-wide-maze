@@ -1,6 +1,6 @@
 # Home page performance execution plan
 
-Status: proposed execution plan, October 9, 2026. Runtime changes, previews and device acceptance are pending.
+Status: runtime implementation and matched local evidence completed October 9, 2026; hosted review preparation is in progress. See [implementation results](home-performance-implementation.md) and [raw evidence](evidence/home-performance-2026-10-09/README.md). This plan retains its original proposed budgets. Cold native first-feedback and early-Start-to-play budgets remain open; physical-device and visual acceptance, production merge and deployment remain pending.
 
 Make the home page responsive before the full game loads, give Auto a bounded graphics cost from its first allocation, and avoid repeatedly drawing a settled title scene. Implement graphics limits first, progressive loading second, and idle rendering third. Measure each against a fresh baseline, then give Eric a hosted preview to choose the visual treatment and judge playability.
 
