@@ -4,24 +4,13 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
-import { prepareOutput, verifyHomeBuild } from './home-common.mjs';
+import { prepareOutput, stats as stat, verifyHomeBuild } from './home-common.mjs';
 
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
 const { chromium } = require('playwright');
 const out = prepareOutput();
 const base = process.env.AUDIT_BASE ?? 'http://127.0.0.1:4318';
 const servedBuild = await verifyHomeBuild(base);
-const stat = (a) => {
-  const s = [...a].sort((a, b) => a - b);
-  return {
-    n: s.length,
-    mean: s.reduce((a, b) => a + b, 0) / s.length,
-    p50: s[Math.floor(s.length * 0.5)],
-    p95: s[Math.floor(s.length * 0.95)],
-    p99: s[Math.floor(s.length * 0.99)],
-    max: s.at(-1),
-  };
-};
 const browser = await chromium.launch({ headless: false, args: ['--enable-gpu', '--use-angle=metal'] });
 const root = await browser.newBrowserCDPSession();
 const report = {
@@ -39,6 +28,9 @@ const report = {
 };
 const save = () => writeFileSync(`${out}/runtime.json`, JSON.stringify(report, null, 2));
 const allSpecs = [
+  { name: 'home-cached-dpr2', quality: 'auto', dpr: 2, motion: 'cached' },
+  { name: 'home-ambient10-dpr2', quality: 'auto', dpr: 2, motion: 10 },
+  { name: 'home-ambient15-dpr2', quality: 'auto', dpr: 2, motion: 15 },
   { name: 'home-auto-dpr2', quality: 'auto', dpr: 2 },
   { name: 'home-medium-dpr2', quality: 'medium', dpr: 2 },
   { name: 'home-low-dpr2', quality: 'low', dpr: 2 },
@@ -56,11 +48,11 @@ try {
         viewport: { width: 1440, height: 900 },
         deviceScaleFactor: spec.dpr,
       });
-      await ctx.addInitScript(() => {
+      await ctx.addInitScript((motion) => {
         localStorage.setItem('wwm.analytics.preference', 'off');
         localStorage.setItem('wwm.muted', '1');
-        window.__WWM_TEST__ = { noAutoPause: true, titleMotion: 30 };
-      });
+        window.__WWM_TEST__ = { noAutoPause: true, titleMotion: motion };
+      }, spec.motion ?? 30);
       const page = await ctx.newPage();
       const errors = [];
       page.on('pageerror', (e) => errors.push(e.message));
@@ -99,7 +91,7 @@ try {
             stats: e.stats(),
             canvas: { width: r.domElement.width, height: r.domElement.height },
             rendererMemory: r.info.memory,
-            totalTrackedBytes: r.info.memoryMap?.total ?? null,
+            totalTrackedBytes: r.info.memory.total ?? null,
             visibility: document.visibilityState,
           };
         });
@@ -175,7 +167,8 @@ try {
         renderIntervalMs: stat(intervals),
         rafIntervalMs: stat(data.raf),
         gpuMs: stat(data.gpu),
-        sceneFps: 1000 / stat(intervals).mean,
+        sceneFrames: data.engine.length,
+        sceneFps: intervals.length ? 1000 / stat(intervals).mean : 0,
         mainThreadBusyPct:
           (100 * (metricsAfter.TaskDuration - metricsBefore.TaskDuration)) / (elapsed / 1000),
         longTasks: data.long,

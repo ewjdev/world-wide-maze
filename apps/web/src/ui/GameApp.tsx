@@ -11,6 +11,7 @@ import { I18nextProvider } from 'react-i18next';
 import { AudioManager } from '../audio/audio.ts';
 import { Game, type GameTestHooks, type GameView } from '../game/game.ts';
 import { GameBoards } from '../game/leaderboard.ts';
+import { titleMotion } from '../game/render-cadence.ts';
 import type { RunSource } from '../game/stages.ts';
 import { createI18n } from '../i18n/index.ts';
 import { learnParam } from '../learning/LearningPanel.tsx';
@@ -90,6 +91,7 @@ export function GameApp({
       roomCode,
       localRun,
       test,
+      titleMotion: import.meta.env.VITE_PREVIEW_COMMIT ? titleMotion(params.get('titleMotion')) : 'cached',
       onPhase: (phase) => {
         document.body.dataset.phase = phase;
       },

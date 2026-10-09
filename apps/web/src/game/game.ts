@@ -63,7 +63,7 @@ import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
-import { RenderCadence } from './render-cadence.ts';
+import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
   countItems,
@@ -236,6 +236,7 @@ export interface TiltReadout {
 }
 
 export interface GameTestHooks {
+  titleMotion?: TitleMotion;
   /** Inject a replay (InputSample[] at SIM_HZ) as the input source for the next stage played. */
   replay?: InputSample[];
   /** Force the main-thread lockstep simulation (deterministic). */
@@ -258,6 +259,7 @@ export interface GameTestHooks {
 }
 
 export interface GameOptions {
+  titleMotion?: TitleMotion;
   origin: string;
   audio: AudioManager;
   /** The lightweight home owns its gesture-unlocked audio across the runtime handoff. */
@@ -2709,7 +2711,15 @@ export class Game {
     // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
     // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
     const qualityActive = stepping && document.visibilityState === 'visible';
-    const animationDt = this.#renderCadence.advance(now, gdt, this.#view.phase);
+    const animationDt = this.#renderCadence.advance(
+      now,
+      gdt,
+      this.#view.phase,
+      e.needsFrame(),
+      this.#opts.reducedMotion
+        ? 'cached'
+        : (this.#opts.test?.titleMotion ?? this.#opts.titleMotion ?? 'cached'),
+    );
     if (animationDt !== null) e.frame(animationDt, qualityActive && this.#qualityWasActive ? renderDt : null);
     this.#qualityWasActive = qualityActive;
     this.#syncController(false);

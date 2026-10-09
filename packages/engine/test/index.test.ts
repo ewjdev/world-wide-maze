@@ -22,7 +22,7 @@ import {
 } from '../src/geom/structures.ts';
 import { clipTriangleToBand, fan, planTiles, tileUv, triArea } from '../src/geom/tiling.ts';
 import { ENGINE_NAME } from '../src/index.ts';
-import { MAX_TIER, QualityLadder, qualityPixelRatio, TIERS } from '../src/quality.ts';
+import { MAX_TIER, QualityLadder, qualityFeatures, qualityPixelRatio, TIERS } from '../src/quality.ts';
 
 const stage = JSON.parse(
   readFileSync(
@@ -323,6 +323,16 @@ describe('intro timeline', () => {
 });
 
 describe('quality ladder', () => {
+  test('Auto recovery retains the color attachment while manual profiles can enable glow', () => {
+    for (let tier = 0; tier <= MAX_TIER; tier++) {
+      expect(qualityFeatures('auto', tier).glow).toBe(false);
+      expect(qualityFeatures('auto', tier).bloomScale).toBe(0);
+      expect(qualityFeatures('auto', tier).renderScale).toBe(TIERS[tier]?.renderScale);
+      expect(qualityFeatures('auto', tier).fxaa).toBe(TIERS[tier]?.fxaa);
+    }
+    expect(qualityFeatures('high', 0).glow).toBe(true);
+    expect(qualityFeatures('medium', 1).glow).toBe(true);
+  });
   const run = (l: QualityLadder, fps: number, sec: number) => {
     for (let t = 0; t < sec; t += 1 / fps) l.sample(1 / fps);
   };

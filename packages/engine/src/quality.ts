@@ -67,6 +67,14 @@ export const TIERS: readonly TierFeatures[] = [
 ];
 export const MAX_TIER = TIERS.length - 1;
 
+// First enabling emissive MRT/bloom during active play recompiles every scene material.
+// Keep Auto on the single-color graph; resolution, FXAA, reflections and decoration still recover.
+// Explicit Medium/High retain the full glow profile, prepared before their first stage frame.
+const AUTO_TIERS = TIERS.map((tier) => ({ ...tier, glow: false, bloomScale: 0 }));
+export function qualityFeatures(setting: QualitySetting, tier: number): TierFeatures {
+  return (setting === 'auto' ? AUTO_TIERS : TIERS)[tier] as TierFeatures;
+}
+
 /** fps below which a tier is no longer acceptable (index = tier that gets abandoned). */
 const DOWN_FPS = [45, 40, 30, 24];
 /** Hysteresis: to climb back to tier t, fps must exceed DOWN_FPS[t] + UP_MARGIN for UP_HOLD_SEC. */
