@@ -56,13 +56,14 @@ import { serviceFetch } from '../service-mode.ts';
 import { gameActivity } from '../telemetry/engagement.ts';
 import { telemetry } from '../telemetry/index.ts';
 import { analyticsRun } from '../telemetry/observe-game.ts';
+import { readGraphics, saveGraphics } from '../ui/graphics-preference.ts';
 import { ATTRACT_ID, type CatalogEntry, catalogEntry, FIXTURES, PRACTICE } from './catalog.ts';
 import { Countdown } from './countdown.ts';
 import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
-import { RenderCadence } from './render-cadence.ts';
+import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
   countItems,
@@ -167,6 +168,7 @@ export interface GameView {
   muted: boolean;
   sensitivity: number;
   pixelLook: boolean;
+  graphics: QualitySetting;
   firstRun: boolean;
   /** Phase 13: the portal prompt (play is paused while it shows). */
   portal: PortalPrompt | null;
@@ -234,6 +236,7 @@ export interface TiltReadout {
 }
 
 export interface GameTestHooks {
+  titleMotion?: TitleMotion;
   /** Inject a replay (InputSample[] at SIM_HZ) as the input source for the next stage played. */
   replay?: InputSample[];
   /** Force the main-thread lockstep simulation (deterministic). */
@@ -256,8 +259,12 @@ export interface GameTestHooks {
 }
 
 export interface GameOptions {
+  titleMotion?: TitleMotion;
   origin: string;
   audio: AudioManager;
+  /** The lightweight home owns its gesture-unlocked audio across the runtime handoff. */
+  disposeAudio?: boolean;
+  startIntent?: () => boolean;
   boards: GameBoards;
   /**
    * Physics driver. N (08b): `lockstep` (main thread, tick-exact; default) records the exact InputSample stream
@@ -459,6 +466,7 @@ export class Game {
       muted: opts.audio.muted,
       sensitivity: Number.isFinite(sens) && sens >= 0.5 && sens <= 1.5 ? sens : 1,
       pixelLook: this.#get(PIXEL_KEY) === '1',
+      graphics: readGraphics(this.#storage),
       firstRun: this.#get(HOWTO_KEY) !== '1',
       portal: null,
       travel: null,
@@ -607,9 +615,11 @@ export class Game {
     });
 
     try {
+      const initialQuality = this.#opts.test?.quality ?? this.#view.graphics;
       const engine = await createEngine({
         canvas,
-        quality: this.#opts.test?.quality ?? 'auto',
+        quality: initialQuality,
+        titleProfile: true,
         reducedMotion: this.#opts.reducedMotion,
         forceWebGL: this.#opts.forceWebGL,
         pixelLook: this.#view.pixelLook,
@@ -619,6 +629,10 @@ export class Game {
         return;
       }
       this.#engine = engine;
+      // The home settings remain usable while renderer initialization is awaiting the GPU.
+      engine.setPixelLook(this.#view.pixelLook);
+      if (!this.#opts.test?.quality && this.#view.graphics !== initialQuality)
+        engine.setQuality(this.#view.graphics);
       this.#driverKind = this.#opts.test?.forceWorker
         ? 'worker'
         : this.#opts.test?.lockstep || this.#replay
@@ -639,6 +653,7 @@ export class Game {
       this.#setInputMode(this.#view.inputMode ?? this.#defaultInputMode());
       this.#beginRun(this.#opts.localRun, 0);
     } else if (this.#opts.deepLink) void this.#openDeepLink(this.#opts.deepLink);
+    else if (this.#opts.startIntent?.()) this.start();
     else void this.#loadAttract();
   }
 
@@ -689,7 +704,7 @@ export class Game {
     this.#pool.dispose();
     this.#engineImage?.close();
     this.#canvas?.remove();
-    this.audio.dispose();
+    if (this.#opts.disposeAudio !== false) this.audio.dispose();
     this.#listeners.clear();
     this.learning.clear();
   }
@@ -747,6 +762,7 @@ export class Game {
     // Timers scoped to the phase we leave are dropped.
     this.#timers = this.#timers.filter((t) => t.phase === null || t.phase === to);
     this.#set({ phase: to });
+    this.#engine?.setTitleProfile(to === 'title');
     this.#enter(to, from);
     this.#opts.onPhase?.(to, this);
     this.#syncController(true);
@@ -1029,6 +1045,8 @@ export class Game {
   // ── actions (UI) ──────────────────────────────────────────────────────────────────────────────────────
 
   start(): void {
+    if (this.#view.phase !== 'title' || !this.#view.engineReady) return;
+    this.#attractAbort?.abort();
     if (this.#view.phase === 'title') telemetry.track({ name: 'start_clicked' });
     this.audio.unlock();
     this.audio.play('click');
@@ -1426,6 +1444,12 @@ export class Game {
     this.#put(PIXEL_KEY, on ? '1' : '0');
     this.#engine?.setPixelLook(on);
     this.#set({ pixelLook: on });
+  }
+
+  setGraphics(setting: QualitySetting): void {
+    saveGraphics(this.#storage, setting);
+    this.#set({ graphics: setting });
+    this.#engine?.setQuality(setting);
   }
 
   /** Tilt for the HUD / calibration indicator (read every animation frame; not part of the view). */
@@ -2689,7 +2713,15 @@ export class Game {
     // Adapt only across consecutive active, visible gameplay frames. The simulation keeps its safe
     // delta and exact 120 Hz stepping; loading, deliberate pauses and resume gaps are not GPU pressure.
     const qualityActive = stepping && document.visibilityState === 'visible';
-    const animationDt = this.#renderCadence.advance(now, gdt, this.#view.phase);
+    const animationDt = this.#renderCadence.advance(
+      now,
+      gdt,
+      this.#view.phase,
+      e.needsFrame(),
+      this.#opts.reducedMotion
+        ? 'cached'
+        : (this.#opts.test?.titleMotion ?? this.#opts.titleMotion ?? 'cached'),
+    );
     if (animationDt !== null) e.frame(animationDt, qualityActive && this.#qualityWasActive ? renderDt : null);
     this.#qualityWasActive = qualityActive;
     this.#syncController(false);

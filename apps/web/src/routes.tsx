@@ -25,8 +25,7 @@ function DevLayout() {
 const game = () => import('./ui/GameApp.tsx');
 
 async function homeRoute() {
-  const { GameApp } = await game();
-  return { Component: () => <GameApp /> };
+  return { Component: (await import('./ui/HomePage.tsx')).HomePage };
 }
 
 async function playRoute() {

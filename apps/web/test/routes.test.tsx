@@ -2,10 +2,12 @@ import { describe, expect, test } from 'vitest';
 import { renderRoute as render } from './render-route.tsx';
 
 describe('route shell', () => {
-  test('/ renders the full-screen game shell (no document nav)', async () => {
+  test('/ renders the interactive title before a game instance exists', async () => {
     const html = await render('/');
-    expect(html).toContain('data-testid="game-root"');
-    expect(html).not.toContain('About</a>');
+    expect(html).toContain('data-testid="home-shell"');
+    expect(html).toContain('data-testid="start"');
+    expect(html).toContain('href="/about"');
+    expect(html).not.toContain('wwm-stage-host');
   });
   test('/play/:stageId renders the game shell', async () => {
     expect(await render('/play/abc123')).toContain('data-testid="game-root"');

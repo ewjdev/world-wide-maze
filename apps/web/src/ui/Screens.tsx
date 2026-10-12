@@ -13,7 +13,6 @@ import { normalizeInputUrl } from '../game/stages.ts';
 import { touchCapable } from '../input/capability.ts';
 import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
-import { ModeNav } from '../race/ModeNav.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyTrail } from './Journey.tsx';
 import { useJourneyT } from './journey-strings.ts';
@@ -21,11 +20,13 @@ import { PlayLayer } from './Play.tsx';
 import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
 import { RankingScreen, ResultScreen } from './Result.tsx';
 import { TopBar } from './Settings.tsx';
+import { TitleLanding } from './TitleLanding.tsx';
 
-export function Screens() {
+export function Screens({ homeTitle = false }: { homeTitle?: boolean }) {
   const v = useView();
   const { t } = useTranslation();
   if (v.unsupported) return <Unsupported />;
+  if (homeTitle && v.phase === 'title') return <LearningNotice />;
   let screen: ReactElement | null = null;
   switch (v.phase) {
     case 'title':
@@ -94,36 +95,7 @@ export function Screens() {
 function Title() {
   const g = useGame();
   const v = useView();
-  const { t } = useTranslation();
-  const start = useRef<HTMLButtonElement>(null);
-  useEffect(() => start.current?.focus(), []);
-  return (
-    <div className="wwm-title">
-      <div className="wwm-title__block">
-        <Logo />
-        <p className="wwm-title__caption">{t('title.caption')}</p>
-        <ModeNav active={new URLSearchParams(location.search).has('learn') ? 'education' : 'original'} />
-        <div className="wwm-title__actions">
-          <button
-            ref={start}
-            type="button"
-            className="wwm-btn wwm-btn--hero"
-            onClick={() => g.start()}
-            disabled={!v.engineReady}
-            data-testid="start"
-          >
-            <span>{t('title.start')}</span>
-            <Icon name="arrow" size={26} />
-          </button>
-        </div>
-      </div>
-      <footer className="wwm-title__foot">
-        <p>{t('app.tribute')}</p>
-        <a href="/about">{t('title.about')}</a>
-        <a href="/privacy/analytics">{t('analytics.title')}</a>
-      </footer>
-    </div>
-  );
+  return <TitleLanding onStart={() => g.start()} disabled={!v.engineReady} />;
 }
 
 // ── how to ───────────────────────────────────────────────────────────────────────────────────────────
