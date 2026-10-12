@@ -1,4 +1,4 @@
-/** Isolated manual test host: bundled gameplay assets only, with no online-service bindings. */
+/** Isolated review host: bundled gameplay assets only, with no online-service bindings. */
 import { SPA_SECURITY_HEADERS, withSecurityHeaders } from './security.ts';
 
 type StaticPreviewEnv = {

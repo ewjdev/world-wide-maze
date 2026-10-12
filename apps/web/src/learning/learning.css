@@ -601,3 +601,23 @@
     transition: none !important;
   }
 }
+
+.wwm-lgate__card[data-motion="true"] .wwm-lgate__scene {
+  aspect-ratio: 1000 / 620;
+}
+@media (max-width: 760px) {
+  .wwm-lgate__card[data-motion="true"] .wwm-lgate__scene {
+    aspect-ratio: 600 / 540;
+    width: min(100%, 380px);
+  }
+  .wwm-lgate__card[data-motion="true"] {
+    padding: 16px;
+  }
+  .wwm-lgate__card[data-motion="true"] .wwm-lgate__prompt {
+    font-size: 20px;
+  }
+}
+
+.wwm-lgate__card[data-motion="true"] .wwm-lgate__say {
+  border-left: 0;
+}

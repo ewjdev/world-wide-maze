@@ -57,6 +57,7 @@ export const lineId = {
   bonus: 'pip.bonus',
   gate: 'pip.gate',
   rollOn: 'pip.roll-on',
+  demonstration: (activity: string) => `${activity}.demonstration`,
   intro: (activity: string) => `${activity}.intro`,
   finale: (activity: string) => `${activity}.finale`,
   prompt: (activity: string, round: string) => `${activity}.${round}.prompt`,
@@ -132,7 +133,7 @@ export function roundScript(activity: Activity, round: Round): ScriptLine[] {
     ...round.hints.map((hint, i) => plain(lineId.hint(activity.id, round.id, i + 1), hint)),
     plain(lineId.success(activity.id, round.id), round.success),
   ];
-  if (round.kind !== 'choose') {
+  if (round.kind === 'compare' || round.kind === 'difference') {
     lines.push(
       countLine(lineId.count(activity.id, round.id, 'a'), 'a', round.islands[0].count),
       countLine(lineId.count(activity.id, round.id, 'b'), 'b', round.islands[1].count),
@@ -145,6 +146,9 @@ export function roundScript(activity: Activity, round: Round): ScriptLine[] {
 export function activityScript(activity: Activity): ScriptLine[] {
   return [
     plain(lineId.intro(activity.id), activity.introduction),
+    ...(activity.demonstration
+      ? [plain(lineId.demonstration(activity.id), activity.demonstration.text)]
+      : []),
     ...activity.rounds.flatMap((round) => roundScript(activity, round)),
     plain(lineId.finale(activity.id), activity.finale),
   ];
@@ -243,7 +247,13 @@ function permutations<T>(items: readonly T[]): T[][] {
 
 /** Callouts for every order a shuffled round can be shown in (named options only; others never change). */
 function calloutVariants(activity: Activity, round: Round): ScriptLine[] {
-  if (round.kind !== 'choose' || neutralLabels(activity)) return [];
+  if (
+    round.kind === 'predict-motion' ||
+    round.kind === 'compare' ||
+    round.kind === 'difference' ||
+    neutralLabels(activity)
+  )
+    return [];
   const base = calloutLine(activity, round);
   return permutations(round.options)
     .map((options, k) => ({ ...calloutLine(activity, { ...round, options }), id: `${base.id}.v${k}` }))

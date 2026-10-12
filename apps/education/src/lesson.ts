@@ -43,7 +43,14 @@ import {
   sessionScript,
   step,
 } from '@wwm/learning';
-import { gameLevelText, inputHintHtml, planksBuilt, sceneBlock, spokenHtml } from './render.ts';
+import {
+  gameLevelText,
+  hydrateSceneBlock,
+  inputHintHtml,
+  planksBuilt,
+  sceneBlock,
+  spokenHtml,
+} from './render.ts';
 import { element, readFamily } from './storage.ts';
 
 const MUTE_KEY = 'wwm-learning.muted';
@@ -224,7 +231,7 @@ function highlight(line: ScriptLine | null, word = -1): void {
 }
 
 function leftoverSelectors(round: Round): string[] {
-  if (round.kind === 'choose') return [];
+  if (round.kind === 'choose' || round.kind === 'predict-motion') return [];
   const [a, b] = sceneLayout(round, orientation, planks).islands;
   if (!a || !b) return [];
   const pairing = pairUp(a.layout, b.layout);
@@ -347,6 +354,7 @@ function renderScene(): void {
     preview: state.phase === 'bonus-offer',
     ...(keys ? { keys } : {}),
   });
+  hydrateSceneBlock(scene());
   fitScene();
   for (const [selector, classes] of marks)
     for (const node of scene().querySelectorAll(selector)) node.classList.add(...classes);

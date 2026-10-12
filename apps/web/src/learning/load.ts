@@ -9,15 +9,17 @@
  */
 import {
   type Activity,
-  baselinePath,
+  bundledLessonPath,
   compatibleActivities,
+  guidedCapabilities,
   type LearningPath,
   MAX_DOCUMENT_BYTES,
-  readLearningHtml,
+  MOTION_CAPABILITIES,
+  readGuidedLearningHtml,
 } from '@wwm/learning';
 
 /** Round kinds the gate card can play (it draws every one with the shared scene renderer). */
-export const GAME_ROUND_KINDS = ['choose', 'compare', 'difference'] as const;
+export const GAME_ROUND_KINDS = ['choose', 'compare', 'difference', 'predict-motion'] as const;
 
 /** A learning HTML page also carries readable copy, so the file may be larger than its JSON (which stays bounded). */
 export const MAX_FILE_BYTES = 8 * MAX_DOCUMENT_BYTES;
@@ -65,15 +67,29 @@ export function pickActivity(path: LearningPath, id?: string | null): Activity {
   return first;
 }
 
-export function lessonFromBaseline(id?: string | null): LoadedLesson {
-  return { path: baselinePath, activity: pickActivity(baselinePath, id), source: { kind: 'baseline' } };
+export function lessonFromBaseline(
+  id?: string | null,
+  enabled = import.meta.env.VITE_ROCKET_LAB_ENABLED === 'true',
+): LoadedLesson {
+  let path: LearningPath;
+  try {
+    path = bundledLessonPath(id, enabled);
+  } catch {
+    throw new LessonLoadError('no-compatible', 'Rocket Lab is not available in this build.');
+  }
+  return { path, activity: pickActivity(path, id), source: { kind: 'baseline' } };
 }
 
 /** Parse a learning HTML page's text: only its inert JSON block is read. */
-export function lessonFromHtml(html: string, name: string, id?: string | null): LoadedLesson {
+export function lessonFromHtml(
+  html: string,
+  name: string,
+  id?: string | null,
+  enabled = import.meta.env.VITE_ROCKET_LAB_ENABLED === 'true',
+): LoadedLesson {
   let path: LearningPath;
   try {
-    path = readLearningHtml(html);
+    path = readGuidedLearningHtml(html);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     if (/exactly one learning document/i.test(message))
@@ -81,6 +97,10 @@ export function lessonFromHtml(html: string, name: string, id?: string | null): 
     if (/too large/i.test(message)) throw new LessonLoadError('too-large', message);
     throw new LessonLoadError('invalid', 'This learning page doesn’t pass validation.');
   }
+  if (path.format === 'wwm-learning/0.5' && !enabled)
+    throw new LessonLoadError('no-compatible', 'Rocket Lab is not available in this build.');
+  if (guidedCapabilities(path, MOTION_CAPABILITIES).length)
+    throw new LessonLoadError('no-compatible', 'This lesson requires unsupported capabilities.');
   return { path, activity: pickActivity(path, id), source: { kind: 'file', name } };
 }
 

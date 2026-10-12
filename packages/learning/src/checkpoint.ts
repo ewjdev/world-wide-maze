@@ -46,7 +46,7 @@ export function checkpointSpec(theme: Theme, activity: Activity, roundId: string
     }),
     answer: String(round.answer),
     islands:
-      round.kind === 'choose'
+      round.kind === 'choose' || round.kind === 'predict-motion'
         ? []
         : layout.islands.map((island, i) => {
             const cx = island.inner.x + island.inner.w / 2;

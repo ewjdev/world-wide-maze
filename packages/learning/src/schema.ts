@@ -5,7 +5,9 @@
  * docs/education/html-contract.md.
  */
 import { z } from 'zod';
+import type { GuidedV05 } from './guided-v05.ts';
 import { LEGACY_VERSION, legacyPathSchema } from './legacy.ts';
+import { motionRoundSchema, motionSceneSchema } from './motion.ts';
 
 export const LEARNING_VERSION = 'wwm-learning/0.3' as const;
 /** Phase 20's format: a subset of 0.3 (no `play`, `input` or `family`), accepted and upgraded on read. */
@@ -212,7 +214,7 @@ const differenceRound = z
   .strict();
 
 export const roundSchema = z
-  .discriminatedUnion('kind', [chooseRound, compareRound, differenceRound])
+  .discriminatedUnion('kind', [chooseRound, compareRound, differenceRound, motionRoundSchema])
   .superRefine((round, ctx) => {
     if (round.kind === 'choose') {
       if (new Set(round.options.map((option) => option.id)).size !== round.options.length)
@@ -226,7 +228,7 @@ export const roundSchema = z
         ctx.addIssue({ code: 'custom', message: `The answer must be "${truth}" for these gem counts.` });
       if (truth === 'same' && !round.allowSame)
         ctx.addIssue({ code: 'custom', message: 'Equal islands need the "same" choice.' });
-    } else {
+    } else if (round.kind === 'difference') {
       const [a, b] = round.islands;
       if (round.answer !== Math.abs(a.count - b.count))
         ctx.addIssue({ code: 'custom', message: 'The answer must be the difference between the islands.' });
@@ -238,7 +240,12 @@ export const roundSchema = z
   });
 export type Round = z.infer<typeof roundSchema>;
 export type RoundKind = Round['kind'];
-export const ROUND_KINDS = ['choose', 'compare', 'difference'] as const satisfies readonly RoundKind[];
+export const ROUND_KINDS = [
+  'choose',
+  'compare',
+  'difference',
+  'predict-motion',
+] as const satisfies readonly RoundKind[];
 
 // ── levels: steps and per-level lock configuration (Phase 22) ─────────────────────────────────────────────
 
@@ -320,9 +327,10 @@ export const activitySchema = z
   .object({
     id,
     title: text,
-    domain: z.enum(['counting', 'comparison', 'geometry', 'patterns', 'sorting']),
+    domain: z.enum(['counting', 'comparison', 'geometry', 'patterns', 'sorting', 'physical-science']),
     objective: text,
     introduction: text,
+    demonstration: z.object({ scene: motionSceneSchema, text: line }).strict().optional(),
     rounds: z.array(roundSchema).min(1).max(8),
     /** Strategy tools a consumer should offer. `match` pairs gems across islands. */
     tools: z.array(z.literal('match')).max(1),
@@ -351,7 +359,10 @@ export const activitySchema = z
     const firstOptional = activity.rounds.findIndex((round) => round.optional);
     if (firstOptional >= 0 && activity.rounds.slice(firstOptional).some((round) => !round.optional))
       ctx.addIssue({ code: 'custom', message: 'Optional (bonus) rounds come last.' });
-    if (activity.tools.includes('match') && !activity.rounds.some((round) => round.kind !== 'choose'))
+    if (
+      activity.tools.includes('match') &&
+      !activity.rounds.some((round) => round.kind === 'compare' || round.kind === 'difference')
+    )
       ctx.addIssue({ code: 'custom', message: 'The match tool needs a round with islands.' });
     if (activity.play)
       for (const issue of playIssues(activity.rounds, activity.play))
@@ -458,6 +469,13 @@ export const pathSchema = z
   .superRefine((path, ctx) => {
     const seen = new Set<string>();
     for (const activity of path.activities) {
+      if (
+        path.format === LEARNING_VERSION &&
+        (activity.demonstration ||
+          activity.domain === 'physical-science' ||
+          activity.rounds.some((r) => r.kind === 'predict-motion'))
+      )
+        ctx.addIssue({ code: 'custom', message: 'Motion predictions require wwm-learning/0.5.' });
       if (seen.has(activity.id)) ctx.addIssue({ code: 'custom', message: 'Activity IDs must be unique.' });
       for (const prerequisite of activity.prerequisites) {
         if (!seen.has(prerequisite))
@@ -476,7 +494,9 @@ export const pathSchema = z
     }
   });
 
-export type LearningPath = z.infer<typeof pathSchema>;
+export type LegacyLearningPath = z.infer<typeof pathSchema>;
+/** Internal guided runtime union; legacy readers still validate only 0.1–0.3. */
+export type LearningPath = LegacyLearningPath | GuidedV05;
 
 // ── reading and writing ───────────────────────────────────────────────────────────────────────────────────
 
@@ -487,7 +507,7 @@ export function registerLegacyUpgrade(fn: (legacy: z.infer<typeof legacyPathSche
 }
 
 /** Validate a 0.2 document, or upgrade a valid 0.1 document. Anything else fails closed. */
-export function parseLearningPath(value: unknown): LearningPath {
+export function parseLearningPath(value: unknown): LegacyLearningPath {
   if (value && typeof value === 'object' && 'format' in value && value.format === LEGACY_VERSION) {
     if (!upgrade) throw new Error('Legacy learning documents are not supported here.');
     return pathSchema.parse(upgrade(legacyPathSchema.parse(value)));
@@ -539,7 +559,8 @@ export function compatibleActivities(path: LearningPath, kinds: readonly string[
 
 /** The choice ids a round accepts: option ids, `a`/`b`/`same`, or a number as text. */
 export function choiceIds(round: Round): string[] {
-  if (round.kind === 'choose') return round.options.map((option) => option.id);
+  if (round.kind === 'choose' || round.kind === 'predict-motion')
+    return round.options.map((option) => option.id);
   if (round.kind === 'compare') return round.allowSame ? ['a', 'same', 'b'] : ['a', 'b'];
   return round.choices.map(String);
 }

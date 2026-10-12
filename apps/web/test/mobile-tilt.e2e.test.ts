@@ -1,9 +1,9 @@
 /** Browser/UI evidence with synthetic motion and real CDP touch. Physical sensors remain unqualified. */
 import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { type Browser, chromium, type Page } from 'playwright';
+import { type Browser, type BrowserContext, chromium, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 import { browserEnv, CHROMIUM_ARGS, SOFTWARE_GL_NOISE } from './browser-env.ts';
 
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -15,6 +15,7 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
     let browser: Browser;
     let base = '';
     const problems: string[] = [];
+    const contexts = new Set<BrowserContext>();
     beforeAll(async () => {
       server = await createServer({
         root: WEB_ROOT,
@@ -33,12 +34,17 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       await server?.close();
       expect(problems).toEqual([]);
     });
+    afterEach(async () => {
+      // A failed assertion must not leave a software-rendered game consuming the next test's CPU budget.
+      await Promise.all([...contexts].map((context) => context.close()));
+      contexts.clear();
+    });
     async function phone(
       options: {
         denied?: boolean;
         keyboard?: boolean;
         slow?: boolean;
-        delayedPermission?: boolean;
+        controlledPermission?: boolean;
         directGravity?: boolean;
         noReadings?: boolean;
         viewport?: { width: number; height: number };
@@ -49,6 +55,7 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
         hasTouch: true,
         isMobile: true,
       });
+      contexts.add(context);
       await browserEnv(context);
       await context.addInitScript((settings) => {
         localStorage.setItem('wwm.tutorialDone', '1');
@@ -61,13 +68,19 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
           ...(settings.keyboard ? { forceWorker: true } : {}),
         };
         window.__WWM_RACE_TEST__ = { countdownSec: 1, quality: 'low', noAutoPause: true };
+        let permissionReleased = !settings.controlledPermission;
+        const pendingPermissions: Array<(value: string) => void> = [];
+        const verdict = settings.denied ? 'denied' : 'granted';
+        Object.assign(window, {
+          __releaseMotionPermission: () => {
+            permissionReleased = true;
+            for (const resolve of pendingPermissions.splice(0)) resolve(verdict);
+          },
+        });
         const permission = () =>
-          new Promise<string>((resolve) =>
-            setTimeout(
-              () => resolve(settings.denied ? 'denied' : 'granted'),
-              settings.delayedPermission ? 400 : 0,
-            ),
-          );
+          permissionReleased
+            ? Promise.resolve(verdict)
+            : new Promise<string>((resolve) => pendingPermissions.push(resolve));
         Object.defineProperty(DeviceOrientationEvent, 'requestPermission', {
           value: permission,
           configurable: true,
@@ -284,7 +297,7 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       await context.close();
     }, 80_000);
     test('setup protects keyboard focus, sensitivity finishes before recheck, and new buttons show focus', async () => {
-      const { page, context } = await phone({ delayedPermission: true });
+      const { page, context } = await phone({ controlledPermission: true });
       await page.goto(`${base}/play/practice?offline=1`);
       await page.getByTestId('motion-setup').waitFor();
       await page.getByTestId('motion-enable').click();
@@ -296,6 +309,10 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       expect(await focusedInside()).toBe(true);
       await page.keyboard.press('Shift+Tab');
       expect(await focusedInside()).toBe(true);
+      // Hold both permission promises until the requesting-state focus assertions finish.
+      await page.evaluate(() =>
+        (window as unknown as { __releaseMotionPermission(): void }).__releaseMotionPermission(),
+      );
       await page.waitForFunction(
         () =>
           document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') === 'probing',

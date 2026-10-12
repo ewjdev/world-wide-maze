@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-26T19:49:51.755552+00:00",
+  "generatedAt": "2026-09-30T21:00:33.744467+00:00",
   "title": "Design System: WWM Learning",
   "extensions": {
     "colorMeta": {
@@ -409,6 +409,34 @@
           "oklch(83.57% 0.1432 146.29)",
           "oklch(95.00% 0.1432 146.29)"
         ]
+      },
+      "ball-shell": {
+        "role": "neutral",
+        "displayName": "Ball Shell",
+        "tonalRamp": [
+          "oklch(15.00% 0.0060 239.83)",
+          "oklch(26.43% 0.0060 239.83)",
+          "oklch(37.86% 0.0060 239.83)",
+          "oklch(49.29% 0.0060 239.83)",
+          "oklch(60.71% 0.0060 239.83)",
+          "oklch(72.14% 0.0060 239.83)",
+          "oklch(83.57% 0.0060 239.83)",
+          "oklch(95.00% 0.0060 239.83)"
+        ]
+      },
+      "ball-seam": {
+        "role": "neutral",
+        "displayName": "Ball Seam",
+        "tonalRamp": [
+          "oklch(15.00% 0.0747 246.98)",
+          "oklch(26.43% 0.0747 246.98)",
+          "oklch(37.86% 0.0747 246.98)",
+          "oklch(49.29% 0.0747 246.98)",
+          "oklch(60.71% 0.0747 246.98)",
+          "oklch(72.14% 0.0747 246.98)",
+          "oklch(83.57% 0.0747 246.98)",
+          "oklch(95.00% 0.0747 246.98)"
+        ]
       }
     },
     "typographyMeta": {
@@ -423,6 +451,14 @@
       "body": {
         "displayName": "Figtree body",
         "purpose": "Instructions, controls, explanations, and JSON inputs."
+      },
+      "rocket-prompt": {
+        "displayName": "Rocket prediction prompt",
+        "purpose": "Long motion question beside Pip; scoped to the standalone Rocket surface."
+      },
+      "rocket-feedback-mobile": {
+        "displayName": "Rocket phone explanation",
+        "purpose": "Persistent written explanation below the experiment at 640px and below."
       }
     },
     "shadows": [],
@@ -431,6 +467,16 @@
         "name": "button-background",
         "value": "background 150ms ease",
         "purpose": "Primary and secondary hover response; removed for reduced-motion preference."
+      },
+      {
+        "name": "rocket-push",
+        "value": "400ms still start; 1800ms smoothstep travel; static after-state hold",
+        "purpose": "One finite cause-and-effect demonstration. Narration can extend the hold; replay resets the same starting conditions."
+      },
+      {
+        "name": "rocket-reduced-motion",
+        "value": "700ms static before; static after for at least 1100ms",
+        "purpose": "Preserve before/after evidence without interpolated travel. Duration may extend for narration; hidden-page motion resets and resumes on return."
       }
     ],
     "breakpoints": [
@@ -441,6 +487,10 @@
       {
         "name": "single-column",
         "value": "760px"
+      },
+      {
+        "name": "rocket-tall",
+        "value": "640px"
       }
     ]
   },
@@ -498,21 +548,49 @@
       "description": "Native disclosure keeps explanation reachable without crowding activity choices.",
       "html": "<details class=\"ds-details\"><summary>For grown-ups: what this teaches</summary><h2>The learning goal</h2><p>Count a small group of shapes together.</p></details>",
       "css": ".ds-details{font-family:\"Figtree Variable\",sans-serif;color:var(--ink, #20262d);font-size:18px;line-height:1.55;text-align:left;border-top:1px solid var(--line, #d6dce0);padding-top:20px}.ds-details summary{cursor:pointer;font-weight:650;min-height:44px}.ds-details summary:focus-visible{outline:3px solid var(--blue, #2d6fa3);outline-offset:5px}.ds-details h2{font-size:24px;line-height:1.25;font-weight:600;letter-spacing:-.025em;margin:20px 0 0}.ds-details p{max-width:68ch;margin:10px 0 0}"
+    },
+    {
+      "name": "Rocket prediction canvas",
+      "kind": "custom",
+      "description": "The shared renderer\u2019s actual upright-rocket before frame with fixed illustrated choices and aligned HTML hit areas. This panel sample shows the wide layout; the live phone lesson renders the separate tall viewBox.",
+      "html": "<div class=\"ds-rocket-prompt-row\"><button type=\"button\" class=\"ds-rocket-replay\" aria-label=\"Watch or hear it again\"><svg class=\"\" width=\"52\" height=\"52\" viewBox=\"0 0 100 100\" aria-hidden=\"true\" focusable=\"false\"><circle cx=\"50\" cy=\"52\" r=\"44\" fill=\"#dfe3e6\" stroke=\"#20262d\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><ellipse cx=\"34\" cy=\"30\" rx=\"15\" ry=\"9\" fill=\"#ffffff\" opacity=\"0.95\"/><path d=\"M8 62 C30 50 70 50 92 62\" fill=\"none\" stroke=\"#456e93\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><path d=\"M50 9 C41 32 41 72 50 96\" fill=\"none\" stroke=\"#456e93\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\" opacity=\"0.45\"/><ellipse cx=\"38\" cy=\"48\" rx=\"5.5\" ry=\"7.5\" fill=\"#20262d\"/><ellipse cx=\"62\" cy=\"48\" rx=\"5.5\" ry=\"7.5\" fill=\"#20262d\"/><circle cx=\"39.8\" cy=\"45\" r=\"2\" fill=\"#ffffff\"/><circle cx=\"63.8\" cy=\"45\" r=\"2\" fill=\"#ffffff\"/><path d=\"M41 68 Q50 76 59 68\" fill=\"none\" stroke=\"#20262d\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button><h2 class=\"ds-rocket-prompt\">This rocket starts still. Hot gas shoots down. Which way will the rocket start moving?</h2></div><div class=\"ds-rocket-scene\"><svg  class=\"ds-wwm-scene ds-rocket-scene\" viewBox=\"0 0 1000 620\" width=\"100%\" aria-hidden=\"true\" focusable=\"false\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1000\" height=\"620\" rx=\"24\" fill=\"#f8f8f8\"/><g transform=\"translate(0 0) scale(1)\"><path d=\"M500 15 l9 20 23 3 -17 15 5 23 -20 -12 -20 12 5 -23 -17 -15 23 -3Z\" fill=\"#f2c230\" stroke=\"#20262d\" stroke-width=\"3\"/><g fill=\"#c74946\" stroke=\"#20262d\" stroke-width=\"2\"><circle cx=\"787\" cy=\"395\" r=\"15\"/><circle cx=\"813\" cy=\"395\" r=\"15\"/><circle cx=\"800\" cy=\"382\" r=\"15\"/><circle cx=\"800\" cy=\"408\" r=\"15\"/><circle cx=\"800\" cy=\"395\" r=\"8\" fill=\"#f2c230\"/></g><g data-motion-body transform=\"translate(0 0)\"><g transform=\"translate(500 230) rotate(0)\"><path d=\"M-55 50 L-55 -50 Q-48 -95 0 -130 Q48 -95 55 -50 V50 Z\" fill=\"#dfe3e6\" stroke=\"#20262d\" stroke-width=\"5\"/><path d=\"M-55 20 L-90 85 L-34 62 M55 20 L90 85 L34 62\" fill=\"#317daf\" stroke=\"#20262d\" stroke-width=\"5\"/><circle cy=\"-43\" r=\"27\" fill=\"#317daf\" stroke=\"#20262d\" stroke-width=\"5\"/><circle cy=\"-43\" r=\"12\" fill=\"#ffffff\"/><path d=\"M-28 51 L-35 80 H35 L28 51Z\" fill=\"#456e93\" stroke=\"#20262d\" stroke-width=\"4\"/></g></g><g data-motion-gas transform=\"translate(0 0)\"><path d=\"M478 317 Q465 347 477 390 L500 414 L523 390 Q535 347 522 317Z\" fill=\"#f2c230\" stroke=\"#a47b00\" stroke-width=\"3\"/></g><g class=\"ds-motion-arrows\" fill=\"none\" stroke=\"#317daf\" stroke-width=\"7\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M630 250 v-105 m-16 20 16 -20 16 20 M365 225 v150 m-16 -20 16 20 16 -20\"/></g></g><g class=\"ds-mark\" data-choice-mark=\"star\"><rect class=\"ds-halo\" x=\"20\" y=\"456\" width=\"476\" height=\"120\" rx=\"18\" fill=\"none\" stroke=\"#f2c230\" stroke-width=\"6\"/><rect x=\"24\" y=\"460\" width=\"468\" height=\"112\" rx=\"16\" fill=\"#ffffff\" stroke=\"#9fb3c2\" stroke-width=\"3\"/><path d=\"M258 464 l9 20 23 3 -17 15 5 23 -20 -12 -20 12 5 -23 -17 -15 23 -3Z\" fill=\"#f2c230\" stroke=\"#20262d\" stroke-width=\"3\"/><text x=\"258\" text-anchor=\"middle\" fill=\"#20262d\" font-size=\"25\" font-weight=\"700\"><tspan x=\"258\" y=\"543\">Up toward the star</tspan></text></g><g class=\"ds-mark\" data-choice-mark=\"flower\"><rect class=\"ds-halo\" x=\"504\" y=\"456\" width=\"476\" height=\"120\" rx=\"18\" fill=\"none\" stroke=\"#f2c230\" stroke-width=\"6\"/><rect x=\"508\" y=\"460\" width=\"468\" height=\"112\" rx=\"16\" fill=\"#ffffff\" stroke=\"#9fb3c2\" stroke-width=\"3\"/><g fill=\"#c74946\" stroke=\"#20262d\" stroke-width=\"2\"><circle cx=\"729\" cy=\"494\" r=\"15\"/><circle cx=\"755\" cy=\"494\" r=\"15\"/><circle cx=\"742\" cy=\"481\" r=\"15\"/><circle cx=\"742\" cy=\"507\" r=\"15\"/><circle cx=\"742\" cy=\"494\" r=\"8\" fill=\"#f2c230\"/></g><text x=\"742\" text-anchor=\"middle\" fill=\"#20262d\" font-size=\"25\" font-weight=\"700\"><tspan x=\"742\" y=\"543\">Down toward the flower</tspan></text></g><circle cx=\"464\" cy=\"601\" r=\"6\" fill=\"#3f9a4c\"/><circle cx=\"488\" cy=\"601\" r=\"6\" fill=\"#3f9a4c\"/><circle cx=\"512\" cy=\"601\" r=\"6\" fill=\"#3f9a4c\"/><circle cx=\"536\" cy=\"601\" r=\"6\" fill=\"#9fb3c2\"/></svg><button class=\"ds-rocket-choice\" type=\"button\" aria-label=\"Up toward the star\" style=\"left:2.4%;top:74.19354838709677%;width:46.8%;height:18.06451612903226%\"></button><button class=\"ds-rocket-choice\" type=\"button\" aria-label=\"Down toward the flower\" style=\"left:50.8%;top:74.19354838709677%;width:46.8%;height:18.06451612903226%\"></button></div>",
+      "css": ".ds-rocket-prompt-row{display:flex;align-items:center;gap:16px;max-width:940px;margin:0 auto 20px}.ds-rocket-replay{flex:none;display:grid;place-items:center;width:60px;height:60px;padding:0;border-radius:50%;border:2px solid #cbd8e2;background:#e7eef5;cursor:pointer;transition:background 150ms ease}.ds-rocket-replay:hover{background:#dce8f2;border-color:#2d6fa3}.ds-rocket-replay:focus-visible{outline:3px solid #2d6fa3;outline-offset:5px}.ds-rocket-replay svg{width:52px;height:52px}.ds-rocket-prompt{font-family:\"Unbounded Variable\",sans-serif;font-size:clamp(19px,2.2vw,29px);font-weight:650;line-height:1.22;max-width:42ch;margin:0;color:#20262d;overflow-wrap:anywhere}.ds-rocket-scene{position:relative;width:100%;aspect-ratio:1000/620}.ds-rocket-scene>svg{display:block;width:100%;height:100%;font-family:\"Figtree Variable\",sans-serif}.ds-rocket-scene .ds-halo,.ds-rocket-scene .ds-motion-arrows,.ds-rocket-scene .ds-motion-comparison{opacity:0}.ds-rocket-choice{position:absolute;padding:0;border:0;border-radius:22px;background:transparent;min-height:44px;cursor:pointer}.ds-rocket-choice:hover{background:rgba(79,159,214,.07)}.ds-rocket-choice:focus-visible{outline:4px solid #2d6fa3;outline-offset:6px}.ds-rocket-choice:disabled{cursor:default}@media(max-width:640px){.ds-rocket-prompt-row{gap:10px}.ds-rocket-replay{width:52px;height:52px}.ds-rocket-replay svg{width:38px;height:38px}}@media(prefers-reduced-motion:reduce){.ds-rocket-replay{transition:none}}"
+    },
+    {
+      "name": "Rocket written explanation",
+      "kind": "custom",
+      "description": "Persistent written explanation in the standalone lesson. The maze presentation also omits its coloured explanation stripe.",
+      "html": "<p class=\"ds-rocket-feedback\" role=\"status\" aria-live=\"polite\">The rocket pushes gas down, and the gas pushes the rocket up. Just like our balloon!</p>",
+      "css": ".ds-rocket-feedback{font-family:\"Figtree Variable\",sans-serif;color:#20262d;font-size:20px;line-height:1.45;max-width:58ch;min-height:2.9em;margin:14px auto 0;overflow-wrap:anywhere}@media(max-width:640px){.ds-rocket-feedback{font-size:16px;min-height:42px;margin-top:8px}}"
     }
   ],
   "narrative": {
     "northStar": "Shared geometric discoveries",
-    "overview": "This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.\n\nThe interface alternates between readable adult guidance and generous child-facing choices. Shapes are literal mathematical stimuli, built with CSS; imagery is not required to communicate them. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.",
+    "overview": "This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.\n\nThe interface alternates between readable adult guidance and generous child-facing play. The six baseline math activities take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.\n\n**Pip\u2019s Rocket Lab** extends this same world with a geometric experiment: a teal balloon on a level string, pale puffs representing invisible air, and a silver rocket. The standalone lesson uses the education canvas; its maze presentation uses the incumbent WWM gate shell. This addition has four required motion predictions and an optional space prediction. It does not extend the baseline personalization surface. Source authority for this addition is `src/rocket-render.ts`, `src/rocket.ts`, `src/rocket.css`, and `packages/learning/src/motion-scene.ts`. The built surface is a review pilot; child, educator, and physical-device acceptance remain open.",
     "keyCharacteristics": [
       "Fog-white pages with flat, softly tinted sections.",
       "Geometric display type paired with clear, roomy body text.",
-      "Large shape choices with persistent verbal feedback.",
+      "One voiced guide, Pip, and a scene where the counted gems are the highest-contrast things on screen.",
+      "Persistent written feedback, with the spoken word highlighted.",
       "Readable learning intent beside optional parent controls."
     ],
-    "rules": [],
+    "rules": [
+      {
+        "name": "The Fixed Marker Rule",
+        "body": "In Rocket Lab, the blue circle stays on the left and the yellow triangle stays on the right when the balloon reverses. The upright rocket uses a yellow star above and a red flower below. Match each marker to its illustrated, written choice; colour alone never carries the direction. The triangle and star use theme Glow, including its brighter yellow, while the rocket flame is outlined in Shape Yellow. This scene use does not change the baseline math stimulus colours.",
+        "section": "colors"
+      },
+      {
+        "name": "The Rest-Then-Push Rule",
+        "body": "Every Rocket prediction starts still. Motion plays once to show gas and vehicle moving in opposite directions, then holds the after state with a written explanation. Replay starts the same finite experiment again. The tied balloon stays still and the explanation adds an open-versus-tied comparison. The moving arrows and comparison are revealed during the explanation, rather than supplying the answer in the untouched prediction picture.",
+        "section": "components"
+      }
+    ],
     "dos": [
       "**Do** retain the Figtree/Unbounded pairing and fog-white ground when extending this surface.",
       "**Do** make mathematical objects literal and keep visible explanations alongside their machine-readable intent.",
+      "**Do** draw lesson pictures only from the document theme through the shared renderer, so the page and the game show the same thing.",
+      "**Do** keep counted gems the highest-contrast element; keep scenery faint and still.",
       "**Do** preserve keyboard outlines, textual answer feedback, reduced-motion behavior, and wrapping for custom titles and introductions.",
       "**Do** preserve the distinction between stimulus yellow and the brighter wordmark yellow."
     ],

@@ -7,7 +7,9 @@
  *   `[data-choice-mark="b"]` → `is-correct` / `is-retry` / `is-glow` / `is-pulse` · `.pip` → `is-happy`
  * and position answer buttons over `SceneLayout.choices` boxes (viewBox units).
  */
+
 import { type GemLayout, layoutGroup, pairUp } from './layout.ts';
+import { motionLayout, motionSvg } from './motion-scene.ts';
 import { choiceKeys } from './present.ts';
 import {
   choiceIds,
@@ -126,6 +128,7 @@ export function sceneLayout(
   planks: number,
   neutral = true,
 ): SceneLayout {
+  if (round.kind === 'predict-motion') return motionLayout(round, orientation);
   const wide = orientation === 'wide';
   const width = wide ? 1000 : 600;
   const height = wide ? 640 : 1000;
@@ -133,7 +136,7 @@ export function sceneLayout(
   const islands: SceneLayout['islands'] = [];
   let stimulus: Box | null = null;
 
-  if (round.kind !== 'choose') {
+  if (round.kind === 'compare' || round.kind === 'difference') {
     const boxes: Box[] = wide
       ? [
           { x: 30, y: 36, w: 430, h: 330 },
@@ -319,9 +322,12 @@ export const SCENE_CSS = `.wwm-scene{font-family:"Figtree Variable",Figtree,syst
 @keyframes wwm-bob{50%{transform:translateY(-6px)}}
 @keyframes wwm-hop{50%{transform:translateY(-22px)}}
 @keyframes wwm-drop{from{transform:translateY(-30px);opacity:0}}
+.motion-arrows,.motion-comparison{opacity:0}
+[data-experiment-frame] .motion-arrows,[data-experiment-frame] .motion-comparison{opacity:1}
 @media (prefers-reduced-motion:reduce){.wwm-scene *{animation:none!important;transition:none!important}}`;
 
 export interface SceneView {
+  experiment?: 'after';
   orientation: Orientation;
   /** Planks on the bridge (required rounds) and how many are built. */
   planks: number;
@@ -332,6 +338,7 @@ export interface SceneView {
 
 /** The whole round as one SVG (decorative for assistive tech: the answer buttons carry the names). */
 export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
+  if (round.kind === 'predict-motion') return motionSvg(theme, round, view);
   const p = theme.palette;
   const layout = sceneLayout(round, view.orientation, view.planks, view.neutral ?? true);
   const { width, height } = layout;
@@ -364,7 +371,7 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
     return `<g class="check"><circle cx="${n(cx)}" cy="${n(cy)}" r="24" fill="${p.bridge}" stroke="${p.paper}" stroke-width="4"/><path d="M${n(cx - 11)} ${n(cy)} L${n(cx - 3)} ${n(cy + 8)} L${n(cx + 12)} ${n(cy - 9)}" fill="none" stroke="${p.paper}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></g>`;
   };
 
-  if (round.kind !== 'choose') {
+  if (round.kind === 'compare' || round.kind === 'difference') {
     layout.islands.forEach((island, i) => {
       const id = i === 0 ? 'a' : 'b';
       const choice = layout.choices.find((c) => c.id === id);

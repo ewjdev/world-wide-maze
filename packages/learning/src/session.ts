@@ -12,7 +12,15 @@ export type Phase = 'intro' | 'round' | 'bonus-offer' | 'done';
 /** What the page should show alongside the voice. */
 export type Show = 'pulse' | 'match' | 'worked' | 'celebrate' | 'retry' | null;
 
+export interface MotionEffect {
+  token: string;
+  purpose: 'intro' | 'explain' | 'hint' | 'worked' | 'replay';
+}
 export interface LessonState {
+  effect?: MotionEffect;
+  effectSequence?: number;
+  runId?: number;
+  demoSeen?: boolean;
   activityId: string;
   phase: Phase;
   /** Index into `activity.rounds` of the current (or just finished) round. */
@@ -35,6 +43,8 @@ export interface LessonState {
 
 export type LessonEvent =
   | { type: 'start' }
+  | { type: 'effect-complete'; token: string }
+  | { type: 'replay-effect' }
   | { type: 'answer'; choice: string }
   | { type: 'hint' }
   | { type: 'match' }
@@ -55,6 +65,7 @@ export function initialState(
   options: { seed?: number; shuffle?: 'positions' | 'none' } = {},
 ): LessonState {
   return {
+    ...(activity.demonstration ? { runId: randomSeed(), effectSequence: 0, demoSeen: false } : {}),
     seed: options.seed ?? 0,
     shuffle: options.shuffle ?? 'positions',
     played: [],
@@ -104,10 +115,20 @@ export function requiredRounds(activity: Activity): number {
   return activity.rounds.filter(isRequired).length;
 }
 
-const hasIslands = (round: Round) => round.kind !== 'choose';
+const hasIslands = (round: Round) => round.kind === 'compare' || round.kind === 'difference';
 
 function freshRound(state: LessonState, index: number, phase: Phase = 'round'): LessonState {
-  return { ...state, phase, index, hintLevel: 0, misses: 0, choice: null, result: null, solved: false };
+  return {
+    ...state,
+    effect: undefined,
+    phase,
+    index,
+    hintLevel: 0,
+    misses: 0,
+    choice: null,
+    result: null,
+    solved: false,
+  };
 }
 
 /** Lines for climbing to `level` of the ladder; the worked example counts both islands first. */
@@ -140,12 +161,60 @@ function nextIndex(activity: Activity, state: LessonState, from: number): number
   return -1;
 }
 
+function withEffect(state: LessonState, purpose: MotionEffect['purpose']): LessonState {
+  const sequence = (state.effectSequence ?? 0) + 1;
+  return { ...state, effectSequence: sequence, effect: { token: `${state.runId}.${sequence}`, purpose } };
+}
+
 export function step(activity: Activity, state: LessonState, event: LessonEvent): Step {
   const round = currentRound(activity, state);
   const none: Step = { state, say: [], show: null };
+  if (state.effect) {
+    if (event.type === 'replay-effect')
+      return {
+        state: withEffect(state, state.effect.purpose),
+        say:
+          state.effect.purpose === 'intro'
+            ? [lineId.intro(activity.id), lineId.demonstration(activity.id)]
+            : state.effect.purpose === 'explain' || state.effect.purpose === 'replay'
+              ? [lineId.success(activity.id, round.id)]
+              : [lineId.hint(activity.id, round.id, state.hintLevel)],
+        show: null,
+      };
+    if (event.type !== 'effect-complete' || event.token !== state.effect.token) return none;
+    const cleared = { ...state, effect: undefined };
+    if (state.effect.purpose === 'intro')
+      return { state: { ...cleared, demoSeen: true }, say: opening(activity, round), show: null };
+    if (state.effect.purpose === 'explain') {
+      const fresh = !state.played.includes(round.id);
+      return {
+        state: {
+          ...cleared,
+          solved: true,
+          built: state.built + (fresh && isRequired(round) ? 1 : 0),
+          played: fresh ? [...state.played, round.id] : state.played,
+        },
+        say: [],
+        show: 'celebrate',
+      };
+    }
+    return { state: cleared, say: [], show: state.effect.purpose === 'worked' ? 'worked' : null };
+  }
   switch (event.type) {
+    case 'effect-complete':
+      return none;
+    case 'replay-effect':
+      return round.kind === 'predict-motion' && state.solved
+        ? { state: withEffect(state, 'replay'), say: [lineId.success(activity.id, round.id)], show: null }
+        : none;
     case 'start': {
       if (state.phase !== 'intro') return none;
+      if (activity.demonstration)
+        return {
+          state: withEffect(freshRound(state, 0), 'intro'),
+          say: [lineId.intro(activity.id), lineId.demonstration(activity.id)],
+          show: null,
+        };
       return {
         state: freshRound(state, 0),
         say: [lineId.intro(activity.id), ...opening(activity, activity.rounds[0] as Round)],
@@ -155,6 +224,12 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
     case 'answer': {
       // A solved round is locked: a stray tap can't undo a success.
       if (state.phase !== 'round' || state.solved) return none;
+      if (checkRound(round, event.choice) === 'correct' && round.kind === 'predict-motion')
+        return {
+          state: withEffect({ ...state, choice: event.choice, result: 'correct' }, 'explain'),
+          say: [lineId.success(activity.id, round.id)],
+          show: null,
+        };
       if (checkRound(round, event.choice) === 'correct')
         return {
           state: {
@@ -171,14 +246,27 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       const level = Math.min(round.hints.length, state.hintLevel + 1);
       const hint = hintLines(activity, round, level);
       return {
-        state: {
-          ...state,
-          choice: event.choice,
-          result: 'try-again',
-          misses: state.misses + 1,
-          hintLevel: level,
-          helped: markHelped(state, round, level),
-        },
+        state:
+          round.kind === 'predict-motion' && level >= 2
+            ? withEffect(
+                {
+                  ...state,
+                  choice: event.choice,
+                  result: 'try-again',
+                  misses: state.misses + 1,
+                  hintLevel: level,
+                  helped: markHelped(state, round, level),
+                },
+                level === 3 ? 'worked' : 'hint',
+              )
+            : {
+                ...state,
+                choice: event.choice,
+                result: 'try-again',
+                misses: state.misses + 1,
+                hintLevel: level,
+                helped: markHelped(state, round, level),
+              },
         say: hint.say,
         show: hint.show === 'pulse' ? 'retry' : hint.show,
       };
@@ -188,7 +276,13 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       const level = Math.min(round.hints.length, state.hintLevel + 1);
       const hint = hintLines(activity, round, level);
       return {
-        state: { ...state, hintLevel: level, helped: markHelped(state, round, level) },
+        state:
+          round.kind === 'predict-motion' && level >= 2
+            ? withEffect(
+                { ...state, hintLevel: level, helped: markHelped(state, round, level) },
+                level === 3 ? 'worked' : 'hint',
+              )
+            : { ...state, hintLevel: level, helped: markHelped(state, round, level) },
         say: hint.say,
         show: hint.show,
       };
@@ -223,9 +317,24 @@ export function step(activity: Activity, state: LessonState, event: LessonEvent)
       return { state: { ...state, phase: 'round' }, say: opening(activity, round), show: null };
     }
     case 'play': {
+      if (activity.demonstration && !state.demoSeen)
+        return {
+          state: withEffect(freshRound(state, 0), 'intro'),
+          say: [lineId.intro(activity.id), lineId.demonstration(activity.id)],
+          show: null,
+        };
       const index = activity.rounds.findIndex((candidate) => candidate.id === event.roundId);
       if (index < 0) throw new Error(`Unknown round ${event.roundId}.`);
       const target = activity.rounds[index] as Round;
+      if (target.kind === 'predict-motion' && state.played.includes(target.id))
+        return {
+          state: withEffect(
+            { ...freshRound(state, index), solved: true, result: 'correct', choice: target.answer },
+            'replay',
+          ),
+          say: [lineId.success(activity.id, target.id)],
+          show: null,
+        };
       const intro = state.phase === 'intro' ? [lineId.intro(activity.id)] : [];
       return { state: freshRound(state, index), say: [...intro, ...opening(activity, target)], show: null };
     }

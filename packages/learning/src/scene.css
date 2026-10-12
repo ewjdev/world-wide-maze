@@ -28,4 +28,6 @@
 @keyframes wwm-bob{50%{transform:translateY(-6px)}}
 @keyframes wwm-hop{50%{transform:translateY(-22px)}}
 @keyframes wwm-drop{from{transform:translateY(-30px);opacity:0}}
+.motion-arrows,.motion-comparison{opacity:0}
+[data-experiment-frame] .motion-arrows,[data-experiment-frame] .motion-comparison{opacity:1}
 @media (prefers-reduced-motion:reduce){.wwm-scene *{animation:none!important;transition:none!important}}

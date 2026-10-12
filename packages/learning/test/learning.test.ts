@@ -214,7 +214,7 @@ describe('theme data is declarative and safe', () => {
 describe('layout and matching', () => {
   it('is deterministic, keeps gems apart, and keeps them on the island', () => {
     for (const round of compare.rounds) {
-      if (round.kind === 'choose') continue;
+      if (round.kind !== 'compare' && round.kind !== 'difference') continue;
       for (const group of round.islands) {
         const one = layoutGroup(group, 1.7);
         expect(layoutGroup(group, 1.7)).toEqual(one);

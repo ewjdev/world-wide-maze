@@ -1,5 +1,19 @@
 # Learning HTML, experimental v0.2
 
+## Guided science 0.5 review reader
+
+`guided-v05.ts` provides `parseGuidedPath`, `readGuidedLearningHtml`, `readGuidedLearningDocument`, `guidedLearningScript` and `guidedCapabilities`. It dispatches 0.1–0.3 documents to the existing legacy reader, and validates guided science as strict `wwm-learning/0.5` / revision `1.0.0`. Legacy readers continue rejecting guided data, including motion rounds placed in a 0.3 envelope. The separate 0.4 encounter/inventory reader remains independent; normalized guided paths have kind `guided-v05`.
+
+The curated `pip-discoveries` path contains `rocket-lab`: four required predictions and optional space. It requires `round.predict-motion`, `scene.rocket-lab` and `demo.rocket-push`. Guided activities require a demonstration, motion rounds, fixed spatial order and a finish lock covering their required rounds. The consumers reject disabled or unsupported lessons before state construction.
+
+`motion.ts` bounds apparatus, setting, escaping-gas direction and initial rest. It derives expected motion and validates semantic marker identity/order, unique choices and a single matching answer. The trusted renderer draws the balloon/string/knot or rocket/exhaust; imported HTML cannot provide scene markup, URLs or an animation script. `guidedLearningScript` uses the existing single inert JSON block and byte bound, with escaped `<`, `>` and `&`.
+
+An accepted answer enters a tokenized pending explanation. A matching `effect-complete` alone commits required progress and maze locks; replay or old callbacks cannot add another completion. Intro must finish before answering. Reduced motion uses before/after frames. Hidden, disposed, restarted or closed work cancels; reopening replays the pending explanation. Narration may extend the readable after-frame within a finite silent fallback, so failed providers cannot block progress indefinitely.
+
+The standalone route is `/education/lessons/rocket-lab/`; the game route is `/play/practice?learn=rocket-lab`. `VITE_ROCKET_LAB_ENABLED` defaults false and production explicitly sets false. The web build copies education's compiled output under `/education/`. Answer hit areas hydrate numeric geometry through CSSOM under `style-src self`. Portable HTML supplies readable before/after examples and imports through the guided reader. Rocket does not read or overwrite the six-activity family draft; the existing mute preference remains shared.
+
+See [execution and release gates](../../plans/pip-rocket-lab-execution.md) and [review evidence](../build-log/pip-rocket-lab.md). New authored clips, physical devices and educator/child acceptance remain pending; this guided format is an original review convention, not an external standard.
+
 ## Phase 23 experimental 0.4 reader (in progress)
 
 `packages/learning/src/lesson-v04.ts` defines a separate strict `wwm-learning/0.4` document. The 0.1–0.3 reader and the six `little-discoveries` activities remain unchanged. `normalizeLearningDocument` identifies old paths as `legacy-linear` and preserves their original normalized 0.3 data; it identifies the experimental path as `v04`. `readLearningHtmlAny` reads one inert script, applies the same 200 KB JSON bound and rejects unsupported formats. A 0.4 export is not promised to old consumers.

@@ -1,0 +1,72 @@
+.rocket-page .stage {
+  margin-top: 16px;
+}
+.rocket-page .scene {
+  max-width: 100%;
+  width: min(100%, calc((100svh - 405px) * 1.61));
+  min-width: 0;
+}
+.rocket-page .intro p {
+  max-width: 36ch;
+}
+.rocket-page .rocket-notes {
+  margin-top: 36px;
+}
+.rocket-page #experiment-status {
+  min-height: 22px;
+  margin: 6px 0;
+}
+.rocket-page .end-card {
+  padding: 24px;
+}
+.rocket-page .lesson-bar #mute {
+  min-height: 44px;
+}
+.rocket-page .scene-choices button {
+  min-height: 44px;
+}
+.rocket-page .controls button {
+  min-height: 52px;
+}
+.rocket-page .prompt {
+  font-size: clamp(19px, 2.2vw, 29px);
+  max-width: 42ch;
+}
+.rocket-page .feedback {
+  max-width: 58ch;
+  margin-inline: auto;
+}
+.rocket-page .controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.rocket-page .prompt-row {
+  align-items: center;
+}
+@media (max-width: 640px) {
+  .rocket-page .scene {
+    width: min(100%, calc((100svh - 290px) * 0.91));
+  }
+  .rocket-page .lesson-bar {
+    gap: 8px;
+  }
+  .rocket-page .lesson-bar .back {
+    font-size: 14px;
+  }
+  .rocket-page .lesson-bar #mute {
+    font-size: 14px;
+    padding: 8px;
+  }
+  .rocket-page .controls {
+    margin-top: 8px;
+  }
+  .rocket-page .feedback {
+    font-size: 16px;
+    min-height: 42px;
+  }
+  .rocket-page .stage {
+    margin-top: 8px;
+  }
+}

@@ -22,10 +22,12 @@ import {
   type InputMode,
   type LessonState,
   layoutGroup,
+  motionEffectMs,
   neutralLabels,
   pairUp,
   type Round,
   requiredRounds,
+  runMotionEffect,
   sceneLayout,
   sceneSvg,
   spriteMarkup,
@@ -37,6 +39,7 @@ import {
   useLayoutEffect,
   useMemo,
   useRef,
+  useState,
   useSyncExternalStore,
 } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -82,13 +85,13 @@ const mark = (root: Element, id: string | null) =>
 
 /** Leftover gems of a round with islands (the same pairing the match line narrates). */
 function leftoverGems(round: Round): string[] {
-  if (round.kind === 'choose') return [];
+  if (round.kind === 'choose' || round.kind === 'predict-motion') return [];
   const p = pairUp(layoutGroup(round.islands[0]), layoutGroup(round.islands[1]));
   return p.extra ? p.leftovers.map((i) => `${p.extra}-${i}`) : [];
 }
 
 function pairCount(round: Round): number {
-  if (round.kind === 'choose') return 0;
+  if (round.kind === 'choose' || round.kind === 'predict-motion') return 0;
   return Math.min(round.islands[0].count, round.islands[1].count);
 }
 
@@ -136,7 +139,7 @@ function applyCue(root: Element, cue: Cue, round: Round): void {
 
 /** What Pip's bubble shows: the latest hint, or the success line once solved (the voice says the same). */
 function feedback(round: Round, state: LessonState): string | null {
-  if (state.solved) return round.success;
+  if (state.result === 'correct' || state.solved) return round.success;
   if (state.hintLevel > 0) return round.hints[Math.min(state.hintLevel, round.hints.length) - 1] ?? null;
   return null;
 }
@@ -220,13 +223,16 @@ function GateCard({
             role="dialog"
             aria-labelledby="lgate-h"
             data-testid="lgate-card"
+            data-motion={!!activity.demonstration}
           >
             <header className="wwm-lgate__head">
               {pipButton}
               <div className="wwm-lgate__titles">
-                <p className="wwm-lgate__eyebrow">
-                  {eyebrow} · {activity.title}
-                </p>
+                {!activity.demonstration && (
+                  <p className="wwm-lgate__eyebrow">
+                    {eyebrow} · {activity.title}
+                  </p>
+                )}
                 <h2 id="lgate-h" className="wwm-lgate__prompt" data-testid="lgate-prompt">
                   {bonus ? t('learning.gate.bonusTitle') : t('learning.gate.doneTitle')}
                 </h2>
@@ -287,16 +293,21 @@ function GateCard({
           aria-labelledby="lgate-h"
           data-testid="lgate-card"
           data-round={gate.round.id}
+          data-motion={gate.round.kind === 'predict-motion'}
           data-solved={gate.state.solved}
         >
           <header className="wwm-lgate__head">
             {pipButton}
             <div className="wwm-lgate__titles">
-              <p className="wwm-lgate__eyebrow">
-                {eyebrow} · {activity.title}
-              </p>
+              {!activity.demonstration && (
+                <p className="wwm-lgate__eyebrow">
+                  {eyebrow} · {activity.title}
+                </p>
+              )}
               <h2 id="lgate-h" className="wwm-lgate__prompt" data-testid="lgate-prompt">
-                {gate.round.prompt}
+                {gate.state.effect?.purpose === 'intro'
+                  ? 'Watch the air. Watch the balloon.'
+                  : gate.round.prompt}
               </h2>
               {invite && !tapOnly && !gate.state.solved && (
                 <p className="wwm-lgate__invite" data-testid="lgate-invite" data-mode={invite}>
@@ -313,7 +324,19 @@ function GateCard({
             <aside className="wwm-lgate__side">
               <Feedback gate={gate} />
               <div className="wwm-lgate__actions wwm-lgate__actions--side">
-                {gate.state.solved ? (
+                {gate.state.effect ? (
+                  <div>
+                    <p role="status">Watch the experiment…</p>
+                    <button
+                      type="button"
+                      className="wwm-btn"
+                      onClick={() => learning.skip()}
+                      data-testid="lgate-later"
+                    >
+                      Later
+                    </button>
+                  </div>
+                ) : gate.state.solved ? (
                   <button
                     type="button"
                     className="wwm-btn wwm-btn--primary wwm-lgate__go"
@@ -333,7 +356,7 @@ function GateCard({
                     >
                       {t('learning.gate.help')}
                     </button>
-                    {gate.round.kind !== 'choose' && (
+                    {(gate.round.kind === 'compare' || gate.round.kind === 'difference') && (
                       <button
                         type="button"
                         className="wwm-btn wwm-btn--secondary"
@@ -382,7 +405,10 @@ function GateCard({
 }
 
 function Feedback({ gate }: { gate: GateView }) {
-  const text = feedback(gate.round, gate.state);
+  const text =
+    gate.state.effect?.purpose === 'intro'
+      ? 'Air is a kind of gas. Pale puffs show invisible air. Watch the balloon move the other way.'
+      : feedback(gate.round, gate.state);
   return (
     <p
       className={`wwm-lgate__say${gate.state.solved ? ' is-success' : ''}`}
@@ -411,11 +437,22 @@ function Scene({
   const activity = lesson?.activity;
   const neutral = activity ? neutralLabels(activity) : true;
   const { round, state } = gate;
+  const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 760px)').matches);
+  useEffect(() => {
+    const q = window.matchMedia('(max-width: 760px)');
+    const change = () => setNarrow(q.matches);
+    q.addEventListener('change', change);
+    return () => q.removeEventListener('change', change);
+  }, []);
+  const orientation = round.kind === 'predict-motion' && narrow ? 'tall' : 'wide';
   const svg = useMemo(
-    () => (theme ? sceneSvg(theme, round, { orientation: 'wide', planks, built: state.built, neutral }) : ''),
-    [theme, round, planks, state.built, neutral],
+    () => (theme ? sceneSvg(theme, round, { orientation, planks, built: state.built, neutral }) : ''),
+    [theme, round, planks, state.built, neutral, orientation],
   );
-  const layout = useMemo(() => sceneLayout(round, 'wide', planks, neutral), [round, planks, neutral]);
+  const layout = useMemo(
+    () => sceneLayout(round, orientation, planks, neutral),
+    [round, planks, neutral, orientation],
+  );
 
   // the step's effect (every step changes `seq`, so the same effect replays)
   // biome-ignore lint/correctness/useExhaustiveDependencies: `svg` re-renders the scene, `seq` is a new step
@@ -424,6 +461,26 @@ function Scene({
     if (!el) return;
     clearEffects(el);
     applyShow(el, gate);
+    if (state.effect && round.kind === 'predict-motion' && activity) {
+      const effect = state.effect;
+      const dispose = runMotionEffect(
+        el,
+        effect.purpose === 'intro' ? (activity.demonstration?.scene ?? round.scene) : round.scene,
+        () => learning.completeMotion(effect.token),
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        motionEffectMs(activity, state, lesson?.path.voice?.clips),
+        () => learning.motionNarrationReady(effect.token),
+      );
+      const visibility = () => {
+        if (document.hidden) learning.stopMotionNarration();
+        else learning.replay();
+      };
+      document.addEventListener('visibilitychange', visibility);
+      return () => {
+        dispose();
+        document.removeEventListener('visibilitychange', visibility);
+      };
+    }
     if (gate.show !== 'match') return;
     // the voice draws the pairs; if it's cut short or silent, the full match still appears
     const done = setTimeout(() => showMatch(el, round), pairCount(round) * 700 + 2600);
@@ -467,7 +524,7 @@ function Scene({
 
   const pct = (value: number, of: number) => `${(value / of) * 100}%`;
   return (
-    <div className="wwm-lgate__scene" data-testid="lgate-scene">
+    <div className="wwm-lgate__scene" data-testid="lgate-scene" data-orientation={orientation}>
       <div
         ref={sceneRef}
         className="wwm-lgate__svg"
@@ -486,6 +543,7 @@ function Scene({
             width: pct(choice.box.w, layout.width),
             height: pct(choice.box.h, layout.height),
           }}
+          disabled={!!state.effect || state.solved}
           aria-label={choice.ariaLabel}
           aria-pressed={state.solved && state.choice === choice.id}
           onClick={() => learning.tap(choice.id)}
