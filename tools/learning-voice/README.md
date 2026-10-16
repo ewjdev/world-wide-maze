@@ -1,7 +1,8 @@
 # @wwm/learning-voice
 
-Build-time voice for learning documents. Pip, the guide in `@wwm/learning`, speaks every line of the baseline
-path from pre-generated ElevenLabs clips with word timings. The timings let the lesson page and the game light
+Build-time voice for learning documents. Pip, the guide in `@wwm/learning`, speaks the original math lessons
+from pre-generated ElevenLabs clips with word timings. The five new Spanish and spelling lessons use browser
+speech; Spanish models require a Spanish device voice and never use an English clip. The timings let the lesson page and the game light
 each gem as it is counted.
 
 ```sh
@@ -17,7 +18,7 @@ pnpm learning:voice --audition   # voice 4 sample lines with each candidate voic
 - The CLI starts `proxy/`, a local helper Worker that is never deployed, under `wrangler dev`:
   - Its AI binding calls **AI Gateway `wwm`** with provider `elevenlabs` and the `v1/text-to-speech/<voice>/with-timestamps` endpoint. The ElevenLabs key is stored in the gateway (BYOK), and the gateway is authenticated. The binding uses your `wrangler login`, so no key or gateway token is kept on disk.
   - Its remote R2 binding writes `<hash>.mp3` to the bucket **`wwm-learning-audio`**, which is public read-only at `https://learning-audio.ewj.dev/`. Files are immutable and cached for a year, with CORS for GET/HEAD.
-- The manifest keeps hashes and word start times, but no audio. `@wwm/learning` tests fail if any baseline line lacks a matching clip.
+- The manifest keeps hashes and word start times, but no audio. `@wwm/learning` tests require matching clips for the original six math lessons. The new lessons exercise browser speech separately.
 
 ## Requirements
 - `wrangler login` to the Cloudflare account that owns the gateway and bucket.

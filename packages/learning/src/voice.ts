@@ -16,6 +16,7 @@ export interface VoiceEvents {
   onCue?(cue: Cue, line: ScriptLine): void;
   onWord?(line: ScriptLine, word: number): void;
   onLine?(line: ScriptLine | null): void;
+  onUnavailable?(line: ScriptLine): void;
 }
 
 export interface VoicePlayerOptions extends VoiceEvents {
@@ -44,7 +45,16 @@ const SILENT_WAV = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAI
 
 /** The clip for a line is found by its exact text, so a line keeps its clip wherever it's used (Phase 22). */
 export function clipFor(clips: readonly VoiceClip[], line: ScriptLine): VoiceClip | undefined {
+  // The existing clip manifest contains English recordings only.
+  if (line.language === 'es-ES') return undefined;
   return clips.find((clip) => clip.text === line.text);
+}
+
+export function spanishVoice(voices: readonly SpeechSynthesisVoice[]): SpeechSynthesisVoice | undefined {
+  return (
+    voices.find((voice) => /^es[-_]ES$/i.test(voice.lang)) ??
+    voices.find((voice) => /^es(?:[-_]|$)/i.test(voice.lang))
+  );
 }
 
 export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
@@ -52,6 +62,7 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
   const audio = typeof Audio === 'undefined' ? null : new Audio();
   if (audio) audio.preload = 'auto';
   const speech = typeof window !== 'undefined' && 'speechSynthesis' in window ? window.speechSynthesis : null;
+  speech?.getVoices(); // Start loading device voices before the first user gesture.
   const failed = new Set<string>();
   const warmed = new Map<string, HTMLAudioElement>();
   let generation = 0;
@@ -87,8 +98,28 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
     });
   }
 
-  function playSpeech(line: ScriptLine): Promise<void> {
+  async function playSpeech(line: ScriptLine): Promise<void> {
     if (!speech || options.muted?.()) return playSilent(line);
+    const mine = generation;
+    let selected = line.language === 'es-ES' ? spanishVoice(speech.getVoices()) : undefined;
+    if (line.language === 'es-ES' && !selected) {
+      // Some browsers populate voices asynchronously. Recheck once without substituting English.
+      await new Promise<void>((resolve) => {
+        const finish = () => {
+          clearTimeout(timer);
+          speech.removeEventListener('voiceschanged', finish);
+          resolve();
+        };
+        const timer = setTimeout(finish, 1000);
+        speech.addEventListener('voiceschanged', finish, { once: true });
+      });
+      if (mine !== generation) return;
+      selected = spanishVoice(speech.getVoices());
+      if (!selected) {
+        options.onUnavailable?.(line);
+        return playSilent(line);
+      }
+    }
     const words = wordsOf(line.text);
     return new Promise((resolve) => {
       let settled = false;
@@ -101,7 +132,8 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
         resolve();
       };
       const utterance = new SpeechSynthesisUtterance(line.text);
-      utterance.lang = 'en-US';
+      utterance.lang = line.language ?? 'en-US';
+      if (selected) utterance.voice = selected;
       utterance.rate = options.rate ?? 0.85;
       utterance.onboundary = (event) => {
         if (event.name !== 'word') return;
@@ -122,7 +154,10 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
         }, 300);
       };
       utterance.onend = finish;
-      utterance.onerror = finish;
+      utterance.onerror = () => {
+        options.onUnavailable?.(line);
+        finish();
+      };
       cancelCurrent = () => {
         speech.cancel();
         finish();
@@ -190,7 +225,7 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
   function sourceFor(line: ScriptLine): 'clip' | 'speech' | 'silent' {
     const clip = clipFor(options.clips, line);
     if (clip && audio && !failed.has(clip.hash)) return 'clip';
-    return speech ? 'speech' : 'silent';
+    return speech && (line.language !== 'es-ES' || spanishVoice(speech.getVoices())) ? 'speech' : 'silent';
   }
 
   return {
@@ -203,7 +238,10 @@ export function createVoicePlayer(options: VoicePlayerOptions): VoicePlayer {
         const clip = clipFor(options.clips, line);
         if (clip && audio && !failed.has(clip.hash)) await playClip(line, clip);
         else if (speech) await playSpeech(line);
-        else await playSilent(line);
+        else {
+          options.onUnavailable?.(line);
+          await playSilent(line);
+        }
         cancelCurrent = null;
       }
       if (mine === generation) options.onLine?.(null);

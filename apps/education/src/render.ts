@@ -15,6 +15,7 @@ import {
   levelsFor,
   neutralLabels,
   type Orientation,
+  preschoolActivities,
   type Round,
   requiredRounds,
   resolveLevel,
@@ -45,6 +46,17 @@ export function spokenHtml(text: string): string {
     last = word.end;
   });
   return out + escapeHtml(text.slice(last));
+}
+
+export function practiceHtml(round: Round, interactive = false): string {
+  const model = round.practice;
+  if (!model) return '';
+  const spanish = model.language === 'es-ES';
+  const blank =
+    round.kind === 'choose' && round.stimulusText
+      ? `<span class="visually-hidden">Word: ${escapeHtml(round.stimulusText.replace('_', 'blank'))}.</span>`
+      : '';
+  return `<div class="word-practice">${blank}<p>Listen and say: <strong lang="${model.language}">${escapeHtml(model.text)}</strong>${interactive ? ' <button class="secondary" type="button" id="practice-replay">Hear the word</button>' : ''}</p><p class="small" id="practice-status">${spanish ? 'Uses a Spanish device voice. If silent, read together with a grown-up.' : 'Try saying it aloud with your grown-up.'} Speaking is optional.</p></div>`;
 }
 
 // ── describing rounds for grown-ups ───────────────────────────────────────────────────────────────────────
@@ -317,7 +329,7 @@ export function homePage(path: LearningPath): string {
     <div class="discovery">${skyIslandsArt(theme)}</div>
     <p class="meet-pip">${spriteMarkup(theme, 'pip', 52, 'meet-pip-sprite')}<span><strong>Meet ${escapeHtml(theme.guide.name)},</strong> the World Wide Maze ball. ${escapeHtml(theme.guide.name)} reads every question aloud and helps when it’s tricky. Tap ${escapeHtml(theme.guide.name)} to hear it again.</span></p>
     <p class="small">Start anywhere. Pause whenever you like.</p></div>
-    <div class="path-stops"><h2>Your first learning path</h2><p>Six things to try together across the ${escapeHtml(theme.name)}. The order is a suggestion.</p>
+    <div class="path-stops"><h2>Your first learning path</h2><p>${path.activities.length} things to try together across the ${escapeHtml(theme.name)}. The order is a suggestion.</p>
     <ol>${path.activities.map((activity, index) => `<li><a href="/lessons/${activity.id}/"><span class="stop-number">${index + 1}</span><span><strong>${escapeHtml(activity.title)}</strong><span class="stop-meta">${escapeHtml(roundSummary(activity))}</span><span>${escapeHtml(activity.objective)}</span></span><span class="stop-arrow" aria-hidden="true">↗</span></a></li>`).join('')}</ol></div>
   </section>
   <section id="personalize" class="parent-workspace" aria-labelledby="parent-heading">
@@ -334,7 +346,7 @@ export function homePage(path: LearningPath): string {
     </div>
   </section>
   ${gameSettingsHtml(path)}
-  <section class="transparency"><h2>See what’s being learned.</h2><p>Every activity includes its goal, what each round checks, hints, the answer explained, and an idea to try away from the screen. The same information, and the ${escapeHtml(theme.name)} pictures, are embedded in the page for compatible games to read.</p><details><summary>About this starter material</summary><p>This is an early-math starter path, not a complete curriculum for ages 4–6. Activities are original examples informed by <a href="https://headstart.gov/school-readiness/article/math-preschool">Head Start’s preschool math guidance</a> and <a href="https://www.naeyc.org/node/2631">NAEYC’s playful math ideas</a>. Neither organization has reviewed or endorsed these activities. A six-year-old may need more challenge; choose by what your child is ready to explore.</p><p>${escapeHtml(theme.guide.name)}’s voice is generated ahead of time from our own script; nothing your child says or taps leaves this device. When a recording is unavailable, your browser’s voice reads the line instead.</p></details></section>`,
+  <section class="transparency"><h2>See what’s being learned.</h2><p>Every activity includes its goal, what each round checks, hints, the answer explained, and an idea to try away from the screen. The same information, and the ${escapeHtml(theme.name)} pictures, are embedded in the page for compatible games to read.</p><details><summary>About this starter material</summary><p>This starter path includes early math and five Spanish and spelling activities designed for ages 4–5 with a grown-up. It is not a complete curriculum for ages 4–6. The original math activities are examples informed by <a href="https://headstart.gov/school-readiness/article/math-preschool">Head Start’s preschool math guidance</a> and <a href="https://www.naeyc.org/node/2631">NAEYC’s playful math ideas</a>. Neither organization has reviewed or endorsed these activities. A six-year-old may need more challenge; choose by what your child is ready to explore.</p><p>${escapeHtml(theme.guide.name)}’s voice is generated ahead of time from our own script; nothing your child says or taps leaves this device. New lessons use your browser’s voice. Spanish words use a Spanish device voice; when one is unavailable, read the transcript with a Spanish-speaking grown-up. Speaking practice is optional and is not recorded or scored.</p></details></section>`,
     path,
     '/src/home.ts',
   );
@@ -380,6 +392,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
     <section class="stage" id="stage" data-learning-round="${first.id}" data-learning-kind="${first.kind}" aria-labelledby="prompt" hidden>
       <div class="prompt-row"><button class="pip-replay" id="replay" type="button" aria-label="Hear it again" title="Hear it again" disabled>${spriteMarkup(theme, 'pip', 44, 'pip-sprite')}</button><h2 class="prompt" id="prompt" tabindex="-1" data-learning-field="prompt">${spokenHtml(first.prompt)}</h2></div>
       <p class="input-hint" id="input-hint" hidden></p>
+      <div id="practice">${practiceHtml(first, true)}</div>
       ${sceneBlock(theme, activity, first, { orientation: 'wide', built: 0, enabled: false })}
       <p class="feedback" id="feedback" role="status" aria-live="polite"></p>
       <div class="controls" id="controls">
@@ -400,7 +413,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
   </article>
   <p id="lesson-version" class="small lesson-version">Original learning path</p>
   ${parentNotesHtml(path, activity)}
-  <nav class="lesson-nav" aria-label="Activity navigation"><a class="secondary" href="/">Choose another activity</a>${next ? `<a class="secondary" href="/lessons/${next.id}/">Skip to the next activity →</a>` : ''}</nav>
+  <nav class="lesson-nav" aria-label="Activity navigation"><a class="secondary" href="/">Choose another activity</a>${preschoolActivities.some((item) => item.id === activity.id) ? `<a class="secondary" download href="/lesson-packs/${activity.id}.html">Download this lesson for the maze</a>` : ''}${next ? `<a class="secondary" href="/lessons/${next.id}/">Skip to the next activity →</a>` : ''}</nav>
   <noscript><p class="small">Pip’s voice and the answer buttons need JavaScript. You can still read the question, look at the islands together, and open the grown-up notes.</p></noscript>
 </div>`,
     path,
@@ -427,7 +440,7 @@ export function portablePage(path: LearningPath, acceptedAt?: string): string {
       const rounds = activity.rounds
         .map(
           (round, index) =>
-            `<section data-learning-round="${round.id}" data-learning-kind="${round.kind}"><h3>Round ${index + 1}: ${escapeHtml(roundCheck(activity, round, index))}</h3><p class="prompt" data-learning-field="prompt">${escapeHtml(round.prompt)}</p><div class="scene">${sceneSvg(
+            `<section data-learning-round="${round.id}" data-learning-kind="${round.kind}"><h3>Round ${index + 1}: ${escapeHtml(roundCheck(activity, round, index))}</h3><p class="prompt" data-learning-field="prompt">${escapeHtml(round.prompt)}</p>${practiceHtml(round)}<div class="scene">${sceneSvg(
               theme,
               round,
               {

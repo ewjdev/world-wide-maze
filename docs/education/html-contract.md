@@ -2,7 +2,7 @@
 
 ## Phase 23 experimental 0.4 reader (in progress)
 
-`packages/learning/src/lesson-v04.ts` defines a separate strict `wwm-learning/0.4` document. The 0.1–0.3 reader and the six `little-discoveries` activities remain unchanged. `normalizeLearningDocument` identifies old paths as `legacy-linear` and preserves their original normalized 0.3 data; it identifies the experimental path as `v04`. `readLearningHtmlAny` reads one inert script, applies the same 200 KB JSON bound and rejects unsupported formats. A 0.4 export is not promised to old consumers.
+`packages/learning/src/lesson-v04.ts` defines a separate strict `wwm-learning/0.4` document. The 0.1–0.3 reader is separate. The `little-discoveries` path now has eleven activities; see the 3.1.0 additions below. `normalizeLearningDocument` identifies old paths as `legacy-linear` and preserves their original normalized 0.3 data; it identifies the experimental path as `v04`. `readLearningHtmlAny` reads one inert script, applies the same 200 KB JSON bound and rejects unsupported formats. A 0.4 export is not promised to old consumers.
 
 The first executable 0.4 contract is `bridge-builders`. It declares exact inventory, unique pickup IDs, four encounters, deposit totals and connector IDs. Its authored fixture lives at `fixtures/learning/bridge-builders/`. The separate binding manifest names targets and stage connector IDs, with a full stage-content hash. Neither the document nor imported HTML contains a world path, media origin, or executable code. The current `apps/web/src/learning/world.ts` binder rejects missing references, a changed stage and unsafe or overlapping placements. Graph reachability under every authored state and physical collision traversal remain acceptance work.
 
@@ -134,3 +134,7 @@ How `apps/education` applies 0.3. This describes one consumer; it doesn't change
   - Every page reads the path through `applyFamilySettings`, so the page's own `#wwm-learning` JSON and the "Download learning HTML" file carry `family`.
   - Choosing a lesson's recommended level removes that lesson's entry. With nothing left to remember, the record is removed.
 - **Portable download.** It adds a visible "Game settings" section: each activity's level with its generated description, and the answering setting. It still has exactly one inert JSON script and no `src=`.
+
+## Baseline revision 3.1.0: preschool language and spelling
+
+The `wwm-learning/0.3` schema now accepts `language` and `literacy` activity domains, `rounds[].practice: { text, language }` (`en-US` or `es-ES`), a choose round’s optional `stimulusText` (24 characters maximum; mutually exclusive with picture stimulus), and text-only options (`tokens: []`). Spanish practice is delivered separately from English instruction and never through an English fallback voice. The existing recording manifest contains English clips only. See [preschool lessons](preschool-lessons.md) for individual HTML packs and compatibility details.

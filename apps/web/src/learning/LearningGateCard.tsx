@@ -287,6 +287,7 @@ function GateCard({
           aria-labelledby="lgate-h"
           data-testid="lgate-card"
           data-round={gate.round.id}
+          data-practice={!!gate.round.practice}
           data-solved={gate.state.solved}
         >
           <header className="wwm-lgate__head">
@@ -311,6 +312,30 @@ function GateCard({
           <div className="wwm-lgate__main">
             <Scene gate={gate} learning={learning} planks={planks} sceneRef={scene} />
             <aside className="wwm-lgate__side">
+              {gate.round.practice && (
+                <div className="wwm-lgate__practice">
+                  <p>
+                    Listen and say:{' '}
+                    <strong lang={gate.round.practice.language}>{gate.round.practice.text}</strong>
+                  </p>
+                  {gate.round.kind === 'choose' && gate.round.stimulusText && (
+                    <p>Word: {gate.round.stimulusText.replace('_', 'blank')}</p>
+                  )}
+                  <button
+                    type="button"
+                    className="wwm-btn wwm-btn--ghost wwm-btn--small"
+                    onClick={() => learning.replayPractice()}
+                  >
+                    Hear the word
+                  </button>
+                  <p>
+                    {gate.round.practice.language === 'es-ES'
+                      ? 'Uses a Spanish device voice. If silent, read with a Spanish-speaking grown-up. '
+                      : ''}
+                    Try saying it aloud. Speaking is optional.
+                  </p>
+                </div>
+              )}
               <Feedback gate={gate} />
               <div className="wwm-lgate__actions wwm-lgate__actions--side">
                 {gate.state.solved ? (

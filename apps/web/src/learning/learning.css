@@ -123,6 +123,15 @@
   white-space: nowrap;
   clip-path: polygon(6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%, 0 6px);
 }
+.wwm-lgate__practice {
+  font: 500 clamp(14px, 1.8vh, 18px) / 1.4 var(--ui);
+}
+.wwm-lgate__practice p {
+  margin: 4px 0;
+}
+.wwm-lgate__practice strong {
+  font-size: 1.4em;
+}
 
 .wwm-lgate__main {
   display: grid;
@@ -263,6 +272,16 @@
   }
   .wwm-lgate__bridge {
     display: none;
+  }
+  .wwm-lgate__card[data-practice="true"] .wwm-lgate__head {
+    align-items: start;
+  }
+  .wwm-lgate__card[data-practice="true"] .wwm-lgate__prompt {
+    font-size: 19px;
+    line-height: 1.22;
+  }
+  .wwm-lgate__card[data-practice="true"] .wwm-lgate__eyebrow {
+    font-size: 12px;
   }
 }
 

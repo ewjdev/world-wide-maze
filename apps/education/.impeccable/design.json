@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-26T19:49:51.755552+00:00",
+  "generatedAt": "2026-10-16T08:57:49.899013+00:00",
   "title": "Design System: WWM Learning",
   "extensions": {
     "colorMeta": {
@@ -473,7 +473,7 @@
       "name": "Learning path stop",
       "kind": "nav",
       "description": "A readable objective accompanies every activity link.",
-      "html": "<nav class=\"ds-stop\" aria-label=\"Learning path\"><a href=\"#activity\"><span class=\"ds-number\">1</span><span><strong>Count together</strong><span class=\"ds-objective\">Compare and count small groups of shapes.</span></span><span class=\"ds-arrow\" aria-hidden=\"true\">\u2197</span></a></nav>",
+      "html": "<nav class=\"ds-stop\" aria-label=\"Learning path\"><a href=\"#activity\"><span class=\"ds-number\">1</span><span><strong>Count together</strong><span class=\"ds-objective\">Compare and count small groups of shapes.</span></span><span class=\"ds-arrow\" aria-hidden=\"true\">↗</span></a></nav>",
       "css": ".ds-stop{font-family:\"Figtree Variable\",sans-serif;color:var(--ink, #20262d);border-top:1px solid var(--line, #d6dce0);border-bottom:1px solid var(--line, #d6dce0);}.ds-stop a{display:grid;grid-template-columns:38px 1fr 22px;align-items:center;gap:16px;padding:20px 4px;color:inherit;text-decoration:none;}.ds-stop a:hover{background:#edf2f5}.ds-stop a:focus-visible{outline:3px solid var(--blue, #2d6fa3);outline-offset:5px}.ds-number{width:34px;height:34px;border-radius:50%;background:#e3ecf2;display:grid;place-items:center;color:#245779;font-weight:650;font-size:16px}.ds-stop strong{display:block;font-size:21px;font-weight:700}.ds-objective{display:block;font-size:15px;color:var(--muted, #4b555f);line-height:1.45;margin-top:4px}.ds-arrow{font-size:23px;color:var(--blue, #2d6fa3)}"
     },
     {
@@ -498,15 +498,31 @@
       "description": "Native disclosure keeps explanation reachable without crowding activity choices.",
       "html": "<details class=\"ds-details\"><summary>For grown-ups: what this teaches</summary><h2>The learning goal</h2><p>Count a small group of shapes together.</p></details>",
       "css": ".ds-details{font-family:\"Figtree Variable\",sans-serif;color:var(--ink, #20262d);font-size:18px;line-height:1.55;text-align:left;border-top:1px solid var(--line, #d6dce0);padding-top:20px}.ds-details summary{cursor:pointer;font-weight:650;min-height:44px}.ds-details summary:focus-visible{outline:3px solid var(--blue, #2d6fa3);outline-offset:5px}.ds-details h2{font-size:24px;line-height:1.25;font-weight:600;letter-spacing:-.025em;margin:20px 0 0}.ds-details p{max-width:68ch;margin:10px 0 0}"
+    },
+    {
+      "name": "Word practice",
+      "kind": "custom",
+      "description": "A language-marked written word model and secondary replay action; Spanish availability and optional speaking stay visible.",
+      "html": "<div class=\"ds-word-practice\"><p>Listen and say: <strong lang=\"es-ES\">Hola</strong> <button type=\"button\">Hear the word</button></p><p class=\"ds-practice-note\">Uses a Spanish device voice. If silent, read together with a grown-up. Speaking is optional.</p></div>",
+      "css": ".ds-word-practice{font:18px/1.55 \"Figtree Variable\",sans-serif;color:var(--ink,#20262d);margin:12px 0}.ds-word-practice p{margin:4px 0;max-width:68ch}.ds-word-practice strong{font-size:1.4em}.ds-word-practice button{font:650 18px/1.55 \"Figtree Variable\",sans-serif;min-height:48px;margin:0 8px;padding:12px 20px;border:0;border-radius:8px;background:#e9edef;color:var(--ink,#20262d);cursor:pointer;transition:background 150ms ease}.ds-word-practice button:hover{background:#dce3e7}.ds-word-practice button:focus-visible{outline:3px solid var(--blue,#2d6fa3);outline-offset:5px}.ds-word-practice .ds-practice-note{font-size:14px;color:var(--muted,#4b555f)}@media(prefers-reduced-motion:reduce){.ds-word-practice button{transition:none}}"
+    },
+    {
+      "name": "Text-only scene choice",
+      "kind": "custom",
+      "refersTo": "scene-choice",
+      "description": "Centered SVG letters use the shared Paper/Island Edge card and a transparent answer target of at least 44px; missing-letter stimuli use the same frame.",
+      "html": "<div class=\"ds-letter-choice\"><svg viewBox=\"0 0 260 156\" aria-hidden=\"true\" focusable=\"false\"><rect x=\"4\" y=\"4\" width=\"252\" height=\"148\" rx=\"22\" fill=\"#ffffff\" stroke=\"#9fb3c2\" stroke-width=\"3\"/><text x=\"130\" y=\"99.333\" text-anchor=\"middle\" font-size=\"64\" font-weight=\"700\" fill=\"#20262d\">T</text></svg><button type=\"button\" aria-label=\"T\"></button></div>",
+      "css": ".ds-letter-choice{position:relative;width:260px;max-width:100%;font-family:\"Figtree Variable\",sans-serif}.ds-letter-choice svg{display:block;width:100%;height:auto}.ds-letter-choice button{position:absolute;inset:0;min-width:44px;min-height:44px;padding:0;border:0;border-radius:22px;background:transparent;cursor:pointer;transition:background 150ms ease}.ds-letter-choice button:focus-visible{outline:4px solid var(--blue,#2d6fa3);outline-offset:6px}@media(hover:hover){.ds-letter-choice button:hover{background:rgb(45 111 163 / .07)}}@media(prefers-reduced-motion:reduce){.ds-letter-choice button{transition:none}}"
     }
   ],
   "narrative": {
     "northStar": "Shared geometric discoveries",
-    "overview": "This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.\n\nThe interface alternates between readable adult guidance and generous child-facing choices. Shapes are literal mathematical stimuli, built with CSS; imagery is not required to communicate them. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.",
+    "overview": "This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.\n\nThe interface alternates between readable adult guidance and generous child-facing play. Lessons take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved core round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Spanish and spelling lessons extend this canvas with written word models, replay controls, and text or letter choices. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.",
     "keyCharacteristics": [
       "Fog-white pages with flat, softly tinted sections.",
       "Geometric display type paired with clear, roomy body text.",
-      "Large shape choices with persistent verbal feedback.",
+      "One voiced guide, Pip, and a scene where the activity's gems, shapes, words, or letters carry the visual emphasis.",
+      "Persistent written feedback, with the spoken word highlighted.",
       "Readable learning intent beside optional parent controls."
     ],
     "rules": [],

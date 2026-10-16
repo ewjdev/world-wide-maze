@@ -45,6 +45,7 @@ import {
   step,
   systemLineId,
   type VoicePlayer,
+  withPractice,
 } from '@wwm/learning';
 import type { LockSpec, StageData, Vec2 } from '@wwm/schema';
 import { learningHref, missionHref } from './href.ts';
@@ -1122,7 +1123,9 @@ export class LearningGates {
     const state = this.#state;
     if (!lesson || !state) return;
     const lines = sessionScript(this.#index, lesson.activity, state);
-    const found = ids.map((id) => lines.get(id)).filter((l): l is ScriptLine => !!l);
+    const found = withPractice(ids, lesson.activity, currentRound(lesson.activity, state))
+      .map((id) => lines.get(id))
+      .filter((l): l is ScriptLine => !!l);
     this.#said.push(...ids);
     if (this.#said.length > 40) this.#said.splice(0, this.#said.length - 40);
     if (found.length > 0) void this.#voice?.play(found);
@@ -1232,6 +1235,12 @@ export class LearningGates {
   }
 
   /** Pip says the question (or the success, the offer, the finale) again. */
+  replayPractice(): void {
+    const gate = this.#view.gate;
+    if (!gate?.round.practice || !this.#lesson) return;
+    this.#say([lineId.practice(this.#lesson.activity.id, gate.round.id)]);
+  }
+
   replay(): void {
     const lesson = this.#lesson;
     const gate = this.#view.gate;

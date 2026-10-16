@@ -20,7 +20,7 @@
  */
 import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { baselinePath, learningScript } from '@wwm/learning';
+import { baselinePath, learningScript, preschoolActivities } from '@wwm/learning';
 import { type Browser, chromium, type Page, type Route } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
@@ -151,6 +151,41 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
     mkdirSync(SHOTS, { recursive: true });
     await p.screenshot({ path: `${SHOTS}/${name}.png` });
   };
+
+  test('loads each preschool lesson into the maze with word replay and working answer tiles', async () => {
+    for (const activity of preschoolActivities) {
+      const { page, ctx } = await open(`/play/practice?learn=${activity.id}`);
+      await waitPhase(page, 'play');
+      const first = activity.rounds[0];
+      if (!first) throw new Error('missing round');
+      const binding = (await state(page)).learning.binding?.steps.find((item) => item.kind === 'round');
+      expect(await roll(page, binding?.portalId ?? 0)).toBe(true);
+      await page.waitForSelector('[data-testid="learning-gate"]', { timeout: 15_000 });
+      expect(await text(page, 'lgate-prompt')).toBe(first.prompt);
+      expect(await page.locator('.wwm-lgate__practice strong').textContent()).toBe(first.practice?.text);
+      await page.getByRole('button', { name: 'Hear the word' }).click();
+      await shot(page, `preschool-${activity.id}-desktop`);
+      if (activity.id === 'spanish-word-builders') {
+        await page.setViewportSize({ width: 390, height: 844 });
+        const card = await page.locator('[data-testid="lgate-card"]').boundingBox();
+        expect(card?.y).toBeGreaterThanOrEqual(0);
+        expect(card?.height).toBeLessThanOrEqual(844);
+        for (const control of [
+          page.getByRole('button', { name: 'Hear the word' }),
+          page.locator('[data-testid="lgate-help"]'),
+        ]) {
+          const box = await control.boundingBox();
+          expect(box).not.toBeNull();
+          expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(844);
+        }
+        await shot(page, `preschool-${activity.id}-mobile`);
+      }
+      await page.click(`[data-testid="lgate-choice-${first.answer}"]`);
+      expect((await state(page)).learning.gate?.solved).toBe(true);
+      await ctx.close();
+    }
+    expect(problems).toEqual([]);
+  }, 180_000);
 
   test('roll into a Pip gate, answer the round, roll on; the next gate asks the next round', async () => {
     const { page, ctx } = await open('/play/practice?learn=compare-groups');
