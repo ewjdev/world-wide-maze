@@ -42,8 +42,9 @@ import {
   scriptIndex,
   sessionScript,
   step,
+  withPractice,
 } from '@wwm/learning';
-import { gameLevelText, inputHintHtml, planksBuilt, sceneBlock, spokenHtml } from './render.ts';
+import { gameLevelText, inputHintHtml, planksBuilt, practiceHtml, sceneBlock, spokenHtml } from './render.ts';
 import { element, readFamily } from './storage.ts';
 
 const MUTE_KEY = 'wwm-learning.muted';
@@ -269,10 +270,19 @@ const voice = createVoicePlayer({
   },
   onWord: (line, word) => highlight(line, word),
   onCue: (cue) => applyCue(cue),
+  onUnavailable: (line) => {
+    if (line.language !== 'es-ES') return;
+    const status = document.querySelector('#practice-status');
+    if (status)
+      status.textContent =
+        'Spanish audio is unavailable on this device. Read the word together with a Spanish-speaking grown-up. You can still play.';
+  },
 });
 
 function say(ids: readonly string[]): void {
-  const lines = ids.map((id) => script.get(id)).filter((line): line is ScriptLine => line !== undefined);
+  const lines = withPractice(ids, lesson, currentRound(lesson, state))
+    .map((id) => script.get(id))
+    .filter((line): line is ScriptLine => line !== undefined);
   playing.lines = lines;
   playing.index = -1;
   voice.preload(lines);
@@ -328,7 +338,7 @@ function fitScene(): void {
   const feedbackStyle = getComputedStyle(feedback);
   const controls = getComputedStyle(element('#controls'));
   const below =
-    px(feedbackStyle.minHeight) +
+    Math.max(px(feedbackStyle.minHeight), feedback.getBoundingClientRect().height) +
     px(feedbackStyle.marginTop) +
     px(controls.marginTop) +
     Math.max(px(getComputedStyle(nextButton).minHeight), px(getComputedStyle(hintButton).minHeight)) +
@@ -362,7 +372,9 @@ function renderStage(): void {
   const round = currentRound(lesson, state);
   stage.dataset.learningRound = round.id;
   stage.dataset.learningKind = round.kind;
+  stage.dataset.practice = String(!!round.practice);
   prompt.innerHTML = state.phase === 'bonus-offer' ? spokenHtml('Bonus round!') : spokenHtml(round.prompt);
+  element('#practice').innerHTML = state.phase === 'bonus-offer' ? '' : practiceHtml(round, true);
   renderInputHint();
   renderScene();
 }
@@ -485,6 +497,7 @@ function dispatch(event: LessonEvent): void {
 
   const lines = withInputLine(result.say);
   setFeedback(lines, state.result === 'correct');
+  fitScene();
   say(lines);
 
   if (result.show === 'celebrate') {
@@ -593,6 +606,11 @@ replay.addEventListener('click', () => {
     return;
   }
   say(withInputLine([promptLineId(), lineId.callout(lesson.id, currentRound(lesson, state).id)]));
+});
+element('#practice').addEventListener('click', (event) => {
+  if (!(event.target instanceof Element) || !event.target.closest('#practice-replay')) return;
+  voice.unlock();
+  say([lineId.practice(lesson.id, currentRound(lesson, state).id)]);
 });
 hintButton.addEventListener('click', () => dispatch({ type: 'hint' }));
 matchButton?.addEventListener('click', () => dispatch({ type: 'match' }));

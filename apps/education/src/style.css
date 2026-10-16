@@ -788,6 +788,10 @@ footer .small {
 .scene[data-orientation="wide"] {
   --scene-min: 600px;
 }
+.stage[data-practice="true"] .scene[data-orientation="tall"] {
+  /* Word models need space above the scene. Choice cards remain well over the 44px target size. */
+  --scene-min: 220px;
+}
 .scene > svg {
   display: block;
   width: 100%;
@@ -827,6 +831,18 @@ footer .small {
   opacity: 1;
 }
 /* ── answering: the input hint under the question, key badges, nudges (Phase 22) ─────────────────────── */
+.word-practice {
+  margin: 12px 0;
+}
+.word-practice p {
+  margin: 4px 0;
+}
+.word-practice strong {
+  font-size: 1.4em;
+}
+.word-practice button {
+  margin: 0 8px;
+}
 .input-hint {
   width: fit-content;
   max-width: 100%;

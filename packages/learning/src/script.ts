@@ -17,6 +17,7 @@ export interface ScriptLine {
   /** Stable id, e.g. `compare-groups.r3.prompt`. */
   id: string;
   text: string;
+  language?: 'en-US' | 'es-ES';
   cues: Cue[];
 }
 
@@ -60,6 +61,7 @@ export const lineId = {
   intro: (activity: string) => `${activity}.intro`,
   finale: (activity: string) => `${activity}.finale`,
   prompt: (activity: string, round: string) => `${activity}.${round}.prompt`,
+  practice: (activity: string, round: string) => `${activity}.${round}.practice`,
   callout: (activity: string, round: string) => `${activity}.${round}.callout`,
   hint: (activity: string, round: string, level: number) => `${activity}.${round}.hint${level}`,
   success: (activity: string, round: string) => `${activity}.${round}.success`,
@@ -132,6 +134,7 @@ export function roundScript(activity: Activity, round: Round): ScriptLine[] {
     ...round.hints.map((hint, i) => plain(lineId.hint(activity.id, round.id, i + 1), hint)),
     plain(lineId.success(activity.id, round.id), round.success),
   ];
+  if (round.practice) lines.push({ id: lineId.practice(activity.id, round.id), ...round.practice, cues: [] });
   if (round.kind !== 'choose') {
     lines.push(
       countLine(lineId.count(activity.id, round.id, 'a'), 'a', round.islands[0].count),
@@ -140,6 +143,14 @@ export function roundScript(activity: Activity, round: Round): ScriptLine[] {
     );
   }
   return lines;
+}
+
+/** The spoken model follows the English question and precedes the answer callout. */
+export function withPractice(ids: readonly string[], activity: Activity, round: Round): string[] {
+  const prompt = lineId.prompt(activity.id, round.id);
+  return ids.flatMap((id) =>
+    id === prompt && round.practice ? [id, lineId.practice(activity.id, round.id)] : [id],
+  );
 }
 
 export function activityScript(activity: Activity): ScriptLine[] {

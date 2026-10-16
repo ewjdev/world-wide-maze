@@ -8,11 +8,13 @@ import {
   type LearningPath,
   learningScript,
   levelsFor,
+  preschoolActivities,
   type Round,
   readLearningHtml,
   requiredRounds,
 } from '@wwm/learning';
 import { describe, expect, it } from 'vitest';
+import { lessonFromHtml } from '../../web/src/learning/load.ts';
 import {
   escapeHtml,
   gameLevelText,
@@ -103,12 +105,22 @@ describe('readable HTML and machine intent', () => {
 });
 
 describe('portable download', () => {
+  it('loads each new lesson from its own portable file, with its Spanish models and spelling intact', () => {
+    for (const activity of preschoolActivities) {
+      const html = portablePage({ ...baselinePath, voice: undefined, activities: [activity] });
+      const loaded = lessonFromHtml(html, `${activity.id}.html`);
+      expect(loaded.activity).toEqual(activity);
+      expect(loaded.path.activities).toHaveLength(1);
+      expect(html).toContain(`lang="${activity.rounds[0]?.practice?.language}"`);
+      expect(lessonPage(baselinePath, activity)).toContain(`href="/lesson-packs/${activity.id}.html"`);
+    }
+  });
   const invariants = (html: string) => {
     expect(html.match(/<script/g)).toHaveLength(1);
     expect(html).toContain('<script id="wwm-learning" type="application/json">');
     expect(html).not.toContain('src=');
     expect(html).not.toMatch(/href=|url\(|@import|<link|<img|<iframe/i);
-    expect(html.match(/<article data-learning-activity=/g)).toHaveLength(6);
+    expect(html.match(/<article data-learning-activity=/g)).toHaveLength(11);
   };
 
   it('has one inert JSON script, no external resources, and the themed pictures inline', () => {

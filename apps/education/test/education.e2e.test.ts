@@ -14,6 +14,7 @@ import { type Browser, type BrowserContext, chromium, type Page } from 'playwrig
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const base = process.env.WWM_EDUCATION_E2E_BASE;
+const mount = base ? new URL(base).pathname.replace(/\/$/, '') : '';
 const shots = process.env.WWM_EDUCATION_SHOTS;
 const compare = baselinePath.activities.find((activity) => activity.id === 'compare-groups') as Activity;
 const countThree = baselinePath.activities.find((activity) => activity.id === 'count-three') as Activity;
@@ -27,6 +28,7 @@ const SETTINGS_KEY = 'wwm-learning:settings:v1';
  */
 function stubSpeech(delay = 15): void {
   const spoken: string[] = [];
+  const models: { text: string; lang: string }[] = [];
   let timers: ReturnType<typeof setTimeout>[] = [];
   const stub = {
     speaking: false,
@@ -34,6 +36,7 @@ function stubSpeech(delay = 15): void {
     paused: false,
     speak(utterance: SpeechSynthesisUtterance) {
       spoken.push(utterance.text);
+      models.push({ text: utterance.text, lang: utterance.lang });
       const words = [...utterance.text.matchAll(/\S+/g)];
       utterance.onstart?.call(utterance, {} as SpeechSynthesisEvent);
       words.forEach((word, i) => {
@@ -61,12 +64,23 @@ function stubSpeech(delay = 15): void {
     },
     pause() {},
     resume() {},
-    getVoices: () => [],
+    getVoices: () => [{ lang: 'es-ES', name: 'Spanish test voice' }],
     addEventListener() {},
     removeEventListener() {},
   };
   Object.defineProperty(window, 'speechSynthesis', { value: stub, configurable: true });
+  // Native utterances only accept native SpeechSynthesisVoice instances; this stub supplies plain voices.
+  Object.defineProperty(window, 'SpeechSynthesisUtterance', {
+    configurable: true,
+    value: class {
+      text: string;
+      constructor(text: string) {
+        this.text = text;
+      }
+    },
+  });
   Object.defineProperty(window, '__spoken', { value: spoken });
+  Object.defineProperty(window, '__spokenModels', { value: models });
 }
 
 /** No speech at all: the player falls back to silent, estimated timing. */
@@ -273,6 +287,42 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     await context.close();
   });
 
+  it('plays all five new lessons through every round on desktop and mobile, with Spanish word replay', async () => {
+    for (const viewport of [
+      { width: 1440, height: 1000 },
+      { width: 390, height: 844 },
+    ]) {
+      const { context, page, errors } = await open({ viewport });
+      for (const activity of baselinePath.activities.slice(6)) {
+        await page.goto(`${base}/lessons/${activity.id}/?seed=0`);
+        await start(page);
+        for (const [index, round] of activity.rounds.entries()) {
+          if (round.optional) await page.locator('#bonus-play').click();
+          expect(await prompt(page)).toBe(round.prompt);
+          expect(await page.locator('#practice strong').textContent()).toBe(round.practice?.text);
+          await page.locator('#practice-replay').click();
+          const model = round.practice;
+          await expect
+            .poll(() =>
+              page.evaluate(
+                () =>
+                  (window as unknown as { __spokenModels: { text: string; lang: string }[] }).__spokenModels,
+              ),
+            )
+            .toContainEqual({ text: model?.text, lang: model?.language });
+          if (round.kind === 'choose' && round.stimulusText)
+            expect(await page.locator('#scene > svg').textContent()).toContain(round.stimulusText);
+          if (index === 0) await shot(page, `preschool-${activity.id}-${viewport.width}`);
+          await answer(page, String(round.answer));
+          await page.locator('#next').click();
+        }
+        expect(await page.locator('#end').isVisible()).toBe(true);
+      }
+      expect(errors).toEqual([]);
+      await context.close();
+    }
+  });
+
   /**
    * The reference lesson, start to finish, with the rounds as written (`?seed=0`). On the desktop the rounds
    * invite what the lesson declares (letter keys, arrows, a number key); the phone is a touch-only device, so
@@ -400,7 +450,7 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await page.locator('#stage').isVisible()).toBe(false);
     expect(await page.locator('#end-heading').textContent()).toBe('You built the whole bridge!');
     expect(await page.locator('#end').textContent()).toContain(compare.offlineActivity);
-    expect(await page.locator('#next-activity').getAttribute('href')).toBe('/lessons/find-triangle/');
+    expect(await page.locator('#next-activity').getAttribute('href')).toBe(`${mount}/lessons/find-triangle/`);
     await shot(page, `compare-groups-${device}-9-end`);
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.locator('#again').click();

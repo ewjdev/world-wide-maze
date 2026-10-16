@@ -165,8 +165,7 @@ element<HTMLFormElement>('#draft-form').addEventListener('submit', (event) => {
     element('#review-heading').focus();
     feedback.textContent = 'Draft validated. Nothing changes until you accept it.';
   } catch {
-    feedback.textContent =
-      'This draft does not match the template. Keep the baseline ID and version, include all six introductions once, and remove extra fields. You can copy a fresh prompt above.';
+    feedback.textContent = `This draft does not match the template. Keep the baseline ID and version, include all ${baselinePath.activities.length} introductions once, and remove extra fields. You can copy a fresh prompt above.`;
   }
 });
 

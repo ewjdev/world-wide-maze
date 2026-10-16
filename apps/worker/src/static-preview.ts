@@ -1,4 +1,6 @@
 /** Isolated manual test host: bundled gameplay assets only, with no online-service bindings. */
+
+import { serveLearningPage } from './routes/learning-page.ts';
 import { SPA_SECURITY_HEADERS, withSecurityHeaders } from './security.ts';
 
 type StaticPreviewEnv = {
@@ -31,7 +33,7 @@ export default {
             ),
       );
     }
-    const asset = await env.ASSETS.fetch(request);
+    const asset = (await serveLearningPage(request, env)) ?? (await env.ASSETS.fetch(request));
     const response = new Response(asset.body, asset);
     response.headers.set('x-robots-tag', 'noindex');
     if (response.headers.get('content-type')?.includes('text/html')) {

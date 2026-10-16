@@ -8,6 +8,7 @@ export * from './lesson-v04.ts';
 export * from './levels.ts';
 export * from './maze-discoveries.ts';
 export * from './migrate.ts';
+export * from './preschool.ts';
 export * from './present.ts';
 export * from './scene.ts';
 export * from './schema.ts';

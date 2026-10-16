@@ -171,6 +171,11 @@ const roundBase = {
   /** Invited input for this round (overrides the activity's and the path's). */
   input: inputList.optional(),
   prompt: line,
+  /** A short word/phrase to hear and repeat aloud; practice is never pronunciation-scored. */
+  practice: z
+    .object({ text: line.max(60), language: z.enum(['en-US', 'es-ES']) })
+    .strict()
+    .optional(),
   /** A ladder: a nudge, then a strategy, then a worked example. */
   hints: z.array(line).min(1).max(3),
   success: line,
@@ -185,8 +190,10 @@ const chooseRound = z
     ...roundBase,
     kind: z.literal('choose'),
     stimulus: z.array(tokenSchema).max(12),
+    /** A word with a missing letter, shown instead of picture tokens. */
+    stimulusText: line.max(24).optional(),
     options: z
-      .array(z.object({ id, label: line.max(60), tokens: z.array(tokenSchema).min(1).max(10) }).strict())
+      .array(z.object({ id, label: line.max(60), tokens: z.array(tokenSchema).max(10) }).strict())
       .min(2)
       .max(4),
     answer: id,
@@ -215,6 +222,8 @@ export const roundSchema = z
   .discriminatedUnion('kind', [chooseRound, compareRound, differenceRound])
   .superRefine((round, ctx) => {
     if (round.kind === 'choose') {
+      if (round.stimulusText && round.stimulus.length)
+        ctx.addIssue({ code: 'custom', message: 'Use either text or picture stimulus, not both.' });
       if (new Set(round.options.map((option) => option.id)).size !== round.options.length)
         ctx.addIssue({ code: 'custom', message: 'Option IDs must be unique.' });
       if (!round.options.some((option) => option.id === round.answer))
@@ -320,7 +329,7 @@ export const activitySchema = z
   .object({
     id,
     title: text,
-    domain: z.enum(['counting', 'comparison', 'geometry', 'patterns', 'sorting']),
+    domain: z.enum(['counting', 'comparison', 'geometry', 'patterns', 'sorting', 'language', 'literacy']),
     objective: text,
     introduction: text,
     rounds: z.array(roundSchema).min(1).max(8),
@@ -433,7 +442,7 @@ export const pathSchema = z
   .object({
     format: z.literal(LEARNING_VERSION),
     id,
-    version: z.enum(['2.0.0', '3.0.0']),
+    version: z.enum(['2.0.0', '3.0.0', '3.1.0']),
     title: text,
     description: text,
     language: z.literal('en'),

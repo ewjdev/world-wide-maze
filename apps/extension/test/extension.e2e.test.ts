@@ -420,18 +420,14 @@ describe.skipIf(!HAS_CHROMIUM)('extension e2e (Chromium + unpacked extension + V
     await shot(wait, '08-receiver-waiting');
     const sel = await ctx.newPage();
     await sel.goto(`${game}/`);
-    await sel.waitForFunction(() => !!window.__wwmGame);
-    await sel.evaluate(() => {
-      const g = window.__wwmGame as unknown as { start(): void; howtoDone(): void; playKeyboard(): void };
-      g.start();
-    });
-    await sel
-      .waitForFunction(
-        () => document.body.dataset.phase === 'select' || document.body.dataset.phase === 'pairing',
-        null,
-        { timeout: 10_000 },
-      )
-      .catch(() => {});
+    // The title can paint before the deferred game is ready. Use the real Start intent,
+    // which hands off to the engine when ready instead of calling Game.start() too early.
+    await sel.getByTestId('start').click();
+    await sel.waitForFunction(
+      () => document.body.dataset.phase === 'select' || document.body.dataset.phase === 'pairing',
+      null,
+      { timeout: 60_000 },
+    );
     if ((await phaseOf(sel)) === 'pairing')
       await sel.evaluate(() => (window.__wwmGame as unknown as { playKeyboard(): void }).playKeyboard());
     await sel.getByTestId('select-mazify').waitFor({ timeout: 15_000 });

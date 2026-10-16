@@ -184,7 +184,7 @@ export function sceneLayout(
       });
     }
   } else {
-    const hasStimulus = round.stimulus.length > 0;
+    const hasStimulus = round.stimulus.length > 0 || !!round.stimulusText;
     if (hasStimulus) stimulus = wide ? { x: 150, y: 24, w: 700, h: 130 } : { x: 30, y: 24, w: 540, h: 130 };
     const count = round.options.length;
     const top = hasStimulus ? (wide ? 190 : 184) : wide ? 40 : 30;
@@ -415,18 +415,26 @@ export function sceneSvg(theme: Theme, round: Round, view: SceneView): string {
       out.push(
         `<rect x="${n(s.x)}" y="${n(s.y)}" width="${n(s.w)}" height="${n(s.h)}" rx="22" fill="${p.paper}" stroke="${p.islandEdge}" stroke-width="3"/>`,
       );
-      const tokensBox = { x: s.x + 20, y: s.y + 10, w: s.w - 120, h: s.h - 20 };
-      out.push(tokenRow(theme, round.stimulus, tokensBox, 70));
-      out.push(
-        `<text x="${n(s.x + s.w - 55)}" y="${n(s.y + s.h / 2 + 22)}" text-anchor="middle" font-size="64" font-weight="800" fill="${p.ballSeam}">?</text>`,
-      );
+      if (round.stimulusText) {
+        out.push(
+          `<text x="${n(s.x + s.w / 2)}" y="${n(s.y + s.h / 2 + 20)}" text-anchor="middle" font-size="64" font-weight="800" fill="${p.ink}">${escapeXml(round.stimulusText)}</text>`,
+        );
+      } else {
+        const tokensBox = { x: s.x + 20, y: s.y + 10, w: s.w - 120, h: s.h - 20 };
+        out.push(tokenRow(theme, round.stimulus, tokensBox, 70));
+        out.push(
+          `<text x="${n(s.x + s.w - 55)}" y="${n(s.y + s.h / 2 + 22)}" text-anchor="middle" font-size="64" font-weight="800" fill="${p.ballSeam}">?</text>`,
+        );
+      }
     }
     for (const choice of layout.choices) {
       const option = round.options.find((o) => o.id === choice.id);
       if (!option) continue;
       const { x, y, w, h } = choice.box;
+      const textOnly = option.tokens.length === 0;
+      const fontSize = textOnly ? Math.min(64, (w - 36) / (choice.label.length * 0.58)) : 30;
       out.push(
-        `<g class="mark" data-choice-mark="${escapeXml(choice.id)}">${halo(choice, 26)}<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="22" fill="${p.paper}" stroke="${p.islandEdge}" stroke-width="3"/>${tokenRow(theme, option.tokens, { x: x + 12, y: y + 16, w: w - 24, h: h - 76 }, 72)}<text x="${n(x + w / 2)}" y="${n(y + h - 24)}" text-anchor="middle" font-size="30" font-weight="700" fill="${p.ink}">${escapeXml(choice.label)}</text>${check(choice)}</g>`,
+        `<g class="mark" data-choice-mark="${escapeXml(choice.id)}">${halo(choice, 26)}<rect x="${n(x)}" y="${n(y)}" width="${n(w)}" height="${n(h)}" rx="22" fill="${p.paper}" stroke="${p.islandEdge}" stroke-width="3"/>${tokenRow(theme, option.tokens, { x: x + 12, y: y + 16, w: w - 24, h: h - 76 }, 72)}<text x="${n(x + w / 2)}" y="${n(textOnly ? y + h / 2 + fontSize / 3 : y + h - 24)}" text-anchor="middle" font-size="${n(fontSize)}" font-weight="700" fill="${p.ink}">${escapeXml(choice.label)}</text>${check(choice)}</g>`,
       );
     }
   }

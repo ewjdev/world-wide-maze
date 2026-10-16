@@ -185,6 +185,15 @@ describe('deploy config (wrangler.jsonc)', () => {
   });
   test('production serves the web app with the API first', () => {
     // Home and log are static assets so the emergency dynamic block preserves both.
-    expect(prod?.assets.run_worker_first).toEqual(['/api/*', '/s/*', '/r/*', '/j/*', '/admin', '/admin/*']);
+    expect(prod?.assets.run_worker_first).toEqual([
+      '/api/*',
+      '/s/*',
+      '/r/*',
+      '/j/*',
+      '/admin',
+      '/admin/*',
+      '/learn',
+      '/learn/*',
+    ]);
   });
 });

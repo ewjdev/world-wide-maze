@@ -1,6 +1,6 @@
 ---
 name: WWM Learning
-description: A daylight extension of WWM for shared early-math exploration.
+description: A daylight extension of WWM for shared early-math, language, and spelling exploration.
 colors:
   ink: "#20262d"
   muted: "#4b555f"
@@ -149,12 +149,12 @@ components:
 
 This phrase describes the implemented direction, rather than a new brand identity. WWM Learning extends the existing game's fog-white setting, Figtree/Unbounded pairing, and recognizable blue, green, yellow, and red geometry into a daylight reading and activity surface. Source authority is `src/style.css` and `src/render.ts`; shared lineage is `../web/src/ui/game.css`.
 
-The interface alternates between readable adult guidance and generous child-facing play. Lessons take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
+The interface alternates between readable adult guidance and generous child-facing play. Lessons take place in the **Sky Islands**: Pip (the WWM ball with eyes) guides, gems sit on islands, and each solved core round adds a plank to a bridge. All of these pictures come from the learning document's theme, drawn by the trusted renderer in `@wwm/learning` (`sceneSvg`, `spriteMarkup`); the app adds no image assets. Spanish and spelling lessons extend this canvas with written word models, replay controls, and text or letter choices. Visible objectives and grown-up explanations accompany the same learning intent embedded as JSON. The working product name remains provisional.
 
 **Key Characteristics:**
 - Fog-white pages with flat, softly tinted sections.
 - Geometric display type paired with clear, roomy body text.
-- One voiced guide, Pip, and a scene where the counted gems are the highest-contrast things on screen.
+- One voiced guide, Pip, and a scene where the activity's gems, shapes, words, or letters carry the visual emphasis.
 - Persistent written feedback, with the spoken word highlighted.
 - Readable learning intent beside optional parent controls.
 
@@ -208,7 +208,7 @@ The header is capped at 1320px with 28px by 40px padding. Main content and foote
 At 760px and below, parent and path layouts become single columns with 32px gaps, the introduction becomes static, and page gutters become 20px. The header wraps. The path title becomes 40px with a 12ch measure; activity titles become 29px. Custom text wraps rather than forcing the introduction beyond its column.
 
 Lessons use a 1040px maximum-width canvas, in this order: lesson bar (back link, title, mute), then the prompt row, the scene, the feedback, and the controls. Next sits directly under the feedback.
-- **Scene sizing:** the scene keeps its viewBox aspect ratio. Its width is sized so the prompt, scene, feedback and Next fit the viewport; the script measures the space around the scene, because prompts wrap. There is a floor so gems never get too small: 600px for wide scenes, 280px for tall ones.
+- **Scene sizing:** the scene keeps its viewBox aspect ratio. Its width is sized so the prompt, scene, feedback and Next fit the viewport; the script measures the space around the scene, because prompts wrap. The width floor is 600px for wide scenes and 280px for tall ones. Tall scenes with a word-practice model use a 220px floor to leave space for the transcript and replay control; answer targets remain at least 44px in both dimensions.
 - **Orientation:** at 640px and below the scene switches to the tall orientation (islands stacked). The site navigation hides, the back link becomes an arrow, the helpers share one row, and Next spans the full width.
 - **Checked:** at 390×844, Next after a correct answer is inside the first viewport without scrolling.
 - **Feedback** reserves about two lines.
@@ -248,7 +248,7 @@ Arrows (`↗`, `←`, `→`) are text navigation notation in the current impleme
 
 ### Scene and answer controls
 
-The scene is one decorative SVG from `sceneSvg`, in two islands (compare/difference) or choice cards (choose). The real answer controls are transparent `<button>`s over each choice box:
+The scene is one decorative SVG from `sceneSvg`, in two islands (compare/difference) or choice cards (choose). Text-only choice cards center their word or letter in Ink on Paper with the same rounded Island Edge frame; longer labels scale down to fit. Spelling rounds add a separate centered missing-letter stimulus, such as `C A _`, above the choices. The real answer controls are transparent `<button>`s over each choice box:
 - They are positioned in percent of the viewBox, so they track the drawing at any size.
 - They are at least 44px, with a 4px Focus Blue outline offset 6px.
 - On hover-capable devices they show a faint blue tint.
@@ -263,6 +263,12 @@ State is shown on the drawing, never by colour alone. The feedback sentence carr
 - A glowing halo marks the worked example.
 - Lit gems count along with the voice; match lines draw one per spoken "match"; leftover gems ring and bob.
 With reduced motion, all of this still appears without animation.
+
+### Word practice
+
+A written model sits between the prompt/input hint and the scene. "Listen and say:" introduces a bold word at 1.4em, marked with its language (`en-US` or `es-ES`), followed by a secondary "Hear the word" button. The block has 12px vertical margins and its paragraphs use 4px vertical margins. Small supporting text keeps optional speaking and audio availability visible. A hidden readable version describes the spelling stimulus's blank for assistive technology.
+
+The transcript remains visible while replay uses the browser's voice. Spanish models select an available Spanish voice; if one is unavailable, the status directs a Spanish-speaking grown-up to read the word together and leaves the choices playable. Speaking is optional, unrecorded, and unscored. This uses the incumbent type and button treatments, with no separate visual world or new imagery.
 
 ### Stones
 
@@ -305,7 +311,7 @@ The introduction, transparency section, saved-state strip, and activity canvas a
 
 The home path introduction shows a small Sky Islands picture composed from theme sprites, and a "Meet Pip" line. Each stop in the path shows its length ("5-round challenge with the match tool") in Stop Ink.
 
-The portable HTML download intentionally uses its own compact system-font reading layout, with the theme's palette and each round's scene inline. It is not the source for the interactive site's visual system.
+The portable HTML download intentionally uses its own compact system-font reading layout, with the theme's palette and each round's scene inline. The five new per-lesson packs retain the transcript and missing-letter stimulus in that reading layout; playback belongs to the consuming lesson runtime. It is not the source for the interactive site's visual system.
 
 ## Do's and Don'ts
 

@@ -2,6 +2,7 @@ import { type Activity, type GemGroup, LEARNING_VERSION, parseLearningPath, type
 import { skyIslands } from './theme.ts';
 import manifest from './voice-manifest.json' with { type: 'json' };
 import './migrate.ts';
+import { preschoolActivities } from './preschool.ts';
 
 const token = (shape: Token['shape'], color: Token['color'] = 'blue'): Token => ({ shape, color });
 const gems = (count: number): Token[] => Array.from({ length: count }, () => token('gem', 'teal'));
@@ -383,10 +384,10 @@ const voice = manifest.voiceId ? { provider: 'elevenlabs' as const, ...manifest 
 export const baselinePath = parseLearningPath({
   format: LEARNING_VERSION,
   id: 'little-discoveries',
-  version: '3.0.0',
+  version: '3.1.0',
   title: 'Little discoveries',
   description:
-    'Count gems. Spot a shape. Find a pattern. Six small adventures with Pip across the sky islands.',
+    'Count gems. Spot a shape. Try Spanish and build little words. Eleven small adventures with Pip across the sky islands, including five new lessons for ages 4–5.',
   language: 'en',
   suggestedAges: [4, 6],
   reviewStatus: 'pilot-needs-educator-review',
@@ -394,5 +395,5 @@ export const baselinePath = parseLearningPath({
   theme: skyIslands,
   play: { shuffle: 'positions', input: ['tap', 'arrows', 'tilt'] },
   ...(voice ? { voice } : {}),
-  activities,
+  activities: [...activities, ...preschoolActivities],
 });
