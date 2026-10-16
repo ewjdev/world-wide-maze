@@ -57,6 +57,44 @@ await check('SPA fallback for /play/:id and /c/:code', async () => {
     expect(r.status === 200 && (await r.text()).includes('<div id="root">'), `${p}: ${r.status}`);
   }
 });
+await check('Published learning path and five preschool lesson packs', async () => {
+  const home = await fetch(`${base}/learn/`);
+  const html = await home.text();
+  expect(home.status === 200 && html.includes('id="wwm-learning"'), 'learning home is missing');
+  expect(html.includes('/learn/lessons/spanish-hello/'), 'lesson navigation is not mounted at /learn');
+  const csp = home.headers.get('content-security-policy') ?? '';
+  expect(csp.includes("style-src 'self' 'unsafe-inline'"), 'learning SVG styles are blocked');
+  expect(csp.includes("script-src 'self' 'wasm-unsafe-eval'"), 'learning scripts lack the self-only policy');
+  const ids = [
+    'spanish-hello',
+    'spanish-colors',
+    'spanish-counting',
+    'little-word-builders',
+    'spanish-word-builders',
+  ];
+  for (const id of ids) {
+    const page = await fetch(`${base}/learn/lessons/${id}/`);
+    expect(
+      page.status === 200 && (await page.text()).includes(`data-learning-activity="${id}"`),
+      `${id}: teaching page missing`,
+    );
+    const pack = await fetch(`${base}/learn/lesson-packs/${id}.html`);
+    const content = await pack.text();
+    const data = JSON.parse(
+      /<script id="wwm-learning" type="application\/json">([\s\S]*?)<\/script>/.exec(content)?.[1] ?? '{}',
+    );
+    expect(
+      pack.status === 200 && data.activities?.length === 1 && data.activities[0].id === id,
+      `${id}: wrong portable lesson`,
+    );
+    expect(data.activities[0].rounds.length === 5, `${id}: expected five rounds`);
+    expect(
+      pack.headers.get('content-disposition')?.includes(`${id}.html`),
+      `${id}: missing download filename`,
+    );
+  }
+  return '11 lessons, five single-lesson HTML packs, scoped style policy';
+});
 await check('Mazify extension ZIP download and checksum', async () => {
   const { version } = JSON.parse(
     readFileSync(new URL('../../apps/extension/package.json', import.meta.url), 'utf8'),

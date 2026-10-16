@@ -14,6 +14,7 @@ import { type Browser, type BrowserContext, chromium, type Page } from 'playwrig
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 const base = process.env.WWM_EDUCATION_E2E_BASE;
+const mount = base ? new URL(base).pathname.replace(/\/$/, '') : '';
 const shots = process.env.WWM_EDUCATION_SHOTS;
 const compare = baselinePath.activities.find((activity) => activity.id === 'compare-groups') as Activity;
 const countThree = baselinePath.activities.find((activity) => activity.id === 'count-three') as Activity;
@@ -449,7 +450,7 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await page.locator('#stage').isVisible()).toBe(false);
     expect(await page.locator('#end-heading').textContent()).toBe('You built the whole bridge!');
     expect(await page.locator('#end').textContent()).toContain(compare.offlineActivity);
-    expect(await page.locator('#next-activity').getAttribute('href')).toBe('/lessons/find-triangle/');
+    expect(await page.locator('#next-activity').getAttribute('href')).toBe(`${mount}/lessons/find-triangle/`);
     await shot(page, `compare-groups-${device}-9-end`);
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.locator('#again').click();

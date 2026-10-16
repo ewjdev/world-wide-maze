@@ -5,6 +5,7 @@ import { budget, controlsOn, reserveCost } from './budget-client.ts';
 import { createServices } from './config.ts';
 import { createApp } from './router.ts';
 import { serveAdminPage } from './routes/admin-page.ts';
+import { serveLearningPage } from './routes/learning-page.ts';
 import { handleRooms } from './routes/rooms.ts';
 import { sweepCards } from './routes/share.ts';
 import { clientIp, withSecurityHeaders } from './security.ts';
@@ -52,6 +53,7 @@ export default {
     let res: Response;
     try {
       res =
+        (await serveLearningPage(request, env)) ??
         (await serveAdminPage(request, env)) ??
         (await handleRooms(request, env)) ?? // Phase 06: /api/rooms/*
         (await app.fetch(request, env, ctx));

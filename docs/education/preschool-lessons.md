@@ -18,6 +18,8 @@ Each new lesson page offers **Download this lesson for the maze**. The generator
 
 The updated game also accepts `/play/practice?learn=<activity-id>` for each new lesson. These links refer to the running local or deployed build; creating these files does not deploy them.
 
+The game build now packages the teaching site at `/learn/` on the same host. Published lesson pages are `/learn/lessons/<activity-id>/`, and portable downloads are `/learn/lesson-packs/<activity-id>.html`. The normal checked `main` deployment publishes game and lessons together; the post-deploy smoke verifies the home page and all five teaching pages and packs.
+
 ## Voice and spelling
 
 The round's `practice` is a separate, language-tagged model. English instructions use English audio; Spanish models select an installed Spanish browser voice (Spain preferred, other Spanish locales accepted). Missing Spanish voices never fall back to an English voice. The transcript remains visible, with a grown-up fallback message and a **Hear the word** control. Browser voice quality and availability depend on the device; no new studio recordings are included.
