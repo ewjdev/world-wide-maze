@@ -1,0 +1,17 @@
+{
+  "name": "@wwm/lesson-draft",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Phase 31 lesson authoring experiments: model-written example rounds through Cloudflare AI Gateway, checked against @wwm/learning.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "spike": "node src/spike.ts"
+  },
+  "dependencies": {
+    "@wwm/learning": "workspace:*"
+  },
+  "devDependencies": {
+    "wrangler": "^4.140.0"
+  }
+}

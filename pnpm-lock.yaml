@@ -424,6 +424,16 @@ importers:
         specifier: ^4.140.0
         version: 4.140.0(@types/node@26.6.2)
 
+  tools/lesson-draft:
+    dependencies:
+      '@wwm/learning':
+        specifier: workspace:*
+        version: link:../../packages/learning
+    devDependencies:
+      wrangler:
+        specifier: ^4.140.0
+        version: 4.140.0(@types/node@26.6.2)
+
   tools/ref-fetch:
     dependencies:
       '@wwm/schema':
