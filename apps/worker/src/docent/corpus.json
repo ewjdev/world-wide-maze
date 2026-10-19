@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "f2593ef1f0acef48",
+  "hash": "f526ce6852d0c675",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -61,6 +61,7 @@
     "docs/build-log/phase-27-race-mazes.md",
     "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/phase-29-race-elevation-flow.md",
+    "docs/build-log/phase-31.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
     "docs/build-log/race-review/ghost-performance-native.json",
@@ -3491,6 +3492,23 @@
       "url": "/log#phase-29-race-elevation-flow",
       "kind": "build-log",
       "text": "## Beta review limits\nAutomated driving establishes traversal, deterministic replay and visible rendering. It does not establish human flow, optimal route choice or physical-phone handling. Most ten-maze reference routes take about a minute; Sky Weave remains roughly 77–79 seconds and one Skipping Stones route is about 73 seconds. The four earlier courses remain short introductions (about 13–25 seconds). Higher-speed racing and aggressive turbo strategies need beta playtesting; the conservative completion driver does not spend turbo on most maze routes.\n\nStatic validation does not exhaustively detect bridge-to-bridge intersections. Actual traversal caught and resolved the observed Skipping Stones overlap; future junction edits still require collision and browser verification.\n\nThe original HTML and maze specifications remain base authoring inputs. The explicit elevation design pass produces the current playable courses; run it after rebuilding base fixtures. Reproduction commands and the distinction between frozen course identity and physics compatibility are documented in [the elevation review README](../../fixtures/race/elevation-review/README.md). This work is local and has not been deployed."
+    },
+    {
+      "id": "docs/build-log/phase-31.md",
+      "title": "Phase 31: Lesson depth and parent progress tracking · Key instructions · What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31.md",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026 (America/Los_Angeles).\n**Agent:** Claude Code (Claude Opus 5.5) as orchestrator. No sub-agents.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md).\n\n## Key instructions\n- The owner asked how fx0 (Vercel's libfx design agent, which writes one HTML file per chat) could benefit the lessons.\n- Goals the owner gave: deeper lessons, progress tracking for parents (ready for other families), a child UI that stays intuitive, and Cloudflare only. Port Vercel-based ideas rather than adopt them.\n- Apple TV (Phase 30) is out of scope.\n\n## What changed (N: new, not a 2013 feature)\n- **M0 item-bank spike (N):**\n  - `tools/lesson-draft`: a local-only `wrangler dev` helper Worker that calls Anthropic through AI Gateway `wwm`, and `src/spike.ts`.\n  - The spike asks `claude-sonnet-5-5` for six fresh rounds per objective. It validates them with `roundSchema` plus objective checks the schema can't make, and allows up to two repair turns.\n- **Results:** [docs/education/item-bank-spike/2026-10-19/](../education/item-bank-spike/2026-10-19/README.md).\n  - Rounds were valid 53/54 on first pass and 54/54 after one repair.\n  - Three independent runs converged on the same items: 9 distinct words in 18 spelling items, and 7 distinct sets in 18 colour items.\n  - Conclusion: generators for parametric objectives, and a model only for open vocabulary under review.\n- **Plan:** objectives and banks, evidence events, a plain-language progress model, parent accounts on D1 with one Durable Object per family, a privacy gate, and the fx0 pattern ported to the Agents SDK and Workflows. CCR-31-1 to CCR-31-4 are proposed, not applied."
+    },
+    {
+      "id": "docs/build-log/phase-31.md#attempts-that-failed",
+      "title": "Phase 31: Lesson depth and parent progress tracking › Attempts that failed · Manual interventions · Test evidence · Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "## Attempts that failed\nNone. The first gateway call through `env.AI.gateway('wwm').run({ provider: 'anthropic', … })` worked under `wrangler dev` with the existing login.\n\n## Manual interventions\nNone.\n\n## Test evidence\n- `pnpm --filter @wwm/lesson-draft typecheck` passes.\n- Spike output: `docs/education/item-bank-spike/2026-10-19/results.json`, using 18,511 input and 25,623 output tokens.\n- `pnpm check` was run before commit (see the hand-off).\n\n## Remaining defects and follow-ups\n- The spelling check's dictionary (`/usr/share/dict/words`) accepts obscure words. M1 should replace it with a reviewed age-appropriate list.\n- The spike is three runs of one model with default sampling. It doesn't predict other objectives.\n- Owner decisions are listed at the end of the plan. The privacy review gates any family other than the owner's."
     },
     {
       "id": "docs/build-log/race-review/course-review.json",
