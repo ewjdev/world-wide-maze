@@ -3,7 +3,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { type Browser, chromium, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
-import { afterAll, beforeAll, describe, expect, test } from 'vitest';
+import { afterAll, afterEach, beforeAll, describe, expect, test } from 'vitest';
 import { browserEnv, CHROMIUM_ARGS, SOFTWARE_GL_NOISE } from './browser-env.ts';
 
 const WEB_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -33,6 +33,10 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       await server?.close();
       expect(problems).toEqual([]);
     });
+    afterEach(async () => {
+      // A failed assertion must not leave a rendering page competing with later tests.
+      await Promise.all((browser?.contexts() ?? []).map((context) => context.close()));
+    });
     async function phone(
       options: {
         denied?: boolean;
@@ -61,13 +65,16 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
           ...(settings.keyboard ? { forceWorker: true } : {}),
         };
         window.__WWM_RACE_TEST__ = { countdownSec: 1, quality: 'low', noAutoPause: true };
+        const pendingPermissions: ((value: string) => void)[] = [];
+        Object.assign(window, {
+          __resolveMotionPermission: () => {
+            for (const resolve of pendingPermissions.splice(0)) resolve('granted');
+          },
+        });
         const permission = () =>
-          new Promise<string>((resolve) =>
-            setTimeout(
-              () => resolve(settings.denied ? 'denied' : 'granted'),
-              settings.delayedPermission ? 400 : 0,
-            ),
-          );
+          settings.delayedPermission
+            ? new Promise<string>((resolve) => pendingPermissions.push(resolve))
+            : Promise.resolve(settings.denied ? 'denied' : 'granted');
         Object.defineProperty(DeviceOrientationEvent, 'requestPermission', {
           value: permission,
           configurable: true,
@@ -296,6 +303,9 @@ describe.skipIf(!existsSync(chromium.executablePath()) && !process.env.CI)(
       expect(await focusedInside()).toBe(true);
       await page.keyboard.press('Shift+Tab');
       expect(await focusedInside()).toBe(true);
+      await page.evaluate(() =>
+        (window as unknown as { __resolveMotionPermission(): void }).__resolveMotionPermission(),
+      );
       await page.waitForFunction(
         () =>
           document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') === 'probing',
