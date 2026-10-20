@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "8e256aad3ba25a1f",
+  "hash": "a767580c35870fbe",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -62,6 +62,11 @@
     "docs/build-log/phase-27-race-mazes.md",
     "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/phase-29-race-elevation-flow.md",
+    "docs/build-log/phase-31-m2.md",
+    "docs/build-log/phase-31-m3.md",
+    "docs/build-log/phase-31-m4.md",
+    "docs/build-log/phase-31-m5.md",
+    "docs/build-log/phase-31.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
     "docs/build-log/race-review/ghost-performance-native.json",
@@ -3509,6 +3514,334 @@
       "url": "/log#phase-29-race-elevation-flow",
       "kind": "build-log",
       "text": "## Beta review limits\nAutomated driving establishes traversal, deterministic replay and visible rendering. It does not establish human flow, optimal route choice or physical-phone handling. Most ten-maze reference routes take about a minute; Sky Weave remains roughly 77–79 seconds and one Skipping Stones route is about 73 seconds. The four earlier courses remain short introductions (about 13–25 seconds). Higher-speed racing and aggressive turbo strategies need beta playtesting; the conservative completion driver does not spend turbo on most maze routes.\n\nStatic validation does not exhaustively detect bridge-to-bridge intersections. Actual traversal caught and resolved the observed Skipping Stones overlap; future junction edits still require collision and browser verification.\n\nThe original HTML and maze specifications remain base authoring inputs. The explicit elevation design pass produces the current playable courses; run it after rebuilding base fixtures. Reproduction commands and the distinction between frozen course identity and physics compatibility are documented in [the elevation review README](../../fixtures/race/elevation-review/README.md). This work is local and has not been deployed."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md",
+      "title": "Phase 31 M2: progress on the device · Key instructions",
+      "path": "docs/build-log/phase-31-m2.md",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026, about 22:50 to 23:25 PDT.\n**Agent:** Claude Code (Claude Opus 5.5), a phase sub-agent in the worktree `p31-m2-device-progress` (branch `claude/p31-m2-device-progress`), working in parallel with M3.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md), milestone M2. Design guidance: the impeccable skill and `apps/education/DESIGN.md`.\n\n## Key instructions\n- Deeper lessons and progress a grown-up can read on this device, with no account. The child's screen stays as simple as today; only the parent area grows.\n- Implement `ProgressStore` (contract in `@wwm/learning` `sync.ts`) over IndexedDB, turn on fresh examples for the four generated objectives, have the lesson page play `expandActivity` and record `roundEvidence` per solved round, add a picture-only profile picker and a held \"who's playing\" switch, and add a Progress page with profiles, plain-language states, export and deletion.\n- No analytics, no network calls with child data, no accounts (M3), no productivity claims."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M2: progress on the device › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m2.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Store (N):** `packages/learning/src/browser-store.ts`, `createBrowserStore(name = 'wwm-learning-progress')`. IndexedDB version 1 with `profiles`, `events` (index `profile`), `outbox` (index `profile`) and `meta`. Each method is one transaction. `appendEvidence` validates with `evidenceSchema` and writes the event and its outbox entry together, idempotent by id (a re-append after sync doesn't re-queue). `deleteProfile` also removes that child's events, outbox entries and active-profile mark; `clear` removes everything. Failed opens reject and are retried on the next call.\n- **Fresh examples on (N):** `baseline.ts` gives every activity with a bank (`count-three`, `count-five`, `compare-groups`, `spanish-colors`) `fresh: { objective: <its id>, count: 2 }`.\n- **Lesson page (N):** plays `expandActivity(path, activity, { seed, seen })`, with `seen` from the child playing (empty with none). With a child chosen, each newly solved round appends `roundEvidence` with `surface: 'lesson'`, the input actually used (a direct button press counts as a tap) and the time since the round started. \"Play again\" draws again, so fresh examples the child has met are skipped. Without IndexedDB, or without Web Crypto, the lesson plays as before and saves nothing.\n- **Who's playing (N):** a picture-only picker of Pip avatars when two or more children exist. It is remembered for the browser tab; one child is chosen silently and none shows nothing. \"Hi, <nickname>!\" goes through browser speech only. The \"Switch who’s playing\" button under the lesson uses the game's press-and-hold gate (2 s, or hold G; `src/hold.ts`, ported from `apps/web/src/learning/HoldButton.tsx`). Avatars are Pip in six colours, each with a different shape on an antenna, so they don't depend on colour."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M2: progress on the device › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m2.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "- **Progress page (N):** `/progress/` (`src/progress.ts`, `src/progress-render.ts`), linked from the header and behind the same gate. It shows:\n  - \"This shows practice, not a test or a grade.\" and \"Saved on this device only.\"\n  - Per child: practised objectives (most recent first) with the plan §3 copy, the last practised date in the family's time zone, Try together and listening-practice tags; then \"Not tried yet (n)\"; then edit and delete.\n  - \"What these mean\"; add a child (nickname help text, Pip picture radios); \"Download progress (JSON)\"; and \"Delete progress on this device\" with an inline confirmation.\n  - `#account-slot`, kept for M3.\n- **Smaller changes:** lesson summaries count fresh rounds (\"7-round challenge\" for `compare-groups`); the grown-up notes say \"Then two new examples.\"; DESIGN.md documents the picker, the gate, the Progress page and the new tokens (danger, state outlines, pill radius).\n- **Docs:** [docs/education/progress-tracking.md](../education/progress-tracking.md); `apps/education/README.md`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md#screenshots",
+      "title": "Phase 31 M2: progress on the device › Screenshots · Attempts that failed",
+      "path": "docs/build-log/phase-31-m2.md",
+      "anchor": "screenshots",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "## Screenshots\n| | Desktop (1440 px) | Mobile (390 px) |\n| --- | --- | --- |\n| Picker (two children) | ![Picker, desktop](assets/phase-31/m2-picker-desktop.png) | ![Picker, mobile](assets/phase-31/m2-picker-mobile.png) |\n| Progress after scripted play | ![Progress, desktop](assets/phase-31/m2-progress-desktop.png) | ![Progress, mobile](assets/phase-31/m2-progress-mobile.png) |\n\nThe child-surface screenshots change only where the plan expects: the picker, plus the extra planks and rounds the fresh examples add to the bridge.\n\n## Attempts that failed\n- `saveProfile` and `appendEvidence` first threw validation errors synchronously instead of rejecting; they are now `async`.\n- The first Progress e2e lost one event: the test navigated straight after the final answer, before the IndexedDB write committed. The test now waits for the write; the narrow window is noted under remaining defects.\n- An assertion that written rounds never reach browser speech failed: when a quick tap interrupts a clip, the voice player falls back to speech (the known double-fallback noted in the existing e2e). The test now checks only that fresh lines, which have no clips, are spoken by the browser and that clips were requested for the rest.\n- Avatar radio cards cover their label with the real input, so Playwright's text click was intercepted; tests check the radio by role."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md#manual-interventions",
+      "title": "Phase 31 M2: progress on the device › Manual interventions · Test evidence",
+      "path": "docs/build-log/phase-31-m2.md",
+      "anchor": "manual-interventions",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "## Manual interventions\nNone.\n\n## Test evidence\n- `pnpm vitest run --project @wwm/learning`: 85 tests, including 7 store tests with `fake-indexeddb` (profiles, active profile and token across instances, idempotent append with outbox, schema rejection, complete per-profile deletion, export and clear, unavailable IndexedDB).\n- `pnpm vitest run --project @wwm/education pages`: 22 tests, including fresh notes and summaries, hidden picker markup, distinct avatar shapes, hold-button names, Progress copy and slot, states and ordering, escaping and time-zone days.\n- `WWM_EDUCATION_E2E_BASE=… pnpm vitest run --project @wwm/education education.e2e` against `vite preview` of the built site: 29 Chromium tests pass. The existing 20, updated for fresh rounds, still pass. New tests:\n  - no profiles\n  - one profile, desktop and mobile: evidence per round, `after-retry`/1, `first-try`/3 and `first-try`/0, items, input, outbox; \"Play again\" draws unseen items\n  - two profiles, desktop and mobile: picker, browser-speech nickname, the whole lesson with fresh rounds before the bonus, the held switch, a new tab asks again\n  - Progress, desktop and mobile: gate, validation, add, rename, recolour, states after play over two days with `page.clock`, export, then delete one child and everything\n  - fresh-round lines through browser speech\n  - no IndexedDB (missing, and `open` throwing)\n- `pnpm vitest run --project @wwm/web learning`: 54 tests, including the Chromium Pip-gate e2e. The game still plays the written rounds; it ignores `fresh` until M5.\n- `pnpm check`: green after `pnpm docent:index`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m2.md#remaining-defects",
+      "title": "Phase 31 M2: progress on the device › Remaining defects",
+      "path": "docs/build-log/phase-31-m2.md",
+      "anchor": "remaining-defects",
+      "url": "/log#phase-31-m2",
+      "kind": "build-log",
+      "text": "## Remaining defects\n- An evidence write still in flight when the page unloads (for example, leaving within milliseconds of the last answer) can be lost. Writes take a few milliseconds.\n- `docs/education/html-contract.md` still says no activity requests fresh examples yet. That file isn't M2's to edit.\n- `packages/learning/README.md` doesn't list `createBrowserStore` yet. That file isn't M2's to edit.\n- Thresholds and parent copy still need an educator's review. Child usability and parent comprehension are human gates."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync · Key instructions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026, about 22:50–23:40 PT (America/Los_Angeles).\n**Agent:** Claude Code (Claude Opus 5.5), a phase sub-agent in the worktree `p31-m3-accounts-sync` (branch\n`claude/p31-m3-accounts-sync`). M2 (device progress) and M4 (lesson drafts) ran in parallel in their own worktrees.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md) §6–7.\n**Contract:** [plans/contracts.md](../../plans/contracts.md) §10.5 (CCR-31-3), implemented as written. No new CCR.\n\n## Key instructions\n- Implement every `/api/learning/*` endpoint in contracts §10.5.\n- Storage: a new D1 database `wwm-learning-records` (`LEARNING_DB`) and a SQLite `FamilyRecords` Durable Object per\n  family.\n- Sign-in: email links (Turnstile, consent, 15 minutes, one use) and passkeys.\n- Devices: pairing (6 characters, 10 minutes, one use) with revocable bearer tokens.\n- Rate limits, export, deletion and 24-month retention.\n- Privacy: no body, email or nickname logging, no telemetry, `no-store`. A same-origin check on cookie requests.\n- The gate `LEARNING_ACCOUNTS`: `off` by default and in production and previews, `on` in local dev.\n- Also build a typed client with `syncOutbox`, the account UI in the education app (plugging into M2's slot), a\n  draft privacy notice, owner setup steps, and tests: real workerd integration, client units, and a browser e2e\n  if feasible.\n- Load the `durable-objects`, `cloudflare-email-service`, `workers-best-practices` and `wrangler` skills first.\n- Don't touch remote Cloudflare resources, deploy, send real email or use real secrets."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Worker (N)** in `apps/worker/src/learning-records/`:\n  - **Routes:** `routes.ts` is one Hono sub-app, mounted with one line in `router.ts`. `index.ts` exports\n    `FamilyRecords`, and the existing cron calls `sweepLearningRecords` first, wrapped so it can never block the\n    other sweeps.\n  - **Storage:** `accounts.ts` holds the D1 queries (every token is SHA-256 only). `family-records.ts` is the DO:\n    `INSERT OR IGNORE` dedupe, `UNKNOWN_PROFILE`, a profile deletion that cascades in one `transactionSync`,\n    `(at, id)` cursor paging, and `deleteAll()`.\n  - **Sign-in:** `passkeys.ts` uses `@simplewebauthn/server` 14, with one-use challenges in D1. `mailer.ts` sends\n    through the `send_email` binding, with a development-only KV mock mailbox. `turnstile.ts` calls siteverify;\n    in development it answers Cloudflare's test secrets locally.\n  - **Configuration:** `config.ts` fails closed. Deployed Workers refuse test secrets, the mock mailbox and\n    `http://` origins.\n- **Config:**\n  - `wrangler.jsonc` adds to every environment: the `LEARNING_DB` binding (placeholder ids for production and\n    previews), `FAMILY_RECORDS` (migration tag `v5`), `LEARNING_MAIL`, `LEARNING_AUTH_LIMITER` and\n    `LEARNING_EVENTS_LIMITER` (namespaces 7010/7011, 7210/7211, 7310/7311), and five vars. The cron is reused.\n  - `worker-configuration.d.ts` was regenerated.\n  - `migrations-learning/0001_learning_records.sql`.\n  - The dev scripts apply both databases' migrations.\n- **No enumeration:** `POST auth/email` validates the request and Turnstile, then answers `202 {}`. The account\n  lookup, the allow-list check, the per-address limit (5 an hour, `Limiter` DO) and the email all run in\n  `waitUntil`, so neither the answer nor its timing depends on whether the account exists."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- **No silent sign-up:** a new address without consent gets an email explaining how to sign up, with no link.\n- **Client (N):** `packages/learning/src/sync-client.ts`:\n  - `createSyncClient()` covers every endpoint and raises `LearningApiError` with the `LEARNING_*` code or\n    `NETWORK`.\n  - `syncOutbox()` sends batches of at most 200 and marks accepted and duplicate ids synced. It keeps rejected\n    ids and skips past them, so they can't block newer events. It backs off on 429 (honouring `Retry-After`),\n    offline and 5xx.\n  - `uploadLocalProgress()`.\n- **UI (N):** `apps/education/src/account*.ts` and `account.css`. These pages are generated: `/account/` and\n  `/account/verify` (served at `/learn/account/…`).\n  - Email sign-in with Turnstile and the consent box, and a passkey sign-in (`@simplewebauthn/browser`).\n  - \"Add a child's device\": a code plus a QR code drawn with `uqr`, the same way the game draws its pairing QR.\n    The QR opens `/learn/account/#pair=CODE`, which prefills the claim form.\n  - The device list with Remove, \"Send this device's practice now\", the JSON export, and delete with typed\n    `DELETE`.\n  - A privacy summary on the page.\n  - `account-sync.ts` is the API for M2's Progress page: `mountAccountSlot`, `syncNow`, `progressProfiles`,\n    `progressEvents`, `pushProfile` and `removeProfile`.\n- **Small edits outside the owned paths, needed to keep `pnpm check` green or the pages working:**\n  - `render.ts` exports `shell`. M2 made the identical change.\n  - `generate.ts` and `vite.config.ts`: the account pages, a dev `/api` proxy, and a dev `/learn/` prefix.\n  - `apps/education/.gitignore`.\n  - `routes/learning-page.ts`: `/learn/account/*` CSP allows `https://challenges.cloudflare.com` (script and\n    frame) only.\n  - `testing/solver-probe-worker.ts`: exports `FamilyRecords`, since the probe uses the same config."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature~3",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- `infra/scripts/lib/cloudflare-infra.mjs`: the required DO bindings are now checked as a subset, not an exact\n    list.\n  - `test/security.test.ts`: the expected limiter list, plus `LEARNING_ACCOUNTS` `off` and email mode `send` in\n    production and previews.\n- **Docs:**\n  - [learning-privacy.md](../launch/learning-privacy.md): a DRAFT, not legal advice, with a reviewer checklist\n    covering COPPA, GDPR/UK and operations.\n  - [learning-accounts-setup.md](../launch/learning-accounts-setup.md): the owner steps.\n  - The `apps/worker/README.md` section and `.dev.vars.example`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#decisions",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Decisions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "decisions",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Decisions\n- **WebAuthn:** `@simplewebauthn/server` runs in workerd. Proof: the integration test builds `none`-attestation\n  ES256 credentials with a software authenticator (`test/learning-records-authenticator.ts`, a minimal CBOR\n  encoder and a DER signature). It registers and signs in through the real Worker, and is refused for replayed\n  challenges and wrong origins. In the browser e2e, Chromium's CDP virtual authenticator does the same through\n  `@simplewebauthn/browser`.\n  - The cost is about 0.7 MB of unminified bundle (asn1/x509, for attestation formats this app doesn't need). The\n    Worker upload is 17.5 MB raw and 5.5 MB gzip in the dry run.\n- **CSRF:** a mutating request that carries the cookie, or that sets one (`email/verify`, `passkey/login/verify`),\n  must send an allowed `Origin`: the Worker's own, `LEARNING_ORIGIN`, or (development only) a loopback Vite proxy.\n  Bearer-only device requests need none.\n- **Devices read the family's profiles** (needed for the child's picker on a linked tablet) and send events. Only\n  a parent reads events, the export or devices.\n- **Turnstile in dev:** without a site key, the Vite dev build sends the documented dummy token and the\n  development Worker answers the always-pass test secret locally. So nothing needs the network."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#attempts-that-failed",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Attempts that failed · Manual interventions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Attempts that failed\n- **Node strip-only TypeScript:** the first `LearningApiError` used constructor parameter properties.\n  `apps/education/vite.config.ts` imports `@wwm/learning` under Node's strip-only TypeScript, which rejects them,\n  so Vitest couldn't load the project. Rewritten with plain fields.\n- **Gate test in a deployed environment:** an integration test that set `WWM_ENV=preview` got `429` from the\n  existing global cost ingress (cost controls are always on outside development). The fail-closed checks moved\n  to unit tests of `learningConfig()` instead.\n- **The existing tests needed the new bindings:**\n  - The solver probe Worker (its own entry, same `wrangler.jsonc`) timed out until it exported `FamilyRecords`.\n  - `security.test.ts` and the deploy guard both expected exact binding lists.\n- **Small fixes:**\n  - The e2e needed `wrangler` as an education devDependency.\n  - Biome rejected a local named `escape` (it shadows a global), and an optional chain in a test.\n\n## Manual interventions\nNone."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#test-evidence",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Test evidence",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Test evidence\n- **`pnpm check`** (typecheck, Biome, Vitest; Chromium installed) is green after `pnpm docent:index`: 162 test\n  files passed and 6 skipped; 1,731 tests passed and 44 skipped. The 49 new tests below all ran, none skipped.\n- **`apps/worker/test/learning-records.integration.test.ts`** has 19 tests in real workerd with D1, Durable\n  Objects, KV and rate limits. It covers:\n  - the anonymous session and `no-store`;\n  - consent required, with version and time recorded, and normalized email;\n  - the cookie attributes, the 30-day `Max-Age`, and hash-only storage;\n  - one-use, 15-minute links and an expired link;\n  - identical answers for existing, new and consent-less addresses;\n  - profiles: upsert, patch, validation, and devices read-only;\n  - pair codes: alphabet, 10 minutes, one use, expiry;\n  - events: dedupe, `UNKNOWN_PROFILE`, `INVALID`, size bounds, parent-only reads, and 604-event paging;\n  - the profile deletion cascade;\n  - cross-family isolation (session and device, read and write, export);\n  - revocation;\n  - CSRF (foreign, missing and `null` Origin; `Sec-Fetch-Site`);\n  - passkey register and login, with replay and wrong origin;\n  - sign-out;\n  - export completeness;\n  - deletion completeness (every D1 table and DO `sqlite_master` empty);\n  - the retention cron;\n  - rate limits (per IP and per family);\n  - logs free of emails and nicknames.\n- **A mutation check:** disabling the DO's profile check made 4 of the 19 fail (isolation, cascade, events,\n  profiles).\n- **The other test files:**\n  - `learning-records-gate.integration.test.ts`: 4 tests (off, allowlist, on, Turnstile failure).\n  - `learning-records-config.test.ts`: 6 tests.\n  - `learning-page.test.ts`: the CSP for account pages.\n- **`packages/learning/test/sync-client.test.ts`:** 9 tests, with a fake fetch and an in-memory `ProgressStore`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#test-evidence~2",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Test evidence (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- **`apps/education/test/account.test.ts`:** 5 tests (the page HTML, and the helpers with and without an account).\n- **`apps/education/test/account.e2e.test.ts`:** Chromium, workerd behind the education Vite dev server. It walks\n  through:\n  1. the email link via the mock mailbox;\n  2. adding a passkey (virtual authenticator), then signing out and back in with it;\n  3. the pair code and QR;\n  4. a second browser context opening the QR link and linking itself;\n  5. the tablet sending events (and being refused progress reads), and the parent seeing them;\n  6. the device list and the JSON export;\n  7. revocation and typed-confirmation delete;\n  8. and, in a second test, a used link explaining itself.\n\nScreenshots at 1280 wide and 390×844 were reviewed by hand (`WWM_ACCOUNT_SHOTS`, not committed)."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#remaining-defects-and-follow-ups",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- **Merge blocker for automatic deploys:** the production and preview `LEARNING_DB` ids are placeholders. The owner\n  must create the databases first (setup doc step 1), or merge with those entries removed.\n- **CI:**\n  - The CI deploy doesn't apply `migrations-learning/` yet.\n  - The web build needs `VITE_TURNSTILE_SITE_KEY`. Both are owner or orchestrator edits to `ci.yml`.\n- **Until M2's store is wired in, nothing is uploaded:** `account.ts` registers no `ProgressStore` (there is a\n  marked MERGE POINT), and the device token falls back to `localStorage`. The e2e therefore sends the tablet's\n  events through the API directly.\n- **The Progress page:** M2's page still has to call `mountAccountSlot` and `progressEvents`, and\n  `pushProfile`/`removeProfile` on edits. A profile deleted locally while signed out comes back from the family on\n  the next sync.\n- **Profiles a linked device made itself:** a device can't create profiles. Events for a device-only profile stay\n  in its outbox (`UNKNOWN_PROFILE`) until a parent signs in on that device or the profile is created from the\n  parent side.\n- **Bundle size:** `@wwm/learning` is imported from its root, which adds about 130 KB unminified to the Worker\n  (the baseline path is parsed at load). A `./sync` subpath export would avoid it.\n- **Unverified on real Cloudflare:** Email Service delivery and Turnstile siteverify (only the documented local\n  test-secret path and a fake fetch were exercised); and whether a `send_email` binding without an onboarded\n  domain blocks a deploy.\n- **The privacy review, COPPA consent method and educator review** are human gates (plan \"Acceptance\")."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent · Key instructions",
+      "path": "docs/build-log/phase-31-m4.md",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026 (America/Los_Angeles), about 22:45 to 23:55.\n**Agent:** Claude Code (Claude Opus 5.5) as a phase sub-agent in its own git worktree (`claude/p31-m4-lesson-drafts`), working in parallel with M2 and M3.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md) §8; contracts §10.5 CCR-31-4.\n\n## Key instructions\n- Port the fx0/libfx \"durable design agent\" pattern to Cloudflare: an Agents SDK Durable Object per draft, a `LESSON_DRAFT` Workflow (generate, validate, repair at most twice, ready for review) through AI Gateway, operator endpoints under `/api/admin/lessons/*` behind Access, and a \"Lesson drafts\" view in the admin workbench.\n- Scope from the M0 spike: open-vocabulary bank items only, starting with English missing-letter spelling. Pass the bank so far as an exclusion list, use a reviewed word list, flag distractors that spell real words.\n- Nothing reaches a child until an operator approves, the export is imported with a CLI, committed and deployed. Model output is untrusted.\n- Mark which steps are safe to re-run and which are billed; a retried Workflow must not pay twice.\n- One optional real smoke test through AI Gateway (at most three calls), only with existing credentials."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Reviewed vocabulary (N):** `packages/learning/src/vocabulary.ts`, 68 consonant-vowel-consonant words for ages 4–5 with a one-line meaning each, `reviewStatus: 'needs-owner-review'`. The spike's spelling checks are now reusable (`spellingIssues`, `spellingFlags`, `spellingBankRound`); the word must be on the list, and a distractor that completes a common word is flagged for review. The spike uses them too.\n- **Reviewed banks (N):** `reviewed-banks.ts` holds the export format (`wwm-learning-bank/1`), `AUTHORING_OBJECTIVES`, `reviewedBankReport()` and the workbench wire types. `src/banks/index.ts` lists imported bank files; `baseline.ts` merges them in one line. No bank is imported yet.\n- **Import CLI (N):** `pnpm learning:bank import|check <file>` (`tools/lesson-draft/src/bank.ts`). Validates against the baseline, writes `banks/<objective>.json`, regenerates the registry and formats both with Biome. Idempotent.\n- **Agent and Workflow (N):** `apps/worker/src/lesson-drafts/`.\n  - `LessonDraftAgent` (Agents SDK `Agent`, not `AIChatAgent`: the transcript is plain text and the Anthropic SDK call goes through the docent's gateway pattern, so the AI SDK isn't needed). SQLite holds the draft, transcript and revisions by content hash; the `draft-index` instance lists drafts.\n  - `LessonDraftWorkflow` runs `pipeline.ts`: `context` → `generate` (billed, run once) → `validate-0` → `repair-1/2` (billed, run once) with `validate-1/2` → `assemble` → `save-revision` → `ready-for-review`. Validation is a pure function of the stored replies, so a resumed instance reaches the same verdicts.\n  - Routes under the admin router: list, create, read, message (with drops), revision, preview, review, export. `LESSON_DRAFTS` gates them; a daily cap applies to gateway turns."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "- Previews render through `portablePage()` (`@wwm/education` now exports `./render`) with a no-script, sandboxed CSP.\n- **Admin UI (N):** `apps/web/src/admin/LessonDrafts.tsx` and `lesson-drafts.css`, one tab in `AdminPage.tsx`. Drafts list, new-draft form, chat with drop checkboxes, revision picker, issues, reviewer flags, per-item verdicts and spoken lines, a sandboxed preview frame, approve/reject with a note and flag acknowledgement, export link with the import command.\n- **Wiring:** `wrangler.jsonc` adds `LESSON_DRAFT_AGENT` (migration `v5`), the `LESSON_DRAFT` Workflow (`wwm-lesson-draft`; Previews `wwm-lesson-draft-preview`) and five `LESSON_DRAFT*` vars in every environment (`LESSON_DRAFTS` on locally with the mock, off in production and Previews). `worker-configuration.d.ts` regenerated. The deploy guard (`infra/scripts/lib/cloudflare-infra.mjs`) expects the new binding and Workflow and requires `LESSON_DRAFTS=off` in Previews. The solver probe entry exports the new classes because it runs with the production config.\n- **Docs:** [docs/education/lesson-drafts.md](../education/lesson-drafts.md), the Worker README section, the tool README."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#attempts-that-failed-and-why",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Attempts that failed, and why · Manual human interventions",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "attempts-that-failed-and-why",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Attempts that failed, and why\n- `node` couldn't run `bank-import.ts` at first: a TypeScript parameter property isn't supported in strip-only mode. Replaced with a field.\n- A registry block inside `reviewed-banks.ts` fought Biome's import organiser (it moves imports out of a marked region). The CLI now regenerates a separate `banks/index.ts`.\n- The Workflow first destructured its payload field by field and silently dropped the new `avoid` list, so a dropped word came back in the next turn. The workerd test caught it.\n- A test asserted that a second message is refused while the agent works; with the mock, the Workflow finished before the second request. Removed (the records test covers the rule).\n- `solver.workerd.test.ts` timed out: it runs the production config with a test entry that didn't export the new classes.\n- The in-app preview tool wasn't available to this sub-agent, so the UI was checked with Playwright screenshots against the test-only Worker and Vite (1440×1000 and 390×844, not committed).\n\n## Manual human interventions\nNone."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#test-evidence",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Test evidence",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Test evidence\n- `pnpm check`: green. Typecheck, Biome (warnings only, none in new code) and Vitest: 163 test files passed and 6 skipped; 1,755 tests passed and 44 skipped (the skips are the browser-driven suites without local Playwright Chromium, as before this change).\n- Worker: `lesson-drafts-pipeline` (13: valid output, exclusion list, repair, giving up after two repairs, nothing valid, no re-billing when a run is interrupted before each of six steps, the 24-item cap, the mock), `lesson-drafts-routes` (12: unauthenticated 401 on all eight endpoints, 503 without Access config, 403 cross-site, 404 for three `LESSON_DRAFTS` values, input validation, daily cap, preview and export headers), `lesson-drafts-records` (10: turns, idempotent revisions and summaries, failure, drops, approval rules, index, preview escaping of script and event-handler markup, export → import round trip, tampered export refused), `lesson-drafts.workerd` (1: the real agent and Workflow in workerd from brief to imported export).\n- `@wwm/learning` `reviewed-banks.test.ts` (16), `@wwm/lesson-draft` `bank-import.test.ts` (12), web `LessonDrafts.test.tsx` (4).\n- The full Worker config boots in workerd; `/agents/*` is 404 and `/api/admin/lessons` is 503 without Access config.\n- **Real smoke test** (`pnpm --filter @wwm/lesson-draft draft-smoke`, existing wrangler login, AI Gateway `wwm`): one `claude-sonnet-5-5` call, 2,980 input and 2,704 output tokens. Six items, all valid on the first pass with no reviewer flags: PIG, HEN, FOX, CUP, POT, RUG."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#remaining-defects-and-follow-ups",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- The vocabulary needs the owner's review before any bank built from it is approved.\n- The first turn still favours the commonest words (PIG, HEN, FOX again); later turns exclude them.\n- Previews bind their own Workflow name; whether per-PR Previews can each define it hasn't been tried (nothing was deployed).\n- New lesson drafts (whole activities) and post-approval voice generation are not built."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md",
+      "title": "Phase 31 M5: the maze records the same learning evidence · Key instructions",
+      "path": "docs/build-log/phase-31-m5.md",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026, about 23:25 to 00:20 PDT.\n**Agent:** Claude Code (Claude Opus 5.5), a phase sub-agent in the worktree `p31-m5-maze-evidence` (branch `claude/p31-m5-maze-evidence`).\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md), milestone M5. Builds on [M2](phase-31-m2.md).\n\n## Key instructions\n- A lesson played in the maze records the same `LearningEvidence` as the lesson page (`surface: 'maze'`), in the same device store. Fresh examples play in the maze too. The child-facing game must not get more complicated.\n- Use the M2 rules for who's playing: nothing with no children, one child chosen silently, and a picture-only Pip picker for two or more unless a child was picked in this tab. Build the picker in the game's React UI, draw the avatars like M2 does, and speak nicknames only with browser speech.\n- Falls, respawns, maze score, time and missions must never produce or change evidence. Fail soft without IndexedDB. Learning runs stay unranked. Make no analytics or network calls with child data.\n- No productivity claims."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M5: the maze records the same learning evidence › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Fresh examples in the maze (N):** `LearningGates.ready()` (`apps/web/src/learning/gates.ts`) settles who's playing, reads their `seenItems`, and plays `expandActivity(path, activity, { seed, seen })`. The seed is the play-through's seed, so the e2e `learningSeed` pins it. `game.ts` `#loadSlice` starts `ready()` alongside the stage build and waits for it before decorating the stage. That's the only change to `game.ts`. Each new game (`resetProgress`) draws again. A draw finished for an older play-through is dropped.\n  - Levels with `steps: 'rounds'` (Explore, Gated, Goal only) gain a gate per fresh round. With fresh examples, `compare-groups` has 9 rounds but 6 required ones, so it has 6 steps. On the practice stage its 4 written steps bind exactly as before (r1 to r3 behind bridge or lift cuts, r4 keeping the finish shut), and `fresh-1` and `fresh-2` also keep the finish shut. Every baseline lesson is within `MAX_STEP_SPOTS = 8`; the most is 6 (`compare-groups`, `spanish-colors`).\n  - With more required steps than spots, the overflow rounds have no gate. `needsStartCard()` asks the first of them on the \"Before you roll\" card at each stage start, and any gate whose own step is done asks the next pending round. A unit test with 8 written required rounds and 2 fresh ones shows `fresh-1` asked on the start card and recorded. Fresh examples then come before some written rounds; no current lesson hits this.\n  - Explicit step lists (the `mission` levels) leave fresh rounds out, by design."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M5: the maze records the same learning evidence › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "- **Who's playing (N):** `apps/web/src/learning/players.ts` has `choosePlayer`, `listPlayers` (2.5 s timeout), `PICKED_KEY`, `confirmPick` and `speakNickname`, ported from `apps/education/src/profiles.ts` and `lesson.ts`. It uses the same store (`createBrowserStore()`, IndexedDB `wwm-learning-progress`) and the same sessionStorage key, so a pick on the lesson page holds in the game in the same tab, and the other way round.\n- **Picker (N):** `LearningPicker.tsx`, mounted once in `Screens.tsx`. It's a modal dialog over the building screen with one big button per child (at least 136×150 px, 152×172 px on desktop), drawn with the M2 avatars and named by nickname for assistive technology. The first Pip takes focus; arrows and Tab move between Pips, and Enter, Space, tap or click picks. It respects `prefers-reduced-motion`. \"Hi, <nickname>!\" uses browser speech only, and not when the game is muted.\n- **Grown-up line (N):** the select screen's Pip gates panel says \"Saving practice for <nickname> on this device.\" With two or more children it adds **Switch who's playing** (press and hold 2 s, or hold W; G stays the level control's key). The switch shows the picker straight away and starts a new play-through for the child picked.\n- **Avatars:** `apps/web/src/learning/avatars.ts` ports `AVATAR_LOOKS` and `avatarSvg` from `apps/education/src/profiles.ts`. A unit test checks that the port's markup is byte-identical for every avatar. CCR-31-5 below proposes one shared copy.\n- **Evidence (N):** `answer(choice, mode)` is the only place evidence is made. When a round becomes solved, `#record` calls `roundEvidence({ …, surface: 'maze', input: mode, durationMs })` and queues `appendEvidence`; a failed write is counted and dropped. Inputs:\n  - `tap`: a click or tap on a choice\n  - `letter-key` and `number-key`: those keys\n  - `arrows`: Enter or Space on the cursor, or a gamepad's JUMP"
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#what-changed-n-new-not-a-2013-feature~3",
+      "title": "Phase 31 M5: the maze records the same learning evidence › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "- `tilt`: a paired phone's JUMP"
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#what-changed-n-new-not-a-2013-feature~4",
+      "title": "Phase 31 M5: the maze records the same learning evidence › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "The duration runs from when the round appeared on the card: when the card opened, or when a follow-up or an accepted bonus round replaced the last one. The maze is paused while the card shows. Nothing is recorded without a child, before `ready()` has drawn the play-through (origins are empty), or without Web Crypto (`expandActivity` can't hash, so the written rounds play).\n- **i18n:** `learning.picker.title` and `learning.player.{saving,switch,switchHint}` in `en` and `ja`.\n- **Debug state:** `learning.rounds`, `learning.fresh`, `learning.player` (`none`, `chosen` or `asking`) and `learning.evidence` (`saved`, `unsaved`). There's no profile id or nickname.\n- **Docs:** the \"Maze\" section of [docs/education/progress-tracking.md](../education/progress-tracking.md)."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#screenshots",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Screenshots · Contract Change Request",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "screenshots",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Screenshots\n| Desktop (1440 px) | Mobile (390 px) |\n| --- | --- |\n| ![Picker in the game, desktop](assets/phase-31/m5-picker-desktop.png) | ![Picker in the game, mobile](assets/phase-31/m5-picker-mobile.png) |\n\nTaken by `WWM_M5_SHOTS=1 pnpm vitest run apps/web/test/learning-evidence.e2e.test.ts`. The picker is over the building screen of `/play/practice?learn=compare-groups`. The first Pip has keyboard focus.\n\n## Contract Change Request\n**CCR-31-5 (proposed): share the avatar drawing.** Move `AVATAR_LOOKS` and `avatarSvg(theme, avatar, size, className?)` from `apps/education/src/profiles.ts` into `@wwm/learning` (for example `avatars.ts`, next to `AVATARS` in `sync.ts`). Both apps would import it; it's additive and needs no schema change. Until then, `apps/web/src/learning/avatars.ts` is a port with a comment, and `test/learning-evidence.test.ts` fails if the two drift."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#attempts-that-failed",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Attempts that failed",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Attempts that failed\n- After an `await`, TypeScript still narrowed `#asking` to `null` from an earlier check (`Property 'done' does not exist on type 'never'`). A small getter reads it fresh.\n- Biome's accessibility rules rejected a `role=\"group\"` wrapper with a key handler. The arrow and Tab handling moved onto the avatar buttons.\n- In unit tests, fake-indexeddb needs `IDBKeyRange` stubbed as well as `indexedDB`. Without it, `seenItems` failed and was caught, so fresh examples were silently drawn for an empty `seen` set. The tests now stub both.\n- Sorting events by their UUIDv7 id didn't give play order: with the test clock pinned they share a millisecond, and the random bits decide. Tests sort by round order.\n- `page.evaluate` with a dynamic `import()` was rewritten by Vitest (`__vite_ssr_dynamic_import__ is not defined`). The e2e passes the store import as a script string.\n- Leaving play through the title screen didn't come back through \"pairing\" as expected. The e2e uses the pause menu's \"another site\" instead.\n- The first full `pnpm check` failed one unit test. Its three events shared one pinned minute, so `objectiveProgress`'s latest round was chosen by random id bits, and sometimes it was the helped r1. That test's wall clock now moves with the test clock.\n- The second `pnpm check` found the docent corpus stale after the new docs. `pnpm docent:index` regenerated it.\n- The existing e2e \"a downloaded learning page…\" expected `count-three`'s only gate to lead to the finale. With two fresh examples it has three steps; the test now plays `fresh-1` and `fresh-2` at gates 2 and 3."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#manual-interventions",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Manual interventions",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "manual-interventions",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Manual interventions\nNone."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#test-evidence",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Test evidence",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Test evidence\n- `pnpm vitest run apps/web/test/learning-evidence.test.ts`: 21 tests over fake-indexeddb with the real `createBrowserStore`. They cover:\n  - the player rules, including a store that never answers\n  - avatar parity with apps/education\n  - fresh rounds on `rounds` levels and their absence from `mission`, and a fresh round on its gate\n  - re-drawing unseen items, and the overflow beyond 8 spots on the start card\n  - per-input evidence: arrows after a retry with the match tool, a letter key, phone tilt and JUMP, a tap, a nudged number key on a follow-up\n  - duration buckets from card time, and `objectiveProgress` reading the events\n  - zero children, no IndexedDB, a failing store, and no Web Crypto\n  - **the proof:** the same gate answers give identical events (minus random ids) whether or not the maze also sees every gem, a guarded hop, a pressed lock, a respawn or retry (`stageReady` again) and 250 s of maze time; a completed mission, a \"Later\" and the grown-up override record nothing; and a source check that `roundEvidence(` and `#record(` appear once each, inside `answer()`, and that the lesson side reads no fall, spare, score or timer\n  - the picker: waits, ignores unknown ids, greets unless muted, remembers, records for the child picked, doesn't ask again in the tab, the switch asks again, and clearing the lesson closes it\n- `pnpm vitest run apps/web/test/learning-evidence.e2e.test.ts` (Chromium, Vite dev server, `/api` mocked): 5 tests.\n  - **One child:** no picker. r1 by keyboard after a retry, then `fresh-1` by tap, give 2 events (`surface: 'maze'`, `arrows`/`after-retry`/1 and `tap`/`generator`/fresh). `objectiveProgress` says `practising`, and the Progress page's own `childHtml` renders \"Practising\" for \"Which has more?\". Running the stage timer out leaves the events byte-identical, and the run stays unranked (`learningRun`)."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#test-evidence~2",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Test evidence (continued)",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "- **No children:** fresh rounds play, nothing is saved, and the store stays empty.\n  - **Two children, desktop and 390 px:** the picker shows during building. The maze waits, avatars are sorted by nickname, targets are at least 120 px, and focus is on the first Pip. A child picks by keyboard (desktop) or tap (mobile), the events belong to them, and a new tab asks again. No request URL or body carries a nickname or profile id.\n  - **Grown-up line:** no line before a pick; after one, \"Saving practice for Leo on this device.\" A quick tap on the switch does nothing; a 2 s hold shows the picker, and picking Mia updates the line and the tab's pick.\n- `pnpm vitest run apps/web/test/learning.e2e.test.ts`: 5 tests pass, including the updated `count-three` file test.\n- `pnpm check` after `pnpm format` and `pnpm docent:index`: green, with 159 test files passed and 6 skipped, and 1726 tests passed and 53 skipped."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#remaining-defects",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Remaining defects · Decisions for the owner",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "remaining-defects",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Remaining defects\n- The paired phone can't answer the picker; a grown-up or the child taps the screen or uses the keyboard. The gate card itself still works by tilt.\n- The overflow fallback (more than 8 required steps) asks fresh rounds on the start card before some written rounds. No current lesson needs it.\n- An evidence write still in flight when the page unloads can be lost, as in M2.\n- `docs/education/html-contract.md` still says the game plays the written rounds until M5, and `apps/web/README.md` doesn't mention the picker. Neither file is M5's to edit.\n- Thresholds, parent copy and child usability are still human gates (plan \"Acceptance\").\n\n## Decisions for the owner\n1. CCR-31-5: move the avatar drawing into `@wwm/learning`, or keep the tested port.\n2. The picker appears while the maze builds, not on the site-select screen. A child picks right before play, and the grown-up who chose the lesson isn't asked. Confirm this placement.\n3. Hold W for \"Switch who's playing\" in the game (G is taken by the level control). M2's lesson page uses G.\n4. Fresh examples play in the maze with no child too (with an empty `seen` set), as on the lesson page."
+    },
+    {
+      "id": "docs/build-log/phase-31.md",
+      "title": "Phase 31: Lesson depth and parent progress tracking · Key instructions",
+      "path": "docs/build-log/phase-31.md",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026 (America/Los_Angeles).\n**Agent:** Claude Code (Claude Opus 5.5) as orchestrator. No sub-agents.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md).\n\n## Key instructions\n- The owner asked how fx0 (Vercel's libfx design agent, which writes one HTML file per chat) could benefit the lessons.\n- Goals the owner gave: deeper lessons, progress tracking for parents (ready for other families), a child UI that stays intuitive, and Cloudflare only. Port Vercel-based ideas rather than adopt them.\n- Apple TV (Phase 30) is out of scope."
+    },
+    {
+      "id": "docs/build-log/phase-31.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31: Lesson depth and parent progress tracking › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **M0 item-bank spike (N):**\n  - `tools/lesson-draft`: a local-only `wrangler dev` helper Worker that calls Anthropic through AI Gateway `wwm`, and `src/spike.ts`.\n  - The spike asks `claude-sonnet-5-5` for six fresh rounds per objective. It validates them with `roundSchema` plus objective checks the schema can't make, and allows up to two repair turns.\n- **Results:** [docs/education/item-bank-spike/2026-10-19/](../education/item-bank-spike/2026-10-19/README.md).\n  - Rounds were valid 53/54 on first pass and 54/54 after one repair.\n  - Three independent runs converged on the same items: 9 distinct words in 18 spelling items, and 7 distinct sets in 18 colour items.\n  - Conclusion: generators for parametric objectives, and a model only for open vocabulary under review.\n- **Plan:** objectives and banks, evidence events, a plain-language progress model, parent accounts on D1 with one Durable Object per family, a privacy gate, and the fx0 pattern ported to the Agents SDK and Workflows. CCR-31-1 to CCR-31-4 are proposed, not applied.\n\n- **M1, `@wwm/learning` (CCR-31-1/2 applied; the owner approved starting M1):**\n  - Objectives, banks and `activity.fresh` in the `0.3` reader; baseline revision 3.2.0.\n  - Generators: `compare`, `difference`, `count`, `spanish-color`.\n  - `roundIssues()` objective checks, enforced by the schema for every round and bank item.\n  - `expandActivity`/`drawFresh` with content-hash item identity.\n  - `LearningEvidence` (UUIDv7, minute precision, strict) and `objectiveProgress()` with proposed `PROGRESS_RULES`.\n  - Family drafts from 3.1.0 still apply.\n- **Design change in M1:** fresh examples are declared on the activity (`activity.fresh`), not as a level step. The lesson page plays them without levels, and the expanded activity is an ordinary `Activity`."
+    },
+    {
+      "id": "docs/build-log/phase-31.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31: Lesson depth and parent progress tracking › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "- **M2–M5 (orchestrated, 2026-10-19/20):**\n  - The orchestrator fixed CCR-31-3/4 in contracts §10.5 and `@wwm/learning` `sync.ts`. Four sub-agents (Claude Code, Claude Opus 5.5) each worked in their own git worktree: M2, M3 and M4 in parallel, then M5 once M2 had merged. Hand-offs: [M2](phase-31-m2.md), [M3](phase-31-m3.md), [M4](phase-31-m4.md), [M5](phase-31-m5.md).\n  - The orchestrator merged them in the order M2, M4, M3, M5 and did the integration work:\n    - Durable Object migration tags `v5` (`LessonDraftAgent`) and `v6` (`FamilyRecords`).\n    - The account code reads M2's store, so a paired device's token lives in IndexedDB.\n    - The Progress page syncs and shows every device's events, and mirrors profile edits.\n    - The lesson page syncs when a lesson ends.\n    - CCR-31-5: one shared avatar drawing in `@wwm/learning`.\n    - The deploy guard refuses placeholder `LEARNING_DB` ids; `provision.mjs` creates the learning databases; CI applies their migrations."
+    },
+    {
+      "id": "docs/build-log/phase-31.md#attempts-that-failed",
+      "title": "Phase 31: Lesson depth and parent progress tracking › Attempts that failed · Manual interventions · Test evidence",
+      "path": "docs/build-log/phase-31.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "## Attempts that failed\n- M0: none. The first gateway call through `env.AI.gateway('wwm').run({ provider: 'anthropic', … })` worked under `wrangler dev` with the existing login.\n- M1: drawing two fresh examples for `compare-groups` exceeded the 8-round activity limit (seven written rounds). Activities now allow 8 written rounds plus 3 `fresh-` rounds.\n\n- Integration: after M2's store took over the device token, M3's account e2e still read it from `localStorage`. The test now reads it from the store.\n- Integration: adding the `LEARNING_DB` guard made the infra tests fail, because they assert that the committed config is deployable. The learning databases are now part of provisioning. The committed-config test allows exactly the two pending placeholders until the owner provisions them.\n- Shared checkout: another session switched the main checkout's branch mid-M1, so an M1 commit landed on its branch. It was moved back, and Phase 31 continued in dedicated worktrees.\n\n## Manual interventions\nNone.\n\n## Test evidence\n- `pnpm --filter @wwm/lesson-draft typecheck` passes.\n- Spike output: `docs/education/item-bank-spike/2026-10-19/results.json`, using 18,511 input and 25,623 output tokens.\n- M0: `pnpm check` passed after `pnpm docent:index`.\n- M1:\n  - `pnpm vitest run --project @wwm/learning`: 78 tests pass, including the new `test/depth.test.ts`.\n  - The `@wwm/education` and `@wwm/worker` projects pass (433 tests).\n  - `@wwm/web` learning tests pass (54).\n  - Typecheck passes for learning, education, worker, web and lesson-draft, and Biome is clean on the changed packages."
+    },
+    {
+      "id": "docs/build-log/phase-31.md#remaining-defects-and-follow-ups",
+      "title": "Phase 31: Lesson depth and parent progress tracking › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-31",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- The spelling check's dictionary (`/usr/share/dict/words`) accepts obscure words. M1 should replace it with a reviewed age-appropriate list.\n- The spike is three runs of one model with default sampling. It doesn't predict other objectives.\n- Owner decisions are listed at the end of the plan. The privacy review gates any family other than the owner's."
     },
     {
       "id": "docs/build-log/race-review/course-review.json",

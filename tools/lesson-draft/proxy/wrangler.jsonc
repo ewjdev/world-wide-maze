@@ -1,0 +1,8 @@
+// Local-only helper Worker for the lesson-draft spike (never deployed). Under `wrangler dev` the AI binding reaches
+// AI Gateway `wwm` with the developer's wrangler login; the Anthropic key stays in the gateway (BYOK).
+{
+  "name": "wwm-lesson-draft-proxy",
+  "main": "worker.js",
+  "compatibility_date": "2026-09-01",
+  "ai": { "binding": "AI" }
+}

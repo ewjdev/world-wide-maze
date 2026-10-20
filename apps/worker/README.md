@@ -112,6 +112,77 @@ SSE (`delta`… → `citations` → `done`, or `error`). Code: `src/routes/docen
   kill switch KV `kill:docent` or `DOCENT_PROVIDER=off`; one `docent answer` log line per answer with provider,
   model, outcome, input/output tokens and latency (no question text, no IP).
 
+## Lesson drafts (Phase 31 M4, contracts §10.5 CCR-31-4)
+Operator-only authoring of open-vocabulary bank items (today: English missing-letter spelling,
+`little-word-builders`). Code: `src/lesson-drafts/`. Operator guide: [docs/education/lesson-drafts.md](../../docs/education/lesson-drafts.md).
+- **Endpoints.** `/api/admin/lessons/*`, mounted under the admin router, so the Access JWT, the `ADMIN_EMAILS`
+  allowlist and same-origin writes are checked first (503/401/403, failing closed). Then `LESSON_DRAFTS` must be
+  `on`, or every endpoint is 404. List and create (`GET`/`POST /`), read a draft (`GET /:id`), the next turn
+  (`POST /:id/messages {text, count?, drop?}`), a revision (`GET /:id/revisions/:hash`) and its preview
+  (`…/preview`), `POST /:id/review {decision, note, revision, acknowledgeFlags?}`, and `GET /:id/export`.
+- **`LessonDraftAgent`** (`agent.ts`, Agents SDK, binding `LESSON_DRAFT_AGENT`, migration `v5`): one Durable Object
+  per draft. Its SQLite (`records.ts`) holds the draft, the transcript and every revision by content hash. The
+  instance `draft-index` keeps the draft list. The Worker never routes `/agents/*`, and the agent refuses HTTP and
+  WebSocket connections of its own.
+- **`LESSON_DRAFT` Workflow** (`workflow.ts`, steps in `pipeline.ts`): one instance per operator message
+  (`<draft>-t<turn>`). `generate` and `repair-1/2` are billed and run once (no step retries; a resumed instance
+  replays their stored replies). `context`, `validate-N`, `assemble`, `save-revision` and `ready-for-review` are
+  safe to re-run. Validation (`validate.ts`) is `roundSchema`, `roundIssues` and the objective's checks from
+  `@wwm/learning` (`AUTHORING_OBJECTIVES`: the reviewed word list, real-word distractor flags), plus freshness
+  against the lesson, the bank so far and earlier drops. The prompt carries the bank so far as an exclusion list.
+- **Provider** (`config.ts`, `providers.ts`): the docent's pattern. Claude through AI Gateway
+  (`LESSON_DRAFT_MODEL`, default `claude-sonnet-5-5`; `LESSON_DRAFT_MAX_TOKENS` 8000), the offline mock in
+  development (`LESSON_DRAFT_PROVIDER=auto` without gateway config, or `mock`), nothing in a deployed environment
+  without the gateway. Secrets are the docent's (`ANTHROPIC_API_KEY` or `AI_GATEWAY_TOKEN`). Gateway turns are
+  capped by `LESSON_DRAFT_DAILY_LIMIT` (20 per rolling 24 h, `Limiter` DO); mock turns are free.
+- **Safety.** Model output is parsed only as JSON and validated. Previews go through `portablePage()`
+  (`@wwm/education/render`), which escapes every string, and are served with `default-src 'none'` and `sandbox`.
+  Nothing reaches a child until an operator approves, the export is imported with `pnpm learning:bank import`,
+  reviewed in git and deployed.
+- **Config.** `LESSON_DRAFTS=on` locally (mock), `off` in production and Previews. Previews bind a separate Workflow
+  name (`wwm-lesson-draft-preview`) and `check-deploy-config.mjs` requires `LESSON_DRAFTS=off` there.
+- **Tests.** `lesson-drafts-pipeline` (valid output, repair, giving up after two repairs, no re-billing when a run
+  resumes before any step), `lesson-drafts-routes` (fails closed), `lesson-drafts-records` (records, preview
+  escaping, export → import), and `lesson-drafts.workerd` (agent + Workflow + routes in workerd with the mock,
+  through approval and export; test-only Worker in `test/lesson-drafts-runtime/`).
+
+## Learning accounts (Phase 31 M3, contracts §10.5)
+Parent accounts, child devices and progress sync for the education app, under `/api/learning/*`. Code:
+`src/learning-records/` (`routes.ts` the Hono sub-app, `accounts.ts` the D1 index, `family-records.ts` the
+`FamilyRecords` Durable Object, `passkeys.ts`, `mailer.ts`, `turnstile.ts`, `retention.ts`, `config.ts`). Owner
+setup: [docs/launch/learning-accounts-setup.md](../../docs/launch/learning-accounts-setup.md). Draft privacy notice:
+[docs/launch/learning-privacy.md](../../docs/launch/learning-privacy.md).
+- **Gate.** `LEARNING_ACCOUNTS`: `off` (default; production and previews) → every path is `404 LEARNING_UNAVAILABLE`;
+  `allowlist` → sign-in only for the comma-separated `LEARNING_ALLOWED_EMAILS` secret; `on` (local dev).
+- **Storage.** D1 `LEARNING_DB` (`wwm-learning-records`, `migrations-learning/`): parents (normalized email, consent
+  version and time, last activity), passkeys (public keys), sessions, one-use sign-in links, WebAuthn challenges,
+  pair codes, devices. Every token and code is stored as its SHA-256 only. Each family's profiles and events live
+  in its own SQLite `FamilyRecords` object (named by the family id); events are deduplicated by id, events for a
+  profile the family doesn't have are rejected `UNKNOWN_PROFILE`, deleting a profile deletes its events, and
+  deleting the family runs `deleteAll()`.
+- **Sign-in.** `POST auth/email` checks Turnstile and always answers `202 {}`; the account lookup and the email
+  happen after the response (`waitUntil`), so the answer can't reveal whether an account exists. A new email gets
+  a link (`/learn/account/verify#token=…`, 15 minutes, one use) only if the request carried consent; otherwise an
+  email explaining how to sign up. Passkeys (`@simplewebauthn/server`, verified in workerd by the integration
+  test's software authenticator) use `LEARNING_RP_ID` and `LEARNING_ORIGIN`. Session cookie
+  `wwm_learning_session` (HttpOnly, Secure, SameSite=Lax, Path=/api/learning), 30 days, rolled daily.
+- **Devices.** Pair codes are 6 characters from `A-HJ-NP-Z2-9`, 10 minutes, one use; claiming returns a bearer
+  token. A device can read profiles and send events, nothing else. Revoking deletes the row, so the token stops
+  at once.
+- **Abuse.** `LEARNING_AUTH_LIMITER` (20/min per IP on `auth/*` and `devices/claim`), `LEARNING_EVENTS_LIMITER`
+  (60 batches/min per family), and 5 sign-in emails per address per hour (`Limiter` DO). Cookie-bearing (and
+  cookie-setting) changes must carry an allowed `Origin` (CSRF).
+- **Privacy.** No request body, email, nickname or token is logged; errors log only the route pattern and error
+  name. No telemetry. Every response is `Cache-Control: no-store`.
+- **Email.** `LEARNING_EMAIL_MODE=send` uses the `LEARNING_MAIL` `send_email` binding from `LEARNING_EMAIL_FROM`.
+  `mock` (development only) writes to a KV mailbox read by `GET /api/learning/dev/mailbox?to=` (404 elsewhere).
+  Without `TURNSTILE_SECRET`, development uses Cloudflare's always-pass test secret (answered locally); deployed
+  environments refuse test secrets and return `503` for email sign-in until a real secret is set.
+- **Retention.** The existing cron also deletes families inactive for 24 months (D1 rows and the object's
+  storage) and expired sessions, links, challenges and pair codes.
+- **Tests.** `test/learning-records.integration.test.ts` (every endpoint and rule, real workerd),
+  `test/learning-records-gate.integration.test.ts` (off/allowlist/on, Turnstile), `test/learning-records-config.test.ts`.
+
 ## Retention (task 9)
 A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS` (30): their stage JSON, textures, capture bundle, and D1 rows. It handles at most 200 runs per tick. Curated runs are the `run_id`s in Phase 10's `curated` table. KV cache entries expire on their own after 7 days.
 
@@ -121,7 +192,7 @@ A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS`
 - Routes live in `src/routes/<name>.ts` as `Hono<AppEnv>` sub-apps, one registration line each in `src/router.ts`. Phase 06 adds `app.route('/api/rooms', roomsRoutes)`.
 
 ## Commands
-- `pnpm --filter @wwm/worker dev` applies the local D1 migrations, then starts `wrangler dev` on :8787 with local R2/D1/KV/DO/rate limits and local Browser Run Chrome.
+- `pnpm --filter @wwm/worker dev` applies the local D1 migrations (`wwm` and `wwm-learning-records`), then starts `wrangler dev` on :8787 with local R2/D1/KV/DO/rate limits and local Browser Run Chrome.
   - Sidecar alternative: `pnpm --filter @wwm/worker capture-sidecar`, then `wrangler dev --var CAPTURE_BACKEND:sidecar --var CAPTURE_SIDECAR_URL:http://127.0.0.1:8788`.
 - `pnpm --filter @wwm/worker smoke http://localhost:8787 [url…]` drives a running Worker end to end. It defaults to the fixture URLs.
 - `pnpm --filter @wwm/worker bench [slug…]` measures cold capture+build timings on the fixture URLs with local Chromium.

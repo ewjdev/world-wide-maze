@@ -5,6 +5,7 @@
  * docs/education/html-contract.md.
  */
 import { z } from 'zod';
+import { roundIssues } from './checks.ts';
 import { LEGACY_VERSION, legacyPathSchema } from './legacy.ts';
 
 export const LEARNING_VERSION = 'wwm-learning/0.3' as const;
@@ -168,6 +169,8 @@ const inputList = z
 
 const roundBase = {
   id,
+  /** The objective this round gives evidence for (Phase 31); defaults to the activity's first objective. */
+  objective: id.optional(),
   /** Invited input for this round (overrides the activity's and the path's). */
   input: inputList.optional(),
   prompt: line,
@@ -332,7 +335,8 @@ export const activitySchema = z
     domain: z.enum(['counting', 'comparison', 'geometry', 'patterns', 'sorting', 'language', 'literacy']),
     objective: text,
     introduction: text,
-    rounds: z.array(roundSchema).min(1).max(8),
+    /** At most 8 written rounds, plus up to 3 `fresh-` rounds once a consumer has drawn fresh examples. */
+    rounds: z.array(roundSchema).min(1).max(11),
     /** Strategy tools a consumer should offer. `match` pairs gems across islands. */
     tools: z.array(z.literal('match')).max(1),
     /** Pip's last line once every round is done. */
@@ -341,6 +345,13 @@ export const activitySchema = z
     input: inputList.optional(),
     /** Game levels: ordered steps plus a lock configuration each. Absent → `explore` + `gated` are generated. */
     play: activityPlaySchema.optional(),
+    /** Objective ids (from `path.objectives`) this activity practises; the first is each round's default. */
+    objectives: z.array(id).min(1).max(4).optional(),
+    /** Fresh examples drawn from the objective's bank after the required rounds (see banks.ts). */
+    fresh: z
+      .object({ objective: id, count: z.number().int().min(1).max(3) })
+      .strict()
+      .optional(),
     parentNote: text,
     offlineActivity: text,
     prerequisites: z.array(id).max(6),
@@ -350,10 +361,26 @@ export const activitySchema = z
     const seen = new Set<string>();
     for (const round of activity.rounds) {
       if (seen.has(round.id)) ctx.addIssue({ code: 'custom', message: 'Round IDs must be unique.' });
+      for (const issue of roundIssues(round))
+        ctx.addIssue({ code: 'custom', message: `Round "${round.id}": ${issue}` });
+      if (round.objective && !activity.objectives?.includes(round.objective))
+        ctx.addIssue({
+          code: 'custom',
+          message: `Round "${round.id}": its objective isn't one of the activity's.`,
+        });
+      if (activity.fresh && round.id.startsWith('fresh-'))
+        ctx.addIssue({
+          code: 'custom',
+          message: 'Round IDs starting "fresh-" are reserved for fresh examples.',
+        });
+
       if (round.onlyAfterHelpOn && !seen.has(round.onlyAfterHelpOn))
         ctx.addIssue({ code: 'custom', message: 'onlyAfterHelpOn must reference an earlier round.' });
       seen.add(round.id);
     }
+    const drawn = activity.rounds.filter((round) => round.id.startsWith('fresh-')).length;
+    if (activity.rounds.length - drawn > 8 || drawn > 3)
+      ctx.addIssue({ code: 'custom', message: 'An activity has at most 8 rounds, plus 3 fresh examples.' });
     const first = activity.rounds[0];
     if (!first || first.optional || first.onlyAfterHelpOn)
       ctx.addIssue({ code: 'custom', message: 'The first round must always be played.' });
@@ -365,6 +392,11 @@ export const activitySchema = z
     if (activity.play)
       for (const issue of playIssues(activity.rounds, activity.play))
         ctx.addIssue({ code: 'custom', message: issue });
+    if (activity.fresh && !activity.objectives?.includes(activity.fresh.objective))
+      ctx.addIssue({
+        code: 'custom',
+        message: "Fresh examples must practise one of the activity's objectives.",
+      });
   });
 
 /** Readable problems with an activity's levels (empty when valid). */
@@ -438,11 +470,58 @@ export const voiceSchema = z
   .strict();
 export type Voice = z.infer<typeof voiceSchema>;
 
+// ── objectives and banks of fresh examples (Phase 31) ─────────────────────────────────────────────────────
+
+/** An objective is the unit of progress a grown-up sees. */
+export const objectiveSchema = z.object({ id, statement: text }).strict();
+export type Objective = z.infer<typeof objectiveSchema>;
+
+export const SPANISH_COLOR_WORDS = ['rojo', 'azul', 'verde', 'amarillo'] as const;
+const counts = z
+  .array(z.number().int().min(2).max(8))
+  .min(1)
+  .max(5)
+  .refine((values) => new Set(values).size === values.length, { message: 'Targets must be unique.' });
+/** Parametric objectives are generated (generators.ts): unlimited fresh rounds, nothing to review per item. */
+export const generatorSchema = z.discriminatedUnion('kind', [
+  z
+    .object({
+      kind: z.literal('compare'),
+      max: z.number().int().min(3).max(8),
+      /** Offer "Same" on every round, and sometimes make the islands equal. */
+      same: z.boolean(),
+      /** Sometimes make the smaller group look bigger. */
+      trick: z.boolean(),
+    })
+    .strict(),
+  z.object({ kind: z.literal('difference'), max: z.number().int().min(3).max(8) }).strict(),
+  z.object({ kind: z.literal('count'), targets: counts, options: z.number().int().min(2).max(3) }).strict(),
+  z
+    .object({
+      kind: z.literal('spanish-color'),
+      words: z
+        .array(z.enum(SPANISH_COLOR_WORDS))
+        .min(1)
+        .max(4)
+        .refine((values) => new Set(values).size === values.length, { message: 'Words must be unique.' }),
+      options: z.number().int().min(2).max(3),
+    })
+    .strict(),
+]);
+export type GeneratorSpec = z.infer<typeof generatorSchema>;
+
+/** Fresh examples for one objective: reviewed rounds, or a generator. */
+export const bankSchema = z.union([
+  z.object({ objective: id, items: z.array(roundSchema).min(1).max(24) }).strict(),
+  z.object({ objective: id, generator: generatorSchema }).strict(),
+]);
+export type Bank = z.infer<typeof bankSchema>;
+
 export const pathSchema = z
   .object({
     format: z.literal(LEARNING_VERSION),
     id,
-    version: z.enum(['2.0.0', '3.0.0', '3.1.0']),
+    version: z.enum(['2.0.0', '3.0.0', '3.1.0', '3.2.0']),
     title: text,
     description: text,
     language: z.literal('en'),
@@ -462,9 +541,48 @@ export const pathSchema = z
       .strict()
       .optional(),
     activities: z.array(activitySchema).min(1).max(20),
+    objectives: z.array(objectiveSchema).max(40).optional(),
+    banks: z.array(bankSchema).max(40).optional(),
   })
   .strict()
   .superRefine((path, ctx) => {
+    const objectives = new Set(path.objectives?.map((objective) => objective.id));
+    if (objectives.size !== (path.objectives?.length ?? 0))
+      ctx.addIssue({ code: 'custom', message: 'Objective IDs must be unique.' });
+    for (const activity of path.activities)
+      for (const objective of activity.objectives ?? [])
+        if (!objectives.has(objective))
+          ctx.addIssue({
+            code: 'custom',
+            message: `"${activity.id}" names an unknown objective "${objective}".`,
+          });
+    const banked = new Set<string>();
+    for (const bank of path.banks ?? []) {
+      if (!objectives.has(bank.objective))
+        ctx.addIssue({ code: 'custom', message: `A bank names an unknown objective "${bank.objective}".` });
+      if (banked.has(bank.objective))
+        ctx.addIssue({ code: 'custom', message: `"${bank.objective}" has more than one bank.` });
+      banked.add(bank.objective);
+      if (!('items' in bank)) continue;
+      if (new Set(bank.items.map((round) => round.id)).size !== bank.items.length)
+        ctx.addIssue({ code: 'custom', message: `Bank "${bank.objective}": item IDs must be unique.` });
+      for (const round of bank.items) {
+        if (
+          round.optional ||
+          round.onlyAfterHelpOn ||
+          (round.objective && round.objective !== bank.objective)
+        )
+          ctx.addIssue({
+            code: 'custom',
+            message: `Bank "${bank.objective}": "${round.id}" must be a plain round for this objective.`,
+          });
+        for (const issue of roundIssues(round))
+          ctx.addIssue({ code: 'custom', message: `Bank "${bank.objective}", "${round.id}": ${issue}` });
+      }
+    }
+    for (const activity of path.activities)
+      if (activity.fresh && !banked.has(activity.fresh.objective))
+        ctx.addIssue({ code: 'custom', message: `"${activity.id}" asks for fresh examples without a bank.` });
     const seen = new Set<string>();
     for (const activity of path.activities) {
       if (seen.has(activity.id)) ctx.addIssue({ code: 'custom', message: 'Activity IDs must be unique.' });

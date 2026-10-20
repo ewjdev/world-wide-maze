@@ -162,6 +162,8 @@ export function loadInfraConfig(raw) {
         problems.push(`${key}.rateLimitNamespaceIds.${r}: expected digits`);
     return {
       d1: name(t.d1, `${key}.d1`),
+      // Phase 31 M3: parent accounts and learning records (binding LEARNING_DB).
+      learningD1: name(t.learningD1, `${key}.learningD1`),
       r2: name(t.r2, `${key}.r2`),
       kv: name(t.kv, `${key}.kv`),
       aiGateway: name(t.aiGateway, `${key}.aiGateway`),
@@ -183,7 +185,7 @@ export function loadInfraConfig(raw) {
     problems.push(`domain: not a hostname: ${cfg.domain}`);
   // Data stores must be separate. The AI Gateway may be shared (owner decision 2026-09-25: one `wwm` gateway,
   // logging off, so it holds no Preview/production data).
-  for (const k of ['d1', 'r2', 'kv'])
+  for (const k of ['d1', 'learningD1', 'r2', 'kv'])
     if (cfg.production[k] && cfg.production[k] === cfg.previews[k])
       problems.push(`previews.${k} must differ from production.${k} (Previews would share production data)`);
   const p = Object.values(cfg.production.rateLimitNamespaceIds ?? {});
@@ -251,7 +253,7 @@ export function parseWhoamiAccounts(stdout) {
 
 // ── plan ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** @typedef {'d1'|'r2'|'kv'|'aiGateway'} Kind */
+/** @typedef {'d1'|'learningD1'|'r2'|'kv'|'aiGateway'} Kind */
 /** @typedef {'production'|'previews'} Target */
 
 /** @returns {{ kind: Kind, target: Target, name: string }[]} */
@@ -259,7 +261,7 @@ export function desiredResources(cfg) {
   const out = [];
   // A resource shared by both targets (e.g. one AI Gateway) is listed once, so --apply creates it once.
   for (const target of /** @type {Target[]} */ (['production', 'previews']))
-    for (const kind of /** @type {Kind[]} */ (['d1', 'r2', 'kv', 'aiGateway']))
+    for (const kind of /** @type {Kind[]} */ (['d1', 'learningD1', 'r2', 'kv', 'aiGateway']))
       if (!out.some((r) => r.kind === kind && r.name === cfg[target][kind]))
         out.push({ kind, target, name: cfg[target][kind] });
   return out;
@@ -278,14 +280,14 @@ export function planResources(desired, existing) {
       return { ...r, action: existing.aiGateway.has(r.name) ? 'exists' : 'create', id: r.name };
     }
     if (r.kind === 'r2') return { ...r, action: existing.r2.has(r.name) ? 'exists' : 'create', id: r.name };
-    const id = existing[r.kind].get(r.name) ?? null;
+    const id = existing[r.kind === 'learningD1' ? 'd1' : r.kind].get(r.name) ?? null;
     return { ...r, action: id ? 'exists' : 'create', id };
   });
 }
 
 /** Human-readable plan lines. */
 export function formatPlan(plan) {
-  const label = { d1: 'D1', r2: 'R2', kv: 'KV', aiGateway: 'AI Gateway' };
+  const label = { d1: 'D1', learningD1: 'D1', r2: 'R2', kv: 'KV', aiGateway: 'AI Gateway' };
   return plan.map(
     (p) =>
       `${p.action === 'exists' ? '  ok    ' : p.action === 'create' ? '+ create' : '! manual'}  ${p.target.padEnd(10)} ${label[p.kind].padEnd(10)} ${p.name}${p.id && p.kind !== 'r2' && p.kind !== 'aiGateway' ? `  (${p.id})` : ''}`,
@@ -306,7 +308,7 @@ const indexBy = (arr, key, value, where) => {
  * @param {any} wrangler parsed wrangler.jsonc
  * @param {any} migrations parsed wrangler.preview-migrations.jsonc
  * @param {ReturnType<typeof loadInfraConfig>} cfg
- * @param {{ production: { d1: string|null, kv: string|null }, previews: { d1: string|null, kv: string|null }, accountId: string|null }} ids
+ * @param {{ production: { d1: string|null, kv: string|null, learningD1?: string|null }, previews: { d1: string|null, kv: string|null, learningD1?: string|null }, accountId: string|null }} ids
  */
 export function buildPatches(wrangler, migrations, cfg, ids) {
   const envKey = cfg.wranglerEnv;
@@ -324,6 +326,10 @@ export function buildPatches(wrangler, migrations, cfg, ids) {
     const d = indexBy(obj.d1_databases, 'binding', 'DB', `${base.join('.')}.d1_databases`);
     main.push({ path: [...base, 'd1_databases', d, 'database_name'], value: c.d1 });
     if (ids[t].d1) main.push({ path: [...base, 'd1_databases', d, 'database_id'], value: ids[t].d1 });
+    const ld = indexBy(obj.d1_databases, 'binding', 'LEARNING_DB', `${base.join('.')}.d1_databases`);
+    main.push({ path: [...base, 'd1_databases', ld, 'database_name'], value: c.learningD1 });
+    if (ids[t].learningD1)
+      main.push({ path: [...base, 'd1_databases', ld, 'database_id'], value: ids[t].learningD1 });
     const r = indexBy(obj.r2_buckets, 'binding', 'STAGES', `${base.join('.')}.r2_buckets`);
     main.push({ path: [...base, 'r2_buckets', r, 'bucket_name'], value: c.r2 });
     const k = indexBy(obj.kv_namespaces, 'binding', 'CACHE', `${base.join('.')}.kv_namespaces`);
@@ -345,6 +351,15 @@ export function buildPatches(wrangler, migrations, cfg, ids) {
   );
   const mig = [{ path: ['d1_databases', m, 'database_name'], value: cfg.previews.d1 }];
   if (ids.previews.d1) mig.push({ path: ['d1_databases', m, 'database_id'], value: ids.previews.d1 });
+  const ml = indexBy(
+    migrations?.d1_databases,
+    'binding',
+    'LEARNING_PREVIEW_DB',
+    'wrangler.preview-migrations.jsonc d1_databases',
+  );
+  mig.push({ path: ['d1_databases', ml, 'database_name'], value: cfg.previews.learningD1 });
+  if (ids.previews.learningD1)
+    mig.push({ path: ['d1_databases', ml, 'database_id'], value: ids.previews.learningD1 });
   return { wrangler: main, migrations: mig };
 }
 
@@ -404,6 +419,13 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
       problems.push(`${where}: D1 DB is ${db.database_name}, config says ${c.d1}`);
     if (isPlaceholderId(db.database_id)) problems.push(`${where}: D1 DB has a placeholder database_id`);
   }
+  // Phase 31 M3: learning records have their own database (docs/launch/learning-accounts-setup.md).
+  const ldb = (obj.d1_databases ?? []).find((d) => d.binding === 'LEARNING_DB');
+  if (!ldb) problems.push(`${where}: no D1 binding LEARNING_DB`);
+  else if (isPlaceholderId(ldb.database_id))
+    problems.push(
+      `${where}: LEARNING_DB has a placeholder database_id (create it: docs/launch/learning-accounts-setup.md)`,
+    );
   const kv = (obj.kv_namespaces ?? []).find((k) => k.binding === 'CACHE');
   if (!kv) problems.push(`${where}: no KV binding CACHE`);
   else if (isPlaceholderId(kv.id)) problems.push(`${where}: KV CACHE has a placeholder id`);
@@ -412,9 +434,26 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
   else if (r2.bucket_name !== c.r2)
     problems.push(`${where}: R2 STAGES is ${r2.bucket_name}, config says ${c.r2}`);
   if (obj.browser?.binding !== 'BROWSER') problems.push(`${where}: no browser binding BROWSER`);
-  const doNames = (obj.durable_objects?.bindings ?? []).map((b) => b.name).sort();
-  if (doNames.join() !== 'BUDGET,BUILD_JOB,JEV_CONTROL,LIMITER,ROOM')
-    problems.push(`${where}: DO bindings must be BUDGET, ROOM, BUILD_JOB, LIMITER, JEV_CONTROL`);
+  // Required DO bindings must all be present; later phases may add their own.
+  const doNames = new Set((obj.durable_objects?.bindings ?? []).map((b) => b.name));
+  const requiredDOs = [
+    'BUDGET',
+    'BUILD_JOB',
+    'FAMILY_RECORDS',
+    'JEV_CONTROL',
+    'LESSON_DRAFT_AGENT',
+    'LIMITER',
+    'ROOM',
+  ];
+  if (!requiredDOs.every((name) => doNames.has(name)))
+    problems.push(`${where}: DO bindings must include ${requiredDOs.join(', ')}`);
+  // Phase 31 M4: lesson drafts need their Workflow; Previews never run them.
+  if (
+    !(obj.workflows ?? []).some((w) => w.binding === 'LESSON_DRAFT' && w.class_name === 'LessonDraftWorkflow')
+  )
+    problems.push(`${where}: no Workflow binding LESSON_DRAFT`);
+  if (target === 'previews' && vars.LESSON_DRAFTS !== 'off')
+    problems.push(`${where}.vars.LESSON_DRAFTS must be "off"`);
   for (const rl of RATE_LIMITERS) {
     const b = (obj.ratelimits ?? []).find((x) => x.name === rl);
     if (!b) problems.push(`${where}: no rate limit binding ${rl}`);
@@ -444,6 +483,9 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
     const pr2 = (prod.r2_buckets ?? []).find((b) => b.binding === 'STAGES');
     if (db && pdb && db.database_id === pdb.database_id)
       problems.push(`${where}: D1 DB shares production's database_id`);
+    const pldb = (prod.d1_databases ?? []).find((d) => d.binding === 'LEARNING_DB');
+    if (ldb && pldb && ldb.database_id === pldb.database_id)
+      problems.push(`${where}: LEARNING_DB shares production's database_id`);
     if (kv && pkv && kv.id === pkv.id) problems.push(`${where}: KV CACHE shares production's id`);
     if (r2 && pr2 && r2.bucket_name === pr2.bucket_name)
       problems.push(`${where}: R2 STAGES shares production's bucket`);
@@ -454,6 +496,13 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
     else if (db && (mdb.database_id !== db.database_id || mdb.database_name !== db.database_name))
       problems.push(
         'wrangler.preview-migrations.jsonc must point at the same database as the previews DB binding',
+      );
+    const mldb = (migrations?.d1_databases ?? []).find((d) => d.binding === 'LEARNING_PREVIEW_DB');
+    if (!mldb)
+      problems.push('wrangler.preview-migrations.jsonc: no d1_databases binding LEARNING_PREVIEW_DB');
+    else if (ldb && (mldb.database_id !== ldb.database_id || mldb.database_name !== ldb.database_name))
+      problems.push(
+        'wrangler.preview-migrations.jsonc must point at the same database as the previews LEARNING_DB binding',
       );
   }
   return { problems, warnings };

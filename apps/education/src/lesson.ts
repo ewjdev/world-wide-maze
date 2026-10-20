@@ -5,6 +5,11 @@
  *
  * Phase 22: each play-through shuffles answer positions from its own seed, and each round invites a way to
  * answer (tap, a letter or number key, the arrows) with gentle nudges, unless a grown-up chose tapping only.
+ *
+ * Phase 31 M2: the lesson is played as `expandActivity` draws it (fresh examples after the written rounds), for
+ * the child playing. With two or more children on this device, a picture-only picker asks who's playing first;
+ * with one, that child is chosen silently; with none (or no IndexedDB) nothing is saved and nothing changes.
+ * Each solved round then adds one evidence event to this device's store.
  */
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
@@ -19,6 +24,7 @@ import {
   currentRound,
   DEFAULT_AUDIO_BASE,
   type DeviceInputs,
+  expandActivity,
   type InputMode,
   type InputPolicy,
   initialState,
@@ -31,11 +37,14 @@ import {
   lineId,
   nudgeLine,
   type Orientation,
+  type Profile,
   pairUp,
   type Round,
+  type RoundOrigin,
   randomSeed,
   readLearningDocument,
   requiredRounds,
+  roundEvidence,
   type ScriptLine,
   type Show,
   sceneLayout,
@@ -44,7 +53,26 @@ import {
   step,
   withPractice,
 } from '@wwm/learning';
-import { gameLevelText, inputHintHtml, planksBuilt, practiceHtml, sceneBlock, spokenHtml } from './render.ts';
+import { syncNow } from './account-sync.ts';
+import { holdToActivate } from './hold.ts';
+import {
+  avatarSvg,
+  type DeviceProgress,
+  openProgress,
+  pickedThisVisit,
+  rememberPick,
+  speakNickname,
+} from './profiles.ts';
+import {
+  bridgeSvg,
+  escapeHtml,
+  gameLevelText,
+  inputHintHtml,
+  planksBuilt,
+  practiceHtml,
+  sceneBlock,
+  spokenHtml,
+} from './render.ts';
 import { element, readFamily } from './storage.ts';
 
 const MUTE_KEY = 'wwm-learning.muted';
@@ -60,9 +88,13 @@ const article = element('[data-learning-activity]');
 const activityId = article.dataset.learningActivity;
 const found = path.activities.find((candidate) => candidate.id === activityId);
 if (!found) throw new Error('Activity not found in the learning document.');
-const lesson: Activity = found;
+/** The lesson as written; `lesson` is the play-through as drawn (fresh examples included). */
+const written: Activity = found;
+let lesson: Activity = written;
+/** Where each round of `lesson` came from: what its evidence says. */
+let origins = new Map<string, RoundOrigin>();
 element('#wwm-learning').outerHTML = learningScript(path);
-element('[data-learning-field="introduction"]').textContent = lesson.introduction;
+element('[data-learning-field="introduction"]').textContent = written.introduction;
 element('#lesson-version').textContent =
   current.warning ??
   (current.fork ? 'Your family version · saved in this browser' : 'Original learning path');
@@ -71,7 +103,7 @@ element('#game-level').textContent = [current.settingsWarning, gameLevelText(pat
   .join(' ');
 
 const allLines = scriptIndex(path);
-const planks = requiredRounds(lesson);
+let planks = requiredRounds(lesson);
 const narrow = window.matchMedia('(max-width: 640px)');
 let orientation: Orientation = narrow.matches ? 'tall' : 'wide';
 
@@ -87,6 +119,59 @@ function newPlayThrough(seed: number): LessonState {
   return initialState(lesson, { seed, shuffle: path.play?.shuffle ?? 'positions' });
 }
 let state: LessonState = newPlayThrough(seedFromUrl() ?? randomSeed());
+
+// ── who's playing (Phase 31 M2) ─────────────────────────────────────────────────────────────────────────
+
+/** This device's store and profiles; null when this browser can't keep progress (nothing is then saved). */
+let progress: DeviceProgress | null = null;
+/** The child playing, or null: no profile means no evidence. */
+let player: Profile | null = null;
+/** When the current round started (for the evidence's duration bucket). */
+let roundStartedAt = 0;
+
+/**
+ * Draw the play-through for this seed and child: their unseen fresh examples, after the written rounds. If the
+ * draw can't run (no Web Crypto outside a secure context), the written rounds play and no evidence is recorded.
+ */
+async function prepare(seed: number): Promise<void> {
+  let seen: ReadonlySet<string> = new Set();
+  if (progress && player) seen = await progress.store.seenItems(player.id).catch(() => new Set<string>());
+  try {
+    const expanded = await expandActivity(path, written, { seed, seen });
+    lesson = expanded.activity;
+    origins = expanded.origins;
+  } catch {
+    lesson = written;
+    origins = new Map();
+  }
+  planks = requiredRounds(lesson);
+  state = newPlayThrough(seed);
+  marks.clear();
+  enterRound();
+  element('.end-bridge').innerHTML = bridgeSvg(path.theme, lesson);
+}
+
+/** One evidence event for the round just solved, if a child is playing. Never blocks or breaks play. */
+function record(mode: InputMode): void {
+  if (!progress || !player) return;
+  const round = lesson.rounds[state.index];
+  const origin = round ? origins.get(round.id) : undefined;
+  if (!origin) return;
+  try {
+    const event = roundEvidence({
+      profile: player.id,
+      activity: lesson,
+      state,
+      origin,
+      surface: 'lesson',
+      input: mode,
+      durationMs: performance.now() - roundStartedAt,
+    });
+    void progress.store.appendEvidence(event).catch(() => {});
+  } catch {
+    // an event that can't be made is skipped; the lesson carries on
+  }
+}
 /** This moment's lines: the current round as shown (count lines and callouts follow the shuffle). */
 let script = sessionScript(allLines, lesson, state);
 let muted = readMuted();
@@ -458,7 +543,8 @@ function applyShow(show: Show, event: LessonEvent): void {
   }
 }
 
-function dispatch(event: LessonEvent): void {
+/** `mode` is how an answer was given (for evidence); a button pressed directly counts as a tap. */
+function dispatch(event: LessonEvent, mode: InputMode = 'tap'): void {
   const before = state;
   const result = step(lesson, state, event);
   if (result.state === before) return; // ignored: e.g. a tap on a locked (solved) round
@@ -467,10 +553,14 @@ function dispatch(event: LessonEvent): void {
   if (moved) {
     marks.clear();
     enterRound();
+    if (state.phase === 'round') roundStartedAt = performance.now();
   }
+  if (event.type === 'answer' && state.solved && !before.solved) record(mode);
   updateControls();
 
   if (state.phase === 'done') {
+    // With a family account, send this lesson's practice now; without one this is a no-op.
+    if (progress) void syncNow(progress.store).catch(() => {});
     const pip = end.querySelector('[data-pip]');
     pip?.classList.remove('is-happy');
     void pip?.getBoundingClientRect();
@@ -520,7 +610,7 @@ function dispatch(event: LessonEvent): void {
 function answer(choice: string, mode: InputMode): void {
   if (state.phase !== 'round' || state.solved) return;
   if (judgeInput(policy, mode, nudges) === 'accept') {
-    dispatch({ type: 'answer', choice });
+    dispatch({ type: 'answer', choice }, mode);
     return;
   }
   nudges++;
@@ -617,12 +707,10 @@ matchButton?.addEventListener('click', () => dispatch({ type: 'match' }));
 nextButton.addEventListener('click', () => dispatch({ type: 'next' }));
 bonusPlay.addEventListener('click', () => dispatch({ type: 'bonus', accept: true }));
 bonusSkip.addEventListener('click', () => dispatch({ type: 'bonus', accept: false }));
-element('#again').addEventListener('click', () => {
+element('#again').addEventListener('click', async () => {
   voice.stop();
-  // a new play-through: new positions
-  state = newPlayThrough(randomSeed());
-  enterRound();
-  marks.clear();
+  // a new play-through: new positions, and fresh examples this child hasn't met yet
+  await prepare(randomSeed());
   feedback.textContent = '';
   renderStage();
   dispatch({ type: 'start' });
@@ -687,9 +775,100 @@ window.addEventListener('resize', fitScene);
 void document.fonts.ready.then(fitScene);
 window.addEventListener('pagehide', () => voice.stop());
 
-// ready: enable the controls and show the intro
+// ── the picker: who's playing, by picture ──────────────────────────────────────────────────────────────
+
+const picker = element('#picker');
+const pickerChoices = element('#picker-choices');
+const playerBar = element('#player-bar');
+const byName = (x: Profile, y: Profile) => x.nickname.localeCompare(y.nickname) || x.id.localeCompare(y.id);
+
+/**
+ * Show Pip avatars, big and picture-only, and wait for a tap. Choosing says "Hi, <nickname>!" in the browser's
+ * own voice (never the studio voice), remembers the child for this visit, and brings back "Tap Pip to start".
+ */
+function pick(profiles: readonly Profile[]): Promise<Profile> {
+  intro.hidden = true;
+  picker.hidden = false;
+  pickerChoices.innerHTML = profiles
+    .map(
+      (profile) =>
+        `<button class="picker-choice" type="button" data-pick="${escapeHtml(profile.id)}" aria-label="${escapeHtml(profile.nickname)}">${avatarSvg(path.theme, profile.avatar, 112)}</button>`,
+    )
+    .join('');
+  return new Promise((resolve) => {
+    const choose = (event: Event) => {
+      const button = (event.target as Element).closest<HTMLButtonElement>('[data-pick]');
+      const chosen = profiles.find((profile) => profile.id === button?.dataset.pick);
+      if (!chosen) return;
+      pickerChoices.removeEventListener('click', choose);
+      picker.hidden = true;
+      intro.hidden = false;
+      rememberPick(chosen.id);
+      void progress?.store.setActiveProfile(chosen.id).catch(() => {});
+      if (!muted) speakNickname(`Hi, ${chosen.nickname}!`);
+      resolve(chosen);
+    };
+    pickerChoices.addEventListener('click', choose);
+  });
+}
+
+/** The grown-up line under the lesson: who practice is saved for, and (with two or more) the hold-to-switch. */
+function showPlayer(profiles: readonly Profile[]): void {
+  playerBar.hidden = !player;
+  if (!player) return;
+  element('#player-status').innerHTML =
+    `${avatarSvg(path.theme, player.avatar, 26, 'player-avatar')}<span>Saving practice for <strong>${escapeHtml(player.nickname)}</strong> on this device.</span>`;
+  element('#switch-player').hidden = profiles.length < 2;
+}
+
+/** Hold to switch: the picker again, then a new play-through for the child chosen. */
+function wireSwitch(profiles: readonly Profile[]): void {
+  holdToActivate(element<HTMLButtonElement>('#switch-player'), async () => {
+    voice.stop();
+    state = newPlayThrough(state.seed);
+    updateControls();
+    feedback.textContent = '';
+    picker.scrollIntoView({ block: 'nearest' });
+    player = await pick(profiles);
+    await prepare(seedFromUrl() ?? randomSeed());
+    showPlayer(profiles);
+    renderStage();
+    updateControls();
+    pipStart.focus({ preventScroll: true });
+  });
+}
+
+/** Who's playing: none (nothing saved), the only child (silently), or the picker for two or more. */
+async function choosePlayer(): Promise<{ profiles: Profile[]; picked: boolean }> {
+  progress = await openProgress();
+  const profiles = [...(progress?.profiles ?? [])].sort(byName);
+  if (!progress || !profiles.length) return { profiles: [], picked: false };
+  const only = profiles.length === 1 ? profiles[0] : undefined;
+  if (only) {
+    player = only;
+    void progress.store.setActiveProfile(only.id).catch(() => {});
+    return { profiles, picked: false };
+  }
+  // chosen earlier in this visit: no picker on the next lesson
+  const active = await progress.store.activeProfile().catch(() => null);
+  const picked = pickedThisVisit();
+  player = profiles.find((profile) => profile.id === active && profile.id === picked) ?? null;
+  if (player) return { profiles, picked: false };
+  mute.disabled = false;
+  player = await pick(profiles);
+  return { profiles, picked: true };
+}
+
+// ready: choose who's playing, draw the play-through, then enable the controls and show the intro
 showMuted();
-mute.disabled = false;
-pipStart.disabled = false;
-renderStage();
-updateControls();
+void (async () => {
+  const { profiles, picked } = await choosePlayer();
+  await prepare(state.seed);
+  showPlayer(profiles);
+  if (profiles.length > 1) wireSwitch(profiles);
+  mute.disabled = false;
+  pipStart.disabled = false;
+  renderStage();
+  updateControls();
+  if (picked) pipStart.focus({ preventScroll: true });
+})();

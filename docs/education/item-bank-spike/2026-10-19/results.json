@@ -1,0 +1,4037 @@
+{
+  "model": "claude-sonnet-5-5",
+  "perSet": 6,
+  "maxRepairs": 2,
+  "usage": {
+    "input_tokens": 18511,
+    "output_tokens": 25623
+  },
+  "results": [
+    {
+      "objective": "little-word-builders",
+      "run": 1,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose G. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P I _",
+            "options": [
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              },
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              }
+            ],
+            "answer": "g"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose G. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P I _",
+            "options": [
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              },
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              }
+            ],
+            "answer": "g"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "A bus is a big vehicle that carries many people. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "a",
+                "label": "A",
+                "tokens": []
+              },
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "A bus is a big vehicle that carries many people. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "a",
+                "label": "A",
+                "tokens": []
+              },
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (BOS, BAS); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "A hen is a bird that lays eggs. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hen",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, E, N."
+            ],
+            "success": "H, E, N. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ E N",
+            "options": [
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "v",
+                "label": "V",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "A hen is a bird that lays eggs. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hen",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, E, N."
+            ],
+            "success": "H, E, N. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ E N",
+            "options": [
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "v",
+                "label": "V",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "A cup holds your drink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Cup",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose C. The letters are C, U, P."
+            ],
+            "success": "C, U, P. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ U P",
+            "options": [
+              {
+                "id": "v",
+                "label": "V",
+                "tokens": []
+              },
+              {
+                "id": "c",
+                "label": "C",
+                "tokens": []
+              }
+            ],
+            "answer": "c"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "A cup holds your drink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Cup",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose C. The letters are C, U, P."
+            ],
+            "success": "C, U, P. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ U P",
+            "options": [
+              {
+                "id": "v",
+                "label": "V",
+                "tokens": []
+              },
+              {
+                "id": "c",
+                "label": "C",
+                "tokens": []
+              }
+            ],
+            "answer": "c"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose D. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B E _",
+            "options": [
+              {
+                "id": "f",
+                "label": "F",
+                "tokens": []
+              },
+              {
+                "id": "d",
+                "label": "D",
+                "tokens": []
+              }
+            ],
+            "answer": "d"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose D. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B E _",
+            "options": [
+              {
+                "id": "f",
+                "label": "F",
+                "tokens": []
+              },
+              {
+                "id": "d",
+                "label": "D",
+                "tokens": []
+              }
+            ],
+            "answer": "d"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "A hat sits on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose A. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "H _ T",
+            "options": [
+              {
+                "id": "a",
+                "label": "A",
+                "tokens": []
+              },
+              {
+                "id": "e",
+                "label": "E",
+                "tokens": []
+              }
+            ],
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "A hat sits on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose A. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "H _ T",
+            "options": [
+              {
+                "id": "a",
+                "label": "A",
+                "tokens": []
+              },
+              {
+                "id": "e",
+                "label": "E",
+                "tokens": []
+              }
+            ],
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (HET); the meaning sentence and audio must decide."]
+        }
+      ]
+    },
+    {
+      "objective": "little-word-builders",
+      "run": 2,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose G. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P I _",
+            "options": [
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              }
+            ],
+            "answer": "g"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose G. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P I _",
+            "options": [
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              }
+            ],
+            "answer": "g"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "A hat goes on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ A T",
+            "options": [
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              },
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "w",
+                "label": "W",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "A hat goes on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ A T",
+            "options": [
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              },
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "w",
+                "label": "W",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (LAT, WAT); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "A bus can take people to school. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "A bus can take people to school. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (BOS); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose D. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B E _",
+            "options": [
+              {
+                "id": "d",
+                "label": "D",
+                "tokens": []
+              },
+              {
+                "id": "k",
+                "label": "K",
+                "tokens": []
+              }
+            ],
+            "answer": "d"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose D. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B E _",
+            "options": [
+              {
+                "id": "d",
+                "label": "D",
+                "tokens": []
+              },
+              {
+                "id": "k",
+                "label": "K",
+                "tokens": []
+              }
+            ],
+            "answer": "d"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "A fox is an animal with a fluffy tail. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Fox",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose F. The letters are F, O, X."
+            ],
+            "success": "F, O, X. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ O X",
+            "options": [
+              {
+                "id": "t",
+                "label": "T",
+                "tokens": []
+              },
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              },
+              {
+                "id": "f",
+                "label": "F",
+                "tokens": []
+              }
+            ],
+            "answer": "f"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "A fox is an animal with a fluffy tail. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Fox",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose F. The letters are F, O, X."
+            ],
+            "success": "F, O, X. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ O X",
+            "options": [
+              {
+                "id": "t",
+                "label": "T",
+                "tokens": []
+              },
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              },
+              {
+                "id": "f",
+                "label": "F",
+                "tokens": []
+              }
+            ],
+            "answer": "f"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (TOX, LOX); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "A pen can draw or write. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pen",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose E. The letters are P, E, N."
+            ],
+            "success": "P, E, N. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P _ N",
+            "options": [
+              {
+                "id": "e",
+                "label": "E",
+                "tokens": []
+              },
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              }
+            ],
+            "answer": "e"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "A pen can draw or write. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pen",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose E. The letters are P, E, N."
+            ],
+            "success": "P, E, N. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P _ N",
+            "options": [
+              {
+                "id": "e",
+                "label": "E",
+                "tokens": []
+              },
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              }
+            ],
+            "answer": "e"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (PON); the meaning sentence and audio must decide."]
+        }
+      ]
+    },
+    {
+      "objective": "little-word-builders",
+      "run": 3,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose I. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P _ G",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "i",
+                "label": "I",
+                "tokens": []
+              }
+            ],
+            "answer": "i"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "A pig is an animal that says oink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Pig",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose I. The letters are P, I, G."
+            ],
+            "success": "P, I, G. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "P _ G",
+            "options": [
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              },
+              {
+                "id": "i",
+                "label": "I",
+                "tokens": []
+              }
+            ],
+            "answer": "i"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "A hat goes on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ A T",
+            "options": [
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "A hat goes on your head. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Hat",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose H. The letters are H, A, T."
+            ],
+            "success": "H, A, T. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ A T",
+            "options": [
+              {
+                "id": "h",
+                "label": "H",
+                "tokens": []
+              },
+              {
+                "id": "l",
+                "label": "L",
+                "tokens": []
+              }
+            ],
+            "answer": "h"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (LAT); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "A cup holds your drink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Cup",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose P. The letters are C, U, P."
+            ],
+            "success": "C, U, P. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "C U _",
+            "options": [
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              },
+              {
+                "id": "p",
+                "label": "P",
+                "tokens": []
+              }
+            ],
+            "answer": "p"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "A cup holds your drink. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Cup",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose P. The letters are C, U, P."
+            ],
+            "success": "C, U, P. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "C U _",
+            "options": [
+              {
+                "id": "g",
+                "label": "G",
+                "tokens": []
+              },
+              {
+                "id": "p",
+                "label": "P",
+                "tokens": []
+              }
+            ],
+            "answer": "p"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "A bus drives people to places. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              },
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "A bus drives people to places. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bus",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose U. The letters are B, U, S."
+            ],
+            "success": "B, U, S. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "B _ S",
+            "options": [
+              {
+                "id": "u",
+                "label": "U",
+                "tokens": []
+              },
+              {
+                "id": "o",
+                "label": "O",
+                "tokens": []
+              }
+            ],
+            "answer": "u"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (BOS); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose B. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ E D",
+            "options": [
+              {
+                "id": "k",
+                "label": "K",
+                "tokens": []
+              },
+              {
+                "id": "z",
+                "label": "Z",
+                "tokens": []
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              }
+            ],
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "A bed is where you sleep at night. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Bed",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose B. The letters are B, E, D."
+            ],
+            "success": "B, E, D. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "_ E D",
+            "options": [
+              {
+                "id": "k",
+                "label": "K",
+                "tokens": []
+              },
+              {
+                "id": "z",
+                "label": "Z",
+                "tokens": []
+              },
+              {
+                "id": "b",
+                "label": "B",
+                "tokens": []
+              }
+            ],
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (KED, ZED); the meaning sentence and audio must decide."]
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "Jam is sweet and goes on toast. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Jam",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose M. The letters are J, A, M."
+            ],
+            "success": "J, A, M. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "J A _",
+            "options": [
+              {
+                "id": "n",
+                "label": "N",
+                "tokens": []
+              },
+              {
+                "id": "m",
+                "label": "M",
+                "tokens": []
+              }
+            ],
+            "answer": "m"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "Jam is sweet and goes on toast. Listen, say it, and find the missing letter.",
+            "practice": {
+              "text": "Jam",
+              "language": "en-US"
+            },
+            "hints": [
+              "Point to the empty space. A letter goes there.",
+              "Ask your grown-up to say the word slowly and show its letters.",
+              "Choose M. The letters are J, A, M."
+            ],
+            "success": "J, A, M. You completed the word! Listen and try saying it together.",
+            "kind": "choose",
+            "stimulus": [],
+            "stimulusText": "J A _",
+            "options": [
+              {
+                "id": "n",
+                "label": "N",
+                "tokens": []
+              },
+              {
+                "id": "m",
+                "label": "M",
+                "tokens": []
+              }
+            ],
+            "answer": "m"
+          },
+          "issues": [],
+          "notes": ["A distractor also spells a word (JAN); the meaning sentence and audio must decide."]
+        }
+      ]
+    },
+    {
+      "objective": "compare-groups",
+      "run": 1,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let's match them up. One gem from each island, then look for leftovers.",
+              "Three and one. The island with three has leftovers, so it has more."
+            ],
+            "success": "Yes! Three is more than one. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 1,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let's match them up. One gem from each island, then look for leftovers.",
+              "Three and one. The island with three has leftovers, so it has more."
+            ],
+            "success": "Yes! Three is more than one. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 1,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these are close. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Count each island slowly.",
+              "Let's match them up and look for a leftover.",
+              "Five and six. Six is more, so the island with six has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 11
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 4
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these are close. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Count each island slowly.",
+              "Let's match them up and look for a leftover.",
+              "Five and six. Six is more, so the island with six has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 11
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 4
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Tricky one! Some gems are big. Which island has more?",
+            "hints": [
+              "Big gems can look like a lot. Check carefully.",
+              "Let's match them up and see who has leftovers.",
+              "Three and four. The island with the little gems has more!"
+            ],
+            "success": "You checked! Four is more than three, even with little gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 4,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Tricky one! Some gems are big. Which island has more?",
+            "hints": [
+              "Big gems can look like a lot. Check carefully.",
+              "Let's match them up and see who has leftovers.",
+              "Three and four. The island with the little gems has more!"
+            ],
+            "success": "You checked! Four is more than three, even with little gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 4,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": ["Trick round: the smaller group is made to look bigger."]
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Could they be the same?",
+              "Match them up. Are there any leftovers?",
+              "No leftovers! Five and five. They're the same."
+            ],
+            "success": "The same! Five and five. That's called equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "small"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "large"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "raw": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Could they be the same?",
+              "Match them up. Are there any leftovers?",
+              "No leftovers! Five and five. They're the same."
+            ],
+            "success": "The same! Five and five. That's called equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "small"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "large"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Count each island slowly.",
+              "Match them up. Are there any leftovers?",
+              "Two and three. One gem is left over, so the island with three has more."
+            ],
+            "success": "Yes! Three is more than two. They were not the same.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 2,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 9
+              },
+              {
+                "count": 3,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 5
+              }
+            ],
+            "allowSame": true,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Count each island slowly.",
+              "Match them up. Are there any leftovers?",
+              "Two and three. One gem is left over, so the island with three has more."
+            ],
+            "success": "Yes! Three is more than two. They were not the same.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 2,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 9
+              },
+              {
+                "count": 3,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 5
+              }
+            ],
+            "allowSame": true,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Careful now! One island looks big. Which has more gems?",
+            "hints": [
+              "Big and spread out can fool our eyes. Check carefully.",
+              "Let's match them up and see who has a leftover.",
+              "Six and five. The small, bunched-up island has one leftover, so it has more."
+            ],
+            "success": "You checked! Six is more than five, even with small gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "tight",
+                "size": "small"
+              },
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "large"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Careful now! One island looks big. Which has more gems?",
+            "hints": [
+              "Big and spread out can fool our eyes. Check carefully.",
+              "Let's match them up and see who has a leftover.",
+              "Six and five. The small, bunched-up island has one leftover, so it has more."
+            ],
+            "success": "You checked! Six is more than five, even with small gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "tight",
+                "size": "small"
+              },
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "large"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": ["Trick round: the smaller group is made to look bigger."]
+        }
+      ]
+    },
+    {
+      "objective": "compare-groups",
+      "run": 2,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Three and six. The island with leftovers has more, and that’s this one."
+            ],
+            "success": "Yes! Six is more than three. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Three and six. The island with leftovers has more, and that’s this one."
+            ],
+            "success": "Yes! Six is more than three. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Tricky one! Some gems are big. Which island has more?",
+            "hints": [
+              "Big gems can look like a lot. Check carefully.",
+              "Let’s match them up. One big gem with one small gem. Who has leftovers?",
+              "Three and five. The small gems are many, so that island has more."
+            ],
+            "success": "You checked! Five is more than three, even with small gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Tricky one! Some gems are big. Which island has more?",
+            "hints": [
+              "Big gems can look like a lot. Check carefully.",
+              "Let’s match them up. One big gem with one small gem. Who has leftovers?",
+              "Three and five. The small gems are many, so that island has more."
+            ],
+            "success": "You checked! Five is more than three, even with small gems.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": ["Trick round: the smaller group is made to look bigger."]
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. These gems are not the same size. Could there still be the same number?",
+              "Match them up, one to one. Are there any leftovers?",
+              "No leftovers! Five and five. They’re the same."
+            ],
+            "success": "The same! Five and five. That’s equal, even though the gems look different.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "large",
+                "seed": 12
+              },
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "small",
+                "seed": 5
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. These gems are not the same size. Could there still be the same number?",
+              "Match them up, one to one. Are there any leftovers?",
+              "No leftovers! Five and five. They’re the same."
+            ],
+            "success": "The same! Five and five. That’s equal, even though the gems look different.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "large",
+                "seed": 12
+              },
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "small",
+                "seed": 5
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these are very close. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Count each island slowly.",
+              "Let’s match them up and look for a leftover.",
+              "Five and six. Six is more, so this island has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 11
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 4
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these are very close. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Count each island slowly.",
+              "Let’s match them up and look for a leftover.",
+              "Five and six. Six is more, so this island has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 11
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 4
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "Careful! One island has big gems. Which island has more?",
+            "hints": [
+              "Big gems take up lots of room. Look carefully.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Four and three. The little bunch has leftovers, so it has more."
+            ],
+            "success": "You checked! Four is more than three, even though the other gems are big.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 4,
+                "arrangement": "tight",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "Careful! One island has big gems. Which island has more?",
+            "hints": [
+              "Big gems take up lots of room. Look carefully.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Four and three. The little bunch has leftovers, so it has more."
+            ],
+            "success": "You checked! Four is more than three, even though the other gems are big.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 4,
+                "arrangement": "tight",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "spread",
+                "size": "large"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": ["Trick round: the smaller group is made to look bigger."]
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. One island is spread out and one is in a neat pattern.",
+              "Match them up. Are there any leftovers?",
+              "No leftovers! Six and six. They’re the same."
+            ],
+            "success": "The same! Six and six. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "spread",
+                "size": "medium"
+              },
+              {
+                "count": 6,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "raw": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. One island is spread out and one is in a neat pattern.",
+              "Match them up. Are there any leftovers?",
+              "No leftovers! Six and six. They’re the same."
+            ],
+            "success": "The same! Six and six. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 6,
+                "arrangement": "spread",
+                "size": "medium"
+              },
+              {
+                "count": 6,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "issues": [],
+          "notes": []
+        }
+      ]
+    },
+    {
+      "objective": "compare-groups",
+      "run": 3,
+      "attempts": 2,
+      "firstPass": {
+        "valid": 5,
+        "total": 6,
+        "issues": ["g5: Repeats a round already in the lesson; write a fresh example."]
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Three gems and one gem. The island with leftovers has more, so this one has more."
+            ],
+            "success": "Yes! Three is more than one. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 1,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Which island has more gems?",
+            "hints": [
+              "Look at both islands. Take your time.",
+              "Let’s match them up. One gem from each island, then look for leftovers.",
+              "Three gems and one gem. The island with leftovers has more, so this one has more."
+            ],
+            "success": "Yes! Three is more than one. Bridge, go!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 1,
+                "arrangement": "dice",
+                "size": "medium"
+              }
+            ],
+            "allowSame": false,
+            "answer": "a"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these look almost alike. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Touch each gem as you count.",
+              "Let’s match them up, one from each island. Is anyone left over?",
+              "Five and six. Six is one more, so this island has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 12
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 5
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g2",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Ooh, these look almost alike. Which island has more gems?",
+            "hints": [
+              "Close ones are tricky. Touch each gem as you count.",
+              "Let’s match them up, one from each island. Is anyone left over?",
+              "Five and six. Six is one more, so this island has more."
+            ],
+            "success": "Yes! Six is more than five. Just one more!",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 12
+              },
+              {
+                "count": 6,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 5
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Big gems can fool us! Which island has more gems?",
+            "hints": [
+              "Big gems take up lots of room. Check carefully.",
+              "Let’s match them up and see who has leftovers.",
+              "Two and three. The little gems have more, because there are three of them."
+            ],
+            "success": "You checked! Three is more than two, even when the gems are small.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 2,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 3,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Big gems can fool us! Which island has more gems?",
+            "hints": [
+              "Big gems take up lots of room. Check carefully.",
+              "Let’s match them up and see who has leftovers.",
+              "Two and three. The little gems have more, because there are three of them."
+            ],
+            "success": "You checked! Three is more than two, even when the gems are small.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 2,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 3,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": ["Trick round: the smaller group is made to look bigger."]
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Could they be the same?",
+              "Match them up, one from each island. Are there any leftovers?",
+              "No leftovers! Five and five. They’re the same."
+            ],
+            "success": "The same! Five and five. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "raw": {
+            "id": "g4",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Which island has more? Or are they the same?",
+            "hints": [
+              "Look closely. Could they be the same?",
+              "Match them up, one from each island. Are there any leftovers?",
+              "No leftovers! Five and five. They’re the same."
+            ],
+            "success": "The same! Five and five. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 5,
+                "arrangement": "spread",
+                "size": "large"
+              },
+              {
+                "count": 5,
+                "arrangement": "tight",
+                "size": "small"
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "input": ["letter-key", "tilt"],
+            "prompt": "These gems are different sizes. Which island has more gems?",
+            "hints": [
+              "Big gems take up lots of room. Count each island slowly.",
+              "Let’s match them up, one gem from each island. Who has a leftover?",
+              "Four and five. Five is more, so the island with the small gems has more."
+            ],
+            "success": "You checked! Five is more than four, even though the big gems fill more space.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 4,
+                "arrangement": "scatter",
+                "size": "large",
+                "seed": 21
+              },
+              {
+                "count": 5,
+                "arrangement": "dice",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "raw": {
+            "id": "g5",
+            "input": ["letter-key", "tilt"],
+            "prompt": "These gems are different sizes. Which island has more gems?",
+            "hints": [
+              "Big gems take up lots of room. Count each island slowly.",
+              "Let’s match them up, one gem from each island. Who has a leftover?",
+              "Four and five. Five is more, so the island with the small gems has more."
+            ],
+            "success": "You checked! Five is more than four, even though the big gems fill more space.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 4,
+                "arrangement": "scatter",
+                "size": "large",
+                "seed": 21
+              },
+              {
+                "count": 5,
+                "arrangement": "dice",
+                "size": "small"
+              }
+            ],
+            "allowSame": false,
+            "answer": "b"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Look at both islands. Which has more, or are they the same?",
+            "hints": [
+              "Take your time. Count each island.",
+              "Match them up, one gem from each island. What is left over?",
+              "Nothing is left over! Three and three. They’re the same."
+            ],
+            "success": "The same! Three and three. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 9
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "raw": {
+            "id": "g6",
+            "input": ["letter-key", "tilt"],
+            "prompt": "Look at both islands. Which has more, or are they the same?",
+            "hints": [
+              "Take your time. Count each island.",
+              "Match them up, one gem from each island. What is left over?",
+              "Nothing is left over! Three and three. They’re the same."
+            ],
+            "success": "The same! Three and three. That’s equal.",
+            "kind": "compare",
+            "islands": [
+              {
+                "count": 3,
+                "arrangement": "dice",
+                "size": "medium"
+              },
+              {
+                "count": 3,
+                "arrangement": "scatter",
+                "size": "medium",
+                "seed": 9
+              }
+            ],
+            "allowSame": true,
+            "answer": "same"
+          },
+          "issues": [],
+          "notes": []
+        }
+      ]
+    },
+    {
+      "objective": "spanish-colors",
+      "run": 1,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        }
+      ]
+    },
+    {
+      "objective": "spanish-colors",
+      "run": 2,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "red"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "red"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Try the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        }
+      ]
+    },
+    {
+      "objective": "spanish-colors",
+      "run": 3,
+      "attempts": 1,
+      "firstPass": {
+        "valid": 6,
+        "total": 6,
+        "issues": []
+      },
+      "final": [
+        {
+          "id": "g1",
+          "round": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g1",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g2",
+          "round": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g2",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g3",
+          "round": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "raw": {
+            "id": "g3",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "verde",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names green. Find the green shape."
+            ],
+            "success": "Green! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "square",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "green"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g4",
+          "round": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "raw": {
+            "id": "g4",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "rojo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names red. Find the red shape."
+            ],
+            "success": "Red! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "yellow"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              }
+            ],
+            "answer": "red"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g5",
+          "round": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "raw": {
+            "id": "g5",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "amarillo",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names yellow. Find the yellow shape."
+            ],
+            "success": "Yellow! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "blue"
+                  }
+                ]
+              },
+              {
+                "id": "green",
+                "label": "Green",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "green"
+                  }
+                ]
+              },
+              {
+                "id": "yellow",
+                "label": "Yellow",
+                "tokens": [
+                  {
+                    "shape": "triangle",
+                    "color": "yellow"
+                  }
+                ]
+              }
+            ],
+            "answer": "yellow"
+          },
+          "issues": [],
+          "notes": []
+        },
+        {
+          "id": "g6",
+          "round": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "raw": {
+            "id": "g6",
+            "prompt": "Listen, try the Spanish word, then find its color.",
+            "practice": {
+              "text": "azul",
+              "language": "es-ES"
+            },
+            "hints": [
+              "Listen again. Look carefully at the colors.",
+              "Ask your grown-up to name the colors with you.",
+              "The Spanish word names blue. Find the blue shape."
+            ],
+            "success": "Blue! Say the Spanish word again with your grown-up.",
+            "kind": "choose",
+            "stimulus": [],
+            "options": [
+              {
+                "id": "red",
+                "label": "Red",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "red"
+                  }
+                ]
+              },
+              {
+                "id": "blue",
+                "label": "Blue",
+                "tokens": [
+                  {
+                    "shape": "circle",
+                    "color": "blue"
+                  }
+                ]
+              }
+            ],
+            "answer": "blue"
+          },
+          "issues": [],
+          "notes": []
+        }
+      ]
+    }
+  ]
+}

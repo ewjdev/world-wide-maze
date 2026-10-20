@@ -188,7 +188,7 @@ for (const l of formatPlan(plan)) say(l);
 if (APPLY) {
   for (const p of plan.filter((x) => x.action === 'create')) {
     say(`creating ${p.kind} ${p.name} …`);
-    if (p.kind === 'd1') wrangler(['d1', 'create', p.name]);
+    if (p.kind === 'd1' || p.kind === 'learningD1') wrangler(['d1', 'create', p.name]);
     else if (p.kind === 'r2') wrangler(['r2', 'bucket', 'create', p.name]);
     else if (p.kind === 'kv')
       wrangler(['kv', 'namespace', 'create', p.name]); // no --env: title = name exactly
@@ -217,8 +217,16 @@ if (manualGateways.length) {
 // ── 4. write ids into the wrangler config ───────────────────────────────────────────────────────────────────
 const idOf = (target, kind) => plan.find((x) => x.target === target && x.kind === kind)?.id ?? null;
 const ids = {
-  production: { d1: idOf('production', 'd1'), kv: idOf('production', 'kv') },
-  previews: { d1: idOf('previews', 'd1'), kv: idOf('previews', 'kv') },
+  production: {
+    d1: idOf('production', 'd1'),
+    kv: idOf('production', 'kv'),
+    learningD1: idOf('production', 'learningD1'),
+  },
+  previews: {
+    d1: idOf('previews', 'd1'),
+    kv: idOf('previews', 'kv'),
+    learningD1: idOf('previews', 'learningD1'),
+  },
   accountId,
 };
 const wranglerText = readFileSync(FILES.wrangler, 'utf8');
@@ -255,12 +263,14 @@ const migratePreview = [
   '--config',
   'wrangler.preview-migrations.jsonc',
 ];
+// Phase 31 M3: the learning-records databases (binding LEARNING_DB; previews LEARNING_PREVIEW_DB).
+const migrateLearning = ['d1', 'migrations', 'apply', 'LEARNING_DB', '--remote', ...ENV];
+const migrateLearningPreview = migratePreview.map((x) => (x === 'PREVIEW_DB' ? 'LEARNING_PREVIEW_DB' : x));
+const migrations = [migrateProd, migratePreview, migrateLearning, migrateLearningPreview];
 if (APPLY && !args.has('--skip-migrations')) {
-  wrangler(migrateProd, { inherit: true });
-  wrangler(migratePreview, { inherit: true });
+  for (const command of migrations) wrangler(command, { inherit: true });
 } else {
-  say(`  (in apps/worker) pnpm exec wrangler ${migrateProd.join(' ')}`);
-  say(`  (in apps/worker) pnpm exec wrangler ${migratePreview.join(' ')}`);
+  for (const command of migrations) say(`  (in apps/worker) pnpm exec wrangler ${command.join(' ')}`);
 }
 
 // ── 6. secrets (names only) ─────────────────────────────────────────────────────────────────────────────────

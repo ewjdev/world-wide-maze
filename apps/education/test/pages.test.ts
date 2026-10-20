@@ -1,13 +1,18 @@
 import {
+  AVATARS,
   applyDraft,
   applyFamilySettings,
   baselinePath,
   choiceKeys,
   describeLevel,
+  evidenceId,
   inputPolicy,
+  type LearningEvidence,
   type LearningPath,
   learningScript,
   levelsFor,
+  objectiveProgress,
+  type Profile,
   preschoolActivities,
   type Round,
   readLearningHtml,
@@ -15,6 +20,17 @@ import {
 } from '@wwm/learning';
 import { describe, expect, it } from 'vitest';
 import { lessonFromHtml } from '../../web/src/learning/load.ts';
+import { HOLD_MS, holdButtonHtml } from '../src/hold.ts';
+import { AVATAR_LOOKS, avatarSvg } from '../src/profiles.ts';
+import {
+  childHtml,
+  isListening,
+  NICKNAME_HELP,
+  PRACTICE_NOTE,
+  practisedOn,
+  progressPage,
+  STATE_COPY,
+} from '../src/progress-render.ts';
 import {
   escapeHtml,
   gameLevelText,
@@ -63,8 +79,10 @@ describe('readable HTML and machine intent', () => {
     }
   });
 
-  it('describes compare-groups as a 5-round challenge and names what each round checks', () => {
-    expect(homePage(baselinePath)).toContain('5-round challenge with the match tool');
+  it('describes compare-groups as a 7-round challenge (two fresh examples) and names what each round checks', () => {
+    expect(homePage(baselinePath)).toContain('7-round challenge with the match tool');
+    // count-three: one written round and two fresh examples
+    expect(homePage(baselinePath)).toContain('3-round challenge');
     const checks = compare.rounds.map((round, index) => roundCheck(compare, round, index));
     expect(checks).toEqual([
       'Warm-up: 2 in a dice pattern vs 4 in a dice pattern',
@@ -287,3 +305,125 @@ describe('game settings (Phase 22)', () => {
       expect(parseSettings(bad, baselinePath), JSON.stringify(bad)).toBeNull();
   });
 });
+
+describe('profiles and Progress (Phase 31 M2)', () => {
+  const at = (iso: string, over: Partial<LearningEvidence> = {}): LearningEvidence => ({
+    v: 1,
+    id: evidenceId(Date.parse(iso)),
+    profile: 'mia-profile-00001',
+    at: iso,
+    activity: 'count-three',
+    objective: 'count-three',
+    round: 'fresh-1',
+    item: 'a'.repeat(32),
+    source: 'generator',
+    fresh: true,
+    outcome: 'first-try',
+    helpLevel: 0,
+    surface: 'lesson',
+    input: 'tap',
+    duration: 'lt10s',
+    ...over,
+  });
+  const objectives = (baselinePath.objectives ?? []).map((objective) => objective.id);
+  const mia: Profile = { id: 'mia-profile-00001', nickname: 'Mia', avatar: 'pip-yellow' };
+
+  it('turns fresh examples on for the four generated objectives, shown in the grown-up notes', () => {
+    const fresh = baselinePath.activities.filter((activity) => activity.fresh).map((activity) => activity.id);
+    expect(fresh).toEqual(['count-three', 'count-five', 'compare-groups', 'spanish-colors']);
+    expect(lessonPage(baselinePath, compare)).toContain('<strong>Then two new examples.</strong>');
+    const triangle = baselinePath.activities.find((activity) => activity.id === 'find-triangle');
+    expect(triangle && lessonPage(baselinePath, triangle)).not.toContain('new examples');
+  });
+
+  it('ships the picker and the who’s-playing switch hidden, so a lesson without profiles looks as before', () => {
+    const html = lessonPage(baselinePath, compare);
+    expect(html).toMatch(/<section class="picker" id="picker"[^>]*hidden>/);
+    expect(html).toMatch(/<div class="player-bar" id="player-bar" hidden>/);
+    expect(html).toContain(
+      '<span class="hold-label">Switch who’s playing</span><span class="hold-hint">Press and hold for 2 seconds (or hold G)</span>',
+    );
+  });
+
+  it('draws six Pip avatars that differ by shape as well as colour', () => {
+    const avatars = Object.keys(AVATAR_LOOKS) as (keyof typeof AVATAR_LOOKS)[];
+    expect(avatars).toEqual([...AVATARS]);
+    expect(new Set(avatars.map((avatar) => AVATAR_LOOKS[avatar].mark)).size).toBe(avatars.length);
+    for (const avatar of avatars) {
+      const svg = avatarSvg(baselinePath.theme, avatar, 56);
+      expect(svg).toContain('aria-hidden="true"');
+      expect(svg).toContain(AVATAR_LOOKS[avatar].shell);
+      expect(svg).not.toMatch(/<script|on\w+=/);
+    }
+  });
+
+  it('labels a hold button with its visible text first', () => {
+    expect(HOLD_MS).toBe(2000);
+    expect(holdButtonHtml('x', 'Open "Progress"')).toContain(
+      '<span class="hold-label">Open &quot;Progress&quot;</span><span class="hold-hint">',
+    );
+  });
+
+  it('writes the Progress page with its fixed copy, the M3 slot, and no score anywhere', () => {
+    const html = progressPage(baselinePath);
+    expect(html).toContain(PRACTICE_NOTE);
+    expect(html).toContain('Saved on this device only.');
+    expect(html).toContain(escapeHtml(NICKNAME_HELP));
+    expect(html).toContain('Download progress (JSON)');
+    expect(html).toContain('Delete progress on this device');
+    expect(html).toContain('<!-- M3 SLOT:');
+    expect(html).toContain('id="account-slot"');
+    expect(html).toMatch(/<div class="progress-area" id="progress-area" hidden>/);
+    for (const copy of Object.values(STATE_COPY)) expect(html).toContain(copy);
+    expect(html).not.toMatch(/%|\/ ?\d+ correct|ranking/i);
+  });
+
+  it('shows each objective’s state in plain words, practised first, with Try together and listening labels', () => {
+    const events = [
+      at('2026-10-18T17:00:00.000Z', { item: 'b'.repeat(32) }),
+      at('2026-10-19T17:00:00.000Z', { item: 'c'.repeat(32) }),
+      at('2026-10-19T17:05:00.000Z', {
+        activity: 'spanish-colors',
+        objective: 'spanish-colors',
+        outcome: 'after-retry',
+        helpLevel: 1,
+      }),
+    ];
+    const progress = objectiveProgress(events, objectives, { timeZone: 'America/New_York' });
+    const html = childHtml(baselinePath, mia, progress, { timeZone: 'America/New_York', picker: true });
+    expect(html).toContain('<p class="state" data-state="got-it">Got it on new examples</p>');
+    expect(html).toContain('<p class="state" data-state="with-help">Getting there with help</p>');
+    expect(html.indexOf('data-objective="spanish-colors" data-state="with-help"')).toBeLessThan(
+      html.indexOf('data-objective="count-three" data-state="got-it"'),
+    );
+    expect(html).toContain('Last practised 19 October 2026');
+    expect(html).toContain(`Not tried yet (${objectives.length - 2})`);
+    expect(html).toContain(escapeHtml(countThreeActivity().offlineActivity));
+    expect(html.match(/Listening practice/g)?.length).toBe(
+      baselinePath.activities.filter((activity) => isListening(activity)).length,
+    );
+    expect(html).not.toMatch(/%/);
+  });
+
+  it('escapes nicknames and counts days on the family’s calendar', () => {
+    const html = childHtml(baselinePath, { ...mia, nickname: "D'Arcy" }, objectiveProgress([], objectives), {
+      picker: false,
+    });
+    expect(html).toContain('D&#39;Arcy');
+    expect(html).toContain('Lessons on this device save practice for D&#39;Arcy.');
+    // 02:30 UTC on the 19th is still the 18th in New York
+    expect(practisedOn('2026-10-19T02:30:00.000Z', 'America/New_York')).toBe('18 October 2026');
+    expect(practisedOn('2026-10-19T02:30:00.000Z', 'UTC')).toBe('19 October 2026');
+  });
+
+  it('labels listening-dependent lessons from their rounds', () => {
+    expect(isListening(compare)).toBe(false);
+    expect(preschoolActivities.every((activity) => isListening(activity))).toBe(true);
+  });
+});
+
+function countThreeActivity() {
+  const found = baselinePath.activities.find((activity) => activity.id === 'count-three');
+  if (!found) throw new Error('count-three missing');
+  return found;
+}

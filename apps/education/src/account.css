@@ -1,0 +1,199 @@
+/* Phase 31 M3: the family account pages. Uses the app's tokens (DESIGN.md); owned by account*.ts. */
+.account-layout {
+  max-width: 1040px;
+  display: grid;
+  gap: 40px;
+}
+.account-intro .lead {
+  margin-top: 18px;
+}
+.account-intro .save-state {
+  margin-top: 24px;
+}
+.account-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+.account-panel {
+  border-top: 1px solid var(--line);
+  padding-top: 28px;
+}
+.account-panel h3 {
+  margin: 32px 0 10px;
+}
+.account-panel > p {
+  margin-top: 12px;
+}
+.account-panel > .primary,
+.account-panel > .secondary {
+  margin-top: 16px;
+}
+.account-address {
+  overflow-wrap: anywhere;
+}
+.account-panel label {
+  display: block;
+  font-weight: 700;
+  margin: 20px 0 8px;
+}
+.account-panel input[type="email"],
+.account-panel input[type="text"] {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  min-height: 48px;
+  border: 1px solid #89959e;
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: #fff;
+  color: var(--ink);
+}
+.account-panel input::placeholder {
+  color: #5d6870;
+}
+.account-panel .code-input {
+  max-width: 220px;
+  font-family: "Unbounded Variable", sans-serif;
+  font-size: 26px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+.account-panel label.consent {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-weight: 400;
+}
+.consent input {
+  width: 24px;
+  height: 24px;
+  margin-top: 3px;
+  flex: none;
+  accent-color: var(--green);
+}
+.consent .field-help {
+  display: block;
+  margin: 4px 0 0;
+}
+.optional {
+  font-weight: 400;
+  color: var(--muted);
+}
+.turnstile {
+  margin-top: 16px;
+  min-height: 65px;
+}
+.account-feedback {
+  margin-top: 12px;
+  font-size: 16px;
+}
+.account-feedback:empty {
+  display: none;
+}
+.passkey-signin {
+  margin-top: 28px;
+}
+.pair-panel {
+  margin-top: 20px;
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+}
+.pair-code {
+  font-family: "Unbounded Variable", sans-serif;
+  font-size: clamp(34px, 6vw, 52px);
+  font-weight: 650;
+  letter-spacing: 0.16em;
+}
+.pair-panel.expired .pair-code,
+.pair-panel.expired .pair-qr {
+  opacity: 0.3;
+}
+.pair-qr svg {
+  display: block;
+  border: 1px solid var(--line);
+}
+.device-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 10px;
+}
+.device-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 16px;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+.device-list .device-name {
+  font-weight: 700;
+}
+.device-list .field-help {
+  grid-row: 2;
+  margin: 0;
+}
+.device-list button {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+}
+.danger-zone {
+  margin-top: 32px;
+  border: 1px solid #c74946;
+  border-radius: 8px;
+  padding: 16px 18px;
+}
+.danger-zone summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.danger-zone p {
+  margin-top: 12px;
+}
+.primary.danger {
+  background: #a5302d;
+  margin-top: 16px;
+}
+.primary.danger:hover {
+  background: #86211f;
+}
+.account-privacy {
+  border-top: 1px solid var(--line);
+  padding-top: 24px;
+}
+.account-privacy summary {
+  font-weight: 700;
+  cursor: pointer;
+}
+.account-privacy ul {
+  padding-left: 22px;
+}
+.account-privacy li + li {
+  margin-top: 8px;
+}
+.account-privacy p {
+  margin-top: 12px;
+}
+/* The Progress page's slot (mounted by account-sync.ts). */
+.account-slot {
+  margin: 20px 0;
+  padding: 18px 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.account-slot-title {
+  font-weight: 700;
+}
+.account-slot .field-help {
+  margin: 6px 0 12px;
+}
+@media (max-width: 760px) {
+  .account-columns {
+    grid-template-columns: 1fr;
+  }
+}

@@ -518,3 +518,51 @@ Optional bridge `control`, `bank` and `rails` fields describe a shared tessellat
 Timed turbo charging requires grounded qualifying-speed travel on a non-descending support surface. Actual contact normal projected along horizontal velocity identifies descent, with the small numerical grade deadband defined by the versioned physics profile. Downhill or airborne travel resets partial charge but preserves stock; one effective button press can still spend a stored charge. Existing landing speed rewards are separate from timed charges. Falls retain the one-charge/one-life penalty. Optional `RaceState.boost.chargingReason` reports `charging`, `slow`, `downhill`, `airborne`, `recovering` or `disabled` to desktop/phone views.
 
 The new Race profile permits downhill momentum up to 48 m/s horizontal speed, retains vertical airborne motion, and lets excess momentum decay after a descent. Existing turbo impulse ceilings remain 24/26 m/s; pressing turbo at higher terrain speed does not consume a charge. Calibration evidence pins the profile parameters and attainable speed/braking envelope. The actual resolved profile participates in replay compatibility.
+
+### 10.5 Phase 31 learning records and authoring (CCR-31-1 to CCR-31-4, orchestrator, 2026-10-19)
+
+See [phase-31-lesson-depth-and-tracking.md](phase-31-lesson-depth-and-tracking.md).
+
+**CCR-31-1/2 (applied in M1).** Objectives, banks, `activity.fresh`, `roundIssues`, `LearningEvidence` and `objectiveProgress` live in `@wwm/learning`. That package is the education contract authority (docs/education/html-contract.md). `@wwm/schema` is unchanged.
+
+**CCR-31-3: accounts, devices and sync.**
+- **Shared types:** `@wwm/learning` `sync.ts` (`Profile`, `ProgressStore`, request schemas, response interfaces, error codes).
+- **Paths and format:** every endpoint is under `/api/learning/`, sends and receives JSON, and returns errors as `{code, message}` with a `LEARNING_*` code.
+- **Parent session:** cookie `wwm_learning_session` (HttpOnly, Secure, SameSite=Lax, Path=/api/learning). Each session lasts 30 days, rolling.
+- **Device:** `Authorization: Bearer <token>`, from pairing.
+
+| Method and path | Who | Body / response |
+|---|---|---|
+| `GET /api/learning/session` | anyone | `SessionResponse` |
+| `POST /api/learning/auth/email` | anyone | `EmailSignIn` → `202 {}` always (no account enumeration). Sends a one-use link to `/learn/account/verify#token=…` that expires in 15 minutes |
+| `POST /api/learning/auth/email/verify` | anyone | `{token}` → `200 SessionResponse` and the cookie. A new email creates a family only with consent |
+| `POST /api/learning/auth/passkey/register/options` · `…/register/verify` | parent | WebAuthn registration (a passkey is added after the first email sign-in) |
+| `POST /api/learning/auth/passkey/login/options` · `…/login/verify` | anyone | WebAuthn sign-in → cookie |
+| `POST /api/learning/auth/signout` | parent | `204` |
+| `GET /api/learning/profiles` · `POST` · `PATCH /:id` · `DELETE /:id` | parent (GET: device too) | `Profile`. POST accepts a device-made id so local evidence keeps its profile. DELETE removes the profile's events |
+| `POST /api/learning/devices/pair-code` | parent | `PairCodeResponse` (6 characters from `A-HJ-NP-Z2-9`, 10 minutes, one use) |
+| `POST /api/learning/devices/claim` | anyone | `{code, label?}` → `PairClaimResponse` |
+| `GET /api/learning/devices` · `DELETE /:id` | parent | `{devices: DeviceSummary[]}` · `204` (the token stops working immediately) |
+| `POST /api/learning/events` | parent or device | `{events ≤ 200}` → `EventBatchResponse`. Idempotent by event id; an event for another family's profile is rejected `UNKNOWN_PROFILE` |
+| `GET /api/learning/events?profile=&cursor=` | parent | `EventPage`, oldest first. The client computes `objectiveProgress` in the family's time zone |
+| `GET /api/learning/export` | parent | `FamilyExport` |
+| `DELETE /api/learning/family` | parent | `204`. Deletes the account, passkeys, sessions, devices, profiles and events, then signs out |
+
+Further rules:
+- **Gate:** `LEARNING_ACCOUNTS` = `off` (default; every endpoint returns `404 LEARNING_UNAVAILABLE`), `allowlist` (sign-in only for emails in the `LEARNING_ALLOWED_EMAILS` secret) or `on`. Production stays `off` or `allowlist` until the privacy review is recorded.
+- **Bot protection and limits:** Turnstile on `auth/email`. Rate limits per IP on `auth/*` and `devices/claim`, and per family on `events`.
+- **Storage:** D1 `LEARNING_DB` (database `wwm-learning-records`) holds parents, passkeys, sessions, sign-in links, pair codes and devices. Tokens are stored only as SHA-256 hashes. A SQLite Durable Object `FamilyRecords`, one per family, holds profiles and events.
+- **Retention:** a family with no activity for 24 months is deleted (proposed).
+- **Privacy:** learning endpoints never log bodies and never send telemetry.
+
+**CCR-31-4: lesson drafts (operator only).**
+- **Access:** `/api/admin/lessons/*`, behind the existing Access operator identity.
+- **Agent:** an Agents SDK `LessonDraftAgent` Durable Object per draft.
+- **Workflow:** `LESSON_DRAFT` (generate, validate, repair at most twice, ready for review) through AI Gateway `wwm`.
+- **Output:** an approved bank is exported as JSON for `pnpm learning:bank import`, which validates and writes it into `packages/learning`. Nothing reaches a child until the import is committed and deployed.
+
+**Resolutions (orchestrator, 2026-10-20):**
+- **CCR-31-4a (accepted):** `LessonDraftAgent` extends the Agents SDK base `Agent`, not `AIChatAgent`. Its transcript is plain text, and model calls use the docent's AI Gateway provider.
+- **CCR-31-4b (accepted):** the workbench wire types live in `@wwm/learning` (`reviewed-banks.ts`) with the rest of the education contract.
+- **CCR-31-5 (applied):** `AVATAR_LOOKS` and `avatarSvg` moved to `@wwm/learning` (`avatars.ts`), so the lesson page and the maze draw the same avatar from one copy.
+- **Migrations:** Durable Object migration tags are `v5` for `LessonDraftAgent` and `v6` for `FamilyRecords`.

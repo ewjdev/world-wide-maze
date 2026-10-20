@@ -1235,3 +1235,489 @@ footer .small {
     animation: none;
   }
 }
+/* ── Phase 31 M2: who's playing, the grown-up gate, and Progress ─────────────────────────────────────────── */
+:root {
+  --danger: #a63a36;
+  --danger-hover: #8b2e2b;
+}
+/* the picker: Pip avatars, picture-only, big tap targets on the Pip surface */
+.picker {
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  padding: 28px 0 20px;
+}
+.picker-heading {
+  font-size: clamp(24px, 3vw, 34px);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.picker-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+.picker-choice {
+  display: grid;
+  place-items: center;
+  min-width: 152px;
+  min-height: 172px;
+  padding: 16px 20px 12px;
+  border: 2px solid #cbd8e2;
+  border-radius: 28px;
+  background: #e7eef5;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
+}
+.picker-choice:hover {
+  background: #dce8f2;
+  border-color: var(--blue);
+}
+.picker-choice:active svg {
+  transform: translateY(2px);
+}
+/* the grown-up line under a lesson: who practice is saved for, and the hold-to-switch */
+.player-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-top: 10px;
+}
+#player-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.player-avatar {
+  flex: none;
+}
+/* press and hold (the grown-up gate): the fill grows while held */
+.hold-button {
+  position: relative;
+  overflow: hidden;
+  display: inline-grid;
+  justify-items: start;
+  gap: 0;
+  text-align: left;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.hold-fill {
+  position: absolute;
+  inset: 0;
+  background: rgba(45, 111, 163, 0.22);
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+.hold-button.is-holding .hold-fill {
+  transform: scaleX(1);
+  transition: transform var(--hold-ms, 2s) linear;
+}
+.hold-label,
+.hold-hint {
+  position: relative;
+}
+.hold-hint {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted);
+}
+.player-switch {
+  min-height: 52px;
+  padding: 8px 16px;
+  font-size: 15px;
+}
+/* the lesson's grown-up notes: fresh examples after the written rounds */
+.parent-notes .fresh-note {
+  margin-top: 18px;
+}
+
+/* the Progress page */
+.progress-layout {
+  max-width: 960px;
+}
+.progress-intro .lead {
+  margin-top: 20px;
+}
+.practice-note,
+.progress-area .save-state {
+  max-width: none;
+}
+.practice-note {
+  margin-top: 22px;
+  padding: 14px 18px;
+  background: #e7eef5;
+  font-weight: 650;
+}
+.progress-gate {
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+  margin-top: 32px;
+  padding: 24px 28px;
+  background: #fff;
+}
+.progress-gate p {
+  font-weight: 600;
+}
+.progress-area {
+  margin-top: 32px;
+}
+.progress-unavailable {
+  margin-top: 20px;
+  padding: 20px 24px;
+  background: #fff5d8;
+}
+.progress-unavailable h2 {
+  font-family: "Figtree Variable", sans-serif;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+.progress-unavailable p {
+  margin-top: 8px;
+}
+.children {
+  display: grid;
+  gap: 28px;
+  margin-top: 28px;
+}
+.child {
+  padding: 24px 28px 20px;
+  background: #fff;
+}
+.child-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.child-head svg {
+  flex: none;
+}
+.child-head h2 {
+  overflow-wrap: anywhere;
+}
+.child-summary {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 16px;
+}
+.objectives {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.objective {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, 250px);
+  gap: 4px 28px;
+  padding: 18px 0 6px;
+  border-top: 1px solid var(--line);
+}
+.objective h3 {
+  font-size: 19px;
+  line-height: 1.35;
+}
+.objective-statement {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--muted);
+}
+.tag {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #e3ecf2;
+  color: #245779;
+  font-size: 13px;
+  font-weight: 650;
+  line-height: 1.6;
+}
+.objective h3 + .tag {
+  margin-top: 4px;
+}
+.state {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.4;
+}
+.state[data-state="not-started"] {
+  background: #e9edef;
+  color: var(--ink);
+}
+.state[data-state="practising"] {
+  background: #e7eef5;
+  border-color: #b9cddd;
+  color: #245779;
+}
+.state[data-state="with-help"] {
+  background: #fff5d8;
+  border-color: #e3c97a;
+  color: #6b4f00;
+}
+.state[data-state="got-it"] {
+  background: #e2eddf;
+  border-color: #a9caa6;
+  color: #1d5429;
+}
+.objective-when {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+.objective details,
+.child details {
+  border-top: 0;
+  padding-top: 0;
+}
+.try-together {
+  grid-column: 1 / -1;
+}
+.try-together summary,
+.not-tried summary,
+.child-edit summary {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  color: var(--green);
+}
+.try-together p {
+  margin: 0 0 12px;
+  padding: 12px 16px;
+  background: #e2eddf;
+  font-size: 16px;
+}
+.child .not-tried {
+  margin-top: 10px;
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+.not-tried ul {
+  columns: 2 260px;
+  column-gap: 32px;
+  margin: 4px 0 12px;
+  padding-left: 20px;
+  font-size: 16px;
+}
+.not-tried li {
+  break-inside: avoid;
+  margin: 4px 0;
+}
+.not-tried .tag {
+  margin-top: 0;
+}
+.child .child-edit {
+  border-top: 1px solid var(--line);
+  padding-top: 6px;
+}
+.profile-form > label {
+  display: block;
+  font-weight: 700;
+  margin: 16px 0 6px;
+}
+.profile-form .field-help {
+  margin-bottom: 10px;
+}
+.profile-form input[type="text"] {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 1px solid #89959e;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+.profile-form input[aria-invalid="true"] {
+  border-color: var(--danger);
+}
+.field-error {
+  margin-top: 6px;
+  color: var(--danger);
+  font-size: 15px;
+  font-weight: 650;
+}
+.field-error:empty {
+  display: none;
+}
+.avatar-choices {
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+.avatar-choices legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
+  gap: 10px;
+  max-width: 640px;
+}
+.avatar-option {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 8px 6px 6px;
+  border: 2px solid #cbd8e2;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.avatar-option:hover {
+  background: #edf2f5;
+}
+/* the real radio covers the card, invisibly: any tap on it chooses */
+.avatar-option input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.avatar-option:has(input:checked) {
+  border-width: 3px;
+  border-color: var(--green);
+  background: #e2eddf;
+  padding: 7px 5px 5px;
+}
+.avatar-option:has(input:focus-visible) {
+  outline: 3px solid var(--blue);
+  outline-offset: 3px;
+}
+.profile-form > .primary {
+  margin-top: 20px;
+}
+.secondary.danger {
+  color: var(--danger);
+}
+.primary.danger {
+  background: var(--danger);
+}
+.primary.danger:hover {
+  background: var(--danger-hover);
+}
+.confirm {
+  margin-top: 12px;
+  padding: 16px 18px 4px;
+  background: #fff5d8;
+  border: 1px solid #856300;
+}
+.confirm p {
+  font-weight: 600;
+}
+.confirm .button-row {
+  margin: 14px 0 12px;
+}
+.state-key {
+  margin-top: 32px;
+}
+.state-key dl {
+  margin: 4px 0 0;
+}
+.state-key dl > div {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 8px 20px;
+  align-items: baseline;
+  padding: 10px 0;
+  border-top: 1px solid var(--line);
+}
+.state-key dd {
+  margin: 0;
+  font-size: 16px;
+}
+.state-key .small {
+  margin: 12px 0 8px;
+}
+.add-child {
+  margin-top: 28px;
+}
+.add-child > summary {
+  font-size: 20px;
+}
+.add-child form {
+  padding-bottom: 12px;
+}
+.device-data {
+  margin-top: 40px;
+  padding-top: 32px;
+  border-top: 1px solid var(--line);
+}
+.device-data > p {
+  margin-top: 12px;
+}
+.device-feedback:not(:empty) {
+  margin-top: 12px;
+  font-weight: 600;
+}
+.device-feedback:focus {
+  outline: none;
+}
+@media (max-width: 760px) {
+  .child {
+    padding: 18px 16px 14px;
+  }
+  .objective {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .state-key dl > div {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .progress-gate {
+    padding: 20px;
+  }
+}
+@media (max-width: 640px) {
+  .picker {
+    padding: 16px 0 8px;
+    gap: 16px;
+  }
+  .picker-choices {
+    gap: 12px;
+  }
+  .picker-choice {
+    min-width: 136px;
+    min-height: 150px;
+    padding: 12px 14px 8px;
+  }
+  .picker-choice svg {
+    width: 92px;
+    height: auto;
+  }
+  .player-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hold-button.is-holding .hold-fill,
+  .picker-choice:active svg {
+    transition: none;
+    transform: none;
+  }
+  /* no growing fill: the whole button tints while held */
+  .hold-button.is-holding .hold-fill {
+    transform: scaleX(1);
+  }
+}

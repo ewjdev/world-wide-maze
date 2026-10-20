@@ -1,12 +1,15 @@
 import { z } from 'zod';
 import { type LearningPath, parseLearningPath } from './schema.ts';
 
+/** Baseline revisions, oldest first. Drafts only ever change introductions keyed by activity id. */
+const VERSIONS = ['1.0.0', '2.0.0', '3.0.0', '3.1.0', '3.2.0'] as const;
+const order = (version: string) => (VERSIONS as readonly string[]).indexOf(version);
 const sentence = z.string().trim().min(1).max(400);
 const draftSchema = z
   .object({
     baselineId: z.literal('little-discoveries'),
     // 1.0.0 drafts (Phase 19) only changed introductions keyed by activity id, which 2.0.0 keeps
-    baselineVersion: z.enum(['1.0.0', '2.0.0', '3.0.0', '3.1.0']),
+    baselineVersion: z.enum(VERSIONS),
     title: sentence.max(80),
     description: sentence,
     introductions: z
@@ -20,18 +23,15 @@ export type FamilyFork = { draft: PersonalizationDraft; acceptedAt: string };
 
 function compatibleVersion(draft: string, baseline: string): boolean {
   // earlier baselines had the same activity ids; drafts only ever change introductions
-  return (
-    draft === baseline ||
-    ['1.0.0', '2.0.0', '3.0.0', '3.1.0'].indexOf(draft) <
-      ['1.0.0', '2.0.0', '3.0.0', '3.1.0'].indexOf(baseline)
-  );
+  return draft === baseline || order(draft) < order(baseline);
 }
 
 export function parseDraft(value: unknown, baseline: LearningPath): PersonalizationDraft {
   const draft = draftSchema.parse(value);
   const ids = new Set(draft.introductions.map((item) => item.activityId));
   // Six-lesson family backups retain their text; new lessons retain their default introductions.
-  const legacy = draft.baselineVersion !== '3.1.0' && baseline.version === '3.1.0';
+  // (3.1.0 added them; later revisions keep the same eleven activities.)
+  const legacy = order(draft.baselineVersion) < order('3.1.0') && baseline.activities.length > 6;
   const required = legacy ? baseline.activities.slice(0, 6) : baseline.activities;
   if (
     ids.size !== draft.introductions.length ||

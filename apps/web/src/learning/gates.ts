@@ -7,15 +7,23 @@
  *
  * Falls, time and maze score are never read here: a gate is practice, not assessment (html-contract). A lock is
  * never a punishment (plan Principle 3): it costs nothing, it explains itself, and a grown-up may open it.
+ *
+ * Phase 31 M5: the lesson is played as `expandActivity` draws it for the child playing (fresh examples after the
+ * written rounds), and each round solved on a gate card becomes the same `LearningEvidence` as on the lesson page,
+ * with `surface: 'maze'`, in the same device store (players.ts). Evidence is made in exactly one place, `answer()`,
+ * from the round's `LessonState`, the input that answered it and the time the round was on the card. Falls,
+ * respawns, items, missions, locks, overrides, the stage timer and the score never reach it.
  */
 import {
   type Activity,
   type Cue,
   choicesInOrder,
+  createBrowserStore,
   createVoicePlayer,
   currentRound,
   DEFAULT_AUDIO_BASE,
   type DeviceInputs,
+  expandActivity,
   followUpAfter,
   type InputMode,
   type InputPolicy,
@@ -23,6 +31,7 @@ import {
   inputPolicy,
   judgeInput,
   keyToChoice,
+  type LearningEvidence,
   type LearningPath,
   type LessonEvent,
   type LessonState,
@@ -32,10 +41,14 @@ import {
   MAX_GATE_NUMBER,
   nudgeLine,
   type PlanStep,
+  type Profile,
+  type ProgressStore,
   type ResolvedLocks,
   type Round,
+  type RoundOrigin,
   randomSeed,
   resolveLocks,
+  roundEvidence,
   type ScriptLine,
   type Show,
   type Step,
@@ -44,6 +57,7 @@ import {
   sessionScript,
   step,
   systemLineId,
+  type Theme,
   type VoicePlayer,
   withPractice,
 } from '@wwm/learning';
@@ -53,6 +67,7 @@ import { type LevelSummary, levelSummaries, pickLevel } from './levels.ts';
 import { type LessonErrorKind, LessonLoadError, type LessonSource, type LoadedLesson } from './load.ts';
 import { allowedIslands, type BoundStep, bindLevel, type LockBinding } from './locks.ts';
 import { collectCount, gemsByIsland, islandLetters, type ReachGoal, resolveReach } from './missions.ts';
+import { choosePlayer, confirmPick, speakNickname } from './players.ts';
 import { type LockPort, type LockVisual, NO_LOCKS } from './port.ts';
 
 export type GateMode = 'round' | 'bonus-offer' | 'done';
@@ -130,6 +145,19 @@ export interface LessonSummary {
   override: boolean;
 }
 
+/** Phase 31 M5: a child as the picker and the grown-up line show them (never in evidence or debug state). */
+export interface PlayerView {
+  id: string;
+  nickname: string;
+  avatar: Profile['avatar'];
+}
+
+/** Phase 31 M5: the picture-only "who's playing?" picker, waiting for a tap. */
+export interface PickerView {
+  theme: Theme;
+  profiles: PlayerView[];
+}
+
 export interface LearningView {
   lesson: LessonSummary | null;
   loading: boolean;
@@ -146,7 +174,15 @@ export interface LearningView {
   banner: LockBanner | null;
   /** The pause menu may offer the grown-up override now. */
   canOverride: boolean;
+  /** Phase 31 M5: the picker, while it waits for a child to tap their Pip. */
+  picker: PickerView | null;
+  /** The child practice is saved for (null: nobody, so nothing is recorded). */
+  player: PlayerView | null;
+  /** Two or more children on this device: a grown-up may switch who's playing. */
+  canSwitch: boolean;
 }
+
+const playerView = (p: Profile): PlayerView => ({ id: p.id, nickname: p.nickname, avatar: p.avatar });
 
 // ── pure glue (unit-tested) ─────────────────────────────────────────────────────────────────────────────
 
@@ -263,6 +299,15 @@ export interface LearningGatesOptions {
   now?: () => number;
   /** Tests: a voice player stand-in. */
   voice?: (path: LearningPath, events: { onCue: (cue: Cue, line: ScriptLine) => void }) => VoicePlayer;
+  /**
+   * Phase 31 M5: the device's progress store (default: the lesson page's IndexedDB store, opened on first use;
+   * returning null records nothing). Tests pass a fake-indexeddb store.
+   */
+  store?: () => ProgressStore | null;
+  /** Phase 31 M5: greets a picked child (default: the browser's own speech; never the studio voice). */
+  greet?: (text: string) => void;
+  /** Phase 31 M5: the wall clock for evidence times (ms since the epoch; default `Date.now`). */
+  clock?: () => number;
 }
 
 /** Labels the maze shows (the UI sets translated ones). */
@@ -337,7 +382,13 @@ export class LearningGates {
     mission: null,
     banner: null,
     canOverride: false,
+    picker: null,
+    player: null,
+    canSwitch: false,
   };
+  /** The lesson as loaded (its written rounds). */
+  #written: LoadedLesson | null = null;
+  /** The lesson as played: `#written` with this play-through's fresh examples once `ready()` drew them. */
   #lesson: LoadedLesson | null = null;
   #state: LessonState | null = null;
   #index = new Map<string, ScriptLine>();
@@ -367,6 +418,26 @@ export class LearningGates {
   #bannerAt = Number.NEGATIVE_INFINITY;
   #bannerSeq = 0;
   #keySeen = false;
+  // Phase 31 M5: who's playing, this play-through's draw, and evidence
+  #store: ProgressStore | null | undefined;
+  #player: Profile | null = null;
+  #asking: {
+    profiles: Profile[];
+    done: Promise<Profile | null>;
+    resolve: (p: Profile | null) => void;
+  } | null = null;
+  /** A grown-up asked to switch: the next play-through asks again. */
+  #again = false;
+  /** Bumped by every new play-through (`resetProgress`); a draw for an older one is dropped. */
+  #playThrough = 0;
+  #preparing: Promise<void> | null = null;
+  /** Each played round's objective, item and source (empty until `ready()` drew the play-through). */
+  #origins = new Map<string, RoundOrigin>();
+  /** When the round on the card was shown (for the evidence's duration bucket). */
+  #roundStartedAt = 0;
+  #writes: Promise<void> = Promise.resolve();
+  #saved = 0;
+  #unsaved = 0;
   // diagnostics (debug state)
   #said: string[] = [];
   #guards: { islandId: number; at: number }[] = [];
@@ -427,8 +498,10 @@ export class LearningGates {
   use(lesson: LoadedLesson): void {
     this.abort();
     this.#voice?.stop();
-    this.#loadToken++;
+    const token = ++this.#loadToken;
+    this.#written = lesson;
     this.#lesson = lesson;
+    this.#origins = new Map();
     this.#levelOverride = null;
     this.#index = scriptIndex(lesson.path);
     const onCue = (cue: Cue, line: ScriptLine) => {
@@ -448,6 +521,7 @@ export class LearningGates {
     this.#unlocked = false;
     this.#set({ loading: false, error: null, speaking: null });
     this.#applyLevel();
+    void this.#peek(token);
   }
 
   /** Load from an async source (a picked file); a newer load or a clear wins over a slow one. */
@@ -483,7 +557,11 @@ export class LearningGates {
     this.abort();
     this.#voice?.stop();
     this.#loadToken++;
+    this.#playThrough++;
+    this.#preparing = null;
+    this.#written = null;
     this.#lesson = null;
+    this.#origins = new Map();
     this.#state = null;
     this.#voice = null;
     this.#level = null;
@@ -502,6 +580,7 @@ export class LearningGates {
       banner: null,
       canOverride: false,
     });
+    this.#cancelAsk();
   }
 
   /** The Grown-ups control: play another of the lesson's levels this session (progress starts over). */
@@ -544,6 +623,9 @@ export class LearningGates {
   resetProgress(): void {
     const lesson = this.#lesson;
     if (!lesson) return;
+    // a new play-through: `ready()` draws its fresh examples (the last draw plays until then)
+    this.#playThrough++;
+    this.#preparing = null;
     this.#state = initialState(lesson.activity, {
       seed: this.#opts.seed?.() ?? randomSeed(),
       shuffle: lesson.path.play?.shuffle ?? 'positions',
@@ -567,6 +649,179 @@ export class LearningGates {
   /** Any key pressed in the game: the device has a keyboard (letter and number rounds may invite it). */
   noteKey(): void {
     this.#keySeen = true;
+  }
+
+  // ── Phase 31 M5: who's playing, fresh examples, evidence ──
+
+  get #progress(): ProgressStore | null {
+    if (this.#store === undefined) {
+      try {
+        this.#store = this.#opts.store ? this.#opts.store() : createBrowserStore();
+      } catch {
+        this.#store = null;
+      }
+    }
+    return this.#store;
+  }
+
+  /**
+   * Before a stage is decorated (game.ts `#loadSlice`): settle who's playing (the picker may wait for a tap), then
+   * draw this play-through's fresh examples for them. Resolves at once when both are done. Never rejects: without
+   * a store the fresh examples are drawn for nobody and nothing is recorded; without Web Crypto the written rounds
+   * play and nothing is recorded (as on the lesson page).
+   */
+  async ready(): Promise<void> {
+    for (;;) {
+      if (!this.#written) return;
+      const token = this.#playThrough;
+      this.#preparing ??= this.#prepare(token);
+      await this.#preparing;
+      if (token === this.#playThrough) return;
+    }
+  }
+
+  async #prepare(token: number): Promise<void> {
+    const stale = () => token !== this.#playThrough || !this.#written;
+    const player = await this.#whoIsPlaying();
+    if (stale()) return;
+    const store = this.#progress;
+    const seen =
+      player && store ? await store.seenItems(player.id).catch(() => new Set<string>()) : new Set<string>();
+    if (stale()) return;
+    const written = this.#written as LoadedLesson;
+    let played: { activity: Activity; origins: Map<string, RoundOrigin> };
+    try {
+      played = await expandActivity(written.path, written.activity, { seed: this.#state?.seed ?? 0, seen });
+    } catch (err) {
+      console.warn('[wwm] fresh examples not drawn:', err instanceof Error ? err.message : err);
+      played = { activity: written.activity, origins: new Map() };
+    }
+    if (stale()) return;
+    this.#lesson = { ...written, activity: played.activity };
+    this.#origins = played.origins;
+    if (this.#level) this.#plan = levelPlan(played.activity, this.#level);
+    this.#bindings = new WeakMap();
+    this.#run = null;
+    this.#refresh();
+  }
+
+  /** Who plays this play-through: nobody, the only child, the one picked in this tab, or the picker's answer. */
+  async #whoIsPlaying(): Promise<Profile | null> {
+    // a draw for an older play-through may already be asking: share its picker
+    const asking = () => this.#asking?.done ?? null;
+    const pending = asking();
+    if (pending) return pending;
+    const choice = await choosePlayer(this.#progress, { again: this.#again });
+    const meanwhile = asking();
+    if (meanwhile) return meanwhile;
+    const player =
+      choice.kind === 'player'
+        ? choice.player
+        : choice.kind === 'ask'
+          ? await this.#ask(choice.profiles)
+          : null;
+    this.#again = false;
+    this.#player = player;
+    this.#set({
+      player: player ? playerView(player) : null,
+      canSwitch: choice.kind !== 'none' && choice.profiles.length > 1,
+    });
+    return player;
+  }
+
+  /** A loaded lesson shows who practice is saved for straight away, when that needs no picker. */
+  async #peek(token: number): Promise<void> {
+    const choice = await choosePlayer(this.#progress);
+    if (token !== this.#loadToken || this.#preparing || this.#asking || this.#player) return;
+    this.#set({
+      player: choice.kind === 'player' ? playerView(choice.player) : null,
+      canSwitch: choice.kind !== 'none' && choice.profiles.length > 1,
+    });
+  }
+
+  #ask(profiles: Profile[]): Promise<Profile | null> {
+    let resolve: (p: Profile | null) => void = () => {};
+    const done = new Promise<Profile | null>((r) => {
+      resolve = r;
+    });
+    this.#asking = { profiles, done, resolve };
+    const theme = (this.#written ?? this.#lesson)?.path.theme;
+    this.#set({ picker: theme ? { theme, profiles: profiles.map(playerView) } : null });
+    return done;
+  }
+
+  #cancelAsk(): void {
+    const asking = this.#asking;
+    if (!asking) return;
+    this.#asking = null;
+    this.#set({ picker: null });
+    asking.resolve(null);
+  }
+
+  /** The picker: a child tapped their Pip. "Hi, <nickname>!" goes through the browser's own voice only. */
+  pick(id: string): void {
+    const asking = this.#asking;
+    const chosen = asking?.profiles.find((p) => p.id === id);
+    if (!asking || !chosen) return;
+    this.#asking = null;
+    confirmPick(this.#progress, chosen);
+    if (!this.#opts.muted()) (this.#opts.greet ?? speakNickname)(`Hi, ${chosen.nickname}!`);
+    this.#set({ picker: null });
+    asking.resolve(chosen);
+  }
+
+  /** A grown-up's "Switch who's playing" (press and hold): the picker now, then a new play-through for that child. */
+  switchPlayer(): void {
+    if (!this.#written || this.#asking || this.#view.gate) return;
+    this.#again = true;
+    this.#player = null;
+    this.#set({ player: null });
+    this.resetProgress();
+    void this.ready();
+  }
+
+  /** Evidence writes in flight have settled (tests; leaving the page doesn't wait for them). */
+  settled(): Promise<void> {
+    return this.#writes;
+  }
+
+  /**
+   * The round in `state` was just solved through `mode`: one evidence event for the child playing. It reads only
+   * the round's state, its origin and how long the round was on the card. A failed write is dropped: play never
+   * waits for or breaks on the store.
+   */
+  #record(state: LessonState, mode: InputMode): void {
+    const player = this.#player;
+    const store = this.#progress;
+    const lesson = this.#lesson;
+    const round = lesson?.activity.rounds[state.index];
+    const origin = round ? this.#origins.get(round.id) : undefined;
+    if (!player || !store || !lesson || !origin) return;
+    let event: LearningEvidence;
+    try {
+      event = roundEvidence({
+        profile: player.id,
+        activity: lesson.activity,
+        state,
+        origin,
+        surface: 'maze',
+        input: mode,
+        durationMs: Math.max(0, this.#now() - this.#roundStartedAt),
+        now: this.#opts.clock?.() ?? Date.now(),
+      });
+    } catch {
+      return;
+    }
+    this.#writes = this.#writes
+      .then(() => store.appendEvidence(event))
+      .then(
+        () => {
+          this.#saved++;
+        },
+        () => {
+          this.#unsaved++;
+        },
+      );
   }
 
   // ── the maze ──
@@ -1106,6 +1361,8 @@ export class LearningGates {
       nudgeSeq: prev?.nudgeSeq ?? 0,
       next,
     };
+    // a round newly on the card starts its evidence clock (a new card, a follow-up, an accepted bonus)
+    if (view.mode === 'round' && (!sameRound || prev?.mode !== 'round')) this.#roundStartedAt = this.#now();
     this.#set({ gate: view, built: s.state.built });
     // the invited input is voiced right after the callout
     const callout = lineId.callout(activity.id, round.id);
@@ -1141,8 +1398,8 @@ export class LearningGates {
     return true;
   }
 
-  /** Answer with `choice`, invited or not (tests; `choose` judges the input first). */
-  answer(choice: string): void {
+  /** Answer with `choice` through `mode`, invited or not (tests; `choose` judges the input first). */
+  answer(choice: string, mode: InputMode = 'tap'): void {
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     const state = this.#state;
@@ -1152,6 +1409,7 @@ export class LearningGates {
     if (gate.cursor !== cursor) this.#set({ gate: { ...gate, cursor } });
     const s = step(lesson.activity, state, { type: 'answer', choice });
     if (s.state === state) return;
+    if (s.state.solved && !state.solved) this.#record(s.state, mode);
     const done = s.state.solved ? this.#roundStep(gate.round.id) : null;
     const extra = done !== null ? this.#complete(done) : [];
     this.#apply({ ...s, say: [...s.say, ...extra] });
@@ -1170,7 +1428,7 @@ export class LearningGates {
       this.#say([nudgeLine(gate.policy)]);
       return;
     }
-    this.answer(choice);
+    this.answer(choice, mode);
   }
 
   /** A tap or click on a choice. */
@@ -1372,6 +1630,11 @@ export class LearningGates {
       built: this.#state?.built ?? 0,
       done: [...this.#done].sort((p, q) => p - q),
       overridden: [...this.#overridden],
+      // Phase 31 M5 (no profile id or nickname here)
+      rounds: this.#lesson?.activity.rounds.map((r) => r.id) ?? [],
+      fresh: [...this.#origins].filter(([, o]) => o.source !== 'lesson').map(([id]) => id),
+      player: this.#asking ? 'asking' : this.#player ? 'chosen' : 'none',
+      evidence: { saved: this.#saved, unsaved: this.#unsaved },
       gate: g
         ? {
             gateId: g.gateId,

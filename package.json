@@ -18,6 +18,7 @@
     "dev:education": "pnpm --filter @wwm/education dev",
     "build:education": "pnpm --filter @wwm/education build",
     "learning:voice": "pnpm --filter @wwm/learning-voice voice",
+    "learning:bank": "node tools/lesson-draft/src/bank.ts",
     "dev:phone": "node scripts/dev-phone.mjs",
     "fixture:capture": "pnpm --filter @wwm/fixture-capture capture",
     "fixture:texture": "pnpm --filter @wwm/fixture-capture texture",

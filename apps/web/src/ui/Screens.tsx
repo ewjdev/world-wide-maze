@@ -12,6 +12,7 @@ import { Game } from '../game/game.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
 import { touchCapable } from '../input/capability.ts';
 import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
+import { LearningPicker } from '../learning/LearningPicker.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyTrail } from './Journey.tsx';
@@ -81,6 +82,7 @@ export function Screens({ homeTitle = false }: { homeTitle?: boolean }) {
       )}
       {menuPhase && <TopBar />}
       {v.phase !== 'select' && <LearningNotice />}
+      <LearningPicker /> {/* Phase 31 M5: who's playing, before the first gate */}
       {!v.engineReady && v.phase === 'title' && (
         <p className="wwm-sr" role="status">
           {t('building.step.world')}

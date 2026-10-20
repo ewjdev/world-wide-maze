@@ -40,6 +40,12 @@ colors:
   gem-edge: "#206a71"
   bridge: "#3f9a4c"
   glow: "#f2c230"
+  danger: "#a63a36"
+  danger-hover: "#8b2e2b"
+  state-practising-border: "#b9cddd"
+  state-help-border: "#e3c97a"
+  state-help-ink: "#6b4f00"
+  state-got-it-border: "#a9caa6"
 typography:
   display:
     fontFamily: '"Unbounded Variable", sans-serif'
@@ -83,6 +89,7 @@ typography:
 rounded:
   control: "8px"
   pip-card: "28px"
+  pill: "999px"
   circle: "50%"
 spacing:
   tight: "8px"
@@ -305,6 +312,27 @@ A second parent-workspace section under the personalization controls. It has the
 - **Levels:** one disclosure per lesson, with a stop-number circle, the title, and the current level in Stop Ink ("Gated (recommended by the lesson)"). Opening it shows radio cards: the level label, the recommended mark, and the generated description in Muted 15px. The checked card is Soft Green.
 - **Actions:** "Use the lesson’s recommendation for every lesson", and "Reset game settings" (shown only when something is saved).
 
+### Who's playing (Phase 31 M2)
+
+Shown only when two or more children have profiles on this device, before "Tap Pip to start", inside the white activity canvas.
+- **Picker:** "Who’s playing?" in the Pip start label style, then one Pip Surface card per child (28px radius, Choice Border, at least 152×172px, 136×150px on phones). Each card shows only that child's Pip avatar: no text to read. The accessible name is the nickname.
+- **Avatars:** Pip with a light shell and a darker seam in one of six colours (blue, green, yellow, red, teal, orange, from the shape and brand colours), wearing a small shape on an antenna (circle, triangle, square, diamond, star, hexagon). The shape keeps avatars distinct without colour. Drawn by `avatarSvg` (`src/profiles.ts`) through the trusted sprite renderer.
+- **After a tap:** the browser's own voice says "Hi, <nickname>!" (never the studio voice), and the intro returns.
+- **Player line:** under the activity, beside the version note: a 26px avatar and "Saving practice for <nickname> on this device." in Small text. With two or more children it adds the hold-to-switch button.
+
+### Grown-up gate (press and hold)
+
+The game's Phase 22 `HoldButton`, in this system's secondary button: the label, then a 13px Muted line "Press and hold for 2 seconds (or hold G)". Holding fills the button from the left with a translucent Focus Blue over 2 seconds; a tap does nothing. Holding Space or Enter on the focused button also works. With reduced motion the fill appears at once while held. It guards the Progress page and the lesson's "Switch who’s playing".
+
+### Progress page (parent area)
+
+A single 960px column at `/progress/`, behind the gate (once per visit).
+- **Intro:** the display title "Progress", a lead, and a Transparency Blue strip that always says "This shows practice, not a test or a grade." Then the Soft Green status strip "Saved on this device only." An empty, hidden `#account-slot` follows for the optional account (M3).
+- **Each child:** a white canvas with a 56px avatar and the nickname (headline), the last practised date, then the objectives practised, most recent first. Each row has the lesson title (a link), an optional **Listening practice** tag (Stop Background pill with Stop Ink text), the objective statement in Muted 15px, and on the right the state and "Last practised …". A **Try together** disclosure opens the lesson's offline activity on Soft Green. The rest sit in "Not tried yet (n)", a two-column list of links.
+- **States:** text on a tinted, outlined label, never colour alone: Not tried yet (Secondary), Practising (Transparency Blue, Stop Ink), Getting there with help (Retry Yellow, State Help Ink), Got it on new examples (Soft Green, Action Green Hover ink). No percentages, scores, stars, bars or rankings. "What these mean" explains each in a definition list.
+- **Forms:** text inputs match the textarea treatment (48px). Pip colour is a grid of picture radio cards with the colour name visible; the chosen card gets a 3px Action Green border and Soft Green fill. Errors are Danger text under the field.
+- **Destructive actions:** secondary buttons with Danger text open an inline Retry Yellow confirmation (no modal) with a Danger primary button and a "Keep" button. Delete one child, or everything on this device; "Download progress (JSON)" sits beside it.
+
 ### Containers and Disclosure
 
 The introduction, transparency section, saved-state strip, and activity canvas are flat surfaces rather than elevated cards. Dividers organize ordered stops, draft changes, and parent disclosure sections. Native details/summary provides optional adult explanation and AI import content, with a minimum 44px summary height.
@@ -325,6 +353,7 @@ The portable HTML download intentionally uses its own compact system-font readin
 
 ### Don't:
 - **Don't** infer mastery from a success color or turn freely selectable activities into locked progress states.
+- **Don't** show a child a score, or a grown-up a percentage, score or ranking: progress is a plain-language state per objective.
 - **Don't** treat text arrows as an established icon family.
 - **Don't** import the game shell's shadows and chamfered plates into this flat education surface as if they were already implemented.
 - **Don't** replace readable objectives with visual-only or JSON-only explanations.

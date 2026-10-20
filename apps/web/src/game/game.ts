@@ -1607,6 +1607,8 @@ export class Game {
     });
     // start loading physics now, alongside the stage build (errors surface in #playLoaded)
     this.#ensureDriver().catch(() => {});
+    // Phase 31 M5: alongside the build, settle who's playing (the picker may ask) and draw the fresh examples
+    const lessonReady = this.learning.active ? this.learning.ready() : null;
     let got: LoadedStage;
     try {
       got = await run.loadSlice(
@@ -1620,6 +1622,7 @@ export class Game {
       this.#buildFailed(err, run.url, ac);
       return;
     }
+    if (lessonReady) await lessonReady;
     if (ac.signal.aborted || this.#disposed) {
       got.image.close();
       return;

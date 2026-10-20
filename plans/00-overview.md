@@ -95,6 +95,7 @@ Education is an additive product track authorized September 26, 2026. [Phase 20]
 | 24 | [phase-24-race-mode.md](phase-24-race-mode.md) | Race as a third gameplay mode: three authored courses, local personal ghosts, Race route builder; straight-course preview implemented, human/device gates open, curves deferred | 03, 04, 05, 06, 08, 09, 10 | local review |
 | 25 | [phase-25-race-jumps.md](phase-25-race-jumps.md) | Island Leap: automatic ramp launches, earned turbo, safe/near/far routes and deterministic stunt ghosts | 24 | local review |
 | 26 | [phase-26-race-route-balance.md](phase-26-race-route-balance.md) | Eight-island rebalance: competing ground/hop/skip routes, lower catch return, complete-section timing and imperfect approaches | 25 | local review |
+| 31 | [phase-31-lesson-depth-and-tracking.md](phase-31-lesson-depth-and-tracking.md) | Lesson depth (objectives, fresh-example banks, generators) and parent progress tracking (accounts, family Durable Object, privacy gate, Cloudflare authoring agent) | 19, 20, 21, 22, 23 | M0 spike and M1 learning model done; M2 next |
 
 ### Execution waves
 ```

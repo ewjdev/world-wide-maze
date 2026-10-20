@@ -4,8 +4,11 @@
  * HUD chips while a lesson is on (steps, the mission in progress, the lock banner), and a notice when a lesson
  * couldn't be loaded. A picked file is read with `File.text()` and only its inert JSON is parsed (load.ts); it
  * never leaves the device.
+ *
+ * Phase 31 M5: a grown-up line says which child practice is saved for, with "Switch who's playing" (press and
+ * hold) when there are two or more children on this device.
  */
-import { spriteMarkup } from '@wwm/learning';
+import { avatarSvg, spriteMarkup } from '@wwm/learning';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useGame } from '../ui/GameApp.tsx';
@@ -75,6 +78,7 @@ export function LearningPanel() {
               </span>{' '}
               <span className="wwm-lpanel__desc">{lesson.level.description}</span>
             </p>
+            <PlayerLine />
             {picking && (
               <fieldset className="wwm-lpanel__levels" data-testid="learning-levels">
                 <legend>{t('learning.panel.levelsTitle')}</legend>
@@ -187,6 +191,37 @@ export function LearningPanel() {
         )}
       </div>
     </section>
+  );
+}
+
+/** Phase 31 M5: who practice is saved for (nothing shows when nobody is), and the held switch. */
+function PlayerLine() {
+  const [learning, view] = useLearning();
+  const { t } = useTranslation();
+  const player = view.player;
+  const theme = learning.lesson?.path.theme;
+  if (!player || !theme) return null;
+  return (
+    <div className="wwm-lpanel__player" data-testid="learning-player">
+      <span
+        className="wwm-lpanel__avatar"
+        aria-hidden="true"
+        // trusted renderer output: numbers, fixed colours and validated theme colours (avatars.ts)
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: avatarSvg writes no document text
+        dangerouslySetInnerHTML={{ __html: avatarSvg(theme, player.avatar, 26) }}
+      />
+      <span>{t('learning.player.saving', { name: player.nickname })}</span>
+      {view.canSwitch && (
+        <HoldButton
+          label={t('learning.player.switch')}
+          hint={t('learning.player.switchHint')}
+          holdKey="KeyW"
+          onDone={() => learning.switchPlayer()}
+          testId="learning-switch"
+          className="wwm-btn wwm-btn--small wwm-btn--ghost"
+        />
+      )}
+    </div>
   );
 }
 
