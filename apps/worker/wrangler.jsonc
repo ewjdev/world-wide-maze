@@ -73,7 +73,14 @@
     "DOCENT_MAX_TOKENS": "600",
     "DOCENT_LIMIT_PER_HOUR": "10",
     "DOCENT_CACHE_TTL_DAYS": "7",
-    "DOCENT_MOCK_DELAY_MS": "25"
+    "DOCENT_MOCK_DELAY_MS": "25",
+    // Phase 31 M4 lesson drafts (operator-only, /api/admin/lessons/*): "off" | "on". The provider follows the docent's
+    // rules (AI Gateway when configured, else the offline mock here). Daily limit = generation turns per 24 h.
+    "LESSON_DRAFTS": "on",
+    "LESSON_DRAFT_PROVIDER": "auto",
+    "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
+    "LESSON_DRAFT_MAX_TOKENS": "8000",
+    "LESSON_DRAFT_DAILY_LIMIT": "20"
     // Secrets (not vars): IP_HASH_SALT, ANTHROPIC_API_KEY. Locally: apps/worker/.dev.vars (see .dev.vars.example).
   },
 
@@ -115,14 +122,21 @@
       // Sliding-window counters (per-IP build limit) and the global browser-session semaphore.
       { "name": "BUDGET", "class_name": "Budget" },
       { "name": "LIMITER", "class_name": "Limiter" },
-      { "name": "JEV_CONTROL", "class_name": "JevControl" }
+      { "name": "JEV_CONTROL", "class_name": "JevControl" },
+      // Phase 31 M4: one Agents SDK agent per lesson draft (transcript and revisions), plus the draft index.
+      { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
     ]
   },
   "migrations": [
     { "tag": "v1", "new_sqlite_classes": ["Room"] },
     { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
     { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
-    { "tag": "v4", "new_sqlite_classes": ["Budget"] }
+    { "tag": "v4", "new_sqlite_classes": ["Budget"] },
+    { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] }
+  ],
+  // Phase 31 M4: generate → validate → repair (≤ 2) → ready for review, one instance per operator message.
+  "workflows": [
+    { "name": "wwm-lesson-draft", "binding": "LESSON_DRAFT", "class_name": "LessonDraftWorkflow" }
   ],
   // Retention sweep (task 9): daily at 03:17 UTC.
   "triggers": { "crons": ["17 */4 * * *"] },
@@ -187,7 +201,13 @@
         "DOCENT_MAX_TOKENS": "600",
         "DOCENT_LIMIT_PER_HOUR": "10",
         "DOCENT_CACHE_TTL_DAYS": "7",
-        "DOCENT_MOCK_DELAY_MS": "0"
+        "DOCENT_MOCK_DELAY_MS": "0",
+        // Phase 31 M4: off until the operator turns lesson drafts on (docs/education/lesson-drafts.md).
+        "LESSON_DRAFTS": "off",
+        "LESSON_DRAFT_PROVIDER": "auto",
+        "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
+        "LESSON_DRAFT_MAX_TOKENS": "8000",
+        "LESSON_DRAFT_DAILY_LIMIT": "20"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
       "d1_databases": [
@@ -213,14 +233,19 @@
           { "name": "BUILD_JOB", "class_name": "BuildJob" },
           { "name": "BUDGET", "class_name": "Budget" },
           { "name": "LIMITER", "class_name": "Limiter" },
-          { "name": "JEV_CONTROL", "class_name": "JevControl" }
+          { "name": "JEV_CONTROL", "class_name": "JevControl" },
+          { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
         ]
       },
       "migrations": [
         { "tag": "v1", "new_sqlite_classes": ["Room"] },
         { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
         { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
-        { "tag": "v4", "new_sqlite_classes": ["Budget"] }
+        { "tag": "v4", "new_sqlite_classes": ["Budget"] },
+        { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] }
+      ],
+      "workflows": [
+        { "name": "wwm-lesson-draft", "binding": "LESSON_DRAFT", "class_name": "LessonDraftWorkflow" }
       ],
       // Cron Triggers only run on production (never on Previews).
       "triggers": { "crons": ["17 */4 * * *"] },
@@ -269,7 +294,12 @@
           "DOCENT_MAX_TOKENS": "600",
           "DOCENT_LIMIT_PER_HOUR": "10",
           "DOCENT_CACHE_TTL_DAYS": "7",
-          "DOCENT_MOCK_DELAY_MS": "0"
+          "DOCENT_MOCK_DELAY_MS": "0",
+          "LESSON_DRAFTS": "off",
+          "LESSON_DRAFT_PROVIDER": "mock",
+          "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
+          "LESSON_DRAFT_MAX_TOKENS": "8000",
+          "LESSON_DRAFT_DAILY_LIMIT": "20"
         },
         "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-preview" }],
         "d1_databases": [
@@ -294,9 +324,18 @@
             { "name": "BUILD_JOB", "class_name": "BuildJob" },
             { "name": "BUDGET", "class_name": "Budget" },
             { "name": "LIMITER", "class_name": "Limiter" },
-            { "name": "JEV_CONTROL", "class_name": "JevControl" }
+            { "name": "JEV_CONTROL", "class_name": "JevControl" },
+            { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
           ]
-        }
+        },
+        // Previews keep lesson drafts off (LESSON_DRAFTS) and use a separate Workflow name.
+        "workflows": [
+          {
+            "name": "wwm-lesson-draft-preview",
+            "binding": "LESSON_DRAFT",
+            "class_name": "LessonDraftWorkflow"
+          }
+        ]
       }
     }
   }

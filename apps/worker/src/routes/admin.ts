@@ -6,6 +6,7 @@ import { budget } from '../budget-client.ts';
 import type { BudgetKind } from '../budget-policy.ts';
 import { Catalog, CatalogInputError } from '../catalog.ts';
 import { runCacheKey } from '../ids.ts';
+import { lessonDraftRoutes } from '../lesson-drafts/routes.ts';
 import { checkUrl } from '../policy/url-policy.ts';
 import { BodyTooLargeError, readJsonCapped } from '../security.ts';
 import { jevAdminRoutes } from './admin-jev.ts';
@@ -223,3 +224,4 @@ adminRoutes.post('/runs/:runId/refresh', async (c) => {
 });
 
 adminRoutes.route('/jev', jevAdminRoutes);
+adminRoutes.route('/lessons', lessonDraftRoutes); // Phase 31 M4: lesson drafts (LESSON_DRAFTS=on)

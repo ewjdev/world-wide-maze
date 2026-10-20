@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Standalone, readable learning pages for ages 4–6 and a parent customization workspace.",
+  "exports": {
+    "./render": "./src/render.ts"
+  },
   "scripts": {
     "generate": "node --experimental-strip-types scripts/generate.ts",
     "dev": "pnpm generate && vite --host 127.0.0.1 --port 5174",
