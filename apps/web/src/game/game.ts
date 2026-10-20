@@ -63,7 +63,7 @@ import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
-import { loadPortalPreviews, PORTAL_WINDOWS_ENABLED } from './portal-preview.ts';
+import { PORTAL_WINDOWS_ENABLED, PortalPreviews } from './portal-preview.ts';
 import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
@@ -389,6 +389,8 @@ export class Game {
   /** The capture service answers `/api/health` (probed once per session when a stage has portals). */
   #api: 'unknown' | 'online' | 'offline' = 'unknown';
   #apiProbe: Promise<void> | null = null;
+  /** Portal windows: the destination pictures of the loaded stage's link portals. */
+  readonly #previews = new PortalPreviews();
   /** The timer was running when the portal prompt paused it. */
   #portalTimer = false;
   #portalAt = 0;
@@ -686,6 +688,7 @@ export class Game {
 
   dispose(): void {
     this.#disposed = true;
+    this.#previews.stop();
     this.#cancelGhostPreparation();
     this.#ghostClient.dispose();
     this.#attractAbort?.abort();
@@ -1725,9 +1728,9 @@ export class Game {
     // Phase 22: draw the lesson's locks (done steps open, their gates used)
     if (learningRun) for (const id of this.learning.stageReady(got.stage)) this.#dismissedPortals.add(id);
     this.#applyPortalStates(got.stage);
-    // Portal windows (N): pictures of the destinations, behind the flag
+    // Portal windows (N): pictures of the destinations (or postcards), behind the flag
     if (PORTAL_WINDOWS_ENABLED)
-      loadPortalPreviews(
+      this.#previews.start(
         got.stage,
         (id, img) => this.#engine?.setPortalPreview(id, img),
         () => this.#stage() === got.stage && !this.#disposed,
@@ -2797,6 +2800,7 @@ export class Game {
       learning: this.learning.debug(),
       learningRun: this.#view.learningRun,
       api: this.#api,
+      portalPreviews: this.#previews.states(),
       engine: this.#engine?.stats() ?? null,
     };
   }

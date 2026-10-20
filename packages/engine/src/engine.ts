@@ -81,7 +81,7 @@ import {
   OPENING_SEC,
 } from './world/locks.ts';
 import { Particles } from './world/particles.ts';
-import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
+import { buildPortals, type PortalPreview, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
 import { makeStageImages } from './world/stage-images.ts';
 import {
@@ -168,10 +168,11 @@ export interface Engine {
   setPortalState(portalId: number, state: PortalState): void;
   /**
    * Portal windows (N; plans/portal-windows-execution.md): show `image` (its top square) inside portal `id`, seen
-   * through a ragged tear; `null` restores the vortex. Draws into the stage's preview atlas synchronously and never
-   * keeps `image`, so the caller may close it on return. No-op with no stage or an unknown id; reset by `loadStage`.
+   * through a ragged tear, or `'postcard'` (the host colour and monogram under a slow vortex); `null` restores the
+   * Phase 13 vortex. Draws into the stage's preview atlas synchronously and never keeps `image`, so the caller may
+   * close it on return. No-op with no stage or an unknown id; reset by `loadStage`.
    */
-  setPortalPreview(portalId: number, image: StageImage | null): void;
+  setPortalPreview(portalId: number, image: PortalPreview): void;
   /**
    * Phase 13 (N): travel through a portal. The ball spirals into the gate and shrinks away while the gate surges
    * and the camera glides up to it. Resolves when the ball is gone (≈ 1.6 s); the next `loadStage` resets it.
@@ -657,7 +658,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         goal = buildGoal(s.source.title, u, stageBin);
         goal.group.position.copy(goalWorld);
         stageRoot.add(goal.group);
-        portals = buildPortals(s, u, stageBin);
+        portals = buildPortals(s, u, stageBin, { reducedMotion });
         if (portals) stageRoot.add(portals.mesh);
 
         bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);

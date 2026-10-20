@@ -1,9 +1,15 @@
-/** Portal windows (N; plans/portal-windows-execution.md): the flag and the fixture picture source. */
+/** Portal windows (N; plans/portal-windows-execution.md): the flag, the fixture picture source and the loader. */
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { StageData } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
-import { pngSize, portalWindowsEnabled, previewablePortals, topSquare } from '../src/game/portal-preview.ts';
+import {
+  PortalPreviews,
+  pngSize,
+  portalWindowsEnabled,
+  previewablePortals,
+  topSquare,
+} from '../src/game/portal-preview.ts';
 
 const ROOT = resolve(import.meta.dirname, '../../..');
 
@@ -61,5 +67,93 @@ describe('previewable portals', () => {
 
   test('a stage without portals has nothing to show', () => {
     expect(previewablePortals({} as StageData)).toEqual([]);
+  });
+});
+
+describe('PortalPreviews (the per-stage loader)', () => {
+  const HUB = JSON.parse(
+    readFileSync(resolve(ROOT, 'fixtures/builder/portal-hub.normal.seed1.json'), 'utf8'),
+  ) as StageData;
+  const pic = (slug: string) => ({ slug }) as unknown as ImageBitmap;
+  const deferred = <T>() => {
+    let resolveIt!: (v: T) => void;
+    const promise = new Promise<T>((r) => {
+      resolveIt = r;
+    });
+    return { promise, resolve: resolveIt };
+  };
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+
+  test('every link portal gets the postcard at once; fixture targets then get their picture', async () => {
+    const shown: [number, unknown][] = [];
+    const previews = new PortalPreviews({ fixture: async (e) => pic(e.slug) });
+    previews.start(HUB, (id, p) => shown.push([id, p]));
+    expect(shown.filter(([, p]) => p === 'postcard').map(([id]) => id)).toEqual([0, 1, 2, 3]);
+    expect(previews.states()).toEqual({ 0: 'postcard', 1: 'looking-up', 2: 'looking-up', 3: 'looking-up' });
+    await flush();
+    expect(previews.states()).toEqual({ 0: 'postcard', 1: 'ready', 2: 'ready', 3: 'ready' });
+    expect(
+      shown.filter(([, p]) => p !== 'postcard').map(([id, p]) => [id, (p as { slug: string }).slug]),
+    ).toEqual([
+      [1, 'wikipedia-article'],
+      [2, 'govuk-card-grid'],
+      [3, 'example-sparse'],
+    ]);
+  });
+
+  test('a missing or failed picture leaves the postcard, without retrying', async () => {
+    let calls = 0;
+    const previews = new PortalPreviews({
+      fixture: async (e) => {
+        calls++;
+        if (e.slug === 'govuk-card-grid') throw new Error('decode failed');
+        return e.slug === 'example-sparse' ? null : pic(e.slug);
+      },
+    });
+    const shown: [number, unknown][] = [];
+    previews.start(HUB, (id, p) => shown.push([id, p]));
+    await flush();
+    expect(previews.states()).toEqual({ 0: 'postcard', 1: 'ready', 2: 'postcard', 3: 'postcard' });
+    expect(calls).toBe(3);
+    expect(shown.filter(([, p]) => p !== 'postcard')).toHaveLength(1);
+  });
+
+  test('a picture that arrives after the stage changed is dropped', async () => {
+    const d = deferred<ImageBitmap | null>();
+    const previews = new PortalPreviews({ fixture: () => d.promise });
+    const shown: [number, unknown][] = [];
+    previews.start(HUB, (id, p) => shown.push([id, p]));
+    previews.start({ ...HUB, portals: [] }, (id, p) => shown.push([id, p]));
+    d.resolve(pic('late'));
+    await flush();
+    expect(shown.filter(([, p]) => p !== 'postcard')).toEqual([]);
+    expect(previews.states()).toEqual({});
+  });
+
+  test('stop() drops pending pictures, and current() gates what is shown', async () => {
+    const d = deferred<ImageBitmap | null>();
+    const shown: unknown[] = [];
+    const a = new PortalPreviews({ fixture: () => d.promise });
+    a.start(HUB, (_, p) => shown.push(p));
+    a.stop();
+    const b = new PortalPreviews({ fixture: async (e) => pic(e.slug) });
+    b.start(
+      HUB,
+      (_, p) => shown.push(p),
+      () => false,
+    );
+    d.resolve(pic('late'));
+    await flush();
+    expect(shown.every((p) => p === 'postcard')).toBe(true);
+    expect(b.states()[1]).toBe('ready');
+  });
+
+  test('Pip gates are never touched', () => {
+    const shown: number[] = [];
+    new PortalPreviews({ fixture: async () => null }).start(
+      { portals: [{ id: 7, href: 'wwm-learning:sky-islands/1#4f9fd6' }] } as unknown as StageData,
+      (id) => shown.push(id),
+    );
+    expect(shown).toEqual([]);
   });
 });

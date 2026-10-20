@@ -38,6 +38,7 @@ export {
   isLearningHref,
   LEARNING_HREF,
   PORTAL_COLORS,
+  type PortalPreview,
   type PortalState,
   portalColor,
 } from './world/portals.ts';

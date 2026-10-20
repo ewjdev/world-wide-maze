@@ -1,8 +1,10 @@
-/** Portal windows (N; plans/portal-windows-execution.md): the preview atlas layout and the picture crop. */
+/** Portal windows (N; plans/portal-windows-execution.md): atlas layout, picture crop, postcard monogram, codes. */
 import { MAX_PORTALS } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
 import {
+  monogramLetter,
   PREVIEW_CELL,
+  PREVIEW_CODE,
   PREVIEW_COLS,
   PREVIEW_PAD,
   previewAtlasSize,
@@ -52,5 +54,19 @@ describe('preview crop', () => {
 
   test('a square picture is used whole', () => {
     expect(previewCrop(384, 384)).toEqual({ sx: 0, sy: 0, sw: 384, sh: 384 });
+  });
+});
+
+describe('postcard and codes', () => {
+  test('the monogram skips common subdomains', () => {
+    expect(monogramLetter('en.wikipedia.org')).toBe('W');
+    expect(monogramLetter('gov.uk')).toBe('G');
+    expect(monogramLetter('www2.example.com')).toBe('E');
+    expect(monogramLetter('')).toBe('?');
+  });
+
+  test('state.w codes are distinct, and 0 is the Phase 13 vortex', () => {
+    expect(PREVIEW_CODE.none).toBe(0);
+    expect(new Set(Object.values(PREVIEW_CODE)).size).toBe(3);
   });
 });

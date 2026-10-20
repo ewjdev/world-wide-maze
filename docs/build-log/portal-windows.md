@@ -39,3 +39,42 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
 - Postcards (monogram plus vortex) for portals without a picture. They keep the Phase 13 vortex for now.
 - The push-through, `TravelWindow` and the cut into the intro (M2). Previews of built sites (M3).
 - An iPhone frame-time measurement on the deployed preview, which is the M0 exit with the user.
+
+## M1: production window shader, postcards and the per-stage loader (2026-10-20)
+
+Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-windows/m1`, stacked on `portal-windows/m0`. The user signed off the M0 look on the iPhone first.
+
+### What was built
+- **Postcards (engine):**
+  - `setPortalPreview(id, image | 'postcard' | null)`. The `'postcard'` value draws the portal's atlas cell itself: the host colour as a radial field, the monogram, and the host name underneath.
+  - The shader shows it under a slow vortex, behind the same tear. `state.w` now codes 0 for the Phase 13 vortex, 1 for a picture and 2 for a postcard.
+  - The monogram rule is now `monogramLetter`, shared with the label card.
+- **States:**
+  - Offline and used portals grey the picture or postcard. Surge flares the tear and whitens the window.
+  - Under `prefers-reduced-motion`, the tear and the postcard vortex are frozen: still ragged, never moving.
+  - Pip gates are never given a preview, so they keep the Phase 13 gate.
+- **Loader (`PortalPreviews` in `apps/web/src/game/portal-preview.ts`):**
+  - **States:** one loader per loaded stage, with a state per link portal (`looking-up`, `ready`, `postcard`).
+  - **Order:** every link portal gets the postcard at once, so it never flashes the vortex first. Fixture targets then get their picture.
+  - **Failures:** a failure leaves the postcard, with no retry within the stage.
+  - **Stage changes:** `start` aborts the previous stage's work, `stop` runs on dispose, and `show` is also gated on the played stage still being current, because the title's attract stage reuses the engine.
+  - **Debugging:** `debugState().portalPreviews` exposes the states.
+- **Tests:**
+  - **Engine:** the monogram and the state codes.
+  - **Loader:** postcard-first ordering, ready, failure without retry, a late picture after a stage change, `stop` and `current()`, and Pip gates.
+  - **Browser:** a new `apps/web/test/portal-windows.e2e.test.ts` with its own Vite server and the flag on. On `portal-hub` it expects `{0: postcard, 1–3: ready}`; on Hacker News, all postcards; both under the draw-call budget with no page errors. It passes locally on WebGPU and in CI mode (`CI=true`: WebGL2 on SwiftShader, low tier). The flag-off `portal.e2e.test.ts` is unchanged and still passes.
+
+### Measured
+- **Hacker News, 6 portals:** the same view with the flag on and off gives **21 draw calls in both** (scene 20, post 1, WebGL2 at tier 3). With the flag on, all 6 portals are postcards.
+- No page errors on WebGPU, WebGL2 or reduced motion.
+
+### Decision: no separate low-tier tear
+The plan offered "one noise octave at low tiers". No quality tier lowers shader cost (tiers change render scale, FXAA, glow and environment maps). The tear is three `sin` terms per portal fragment, next to one texture fetch. Only reduced motion changes it, and it freezes the tear rather than simplifying it. Revisit if an iPhone frame-time measurement points at the portal pass.
+
+### Screenshots (reviewed) — `docs/build-log/assets/portal-windows/`
+- `m1-postcard-open.jpg`: the w3.org postcard with the API online (health mocked), shown in amber with a dark monogram under the slow vortex.
+- `m1-postcard-offline.jpg`: the same portal with `?offline=1`, greyed out.
+- `m1-window-reduced-motion.jpg`: the Wikipedia window under reduced motion.
+
+### Attempts that failed and why
+- None in this milestone.
