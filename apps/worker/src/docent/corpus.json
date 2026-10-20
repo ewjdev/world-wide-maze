@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "f2593ef1f0acef48",
+  "hash": "8e256aad3ba25a1f",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -33,6 +33,7 @@
     "docs/build-log/phase-06-device-test.md",
     "docs/build-log/phase-06.md",
     "docs/build-log/phase-07.md",
+    "docs/build-log/phase-08-mobile-layout.md",
     "docs/build-log/phase-08-playtest.md",
     "docs/build-log/phase-08.md",
     "docs/build-log/phase-09-builder-issues.md",
@@ -1488,6 +1489,23 @@
       "url": "/log#phase-07",
       "kind": "build-log",
       "text": "## Remaining defects / follow-ups\n- **The builder is a STUB.** It centres `handmade-simple` in each slice. Wire `@wwm/stage-builder` at the Phase 03 merge (a one-function change in `src/builder.ts`), then re-run `bench` and look at `build.<i>` against `cpu_ms`.\n- **Browser Run session reuse is unverified.** The local emulator limitation is described above. Check for `browser session reused` in the logs after enablement.\n- **Texture transfer dominates Browser Run timings.** If production shows the same, capture slice 0's texture first and store and emit `done` before the rest, or lower the WebP quality (85 today).\n- **Residual SSRF risks:**\n  - DNS-rebinding TOCTOU between our DoH check and Chromium's own resolver.\n  - `preconnect` and DNS prefetch.\n  - Pages that depend on Web Workers render without them.\n- **Chatty log line.** `@cloudflare/playwright` prints a `Websocket error … Network connection lost` object on every disconnect in local dev. It is harmless, but noisy.\n- **Phase 10's `curated` columns are assumed** to be `run_id, title, url, thumb, stars, position`. Align them at merge."
+    },
+    {
+      "id": "docs/build-log/phase-08-mobile-layout.md",
+      "title": "Mobile game layout repair — October 19, 2026 · Verification",
+      "path": "docs/build-log/phase-08-mobile-layout.md",
+      "url": "/log#phase-08-mobile-layout",
+      "kind": "build-log",
+      "text": "The site chooser after Start created a 469px horizontal scroll area in a 390px phone viewport. Its grid's intrinsic sizing widened the heading, URL form, lesson loader and practice card together.\n\nThe game shell now constrains menu grids to their available width. Phone layouts stack the Transform action and practice card, wrap long button labels, and keep touch targets at least 44px high. Menu scrolling starts below the persistent settings bar and respects safe-area insets. Settings and pause panels scroll in short viewports. Pause and Race panels sit above the joystick deck, and ranking name fields remain inside their panel in WebKit.\n\n## Verification\n- `CI=1 pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- `CI=1 WWM_LAYOUT_BROWSER=webkit pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- English and Japanese chooser layouts: 320×568, 390×844, 430×932, 768×1024, 844×390 and 1440×900.\n- Instructions, invalid URL feedback, built-in lesson loading, the last site's vertical scroll reachability, short-landscape settings, practice pause/resume, results, rankings and Race entry. Pause and Race action checks include hit testing above the joystick deck.\n- Final 390px WebKit chooser: `clientWidth = scrollWidth = 390`.\n- Workspace typechecks, web typecheck, web production build, changed-file Biome checks and `git diff --check` passed.\n- The mechanical design detector reported the existing colored thumbnail stripe; the incumbent visual treatment was retained.\n\nIn the initial shared checkout, `pnpm check` stopped at formatting errors in unrelated learning-package files being edited concurrently. A separate full-suite run encountered extension E2E timeouts and a Vite hot-reload context error during workspace edits; it was stopped after those failures. The PR branch was then based directly on `main`, excluding the unrelated lesson-planning commits; repository lint and the web typecheck pass on that branch. Full-suite acceptance remains subject to GitHub CI.\n\nThese are browser-emulation receipts, not physical iPhone/Android qualification. No production deployment was performed."
+    },
+    {
+      "id": "docs/build-log/phase-08-mobile-layout.md#saved-review-images",
+      "title": "Mobile game layout repair — October 19, 2026 › Saved review images",
+      "path": "docs/build-log/phase-08-mobile-layout.md",
+      "anchor": "saved-review-images",
+      "url": "/log#phase-08-mobile-layout",
+      "kind": "build-log",
+      "text": "## Saved review images\n- [Phone chooser](assets/mobile-layout/select-390.png)\n- [Phone practice card](assets/mobile-layout/practice-390.png)\n\nThe regression suite can save its full screenshot matrix with `WWM_LAYOUT_SHOTS=/tmp/wwm-mobile-layout` and can select WebKit with `WWM_LAYOUT_BROWSER=webkit` (requires the Playwright WebKit browser).\n\nEach run uses its own temporary Vite dependency cache, preventing concurrent browser suites from overwriting one another's optimized modules."
     },
     {
       "id": "docs/build-log/phase-08-playtest.md",
