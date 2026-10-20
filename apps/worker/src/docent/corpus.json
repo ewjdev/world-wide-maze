@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "843dbd3b876b881e",
+  "hash": "3daa3a1742c340eb",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -3594,12 +3594,21 @@
     },
     {
       "id": "docs/build-log/phase-31-m5.md#screenshots",
-      "title": "Phase 31 M5: the maze records the same learning evidence › Screenshots · Contract Change Request · Attempts that failed",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Screenshots · Contract Change Request",
       "path": "docs/build-log/phase-31-m5.md",
       "anchor": "screenshots",
       "url": "/log#phase-31-m5",
       "kind": "build-log",
-      "text": "## Screenshots\n| Desktop (1440 px) | Mobile (390 px) |\n| --- | --- |\n| ![Picker in the game, desktop](assets/phase-31/m5-picker-desktop.png) | ![Picker in the game, mobile](assets/phase-31/m5-picker-mobile.png) |\n\nTaken by `WWM_M5_SHOTS=1 pnpm vitest run apps/web/test/learning-evidence.e2e.test.ts`. The picker is over the building screen of `/play/practice?learn=compare-groups`. The first Pip has keyboard focus.\n\n## Contract Change Request\n**CCR-31-5 (proposed): share the avatar drawing.** Move `AVATAR_LOOKS` and `avatarSvg(theme, avatar, size, className?)` from `apps/education/src/profiles.ts` into `@wwm/learning` (for example `avatars.ts`, next to `AVATARS` in `sync.ts`). Both apps would import it; it's additive and needs no schema change. Until then, `apps/web/src/learning/avatars.ts` is a port with a comment, and `test/learning-evidence.test.ts` fails if the two drift.\n\n## Attempts that failed\n- After an `await`, TypeScript still narrowed `#asking` to `null` from an earlier check (`Property 'done' does not exist on type 'never'`). A small getter reads it fresh.\n- Biome's accessibility rules rejected a `role=\"group\"` wrapper with a key handler. The arrow and Tab handling moved onto the avatar buttons.\n- In unit tests, fake-indexeddb needs `IDBKeyRange` stubbed as well as `indexedDB`. Without it, `seenItems` failed and was caught, so fresh examples were silently drawn for an empty `seen` set. The tests now stub both.\n- Sorting events by their UUIDv7 id didn't give play order: with the test clock pinned they share a millisecond, and the random bits decide. Tests sort by round order.\n- `page.evaluate` with a dynamic `import()` was rewritten by Vitest (`__vite_ssr_dynamic_import__ is not defined`). The e2e passes the store import as a script string.\n- Leaving play through the title screen didn't come back through \"pairing\" as expected. The e2e uses the pause menu's \"another site\" instead.\n- The existing e2e \"a downloaded learning page…\" expected `count-three`'s only gate to lead to the finale. With two fresh examples it has three steps; the test now plays `fresh-1` and `fresh-2` at gates 2 and 3."
+      "text": "## Screenshots\n| Desktop (1440 px) | Mobile (390 px) |\n| --- | --- |\n| ![Picker in the game, desktop](assets/phase-31/m5-picker-desktop.png) | ![Picker in the game, mobile](assets/phase-31/m5-picker-mobile.png) |\n\nTaken by `WWM_M5_SHOTS=1 pnpm vitest run apps/web/test/learning-evidence.e2e.test.ts`. The picker is over the building screen of `/play/practice?learn=compare-groups`. The first Pip has keyboard focus.\n\n## Contract Change Request\n**CCR-31-5 (proposed): share the avatar drawing.** Move `AVATAR_LOOKS` and `avatarSvg(theme, avatar, size, className?)` from `apps/education/src/profiles.ts` into `@wwm/learning` (for example `avatars.ts`, next to `AVATARS` in `sync.ts`). Both apps would import it; it's additive and needs no schema change. Until then, `apps/web/src/learning/avatars.ts` is a port with a comment, and `test/learning-evidence.test.ts` fails if the two drift."
+    },
+    {
+      "id": "docs/build-log/phase-31-m5.md#attempts-that-failed",
+      "title": "Phase 31 M5: the maze records the same learning evidence › Attempts that failed",
+      "path": "docs/build-log/phase-31-m5.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31-m5",
+      "kind": "build-log",
+      "text": "## Attempts that failed\n- After an `await`, TypeScript still narrowed `#asking` to `null` from an earlier check (`Property 'done' does not exist on type 'never'`). A small getter reads it fresh.\n- Biome's accessibility rules rejected a `role=\"group\"` wrapper with a key handler. The arrow and Tab handling moved onto the avatar buttons.\n- In unit tests, fake-indexeddb needs `IDBKeyRange` stubbed as well as `indexedDB`. Without it, `seenItems` failed and was caught, so fresh examples were silently drawn for an empty `seen` set. The tests now stub both.\n- Sorting events by their UUIDv7 id didn't give play order: with the test clock pinned they share a millisecond, and the random bits decide. Tests sort by round order.\n- `page.evaluate` with a dynamic `import()` was rewritten by Vitest (`__vite_ssr_dynamic_import__ is not defined`). The e2e passes the store import as a script string.\n- Leaving play through the title screen didn't come back through \"pairing\" as expected. The e2e uses the pause menu's \"another site\" instead.\n- The first full `pnpm check` failed one unit test. Its three events shared one pinned minute, so `objectiveProgress`'s latest round was chosen by random id bits, and sometimes it was the helped r1. That test's wall clock now moves with the test clock.\n- The second `pnpm check` found the docent corpus stale after the new docs. `pnpm docent:index` regenerated it.\n- The existing e2e \"a downloaded learning page…\" expected `count-three`'s only gate to lead to the finale. With two fresh examples it has three steps; the test now plays `fresh-1` and `fresh-2` at gates 2 and 3."
     },
     {
       "id": "docs/build-log/phase-31-m5.md#manual-interventions",
@@ -3626,7 +3635,7 @@
       "anchor": "test-evidence",
       "url": "/log#phase-31-m5",
       "kind": "build-log",
-      "text": "- **No children:** fresh rounds play, nothing is saved, and the store stays empty.\n  - **Two children, desktop and 390 px:** the picker shows during building. The maze waits, avatars are sorted by nickname, targets are at least 120 px, and focus is on the first Pip. A child picks by keyboard (desktop) or tap (mobile), the events belong to them, and a new tab asks again. No request URL or body carries a nickname or profile id.\n  - **Grown-up line:** no line before a pick; after one, \"Saving practice for Leo on this device.\" A quick tap on the switch does nothing; a 2 s hold shows the picker, and picking Mia updates the line and the tab's pick.\n- `pnpm vitest run apps/web/test/learning.e2e.test.ts`: 5 tests pass, including the updated `count-three` file test.\n- `pnpm check`: see the hand-off. Green after `pnpm format`."
+      "text": "- **No children:** fresh rounds play, nothing is saved, and the store stays empty.\n  - **Two children, desktop and 390 px:** the picker shows during building. The maze waits, avatars are sorted by nickname, targets are at least 120 px, and focus is on the first Pip. A child picks by keyboard (desktop) or tap (mobile), the events belong to them, and a new tab asks again. No request URL or body carries a nickname or profile id.\n  - **Grown-up line:** no line before a pick; after one, \"Saving practice for Leo on this device.\" A quick tap on the switch does nothing; a 2 s hold shows the picker, and picking Mia updates the line and the tab's pick.\n- `pnpm vitest run apps/web/test/learning.e2e.test.ts`: 5 tests pass, including the updated `count-three` file test.\n- `pnpm check` after `pnpm format` and `pnpm docent:index`: green, with 159 test files passed and 6 skipped, and 1726 tests passed and 53 skipped."
     },
     {
       "id": "docs/build-log/phase-31-m5.md#remaining-defects",

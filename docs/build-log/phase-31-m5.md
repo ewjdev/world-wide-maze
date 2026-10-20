@@ -47,6 +47,8 @@ Taken by `WWM_M5_SHOTS=1 pnpm vitest run apps/web/test/learning-evidence.e2e.tes
 - Sorting events by their UUIDv7 id didn't give play order: with the test clock pinned they share a millisecond, and the random bits decide. Tests sort by round order.
 - `page.evaluate` with a dynamic `import()` was rewritten by Vitest (`__vite_ssr_dynamic_import__ is not defined`). The e2e passes the store import as a script string.
 - Leaving play through the title screen didn't come back through "pairing" as expected. The e2e uses the pause menu's "another site" instead.
+- The first full `pnpm check` failed one unit test. Its three events shared one pinned minute, so `objectiveProgress`'s latest round was chosen by random id bits, and sometimes it was the helped r1. That test's wall clock now moves with the test clock.
+- The second `pnpm check` found the docent corpus stale after the new docs. `pnpm docent:index` regenerated it.
 - The existing e2e "a downloaded learning page…" expected `count-three`'s only gate to lead to the finale. With two fresh examples it has three steps; the test now plays `fresh-1` and `fresh-2` at gates 2 and 3.
 
 ## Manual interventions
@@ -69,7 +71,7 @@ None.
   - **Two children, desktop and 390 px:** the picker shows during building. The maze waits, avatars are sorted by nickname, targets are at least 120 px, and focus is on the first Pip. A child picks by keyboard (desktop) or tap (mobile), the events belong to them, and a new tab asks again. No request URL or body carries a nickname or profile id.
   - **Grown-up line:** no line before a pick; after one, "Saving practice for Leo on this device." A quick tap on the switch does nothing; a 2 s hold shows the picker, and picking Mia updates the line and the tab's pick.
 - `pnpm vitest run apps/web/test/learning.e2e.test.ts`: 5 tests pass, including the updated `count-three` file test.
-- `pnpm check`: see the hand-off. Green after `pnpm format`.
+- `pnpm check` after `pnpm format` and `pnpm docent:index`: green, with 159 test files passed and 6 skipped, and 1726 tests passed and 53 skipped.
 
 ## Remaining defects
 - The paired phone can't answer the picker; a grown-up or the child taps the screen or uses the keyboard. The gate card itself still works by tilt.
