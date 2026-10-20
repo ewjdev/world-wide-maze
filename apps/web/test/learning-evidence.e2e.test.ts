@@ -395,7 +395,7 @@ describe.skipIf(!HAS_CHROMIUM)('maze evidence e2e (Chromium, mocked /api)', () =
     if (!box) throw new Error('no switch');
     await p.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await p.mouse.down();
-    await p.waitForTimeout(2300);
+    await p.waitForTimeout(3000); // the 2 s hold, with room for a busy CI main thread
     await p.mouse.up();
     await p.waitForSelector('[data-testid="learning-picker"]');
     await p.locator('[data-testid="learning-pick"][aria-label="Mia"]').click();

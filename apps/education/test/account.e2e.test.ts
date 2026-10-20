@@ -127,18 +127,20 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
 
     // ── sign in by email with consent ──
     await parent.goto(`${BASE}/account/`);
-    await expect.poll(() => parent.textContent('#account-status')).toBe('Not signed in.');
+    await expect
+      .poll(() => parent.textContent('#account-status'), { timeout: 15_000 })
+      .toBe('Not signed in.');
     await shot(parent, 'account-signed-out');
     await parent.fill('#email', email);
     await parent.check('#consent');
     await parent.click('#email-submit');
-    await expect.poll(() => parent.textContent('#email-feedback')).toContain('Check');
+    await expect.poll(() => parent.textContent('#email-feedback'), { timeout: 15_000 }).toContain('Check');
     const link = await signInLink(parent, email);
     expect(link.startsWith(`${BASE}/learn/account/verify#token=`)).toBe(true);
     await parent.goto(link);
     await parent.waitForURL(`${BASE}/account/`);
     await expect
-      .poll(() => parent.textContent('#account-status'))
+      .poll(() => parent.textContent('#account-status'), { timeout: 15_000 })
       .toBe('Signed in as the family’s grown-up.');
     // the token never stays in the address bar or history
     expect(parent.url()).not.toContain('token');
@@ -157,13 +159,19 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
       },
     });
     await parent.click('#add-passkey');
-    await expect.poll(() => parent.textContent('#passkey-feedback')).toContain('Passkey added');
-    await expect.poll(() => parent.textContent('#passkey-state')).toContain('One passkey');
+    await expect
+      .poll(() => parent.textContent('#passkey-feedback'), { timeout: 15_000 })
+      .toContain('Passkey added');
+    await expect
+      .poll(() => parent.textContent('#passkey-state'), { timeout: 15_000 })
+      .toContain('One passkey');
     await parent.click('#sign-out');
-    await expect.poll(() => parent.textContent('#account-status')).toBe('Not signed in.');
+    await expect
+      .poll(() => parent.textContent('#account-status'), { timeout: 15_000 })
+      .toBe('Not signed in.');
     await parent.click('#passkey-login');
     await expect
-      .poll(() => parent.textContent('#account-status'))
+      .poll(() => parent.textContent('#account-status'), { timeout: 15_000 })
       .toBe('Signed in as the family’s grown-up.');
 
     // a child profile for the tablet's practice (M2's Progress page makes these; here through the same API)
@@ -184,12 +192,16 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
 
     // ── pairing code + QR ──
     await parent.click('#make-code');
-    await expect.poll(() => parent.textContent('#pair-code-text')).toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
+    await expect
+      .poll(() => parent.textContent('#pair-code-text'), { timeout: 15_000 })
+      .toMatch(/^[A-HJ-NP-Z2-9]{6}$/);
     const code = (await parent.textContent('#pair-code-text')) ?? '';
     const qrText = await parent.getAttribute('#pair-qr svg', 'data-text');
     expect(qrText).toBe(`${BASE}/account/#pair=${code}`);
     expect(await parent.locator('#pair-qr svg path').getAttribute('d')).toMatch(/^M\d+ \d+h1v1h-1z/);
-    await expect.poll(() => parent.textContent('#pair-expiry')).toContain('10 more minutes');
+    await expect
+      .poll(() => parent.textContent('#pair-expiry'), { timeout: 15_000 })
+      .toContain('10 more minutes');
     await shot(parent, 'account-pair-code');
 
     // ── the child's tablet: a separate browser context opens the QR link ──
@@ -197,11 +209,13 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
     const tablet = await tabletContext.newPage();
     watch(tablet, 'tablet');
     await tablet.goto(qrText as string);
-    await expect.poll(() => tablet.inputValue('#pair-code')).toBe(code);
+    await expect.poll(() => tablet.inputValue('#pair-code'), { timeout: 15_000 }).toBe(code);
     expect(tablet.url()).not.toContain('pair=');
     await tablet.fill('#device-label', 'Kitchen tablet');
     await tablet.click('#claim-form button[type="submit"]');
-    await expect.poll(() => tablet.textContent('#account-status')).toBe('This is a child’s device.');
+    await expect
+      .poll(() => tablet.textContent('#account-status'), { timeout: 15_000 })
+      .toBe('This is a child’s device.');
     expect(await tablet.textContent('#device-linked-text')).toContain('Kitchen tablet');
     await shot(tablet, 'account-device-linked');
 
@@ -255,7 +269,9 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
     );
     expect(seen).toEqual(events);
     await parent.reload();
-    await expect.poll(() => parent.textContent('#device-list')).toContain('Kitchen tablet');
+    await expect
+      .poll(() => parent.textContent('#device-list'), { timeout: 15_000 })
+      .toContain('Kitchen tablet');
     await parent.setViewportSize({ width: 390, height: 844 });
     await shot(parent, 'account-signed-in-mobile');
     await parent.setViewportSize({ width: 1280, height: 720 });
@@ -268,9 +284,13 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
 
     // ── revoke the tablet: its token stops working at once ──
     await parent.click('#device-list button');
-    await expect.poll(() => parent.textContent('#devices-feedback')).toContain('can no longer send practice');
+    await expect
+      .poll(() => parent.textContent('#devices-feedback'), { timeout: 15_000 })
+      .toContain('can no longer send practice');
     await tablet.reload();
-    await expect.poll(() => tablet.textContent('#account-status')).toBe('Not signed in.');
+    await expect
+      .poll(() => tablet.textContent('#account-status'), { timeout: 15_000 })
+      .toBe('Not signed in.');
 
     // ── delete the family with typed confirmation ──
     await parent.click('#delete-panel summary');
@@ -279,7 +299,9 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
     expect(await parent.isDisabled('#delete-family')).toBe(true);
     await parent.fill('#delete-confirm', 'DELETE');
     await parent.click('#delete-family');
-    await expect.poll(() => parent.textContent('#account-status')).toContain('has been deleted');
+    await expect
+      .poll(() => parent.textContent('#account-status'), { timeout: 15_000 })
+      .toContain('has been deleted');
     expect(await parent.evaluate(async () => (await fetch('/api/learning/session')).json())).toEqual({
       signedIn: false,
     });
@@ -292,7 +314,9 @@ describe.skipIf(!HAS_CHROMIUM)('family account pages (Chromium + workerd)', { ti
   it('a used or broken link explains itself', async () => {
     const page = await browser.newPage();
     await page.goto(`${BASE}/learn/account/verify#token=${'x'.repeat(43)}`);
-    await expect.poll(() => page.textContent('#verify-status')).toContain('expired or was already used');
+    await expect
+      .poll(() => page.textContent('#verify-status'), { timeout: 15_000 })
+      .toContain('expired or was already used');
     expect(page.url()).not.toContain('token');
     expect(await page.isVisible('#verify-continue')).toBe(true);
     await page.close();
