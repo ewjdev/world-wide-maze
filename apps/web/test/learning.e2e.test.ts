@@ -41,6 +41,7 @@ type Dbg = {
     active: boolean;
     activityId: string | null;
     level: string | null;
+    rounds: string[];
     gate: {
       number: number;
       round: string;
@@ -138,6 +139,17 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
       id,
     );
   const text = async (p: Page, testId: string) => (await p.textContent(`[data-testid="${testId}"]`)) ?? '';
+  /** The open card's answer (fresh examples are drawn per play-through). */
+  const gateAnswer = (p: Page) =>
+    p.evaluate(() =>
+      String(
+        (
+          window as unknown as {
+            __wwmGame: { learning: { getView(): { gate: { round: { answer: unknown } } | null } } };
+          }
+        ).__wwmGame.learning.getView().gate?.round.answer,
+      ),
+    );
   const game = <T>(p: Page, fn: string, ...args: number[]) =>
     p.evaluate(
       ([f, a]) => {
@@ -292,7 +304,24 @@ describe.skipIf(!HAS_CHROMIUM)('Pip gates e2e (Chromium, mocked /api)', () => {
     await expect
       .poll(() => text(page, 'lgate-feedback'), { timeout: 5_000 })
       .toBe('One, two, three. This group has three gems!');
-    // the only step: the same card goes on to Pip's finale, then rolls on
+    // Phase 31 M5: two fresh examples follow at gates 2 and 3 (drawn for this play-through, answers vary)
+    expect(await page.getAttribute('[data-testid="lgate-rollon"]', 'data-next')).toBe('roll-on');
+    expect((await state(page)).learning.rounds).toEqual(['r1', 'fresh-1', 'fresh-2']);
+    await page.click('[data-testid="lgate-rollon"]');
+    await page.waitForSelector('[data-testid="learning-gate"]', { state: 'detached' });
+    for (const [portal, round] of [
+      [1, 'fresh-1'],
+      [2, 'fresh-2'],
+    ] as const) {
+      expect(await roll(page, portal)).toBe(true);
+      await page.waitForSelector(`[data-testid="lgate-card"][data-round="${round}"]`, { timeout: 15_000 });
+      await page.click(`[data-testid="lgate-choice-${await gateAnswer(page)}"]`);
+      if (round === 'fresh-1') {
+        await page.click('[data-testid="lgate-rollon"]');
+        await page.waitForSelector('[data-testid="learning-gate"]', { state: 'detached' });
+      }
+    }
+    // the last step: the same card goes on to Pip's finale, then rolls on
     expect(await page.getAttribute('[data-testid="lgate-rollon"]', 'data-next')).toBe('more');
     await page.click('[data-testid="lgate-rollon"]');
     await page.waitForSelector('[data-testid="learning-gate"][data-mode="done"]');
