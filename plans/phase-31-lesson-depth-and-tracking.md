@@ -1,6 +1,6 @@
 # Phase 31: Lesson depth and parent progress tracking
 
-**Status:** Planned on 2026-10-19 with the owner. M0 (item-bank spike) is done; M1 onward is not started. Contract changes below are proposals (CCR-31-1 to CCR-31-4) awaiting orchestrator approval.
+**Status:** Planned on 2026-10-19 with the owner. M0 (item-bank spike) and M1 (`@wwm/learning` objectives, banks, generators, evidence and progress) are done. The owner approved starting M1 on 2026-10-19, which applied CCR-31-1 and CCR-31-2. CCR-31-3 (accounts and sync API) and CCR-31-4 (authoring agent) remain proposals.
 **Audience:** Children aged 4–6 playing with a grown-up, and the grown-ups who follow their progress.
 **Platform:** Cloudflare only (Workers, Durable Objects, D1, Workflows, Agents SDK, AI Gateway, Email Service, Turnstile, Access). Vercel-based ideas, such as fx0/libfx, are ported to Cloudflare primitives, not adopted.
 
@@ -34,10 +34,11 @@ Non-goals: scores or grades shown to children, speed rewards, speech recognition
 
 Additive to the `wwm-learning/0.3` reader, following the baseline 3.1.0 precedent: older strict readers reject the new fields rather than ignoring them. Baseline revision 3.2.0.
 
-- `path.objectives[]`: `{ id, statement, domain }`. An objective is the unit of tracking. Activities keep their prose `objective`; each round gains an optional `objective` id, which defaults to the activity's first objective.
+- `path.objectives[]`: `{ id, statement }`. An objective is the unit of tracking. Activities keep their prose `objective` and gain `objectives` (ids, 1–4). Each round gains an optional `objective` id, which defaults to the activity's first objective.
 - `path.banks[]`: `{ objective, items: Round[] }` for open-vocabulary objectives (at most 24 items each), or `{ objective, generator: { kind, params } }` for parametric ones. Generated rounds come from shared pure functions in `@wwm/learning`, seeded as overview §7 requires, so every consumer draws the same round from the same seed (like `layoutGroup`).
-- A new level step: `{ fresh: <objectiveId>, count: 1–3 }`. The consumer draws items the profile hasn't seen yet; without a profile, it draws by session seed. A game that can't honour it excludes the level through `playableLevels`.
-- Objective checks (the spike's spelling, compare and colour checks, extended) move from `tools/lesson-draft` into `@wwm/learning`. Hand-written, generated and model-written rounds all pass them.
+- `activity.fresh: { objective, count: 1–3 }`. `expandActivity()` draws that many items the profile hasn't seen (by item hash) and inserts them as rounds `fresh-1…` after the required rounds and before any bonus. The result is an ordinary `Activity` (up to 8 written rounds plus 3 fresh), so `step()`, scripts, browser-speech fallback and levels with `steps: 'rounds'` work unchanged. Explicit level step lists don't include fresh rounds. *Changed in M1 from the earlier level-step proposal, so the lesson page gets fresh examples without levels.*
+- Baseline 3.2.0 declares one objective per activity (named after it, pending educator grouping) and generated banks for `count-three`, `count-five`, `compare-groups` and `spanish-colors`. No activity asks for `fresh` until M2, when the lesson page plays them.
+- Objective checks (`roundIssues`, `checks.ts`) are enforced by the document schema for every round and bank item. They cover spoken counts on compare and difference rounds, completed missing-letter words, Spanish colour words and Spanish number words. All baseline rounds pass.
 - **Content hash:** canonical JSON SHA-256 (first 32 hex characters) of each round. Evidence refers to it, which meets the html-contract prerequisite for cross-device progress: a family fork or bank edit is never silently treated as the same item.
 - Size: the portable HTML stays within the 200 KB bound. Generators are declared, not expanded.
 
@@ -57,11 +58,11 @@ interface LearningEvidence {
   item: string;          // round content hash
   source: 'lesson' | 'bank' | 'generator';
   fresh: boolean;        // first time this profile met this item
-  outcome: 'first-try' | 'after-retry' | 'shown' | 'skipped';
-  helpLevel: 0 | 1 | 2 | 3;  // highest hint step used
+  outcome: 'first-try' | 'after-retry';
+  helpLevel: 0 | 1 | 2 | 3;  // highest hint step used; 3 = worked example
   surface: 'lesson' | 'maze';
   input: InputMode;
-  durationBucket: 'lt10s' | 'lt30s' | 'lt2m' | 'ge2m';
+  duration: 'lt10s' | 'lt30s' | 'lt2m' | 'ge2m';
 }
 ```
 
@@ -75,8 +76,8 @@ There's no free text, audio, IP, URL, device fingerprint or child name. Evidence
 |---|---|---|
 | Not started | No events | "Not tried yet" |
 | Practising | Any event | "Practising" |
-| Getting there with help | Correct after a strategy or worked-example hint, or after a retry | "Getting there with help" |
-| Got it on new examples | First-try correct with help ≤ 1 on 2+ fresh items, on 2+ different days | "Got it on new examples" |
+| Getting there with help | The latest round needed a retry, the strategy or the worked example | "Getting there with help" |
+| Got it on new examples | First-try correct with help ≤ 1 on 2+ fresh items, on 2+ different days in the family's time zone | "Got it on new examples" |
 
 There's no percentage, score or ranking. The page states that this reflects practice, not an assessment. Listen-dependent rounds (spelling with real-word distractors, Spanish practice) are labelled as listening practice. Each state links to the activity's `offlineActivity` as "Try together".
 
@@ -153,7 +154,7 @@ Agent tools: the schema validator and `playIssues()`, the objective checks, `por
 | | Deliverable | Gate |
 |---|---|---|
 | M0 | Item-bank spike (`tools/lesson-draft`) | Done 2026-10-19; see evidence |
-| M1 | CCR-31-1/2 in `@wwm/learning`: objectives, banks, `fresh` step, objective checks, generators for compare, difference, count and colour, evidence and `objectiveProgress()` | Unit tests: generator determinism, every generated round passes the checks, progress-rule tables. `pnpm check` green |
+| M1 | CCR-31-1/2 in `@wwm/learning`: objectives, banks, `fresh`, objective checks, generators for compare, difference, count and colour, evidence and `objectiveProgress()` | Done 2026-10-19: `test/depth.test.ts` covers generator determinism and layout fit, checks on every generated round, fresh drawing, evidence and progress rules |
 | M2 | Local tracking: IndexedDB evidence and outbox, lesson page emits evidence, profile picker, parent Progress page (local) | Browser e2e on desktop and mobile Chromium. No change to child-surface screenshots except the picker |
 | M3 | Accounts and sync: D1 database, `FamilyRecords` DO, passkey and magic link, pairing, export and delete, Turnstile | Worker integration tests in workerd (dedupe, revocation, cross-family isolation, deletion completeness). Privacy review recorded |
 | M4 | Authoring agent: Agents SDK + Workflow, review-queue integration | One open-vocabulary bank (spelling) approved through the workbench end to end |

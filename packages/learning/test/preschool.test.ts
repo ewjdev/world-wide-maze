@@ -94,7 +94,7 @@ describe('five preschool lessons', () => {
     const restored = applyDraft(baselinePath, old);
     expect(restored.activities).toHaveLength(11);
     expect(restored.activities[0]?.introduction).toBe('Our adventure.');
-    expect(restored.activities.slice(6)).toEqual(preschoolActivities);
+    expect(restored.activities.slice(6)).toEqual(baselinePath.activities.slice(6));
     expect(() => applyDraft(baselinePath, { ...old, baselineVersion: '3.1.0' })).toThrow();
   });
 });

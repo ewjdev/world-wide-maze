@@ -1,7 +1,11 @@
+export * from './banks.ts';
 export * from './baseline.ts';
 export * from './bridge-runtime.ts';
 export * from './checkpoint.ts';
+export * from './checks.ts';
+export * from './evidence.ts';
 export * from './forks.ts';
+export * from './generators.ts';
 export * from './layout.ts';
 export { LEGACY_VERSION } from './legacy.ts';
 export * from './lesson-v04.ts';

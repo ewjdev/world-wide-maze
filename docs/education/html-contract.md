@@ -138,3 +138,47 @@ How `apps/education` applies 0.3. This describes one consumer; it doesn't change
 ## Baseline revision 3.1.0: preschool language and spelling
 
 The `wwm-learning/0.3` schema now accepts `language` and `literacy` activity domains, `rounds[].practice: { text, language }` (`en-US` or `es-ES`), a choose round’s optional `stimulusText` (24 characters maximum; mutually exclusive with picture stimulus), and text-only options (`tokens: []`). Spanish practice is delivered separately from English instruction and never through an English fallback voice. The existing recording manifest contains English clips only. See [preschool lessons](preschool-lessons.md) for individual HTML packs and compatibility details.
+
+## Baseline revision 3.2.0: objectives, fresh examples and evidence (Phase 31, CCR-31-1/2)
+
+`wwm-learning/0.3` gains optional fields. As with 3.1.0, older strict readers reject them rather than silently dropping them. See [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md).
+
+### New fields
+
+| Field | Meaning |
+| --- | --- |
+| `objectives[]` | `{ id, statement }`. The unit of progress a grown-up sees. |
+| `activities[].objectives` | Objective ids the activity practises (1–4). The first is each round's default. |
+| `rounds[].objective` | The objective this round gives evidence for. It must be one of the activity's. |
+| `banks[]` | Fresh examples for one objective, at most one bank per objective. A bank is either `{ objective, items }` (1–24 reviewed plain rounds) or `{ objective, generator }`. |
+| `activities[].fresh` | `{ objective, count: 1–3 }`. The objective must be the activity's and must have a bank. |
+
+Generators are `compare`, `difference`, `count` and `spanish-color`. The document declares only the spec; every consumer runs the same pure `generateRound(spec, seed, id)`, so the same seed draws the same picture.
+
+### Objective checks
+
+`roundIssues()` is part of validation for every round and bank item:
+- Counts spoken in the worked example and success line must be on the islands.
+- A missing-letter word, once completed, must be the spoken word.
+- A Spanish colour or number word must match the answer.
+
+### Playing fresh examples
+
+`expandActivity(path, activity, { seed, seen })` returns an ordinary activity:
+- Rounds `fresh-1…` are inserted after the required rounds and before any bonus.
+- The child's unseen items are preferred; `seen` holds item hashes.
+- It also returns each round's origin: objective, source, item hash, and whether the item was fresh.
+
+An item is `roundHash(round)`: SHA-256 over what the child sees and hears, without ids or play settings. A family fork or bank edit therefore never counts as the same item.
+
+### Evidence and progress
+
+- **Evidence:** `roundEvidence()` makes one strict `LearningEvidence` event per solved round. It records the objective, item, source, freshness, first try or retry, hint level, surface, input and a duration bucket, all at minute precision. It holds no free text, name or device detail, and is never sent to analytics.
+- **Progress:** `objectiveProgress(events, objectives, { timeZone })` returns `not-started`, `practising`, `with-help` or `got-it` per objective, using the proposed `PROGRESS_RULES`, which still need educator review.
+
+### Baseline 3.2.0 content
+
+- **Objectives:** one per activity, named after it.
+- **Banks:** generated banks for `count-three`, `count-five`, `compare-groups` and `spanish-colors`.
+- **Fresh examples:** no activity requests them yet; the lesson page will play them in M2.
+- **Family drafts:** drafts made against 3.1.0 apply unchanged.

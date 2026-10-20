@@ -222,7 +222,8 @@ export const preschoolActivities: Activity[] = [
   },
 ];
 
-function colorRound(
+/** A "hear the Spanish colour, find the shape" round; also used by the `spanish-color` generator. */
+export function colorRound(
   id: string,
   text: string,
   color: Token['color'],

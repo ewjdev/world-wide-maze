@@ -1,4 +1,11 @@
-import { type Activity, type GemGroup, LEARNING_VERSION, parseLearningPath, type Token } from './schema.ts';
+import {
+  type Activity,
+  type Bank,
+  type GemGroup,
+  LEARNING_VERSION,
+  parseLearningPath,
+  type Token,
+} from './schema.ts';
 import { skyIslands } from './theme.ts';
 import manifest from './voice-manifest.json' with { type: 'json' };
 import './migrate.ts';
@@ -381,10 +388,26 @@ const activities: Activity[] = [
 
 const voice = manifest.voiceId ? { provider: 'elevenlabs' as const, ...manifest } : undefined;
 
+const allActivities = [...activities, ...preschoolActivities];
+/**
+ * Phase 31 (3.2.0): one objective per activity for now, named after it, until educator review groups them.
+ * Parametric objectives get generated banks; activities don't ask for fresh examples until a consumer plays them.
+ */
+const objectives = allActivities.map((activity) => ({ id: activity.id, statement: activity.objective }));
+const banks: Bank[] = [
+  { objective: 'count-three', generator: { kind: 'count', targets: [3], options: 3 } },
+  { objective: 'count-five', generator: { kind: 'count', targets: [5], options: 3 } },
+  { objective: 'compare-groups', generator: { kind: 'compare', max: 6, same: true, trick: true } },
+  {
+    objective: 'spanish-colors',
+    generator: { kind: 'spanish-color', words: ['rojo', 'azul', 'verde', 'amarillo'], options: 3 },
+  },
+];
+
 export const baselinePath = parseLearningPath({
   format: LEARNING_VERSION,
   id: 'little-discoveries',
-  version: '3.1.0',
+  version: '3.2.0',
   title: 'Little discoveries',
   description:
     'Count gems. Spot a shape. Try Spanish and build little words. Eleven small adventures with Pip across the sky islands, including five new lessons for ages 4–5.',
@@ -395,5 +418,7 @@ export const baselinePath = parseLearningPath({
   theme: skyIslands,
   play: { shuffle: 'positions', input: ['tap', 'arrows', 'tilt'] },
   ...(voice ? { voice } : {}),
-  activities: [...activities, ...preschoolActivities],
+  activities: allActivities.map((activity) => ({ ...activity, objectives: [activity.id] })),
+  objectives,
+  banks,
 });

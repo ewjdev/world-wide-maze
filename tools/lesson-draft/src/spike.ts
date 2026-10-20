@@ -75,7 +75,7 @@ const objectives: Objective[] = [
       if (!/^([A-Z_] ){2}[A-Z_]$/.test(text) || parts.filter((part) => part === '_').length !== 1)
         issues.push('stimulusText must be three capital letters separated by spaces with exactly one "_".');
       if (round.stimulus.length) issues.push('Use stimulusText, not picture stimulus.');
-      if (!round.practice || round.practice.language !== 'en-US') issues.push('practice must be en-US.');
+      if (round.practice?.language !== 'en-US') issues.push('practice must be en-US.');
       const answer = round.options.find((option) => option.id === round.answer);
       if (!answer || !/^[A-Z]$/.test(answer.label))
         issues.push('The answer option must be one capital letter.');
