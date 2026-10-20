@@ -354,6 +354,14 @@ export const ja: Resources = {
       lockFinish: 'ゴール',
     },
     steps: 'ピップのステップ {{total}} 個中 {{done}} 個クリア',
+    picker: {
+      title: 'だれがあそぶ？',
+    },
+    player: {
+      saving: '{{name}} さんの練習をこの端末に記録しています。',
+      switch: 'あそぶ人を変える',
+      switchHint: '2 秒長押し（または W キー長押し）',
+    },
     override: {
       hold: 'おとなの方：長押しで次のロックを開ける',
       hint: '2 秒長押し（または G キー長押し）',

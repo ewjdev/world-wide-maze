@@ -364,6 +364,15 @@ export const en = {
       lockFinish: 'Finish',
     },
     steps: 'Pip’s steps: {{done}} of {{total}} done',
+    // Phase 31 M5: who's playing (the picker is picture-only; this heading is for grown-ups and screen readers)
+    picker: {
+      title: 'Who’s playing?',
+    },
+    player: {
+      saving: 'Saving practice for {{name}} on this device.',
+      switch: 'Switch who’s playing',
+      switchHint: 'Press and hold for 2 seconds (or hold W)',
+    },
     override: {
       hold: 'Grown-ups: hold to open the next lock',
       hint: 'Press and hold for 2 seconds (or hold G)',
