@@ -1,0 +1,111 @@
+<!doctype html>
+<!--
+  portal-hub: a test page written for this repository (MIT). Its links point at pages that are already committed
+  capture fixtures, so link portals built from it travel offline. Captured into fixtures/captures/portal-hub/.
+  Regenerate: serve this folder locally, then `pnpm fixture:capture <local url> portal-hub` (see the README there).
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Portal hub – World Wide Maze test page</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        font-family: Helvetica, Arial, sans-serif;
+        color: #1d2330;
+        background: #f4f1ea;
+      }
+      header {
+        padding: 56px 96px 40px;
+        background: #1f3b57;
+        color: #fff;
+      }
+      header h1 {
+        margin: 0 0 12px;
+        font-size: 56px;
+        letter-spacing: -1px;
+      }
+      header p {
+        margin: 0;
+        max-width: 760px;
+        font-size: 22px;
+        line-height: 1.4;
+      }
+      main {
+        padding: 48px 96px 64px;
+      }
+      h2 {
+        margin: 0 0 24px;
+        font-size: 30px;
+      }
+      .doors {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 40px;
+      }
+      .door {
+        padding: 36px 40px;
+        border-radius: 18px;
+        background: #fff;
+        border: 4px solid #d9d2c3;
+      }
+      .door a {
+        display: block;
+        font-size: 38px;
+        font-weight: bold;
+        color: #1c5fa8;
+        text-decoration: underline;
+      }
+      .door p {
+        margin: 14px 0 0;
+        font-size: 20px;
+        line-height: 1.45;
+        color: #4a5160;
+      }
+      .door.alt {
+        background: #e6f1ec;
+        border-color: #b9d6c8;
+      }
+      footer {
+        padding: 32px 96px 48px;
+        font-size: 18px;
+        color: #5c6270;
+        border-top: 4px solid #d9d2c3;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Portal hub</h1>
+      <p>
+        A small test page for World Wide Maze. Every link below opens onto another maze, so rolling into one of
+        its portals shows the next site before you travel.
+      </p>
+    </header>
+    <main>
+      <h2>Pick a door</h2>
+      <div class="doors">
+        <div class="door">
+          <a href="https://en.wikipedia.org/wiki/Labyrinth">Labyrinth on Wikipedia</a>
+          <p>A long article about mazes, labyrinths and their history. A tall page makes a deep maze.</p>
+        </div>
+        <div class="door alt">
+          <a href="https://www.gov.uk/">Welcome to GOV.UK</a>
+          <p>A grid of service cards. Each card becomes its own island, joined by bridges.</p>
+        </div>
+        <div class="door alt">
+          <a href="https://example.com/">Example Domain</a>
+          <p>The smallest page on the web. A quick, sparse maze with a short route to the goal.</p>
+        </div>
+        <div class="door">
+          <a href="https://www.w3.org/">The World Wide Web Consortium</a>
+          <p>Not a bundled page. Its portal shows a postcard until the site has been built online.</p>
+        </div>
+      </div>
+    </main>
+    <footer>Written for the World Wide Maze repository, MIT licence. Links point at existing test fixtures.</footer>
+  </body>
+</html>

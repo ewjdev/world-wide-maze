@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { CATALOG, catalogEntry, FIXTURES, PRACTICE } from '../src/game/catalog.ts';
+import { CATALOG, catalogEntry, FIXTURES, PRACTICE, TEST_FIXTURES } from '../src/game/catalog.ts';
 import { normalizeInputUrl } from '../src/game/stages.ts';
 import { en } from '../src/i18n/en.ts';
 import { ja } from '../src/i18n/ja.ts';
@@ -35,6 +35,14 @@ describe('catalog', () => {
     for (const e of CATALOG) expect(e.thumb).toMatch(/^\/thumbs\/.+\.webp$/);
     expect(catalogEntry('handmade-simple')).toBe(PRACTICE);
     expect(catalogEntry('fixture-hn-front')?.slug).toBe('hn-front');
+  });
+
+  test('test-only fixtures resolve by id but stay out of the picker catalog', () => {
+    expect(catalogEntry('fixture-portal-hub')?.slug).toBe('portal-hub');
+    for (const e of TEST_FIXTURES) {
+      expect(CATALOG).not.toContain(e);
+      expect(e.thumb).toMatch(/^\/thumbs\/.+\.webp$/);
+    }
   });
 });
 

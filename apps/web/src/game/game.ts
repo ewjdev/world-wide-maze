@@ -63,6 +63,7 @@ import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
+import { loadPortalPreviews, PORTAL_WINDOWS_ENABLED } from './portal-preview.ts';
 import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
@@ -1724,6 +1725,13 @@ export class Game {
     // Phase 22: draw the lesson's locks (done steps open, their gates used)
     if (learningRun) for (const id of this.learning.stageReady(got.stage)) this.#dismissedPortals.add(id);
     this.#applyPortalStates(got.stage);
+    // Portal windows (N): pictures of the destinations, behind the flag
+    if (PORTAL_WINDOWS_ENABLED)
+      loadPortalPreviews(
+        got.stage,
+        (id, img) => this.#engine?.setPortalPreview(id, img),
+        () => this.#stage() === got.stage && !this.#disposed,
+      );
     this.#progress('world', 100);
     const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
     this.#after(wait, () => {

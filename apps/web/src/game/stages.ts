@@ -106,6 +106,12 @@ const screenshotUrl = import.meta.glob<string>('../../../../fixtures/captures/*/
 // become portals too (fixtures/builder/links/<slug>.json, see @wwm/stage-builder `applyLinkTargets`).
 const linkTargets = import.meta.glob<{ default: LinkTargets }>('../../../../fixtures/builder/links/*.json');
 
+/** A fixture's full-page screenshot URL (the same lazy asset `FixtureRun` uses), or null if it isn't bundled. */
+export async function fixtureScreenshotUrl(entry: CatalogEntry): Promise<string | null> {
+  const load = screenshotUrl[`../../../../fixtures/captures/${entry.slug}/screenshot.png`];
+  return load ? load() : null;
+}
+
 export class FixtureRun implements RunSource {
   readonly kind = 'fixture' as const;
   readonly id: string;
