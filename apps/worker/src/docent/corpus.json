@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "dc06701591908057",
+  "hash": "d3f43a9489990376",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -33,7 +33,6 @@
     "docs/build-log/phase-06-device-test.md",
     "docs/build-log/phase-06.md",
     "docs/build-log/phase-07.md",
-    "docs/build-log/phase-08-mobile-layout.md",
     "docs/build-log/phase-08-playtest.md",
     "docs/build-log/phase-08.md",
     "docs/build-log/phase-09-builder-issues.md",
@@ -62,6 +61,7 @@
     "docs/build-log/phase-27-race-mazes.md",
     "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/phase-29-race-elevation-flow.md",
+    "docs/build-log/phase-31-m4.md",
     "docs/build-log/phase-31.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
@@ -1490,23 +1490,6 @@
       "url": "/log#phase-07",
       "kind": "build-log",
       "text": "## Remaining defects / follow-ups\n- **The builder is a STUB.** It centres `handmade-simple` in each slice. Wire `@wwm/stage-builder` at the Phase 03 merge (a one-function change in `src/builder.ts`), then re-run `bench` and look at `build.<i>` against `cpu_ms`.\n- **Browser Run session reuse is unverified.** The local emulator limitation is described above. Check for `browser session reused` in the logs after enablement.\n- **Texture transfer dominates Browser Run timings.** If production shows the same, capture slice 0's texture first and store and emit `done` before the rest, or lower the WebP quality (85 today).\n- **Residual SSRF risks:**\n  - DNS-rebinding TOCTOU between our DoH check and Chromium's own resolver.\n  - `preconnect` and DNS prefetch.\n  - Pages that depend on Web Workers render without them.\n- **Chatty log line.** `@cloudflare/playwright` prints a `Websocket error … Network connection lost` object on every disconnect in local dev. It is harmless, but noisy.\n- **Phase 10's `curated` columns are assumed** to be `run_id, title, url, thumb, stars, position`. Align them at merge."
-    },
-    {
-      "id": "docs/build-log/phase-08-mobile-layout.md",
-      "title": "Mobile game layout repair — October 19, 2026 · Verification",
-      "path": "docs/build-log/phase-08-mobile-layout.md",
-      "url": "/log#phase-08-mobile-layout",
-      "kind": "build-log",
-      "text": "The site chooser after Start created a 469px horizontal scroll area in a 390px phone viewport. Its grid's intrinsic sizing widened the heading, URL form, lesson loader and practice card together.\n\nThe game shell now constrains menu grids to their available width. Phone layouts stack the Transform action and practice card, wrap long button labels, and keep touch targets at least 44px high. Menu scrolling starts below the persistent settings bar and respects safe-area insets. Settings and pause panels scroll in short viewports. Pause and Race panels sit above the joystick deck, and ranking name fields remain inside their panel in WebKit.\n\n## Verification\n- `CI=1 pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- `CI=1 WWM_LAYOUT_BROWSER=webkit pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- English and Japanese chooser layouts: 320×568, 390×844, 430×932, 768×1024, 844×390 and 1440×900.\n- Instructions, invalid URL feedback, built-in lesson loading, the last site's vertical scroll reachability, short-landscape settings, practice pause/resume, results, rankings and Race entry. Pause and Race action checks include hit testing above the joystick deck.\n- Final 390px WebKit chooser: `clientWidth = scrollWidth = 390`.\n- Workspace typechecks, web typecheck, web production build, changed-file Biome checks and `git diff --check` passed.\n- The mechanical design detector reported the existing colored thumbnail stripe; the incumbent visual treatment was retained.\n\n`pnpm check` stopped at formatting errors in unrelated learning-package files being edited concurrently. A separate full-suite run encountered extension E2E timeouts and a Vite hot-reload context error during workspace edits; it was stopped after those failures. Full-repository acceptance is not established by this change. Other work was preserved.\n\nThese are browser-emulation receipts, not physical iPhone/Android qualification. No production deployment was performed."
-    },
-    {
-      "id": "docs/build-log/phase-08-mobile-layout.md#saved-review-images",
-      "title": "Mobile game layout repair — October 19, 2026 › Saved review images",
-      "path": "docs/build-log/phase-08-mobile-layout.md",
-      "anchor": "saved-review-images",
-      "url": "/log#phase-08-mobile-layout",
-      "kind": "build-log",
-      "text": "## Saved review images\n- [Phone chooser](assets/mobile-layout/select-390.png)\n- [Phone practice card](assets/mobile-layout/practice-390.png)\n\nThe regression suite can save its full screenshot matrix with `WWM_LAYOUT_SHOTS=/tmp/wwm-mobile-layout` and can select WebKit with `WWM_LAYOUT_BROWSER=webkit` (requires the Playwright WebKit browser)."
     },
     {
       "id": "docs/build-log/phase-08-playtest.md",
@@ -3510,6 +3493,59 @@
       "url": "/log#phase-29-race-elevation-flow",
       "kind": "build-log",
       "text": "## Beta review limits\nAutomated driving establishes traversal, deterministic replay and visible rendering. It does not establish human flow, optimal route choice or physical-phone handling. Most ten-maze reference routes take about a minute; Sky Weave remains roughly 77–79 seconds and one Skipping Stones route is about 73 seconds. The four earlier courses remain short introductions (about 13–25 seconds). Higher-speed racing and aggressive turbo strategies need beta playtesting; the conservative completion driver does not spend turbo on most maze routes.\n\nStatic validation does not exhaustively detect bridge-to-bridge intersections. Actual traversal caught and resolved the observed Skipping Stones overlap; future junction edits still require collision and browser verification.\n\nThe original HTML and maze specifications remain base authoring inputs. The explicit elevation design pass produces the current playable courses; run it after rebuilding base fixtures. Reproduction commands and the distinction between frozen course identity and physics compatibility are documented in [the elevation review README](../../fixtures/race/elevation-review/README.md). This work is local and has not been deployed."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent · Key instructions",
+      "path": "docs/build-log/phase-31-m4.md",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026 (America/Los_Angeles), about 22:45 to 23:55.\n**Agent:** Claude Code (Claude Opus 5.5) as a phase sub-agent in its own git worktree (`claude/p31-m4-lesson-drafts`), working in parallel with M2 and M3.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md) §8; contracts §10.5 CCR-31-4.\n\n## Key instructions\n- Port the fx0/libfx \"durable design agent\" pattern to Cloudflare: an Agents SDK Durable Object per draft, a `LESSON_DRAFT` Workflow (generate, validate, repair at most twice, ready for review) through AI Gateway, operator endpoints under `/api/admin/lessons/*` behind Access, and a \"Lesson drafts\" view in the admin workbench.\n- Scope from the M0 spike: open-vocabulary bank items only, starting with English missing-letter spelling. Pass the bank so far as an exclusion list, use a reviewed word list, flag distractors that spell real words.\n- Nothing reaches a child until an operator approves, the export is imported with a CLI, committed and deployed. Model output is untrusted.\n- Mark which steps are safe to re-run and which are billed; a retried Workflow must not pay twice.\n- One optional real smoke test through AI Gateway (at most three calls), only with existing credentials."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Reviewed vocabulary (N):** `packages/learning/src/vocabulary.ts`, 68 consonant-vowel-consonant words for ages 4–5 with a one-line meaning each, `reviewStatus: 'needs-owner-review'`. The spike's spelling checks are now reusable (`spellingIssues`, `spellingFlags`, `spellingBankRound`); the word must be on the list, and a distractor that completes a common word is flagged for review. The spike uses them too.\n- **Reviewed banks (N):** `reviewed-banks.ts` holds the export format (`wwm-learning-bank/1`), `AUTHORING_OBJECTIVES`, `reviewedBankReport()` and the workbench wire types. `src/banks/index.ts` lists imported bank files; `baseline.ts` merges them in one line. No bank is imported yet.\n- **Import CLI (N):** `pnpm learning:bank import|check <file>` (`tools/lesson-draft/src/bank.ts`). Validates against the baseline, writes `banks/<objective>.json`, regenerates the registry and formats both with Biome. Idempotent.\n- **Agent and Workflow (N):** `apps/worker/src/lesson-drafts/`.\n  - `LessonDraftAgent` (Agents SDK `Agent`, not `AIChatAgent`: the transcript is plain text and the Anthropic SDK call goes through the docent's gateway pattern, so the AI SDK isn't needed). SQLite holds the draft, transcript and revisions by content hash; the `draft-index` instance lists drafts.\n  - `LessonDraftWorkflow` runs `pipeline.ts`: `context` → `generate` (billed, run once) → `validate-0` → `repair-1/2` (billed, run once) with `validate-1/2` → `assemble` → `save-revision` → `ready-for-review`. Validation is a pure function of the stored replies, so a resumed instance reaches the same verdicts.\n  - Routes under the admin router: list, create, read, message (with drops), revision, preview, review, export. `LESSON_DRAFTS` gates them; a daily cap applies to gateway turns."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "- Previews render through `portablePage()` (`@wwm/education` now exports `./render`) with a no-script, sandboxed CSP.\n- **Admin UI (N):** `apps/web/src/admin/LessonDrafts.tsx` and `lesson-drafts.css`, one tab in `AdminPage.tsx`. Drafts list, new-draft form, chat with drop checkboxes, revision picker, issues, reviewer flags, per-item verdicts and spoken lines, a sandboxed preview frame, approve/reject with a note and flag acknowledgement, export link with the import command.\n- **Wiring:** `wrangler.jsonc` adds `LESSON_DRAFT_AGENT` (migration `v5`), the `LESSON_DRAFT` Workflow (`wwm-lesson-draft`; Previews `wwm-lesson-draft-preview`) and five `LESSON_DRAFT*` vars in every environment (`LESSON_DRAFTS` on locally with the mock, off in production and Previews). `worker-configuration.d.ts` regenerated. The deploy guard (`infra/scripts/lib/cloudflare-infra.mjs`) expects the new binding and Workflow and requires `LESSON_DRAFTS=off` in Previews. The solver probe entry exports the new classes because it runs with the production config.\n- **Docs:** [docs/education/lesson-drafts.md](../education/lesson-drafts.md), the Worker README section, the tool README."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#attempts-that-failed-and-why",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Attempts that failed, and why · Manual human interventions",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "attempts-that-failed-and-why",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Attempts that failed, and why\n- `node` couldn't run `bank-import.ts` at first: a TypeScript parameter property isn't supported in strip-only mode. Replaced with a field.\n- A registry block inside `reviewed-banks.ts` fought Biome's import organiser (it moves imports out of a marked region). The CLI now regenerates a separate `banks/index.ts`.\n- The Workflow first destructured its payload field by field and silently dropped the new `avoid` list, so a dropped word came back in the next turn. The workerd test caught it.\n- A test asserted that a second message is refused while the agent works; with the mock, the Workflow finished before the second request. Removed (the records test covers the rule).\n- `solver.workerd.test.ts` timed out: it runs the production config with a test entry that didn't export the new classes.\n- The in-app preview tool wasn't available to this sub-agent, so the UI was checked with Playwright screenshots against the test-only Worker and Vite (1440×1000 and 390×844, not committed).\n\n## Manual human interventions\nNone."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#test-evidence",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Test evidence",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Test evidence\n- `pnpm check`: green. Typecheck, Biome (warnings only, none in new code) and Vitest: 163 test files passed and 6 skipped; 1,755 tests passed and 44 skipped (the skips are the browser-driven suites without local Playwright Chromium, as before this change).\n- Worker: `lesson-drafts-pipeline` (13: valid output, exclusion list, repair, giving up after two repairs, nothing valid, no re-billing when a run is interrupted before each of six steps, the 24-item cap, the mock), `lesson-drafts-routes` (12: unauthenticated 401 on all eight endpoints, 503 without Access config, 403 cross-site, 404 for three `LESSON_DRAFTS` values, input validation, daily cap, preview and export headers), `lesson-drafts-records` (10: turns, idempotent revisions and summaries, failure, drops, approval rules, index, preview escaping of script and event-handler markup, export → import round trip, tampered export refused), `lesson-drafts.workerd` (1: the real agent and Workflow in workerd from brief to imported export).\n- `@wwm/learning` `reviewed-banks.test.ts` (16), `@wwm/lesson-draft` `bank-import.test.ts` (12), web `LessonDrafts.test.tsx` (4).\n- The full Worker config boots in workerd; `/agents/*` is 404 and `/api/admin/lessons` is 503 without Access config.\n- **Real smoke test** (`pnpm --filter @wwm/lesson-draft draft-smoke`, existing wrangler login, AI Gateway `wwm`): one `claude-sonnet-5-5` call, 2,980 input and 2,704 output tokens. Six items, all valid on the first pass with no reviewer flags: PIG, HEN, FOX, CUP, POT, RUG."
+    },
+    {
+      "id": "docs/build-log/phase-31-m4.md#remaining-defects-and-follow-ups",
+      "title": "Phase 31 M4: the operator-only lesson authoring agent › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31-m4.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-31-m4",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- The vocabulary needs the owner's review before any bank built from it is approved.\n- The first turn still favours the commonest words (PIG, HEN, FOX again); later turns exclude them.\n- Previews bind their own Workflow name; whether per-PR Previews can each define it hasn't been tried (nothing was deployed).\n- New lesson drafts (whole activities) and post-approval voice generation are not built."
     },
     {
       "id": "docs/build-log/phase-31.md",
