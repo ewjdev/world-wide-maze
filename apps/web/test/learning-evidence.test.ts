@@ -84,7 +84,14 @@ async function storeWith(...profiles: Profile[]): Promise<ProgressStore> {
 
 function game(
   store: ProgressStore | null,
-  opts: { lesson?: LoadedLesson; level?: string; muted?: boolean; greet?: (t: string) => void } = {},
+  opts: {
+    lesson?: LoadedLesson;
+    level?: string;
+    muted?: boolean;
+    greet?: (t: string) => void;
+    /** The wall clock follows `tick` (default: pinned at AT, so maze time can't show in `at`). */
+    wallTicks?: boolean;
+  } = {},
 ) {
   let clock = 0;
   const g = new LearningGates({
@@ -93,7 +100,7 @@ function game(
     voice: silent,
     seed: () => 0,
     now: () => clock,
-    clock: () => AT,
+    clock: () => (opts.wallTicks ? AT + clock : AT),
     store: () => store,
     device: () => ({ keyboard: true, tilt: true }),
     ...(opts.greet ? { greet: opts.greet } : {}),
@@ -265,7 +272,8 @@ describe('fresh examples in the maze', () => {
 describe('evidence from the maze', () => {
   test('one child: each solved gate round is one maze event, with the real input and the card time', async () => {
     const store = await storeWith(ANA);
-    const { g, build, portalOf, answer, tick } = game(store);
+    // a moving wall clock, so the Progress model sees the rounds in the order they were played
+    const { g, build, portalOf, answer, tick } = game(store, { wallTicks: true });
     await g.ready();
     expect(g.getView()).toMatchObject({ picker: null, player: { nickname: 'Ana' }, canSwitch: false });
     build();
@@ -284,6 +292,7 @@ describe('evidence from the maze', () => {
     g.key({ code: 'KeyA', target: null, repeat: false, preventDefault() {} } as unknown as KeyboardEvent);
     g.proceed();
     // gate 5 (fresh-1): a phone's JUMP on the tilt cursor
+    tick(30_000);
     g.open(portalOf(4));
     const choice = g.getView().gate?.choices.indexOf(answer()) ?? 0;
     for (let i = 0; i <= choice; i++) {
