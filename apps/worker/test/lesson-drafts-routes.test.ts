@@ -118,7 +118,7 @@ describe('lesson-draft endpoints', () => {
       drafts: [],
       objectives: [{ id: 'little-word-builders', title: 'Little word builders' }],
       provider: { mode: 'mock', model: 'mock' },
-      vocabulary: { reviewStatus: 'needs-owner-review' },
+      vocabulary: { reviewStatus: 'reviewed' },
     });
   });
 

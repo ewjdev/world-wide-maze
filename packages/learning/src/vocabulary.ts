@@ -29,13 +29,16 @@ const entry = (word: string, meaning: string): VocabularyWord => ({ word, meanin
 /**
  * Starter list: common three-letter consonant-vowel-consonant words with short vowels, for ages 4–5. Words with a
  * final X (box, fox, six) are included because they appear in most early-phonics lists; the X makes two sounds.
- * Proposed by the M4 agent; it needs the owner's review before any item built from it reaches a child.
+ * Proposed by the M4 agent. Reviewed 2026-10-20 by the orchestrator under the owner's delegation: removed gum
+ * (a choking risk for under-5s), pin (sharp), mom and dad (not every child's family), and reworded can and leg so
+ * they assume neither British English nor a particular body. Every item built from it still needs an operator's
+ * approval in the lesson-drafts workbench, and the owner can revise this list at any time.
  */
 export const spellingVocabulary: Vocabulary = {
   id: 'en-cvc-starter',
   language: 'en-US',
   ages: [4, 5],
-  reviewStatus: 'needs-owner-review',
+  reviewStatus: 'reviewed',
   words: [
     entry('cat', 'A cat is an animal that can meow.'),
     entry('dog', 'A dog is an animal that can bark.'),
@@ -68,14 +71,13 @@ export const spellingVocabulary: Vocabulary = {
     entry('map', 'A map can show where to go.'),
     entry('box', 'You can put toys in a box.'),
     entry('bag', 'You carry things in a bag.'),
-    entry('can', 'A can is a metal tin with food inside.'),
+    entry('can', 'A can holds soup or beans.'),
     entry('fan', 'A fan blows cool air on a hot day.'),
     entry('mat', 'You wipe your feet on a mat.'),
     entry('rug', 'A rug is a soft mat on the floor.'),
     entry('mop', 'A mop cleans up a wet floor.'),
     entry('tub', 'You take a bath in a tub.'),
     entry('net', 'You can catch a fish with a net.'),
-    entry('pin', 'A pin is small and sharp. It holds things together.'),
     entry('zip', 'A zip closes your coat. Zip it up!'),
     entry('kit', 'A kit is a set of things you need, like a first aid kit.'),
     entry('web', 'A spider spins a web.'),
@@ -84,12 +86,9 @@ export const spellingVocabulary: Vocabulary = {
     entry('mud', 'Mud is wet, sticky dirt.'),
     entry('fog', 'Fog is a cloud near the ground. It is hard to see in fog.'),
     entry('hut', 'A hut is a small, simple house.'),
-    entry('leg', 'You walk on your leg. You have two.'),
+    entry('leg', 'Your knee is in the middle of your leg.'),
     entry('lip', 'Your lip is part of your mouth.'),
     entry('lap', 'You can sit on a grown-up’s lap.'),
-    entry('gum', 'You chew gum, but you don’t swallow it.'),
-    entry('mom', 'Mom is a word for mother.'),
-    entry('dad', 'Dad is a word for father.'),
     entry('kid', 'A kid is a child, like you.'),
     entry('red', 'Red is the color of a strawberry.'),
     entry('big', 'An elephant is big.'),

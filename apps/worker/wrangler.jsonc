@@ -89,7 +89,7 @@
     "LEARNING_RP_ID": "localhost",
     // "mock" (development only: messages go to a local mailbox, never sent) or "send" (the LEARNING_MAIL binding).
     "LEARNING_EMAIL_MODE": "mock",
-    "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
+    "LEARNING_EMAIL_FROM": "learn@ewj.dev"
     // Secrets (not vars): IP_HASH_SALT, ANTHROPIC_API_KEY. Locally: apps/worker/.dev.vars (see .dev.vars.example).
   },
 
@@ -227,18 +227,19 @@
         "DOCENT_LIMIT_PER_HOUR": "10",
         "DOCENT_CACHE_TTL_DAYS": "7",
         "DOCENT_MOCK_DELAY_MS": "0",
-        // Phase 31 M4: off until the operator turns lesson drafts on (docs/education/lesson-drafts.md).
-        "LESSON_DRAFTS": "off",
+        // Phase 31 M4: on since 2026-10-20 (operator-only behind Access; docs/education/lesson-drafts.md).
+        "LESSON_DRAFTS": "on",
         "LESSON_DRAFT_PROVIDER": "auto",
         "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
         "LESSON_DRAFT_MAX_TOKENS": "8000",
         "LESSON_DRAFT_DAILY_LIMIT": "20",
-        // Phase 31 M3: stays "off" (or "allowlist") until the privacy review is recorded (contracts §10.5).
-        "LEARNING_ACCOUNTS": "off",
+        // Phase 31 M3: "allowlist" (the owner's family, LEARNING_ALLOWED_EMAILS) since 2026-10-20. "on" (open
+        // sign-up) only after the legal items of docs/launch/learning-privacy-review-2026-10-20.md are done.
+        "LEARNING_ACCOUNTS": "allowlist",
         "LEARNING_ORIGIN": "https://wwm.ewj.dev",
         "LEARNING_RP_ID": "wwm.ewj.dev",
         "LEARNING_EMAIL_MODE": "send",
-        "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
+        "LEARNING_EMAIL_FROM": "learn@ewj.dev"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
       "d1_databases": [
@@ -253,7 +254,7 @@
         {
           "binding": "LEARNING_DB",
           "database_name": "wwm-learning-records",
-          "database_id": "00000000-0000-0000-0000-000000000004",
+          "database_id": "83aef66e-0df9-4ca8-8421-fdbad25d5f0f",
           "migrations_dir": "migrations-learning"
         }
       ],
@@ -349,7 +350,7 @@
           "LEARNING_ORIGIN": "",
           "LEARNING_RP_ID": "",
           "LEARNING_EMAIL_MODE": "send",
-          "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
+          "LEARNING_EMAIL_FROM": "learn@ewj.dev"
         },
         "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-preview" }],
         "d1_databases": [
@@ -363,7 +364,7 @@
           {
             "binding": "LEARNING_DB",
             "database_name": "wwm-learning-records-preview",
-            "database_id": "00000000-0000-0000-0000-000000000005",
+            "database_id": "c57c7395-0f9c-45ab-98b2-8d76115a0854",
             "migrations_dir": "migrations-learning"
           }
         ],

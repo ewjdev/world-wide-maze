@@ -178,7 +178,16 @@ Agent tools: the schema validator and `playIssues()`, the objective checks, `por
 | `apps/web/src/learning/` | M5 only |
 | Phase 31 tooling and records | `tools/lesson-draft/`, `docs/education/`, `docs/build-log/phase-31.md` |
 
-## Decisions for the owner
+## Decisions made (owner delegated, 2026-10-20)
+1. CCR-31-1 to CCR-31-5 approved as recorded in contracts §10.5.
+2. Sign-in: email link plus passkeys. Sender `learn@ewj.dev` (`ewj.dev` is already onboarded; DMARC `p=reject`).
+3. Retention: delete after 24 months without activity.
+4. Production `LEARNING_ACCOUNTS=allowlist` (the owner's addresses only). Engineering review recorded in [learning-privacy-review-2026-10-20.md](../docs/launch/learning-privacy-review-2026-10-20.md); open sign-up waits for the legal review. Game telemetry is unchanged and never carries profile ids.
+5. Progress thresholds and parent copy as proposed (§3); educator review is still wanted.
+6. Vocabulary reviewed: 64 words (gum, pin, mom and dad removed). `LESSON_DRAFTS=on` in production, operator-only.
+7. M2/M5 defaults kept: `/progress/` page, picker once per tab, no age band asked, fresh rounds counted in lesson summaries.
+
+## Decisions for the owner (original list)
 
 1. Approve CCR-31-1 to CCR-31-4 as written, or amend them.
 2. Sign-in: passkeys with an email magic-link fallback (recommended), or magic link only.

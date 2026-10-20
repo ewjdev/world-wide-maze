@@ -25,9 +25,12 @@ const item = (id: string, word: string, blank = 1, letters?: string[]) => {
 };
 
 describe('reviewed vocabulary', () => {
-  test('a starter list of 40–80 three-letter CVC words, each with a short meaning, awaiting owner review', () => {
+  test('a reviewed list of 40–80 three-letter CVC words, each with a short meaning', () => {
     const { words } = spellingVocabulary;
-    expect(spellingVocabulary.reviewStatus).toBe('needs-owner-review');
+    expect(spellingVocabulary.reviewStatus).toBe('reviewed');
+    // Removed in review (2026-10-20): a choking risk, a sharp object, and words that assume a family shape.
+    for (const removed of ['gum', 'pin', 'mom', 'dad'])
+      expect(words.map((w) => w.word)).not.toContain(removed);
     expect(words.length).toBeGreaterThanOrEqual(40);
     expect(words.length).toBeLessThanOrEqual(80);
     expect(new Set(words.map((w) => w.word)).size).toBe(words.length);

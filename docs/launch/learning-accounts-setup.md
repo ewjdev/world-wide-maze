@@ -18,7 +18,7 @@ other deploy command ([infra/README.md](../../infra/README.md)). Never paste a s
 | Input | Default in the code | Where it goes |
 |---|---|---|
 | Sending domain for sign-in email | `wwm.ewj.dev` | Email Service onboarding (step 2) |
-| Sender address | `learn@wwm.ewj.dev` | `LEARNING_EMAIL_FROM` in `env.production.vars` (and previews) |
+| Sender address | `learn@ewj.dev` | `LEARNING_EMAIL_FROM` in `env.production.vars` (and previews) |
 | Allowed emails while in allow-list mode | none | `LEARNING_ALLOWED_EMAILS` secret (step 4) |
 | When to move `off` → `allowlist` → `on` | `off` | `LEARNING_ACCOUNTS` in `env.production.vars` (step 6). `on` only after the privacy review is recorded |
 
@@ -54,9 +54,9 @@ production`, and PR previews apply `LEARNING_PREVIEW_DB` from `wrangler.preview-
    `v=DMARC1; p=quarantine; rua=mailto:ewjdev@gmail.com`. Start with `p=none` if you want reports first.
 4. If you chose a different sender, set `LEARNING_EMAIL_FROM` in `env.production.vars` and `previews.vars`. The
    binding is `"send_email": [{ "name": "LEARNING_MAIL" }]` in every environment. You can optionally restrict it with
-   `"allowed_sender_addresses": ["learn@wwm.ewj.dev"]`.
+   `"allowed_sender_addresses": ["learn@ewj.dev"]`.
 5. Test once from your own address (don't use made-up addresses, because bounces hurt the domain's reputation):
-   `pnpm exec wrangler email sending send --from learn@wwm.ewj.dev --to <you> --subject Test --text Test`.
+   `pnpm exec wrangler email sending send --from learn@ewj.dev --to <you> --subject Test --text Test`.
 
 The binding is transactional only. Sign-in emails are the only messages this feature sends.
 

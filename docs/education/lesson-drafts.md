@@ -14,7 +14,7 @@ Today one objective is open: English missing-letter spelling (`little-word-build
 | **Human approval** | Only the latest revision can be approved, only with no blocking issues, only with a note, and only after the operator ticks that they have read every reviewer flag (for example, "distractor also spells a real word"). Approval locks the draft. |
 | **Git review** | The export carries the items, the revision hash and the review note, but no operator identity. `pnpm learning:bank import` validates it again against the current baseline and writes `packages/learning/src/banks/<objective>.json`. It reaches children only after a reviewed pull request is merged and deployed. |
 
-The reviewed word list (`packages/learning/src/vocabulary.ts`, 68 three-letter consonant-vowel-consonant words with a one-line meaning each) is marked `needs-owner-review`. The workbench shows that status. Review the list before approving any bank built from it.
+The word list (`packages/learning/src/vocabulary.ts`, 64 three-letter consonant-vowel-consonant words with a one-line meaning each) was reviewed on 2026-10-20. The review removed gum, pin, mom and dad, and reworded can and leg; the file header has the reasons. The workbench shows the list's status. Edit the list in a PR to add or remove words.
 
 ## Workflow, end to end
 

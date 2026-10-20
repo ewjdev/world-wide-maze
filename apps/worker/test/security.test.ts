@@ -184,8 +184,9 @@ describe('deploy config (wrangler.jsonc)', () => {
       'ROOM_CREATE_LIMITER',
       'ROOM_WS_LIMITER',
     ]);
-    // Phase 31 M3: family accounts stay off until the privacy review; deployed mail is never the dev mock.
-    expect(target.vars.LEARNING_ACCOUNTS).toBe('off');
+    // Phase 31 M3: production is the owner's allow-list until the legal review allows open sign-up; Previews stay
+    // off. Deployed mail is never the dev mock.
+    expect(target.vars.LEARNING_ACCOUNTS).toBe(wwmEnv === 'production' ? 'allowlist' : 'off');
     expect(target.vars.LEARNING_EMAIL_MODE).toBe('send');
   });
   test('production serves the web app with the API first', () => {

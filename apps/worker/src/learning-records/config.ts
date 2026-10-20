@@ -78,7 +78,7 @@ export function learningConfig(env: Env): LearningConfig {
     linkOrigin: origins[0] ?? null,
     rpId,
     turnstileSecret,
-    email: { mode, from: env.LEARNING_EMAIL_FROM || 'learn@wwm.ewj.dev' },
+    email: { mode, from: env.LEARNING_EMAIL_FROM || 'learn@ewj.dev' },
   };
 }
 
