@@ -7,6 +7,7 @@ import { budgetPause, useAdminBudget } from './budget.ts';
 import { CaptureAttempts } from './CaptureAttempts.tsx';
 import { CostControls } from './CostControls.tsx';
 import { JevSettings } from './JevSettings.tsx';
+import { LessonDrafts } from './LessonDrafts.tsx';
 import { PolicyRules } from './PolicyRules.tsx';
 
 const statusNames: Record<ModerationStatus, string> = {
@@ -85,6 +86,7 @@ const sections = [
   ['services', 'Services & budget'],
   ['rules', 'URL & domain rules'],
   ['jev', 'Jev'],
+  ['lessons', 'Lesson drafts'],
 ] as const;
 type Section = (typeof sections)[number][0];
 function currentSection(): Section {
@@ -226,6 +228,11 @@ export default function AdminPage() {
         {visited.has('jev') && (
           <div hidden={section !== 'jev'}>
             <JevSettings budgetSnapshot={budget.value} active={section === 'jev'} />
+          </div>
+        )}
+        {visited.has('lessons') && (
+          <div hidden={section !== 'lessons'}>
+            <LessonDrafts active={section === 'lessons'} />
           </div>
         )}
         {visited.has('rules') && (
