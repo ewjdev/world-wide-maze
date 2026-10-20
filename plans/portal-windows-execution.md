@@ -177,7 +177,7 @@ Every milestone ends with `pnpm check` green, an entry appended to `docs/build-l
 
 | ID | Milestone | Depends on | Status |
 | --- | --- | --- | --- |
-| M0 | Flag, `portal-hub` fixture, preview wiring, first look on a preview branch | — | pending |
+| M0 | Flag, `portal-hub` fixture, preview wiring, first look on a preview branch | — | built and deployed to the branch preview (PR #53); awaiting the user's look on the iPhone |
 | M1 | Window shader, atlas, postcard, fixture previews (production quality) | M0 | pending |
 | M2 | Push-through, `TravelWindow`, matched cut | M1 | pending |
 | M3 | Previews of built sites from the service (CCR-PW-1) | M1 (the M3 worker work can run in parallel with M2) | pending |
