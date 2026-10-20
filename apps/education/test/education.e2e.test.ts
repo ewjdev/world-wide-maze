@@ -4,7 +4,11 @@ import {
   type Activity,
   baselinePath,
   choiceIds,
+  evidenceSchema,
+  expandActivity,
   type FamilySettings,
+  type InputMode,
+  type LearningEvidence,
   numberWord,
   presentRound,
   type Round,
@@ -20,6 +24,11 @@ const compare = baselinePath.activities.find((activity) => activity.id === 'comp
 const countThree = baselinePath.activities.find((activity) => activity.id === 'count-three') as Activity;
 const round = (id: string) => compare.rounds.find((candidate) => candidate.id === id) as Round;
 const SETTINGS_KEY = 'wwm-learning:settings:v1';
+
+/** The play-through the page draws for a seed: the written rounds plus fresh examples (Phase 31). */
+async function drawn(activity: Activity, seed: number, seen: ReadonlySet<string> = new Set()) {
+  return expandActivity(baselinePath, activity, { seed, seen });
+}
 
 /**
  * A deterministic stand-in for browser speech: every word boundary fires `delay` ms apart (15 by default),
@@ -135,12 +144,41 @@ async function tap(page: Page, choice: string, force = false): Promise<void> {
   await page.locator(`#scene [data-answer="${choice}"]`).click({ force });
 }
 
-/** Answer the way the round invites: its key when key badges are showing, else a tap. */
-async function answer(page: Page, choice: string, force = false): Promise<void> {
+/** Answer the way the round invites: its key when key badges are showing, else a tap. Returns the way used. */
+async function answer(page: Page, choice: string, force = false): Promise<InputMode> {
   if (await page.locator('#scene svg.show-keys').count()) {
-    const key = await page.locator(`#scene [data-key-badge="${choice}"] text`).textContent();
-    await page.keyboard.press(key ?? '');
-  } else await tap(page, choice, force);
+    const key = (await page.locator(`#scene [data-key-badge="${choice}"] text`).textContent()) ?? '';
+    await page.keyboard.press(key);
+    return /\d/.test(key) ? 'number-key' : 'letter-key';
+  }
+  await tap(page, choice, force);
+  return 'tap';
+}
+
+/** The round on screen, as drawn for this play-through. */
+async function shownRound(page: Page, play: Activity): Promise<Round> {
+  const id = await page.locator('#stage').getAttribute('data-learning-round');
+  const found = play.rounds.find((candidate) => candidate.id === id);
+  if (!found) throw new Error(`Round ${id} is not in the play-through.`);
+  return found;
+}
+
+/** Play the rest of the lesson, right first time, skipping (or playing) the bonus. Returns the rounds solved. */
+async function playToEnd(page: Page, play: Activity, bonus: 'play' | 'skip' = 'skip'): Promise<string[]> {
+  const seed = Number(await page.locator('[data-learning-activity]').getAttribute('data-seed'));
+  const solved: string[] = [];
+  for (let guard = 0; guard < 20; guard++) {
+    if (await page.locator('#end').isVisible()) return solved;
+    if (await page.locator('#bonus-play').isVisible()) {
+      await page.locator(bonus === 'play' ? '#bonus-play' : '#bonus-skip').click();
+      continue;
+    }
+    const shown = await shownRound(page, play);
+    await answer(page, String(presentRound(shown, seed).answer));
+    solved.push(shown.id);
+    await page.locator('#next').click();
+  }
+  throw new Error('The lesson did not end.');
 }
 
 async function prompt(page: Page): Promise<string> {
@@ -182,6 +220,76 @@ function seedsThatDiffer(target: Round): [number, number] {
   const first = 1;
   for (let seed = 2; seed < 500; seed++) if (shown(seed) !== shown(first)) return [first, seed];
   throw new Error('no differing seeds');
+}
+
+// ── Phase 31 M2: this device's progress store, read and seeded directly (the schema of browser-store.ts) ───
+
+const MIA = { id: 'mia-profile-00001', nickname: 'Mia', avatar: 'pip-yellow' } as const;
+const LEO = { id: 'leo-profile-00002', nickname: 'Leo', avatar: 'pip-teal' } as const;
+type SeedProfile = { id: string; nickname: string; avatar: string };
+
+type StoreWindow = Window & { __openProgressStore?: () => Promise<IDBDatabase> };
+
+/** Inside the page: define a helper that opens the progress database (creating it as browser-store.ts would). */
+function defineOpener(): void {
+  (window as StoreWindow).__openProgressStore = () =>
+    new Promise((resolve, reject) => {
+      const req = indexedDB.open('wwm-learning-progress', 1);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        db.createObjectStore('profiles', { keyPath: 'id' });
+        db.createObjectStore('events', { keyPath: 'id' }).createIndex('profile', 'profile');
+        db.createObjectStore('outbox', { keyPath: 'id' }).createIndex('profile', 'profile');
+        db.createObjectStore('meta');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+}
+
+async function seedProfiles(page: Page, profiles: readonly SeedProfile[]): Promise<void> {
+  await page.evaluate(defineOpener);
+  await page.evaluate(async (list) => {
+    const db = await ((window as StoreWindow).__openProgressStore?.() as Promise<IDBDatabase>);
+    await new Promise<void>((resolve, reject) => {
+      const tx = db.transaction('profiles', 'readwrite');
+      for (const profile of list) tx.objectStore('profiles').put(profile);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  }, profiles);
+}
+
+async function readStore<T>(page: Page, name: 'profiles' | 'events' | 'outbox'): Promise<T[]> {
+  await page.evaluate(defineOpener);
+  return page.evaluate(async (store) => {
+    const db = await ((window as StoreWindow).__openProgressStore?.() as Promise<IDBDatabase>);
+    const all = await new Promise<T[]>((resolve, reject) => {
+      const req = db.transaction(store, 'readonly').objectStore(store).getAll();
+      req.onsuccess = () => resolve(req.result as T[]);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return all;
+  }, name);
+}
+
+/** Press and hold a grown-up control for its 2 seconds (a quick tap does nothing). */
+async function hold(page: Page, selector: string): Promise<void> {
+  const box = await page.locator(selector).boundingBox();
+  if (!box) throw new Error(`${selector} is not visible.`);
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.waitForTimeout(2200);
+  await page.mouse.up();
+}
+
+async function openProgressPage(page: Page): Promise<void> {
+  await page.goto(`${base}/progress/`);
+  if (await page.locator('#progress-area').isVisible()) return;
+  await hold(page, '#open-progress');
+  await page.locator('#progress-area').waitFor({ state: 'visible' });
 }
 
 describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () => {
@@ -272,12 +380,14 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
       expect(await page.locator('#hint').isVisible()).toBe(false);
       await shot(page, `lesson-${activity.id}-correct`);
       await page.locator('#next').click();
-      if (activity.rounds.length === 1) {
+      // fresh examples come straight after the written rounds (count-three: one written round, two fresh)
+      const second = (await drawn(activity, 0)).activity.rounds[1];
+      if (!second) {
         expect(await page.locator('#end').isVisible()).toBe(true);
         expect(await page.locator('#end-heading').textContent()).toBe('You built the whole bridge!');
         expect(await page.locator('#end').textContent()).toContain(activity.offlineActivity);
         expect(await page.locator('#next-activity').isVisible()).toBe(true);
-      } else expect(await prompt(page)).toBe(activity.rounds[1]?.prompt);
+      } else expect(await prompt(page)).toBe(second.prompt);
       const payload = JSON.parse((await page.locator('#wwm-learning').textContent()) ?? '{}');
       expect(payload.activities.find((item: { id: string }) => item.id === activity.id).objective).toBe(
         activity.objective,
@@ -296,7 +406,9 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
       for (const activity of baselinePath.activities.slice(6)) {
         await page.goto(`${base}/lessons/${activity.id}/?seed=0`);
         await start(page);
-        for (const [index, round] of activity.rounds.entries()) {
+        // spanish-colors adds two fresh examples, with their own word models, before its bonus
+        const play = (await drawn(activity, 0)).activity;
+        for (const [index, round] of play.rounds.entries()) {
           if (round.optional) await page.locator('#bonus-play').click();
           expect(await prompt(page)).toBe(round.prompt);
           expect(await page.locator('#practice strong').textContent()).toBe(round.practice?.text);
@@ -422,6 +534,18 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await page.locator('#scene [data-plank="3"]').count()).toBe(1);
     await page.locator('#next').click();
 
+    // two fresh examples (Phase 31), each adding a plank, before the bonus
+    const play = (await drawn(compare, 0)).activity;
+    for (const [index, id] of ['fresh-1', 'fresh-2'].entries()) {
+      const fresh = play.rounds.find((candidate) => candidate.id === id) as Round;
+      expect(await page.locator('#stage').getAttribute('data-learning-round')).toBe(id);
+      expect(await prompt(page)).toBe(fresh.prompt);
+      await answer(page, String(fresh.answer));
+      expect(await feedback(page)).toBe(fresh.success);
+      expect(await page.locator(`#scene [data-plank="${4 + index}"]`).count()).toBe(1);
+      await page.locator('#next').click();
+    }
+
     // bonus offer
     expect(await prompt(page)).toBe('Bonus round!');
     expect(await page.locator('#bonus-play').isVisible()).toBe(true);
@@ -454,7 +578,7 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     await shot(page, `compare-groups-${device}-9-end`);
     expect(await noHorizontalScroll(page)).toBe(true);
     await page.locator('#again').click();
-    expect(await prompt(page)).toBe(round('r1').prompt);
+    await expect.poll(() => prompt(page)).toBe(round('r1').prompt);
     expect(await page.locator('#scene [data-plank="0"]').count()).toBe(0);
     expect(await page.locator('#scene [data-answer="b"]').getAttribute('aria-disabled')).toBeNull();
     expect(errors).toEqual([]);
@@ -556,12 +680,13 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     };
     const first = await order(c1);
     expect(first).not.toEqual(await order(c2));
-    await tap(page, 'three');
-    await page.locator('#next').click();
+    await playToEnd(page, (await drawn(countThree, c2)).activity);
     const before = await page.locator('[data-learning-activity]').getAttribute('data-seed');
     await page.locator('#again').click();
+    await expect
+      .poll(() => page.locator('[data-learning-activity]').getAttribute('data-seed'))
+      .not.toBe(before);
     const after = await page.locator('[data-learning-activity]').getAttribute('data-seed');
-    expect(after).not.toBe(before);
     expect(Number(after)).toBeGreaterThan(0);
     expect(errors).toEqual([]);
     await context.close();
@@ -715,8 +840,8 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(await feedback(page)).toBe(round('r1').success);
     await page.goto(`${base}/lessons/count-three/`);
     await start(page);
-    await tap(page, 'three');
-    await page.locator('#next').click();
+    const seed = Number(await page.locator('[data-learning-activity]').getAttribute('data-seed'));
+    await playToEnd(page, (await drawn(countThree, seed)).activity);
     expect(await page.locator('#end').isVisible()).toBe(true);
     expect(errors).toEqual([]);
     await context.close();
@@ -1042,5 +1167,476 @@ describe.skipIf(!base)('education browser acceptance', { timeout: 60_000 }, () =
     expect(log.filter((entry) => entry.includes('muted=true'))).toEqual([]);
     expect(log.filter((entry) => entry.startsWith('pause'))).toEqual([]);
     await context.close();
+  });
+
+  // ── Phase 31 M2: profiles, evidence and Progress on this device ─────────────────────────────────────────
+
+  it('with no profiles: no picker, nothing saved, and the lesson plays as before', async () => {
+    const { context, page, errors } = await open({ viewport: { width: 1440, height: 900 } });
+    await page.goto(`${base}/lessons/count-three/?seed=4`);
+    await start(page);
+    expect(await page.locator('#picker').isVisible()).toBe(false);
+    expect(await page.locator('#player-bar').isVisible()).toBe(false);
+    const solved = await playToEnd(page, (await drawn(countThree, 4)).activity);
+    expect(solved).toEqual(['r1', 'fresh-1', 'fresh-2']);
+    expect(await readStore(page, 'events')).toEqual([]);
+    expect(await readStore(page, 'outbox')).toEqual([]);
+    expect(errors).toEqual([]);
+    await context.close();
+  });
+
+  for (const device of ['desktop', 'mobile'] as const) {
+    it(`with one profile (${device}): chosen silently, one event per solved round with its help level`, async () => {
+      const { context, page, errors } = await open(
+        device === 'desktop'
+          ? { viewport: { width: 1440, height: 900 } }
+          : { viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true },
+      );
+      await page.goto(`${base}/`);
+      await seedProfiles(page, [MIA]);
+      const seed = 7;
+      await page.goto(`${base}/lessons/count-three/?seed=${seed}`);
+      await page.locator('#player-bar').waitFor({ state: 'visible' });
+      expect(await page.locator('#picker').isVisible()).toBe(false);
+      expect(await page.locator('#player-status').textContent()).toBe(
+        'Saving practice for Mia on this device.',
+      );
+      expect(await page.locator('#switch-player').isVisible()).toBe(false);
+      await start(page);
+      const { activity: play, origins } = await drawn(countThree, seed);
+      const modes: InputMode[] = [];
+      // r1: a wrong answer first (a retry, the first hint)
+      const r1 = await shownRound(page, play);
+      const wrong = choiceIds(r1).find((id) => id !== String(r1.answer)) as string;
+      await answer(page, wrong, true);
+      modes.push(await answer(page, String(r1.answer)));
+      await page.locator('#next').click();
+      // fresh-1: all the way to the worked example, then right with no wrong answer
+      expect(await page.locator('#stage').getAttribute('data-learning-round')).toBe('fresh-1');
+      for (let i = 0; i < 3; i++) await page.locator('#hint').click();
+      modes.push(await answer(page, String((await shownRound(page, play)).answer)));
+      await page.locator('#next').click();
+      // fresh-2: right first time
+      modes.push(await answer(page, String((await shownRound(page, play)).answer)));
+      await page.locator('#next').click();
+      expect(await page.locator('#end').isVisible()).toBe(true);
+
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(3);
+      const events = (await readStore<LearningEvidence>(page, 'events')).sort((x, y) =>
+        x.id.localeCompare(y.id),
+      );
+      for (const event of events) expect(evidenceSchema.parse(event)).toEqual(event);
+      expect(
+        events.map(({ profile, round, outcome, helpLevel, surface, source, fresh }) => ({
+          profile,
+          round,
+          outcome,
+          helpLevel,
+          surface,
+          source,
+          fresh,
+        })),
+      ).toEqual([
+        {
+          profile: MIA.id,
+          round: 'r1',
+          outcome: 'after-retry',
+          helpLevel: 1,
+          surface: 'lesson',
+          source: 'lesson',
+          fresh: true,
+        },
+        {
+          profile: MIA.id,
+          round: 'fresh-1',
+          outcome: 'first-try',
+          helpLevel: 3,
+          surface: 'lesson',
+          source: 'generator',
+          fresh: true,
+        },
+        {
+          profile: MIA.id,
+          round: 'fresh-2',
+          outcome: 'first-try',
+          helpLevel: 0,
+          surface: 'lesson',
+          source: 'generator',
+          fresh: true,
+        },
+      ]);
+      expect(events.map((event) => event.item)).toEqual(
+        ['r1', 'fresh-1', 'fresh-2'].map((id) => origins.get(id)?.item),
+      );
+      expect(events.map((event) => event.input)).toEqual(modes);
+      if (device === 'mobile') expect(modes).toEqual(['tap', 'tap', 'tap']);
+      expect(
+        events.every((event) => event.objective === 'count-three' && event.activity === 'count-three'),
+      ).toBe(true);
+      expect(events.every((event) => event.duration === 'lt10s' || event.duration === 'lt30s')).toBe(true);
+      // the outbox holds the same events, ready for an account to sync (M3)
+      expect((await readStore<LearningEvidence>(page, 'outbox')).length).toBe(3);
+
+      // "Play again" draws fresh examples Mia hasn't met
+      await page.locator('#again').click();
+      await page.locator('#stage').waitFor({ state: 'visible' });
+      const seen = new Set(events.map((event) => event.item));
+      const again = Number(await page.locator('[data-learning-activity]').getAttribute('data-seed'));
+      const next = await drawn(countThree, again, seen);
+      expect(['fresh-1', 'fresh-2'].every((id) => next.origins.get(id)?.fresh)).toBe(true);
+      await playToEnd(page, next.activity);
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(6);
+      const later = (await readStore<LearningEvidence>(page, 'events')).filter(
+        (event) => event.round !== 'r1',
+      );
+      expect(new Set(later.map((event) => event.item)).size).toBe(4);
+      expect(errors).toEqual([]);
+      await context.close();
+    });
+
+    it(`with two profiles (${device}): a picture-only picker, the nickname in the browser's voice, and a held switch`, async () => {
+      const viewport = device === 'desktop' ? { width: 1440, height: 900 } : { width: 390, height: 844 };
+      const { context, page, errors } = await open(
+        device === 'desktop' ? { viewport } : { viewport, hasTouch: true, isMobile: true },
+      );
+      const audio: string[] = [];
+      page.on('request', (request) => {
+        if (request.url().endsWith('.mp3')) audio.push(request.url());
+      });
+      await page.goto(`${base}/`);
+      await seedProfiles(page, [MIA, LEO]);
+      await page.goto(`${base}/lessons/compare-groups/?seed=0`);
+      await page.locator('#picker').waitFor({ state: 'visible' });
+      expect(await page.locator('#intro').isVisible()).toBe(false);
+      expect(await page.locator('#stage').isVisible()).toBe(false);
+      const choices = page.locator('#picker-choices [data-pick]');
+      expect(await choices.count()).toBe(2);
+      // pictures only: no text to read, big targets, named for assistive technology (sorted by nickname)
+      expect((await choices.allTextContents()).map((text) => text.trim())).toEqual(['', '']);
+      expect(
+        await choices.evaluateAll((nodes) => nodes.map((node) => node.getAttribute('aria-label'))),
+      ).toEqual(['Leo', 'Mia']);
+      for (const choice of await choices.all()) {
+        const box = await choice.boundingBox();
+        expect(Math.min(box?.width ?? 0, box?.height ?? 0)).toBeGreaterThanOrEqual(120);
+      }
+      expect(await page.locator('#picker [data-avatar="pip-teal"]').count()).toBe(1);
+      expect(await noHorizontalScroll(page)).toBe(true);
+      if (shots)
+        await page.screenshot({
+          path: join(shots, `p31-picker-${device}.png`),
+          animations: 'disabled',
+          style: '.skip{display:none}',
+        });
+
+      await page.getByRole('button', { name: 'Leo', exact: true }).click();
+      await page.locator('#intro').waitFor({ state: 'visible' });
+      await expect.poll(() => spoken(page)).toContain('Hi, Leo!');
+      await expect
+        .poll(() => page.locator('#player-status').textContent())
+        .toBe('Saving practice for Leo on this device.');
+      expect(await page.locator('#switch-player').isVisible()).toBe(true);
+      // the nickname went to browser speech only: no clip was ever requested for it
+      expect(audio).toEqual([]);
+
+      // the whole lesson: written rounds, then the two fresh examples, then the bonus, then the end
+      await start(page);
+      const play = (await drawn(compare, 0)).activity;
+      const solved = await playToEnd(page, play, 'play');
+      expect(solved).toEqual(['r1', 'r2', 'r3', 'r4', 'fresh-1', 'fresh-2', 'r5', 'r5b']);
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(solved.length);
+      const events = (await readStore<LearningEvidence>(page, 'events')).sort((x, y) =>
+        x.id.localeCompare(y.id),
+      );
+      expect(events.map((event) => event.round)).toEqual(solved);
+      expect(events.every((event) => event.profile === LEO.id && event.helpLevel === 0)).toBe(true);
+
+      // the same visit: no picker on reload
+      await page.reload();
+      await page.locator('#player-bar').waitFor({ state: 'visible' });
+      expect(await page.locator('#picker').isVisible()).toBe(false);
+      expect(await page.locator('#player-status').textContent()).toContain('Leo');
+      // a quick tap on the switch does nothing; holding it brings the picker back
+      await page.locator('#switch-player').click();
+      await page.waitForTimeout(300);
+      expect(await page.locator('#picker').isVisible()).toBe(false);
+      if (device === 'desktop') {
+        await page.keyboard.down('g');
+        await page.waitForTimeout(2200);
+        await page.keyboard.up('g');
+      } else await hold(page, '#switch-player');
+      await page.locator('#picker').waitFor({ state: 'visible' });
+      await page.getByRole('button', { name: 'Mia', exact: true }).click();
+      await page.locator('#intro').waitFor({ state: 'visible' });
+      await expect.poll(() => page.locator('#player-status').textContent()).toContain('Mia');
+      await start(page);
+      const first = await shownRound(page, play);
+      await answer(page, String(first.answer));
+      await expect
+        .poll(
+          async () =>
+            (await readStore<LearningEvidence>(page, 'events')).filter((e) => e.profile === MIA.id).length,
+        )
+        .toBe(1);
+
+      // a new visit (tab) asks again
+      const other = await context.newPage();
+      await other.goto(`${base}/lessons/count-three/`);
+      await other.locator('#picker').waitFor({ state: 'visible' });
+      await other.close();
+      expect(errors).toEqual([]);
+      await context.close();
+    });
+
+    it(`Progress (${device}): the gate, children, plain-language states after scripted play, export and delete`, async () => {
+      const viewport = device === 'desktop' ? { width: 1440, height: 1000 } : { width: 390, height: 844 };
+      const { context, page, errors } = await open({
+        ...(device === 'desktop' ? { viewport } : { viewport, hasTouch: true, isMobile: true }),
+        timezoneId: 'America/New_York',
+        acceptDownloads: true,
+      });
+      await page.goto(`${base}/progress/`);
+      expect(await page.locator('.practice-note').textContent()).toContain(
+        'This shows practice, not a test or a grade.',
+      );
+      // the grown-up gate: a tap doesn't open it
+      await page.locator('#open-progress').click();
+      await page.waitForTimeout(300);
+      expect(await page.locator('#progress-area').isVisible()).toBe(false);
+      await hold(page, '#open-progress');
+      await page.locator('#progress-area').waitFor({ state: 'visible' });
+      expect(await page.locator('#device-status').textContent()).toContain('Saved on this device only.');
+      expect(await page.locator('#account-slot').count()).toBe(1);
+
+      // children: help text, validation, add two, rename and recolour one
+      const add = page.locator('#add-child');
+      expect(await add.isVisible()).toBe(true);
+      expect(await add.textContent()).toContain(
+        'A nickname is enough; please don’t use your child’s full name.',
+      );
+      await add.getByRole('button', { name: 'Add child' }).click();
+      expect(await page.locator('#new-nickname-error').textContent()).toBe('Add a nickname.');
+      await page.locator('#new-nickname').fill('Mia <3');
+      await add.getByRole('button', { name: 'Add child' }).click();
+      expect(await page.locator('#new-nickname-error').textContent()).toContain('letters, spaces');
+      await page.locator('#new-nickname').fill('Mia');
+      await add.getByRole('radio', { name: 'Yellow' }).check();
+      await add.getByRole('button', { name: 'Add child' }).click();
+      await page.locator('.child h2', { hasText: 'Mia' }).waitFor();
+      await page.locator('#add-child-panel summary').click();
+      await page.locator('#new-nickname').fill('Leo');
+      await add.getByRole('button', { name: 'Add child' }).click();
+      await page.locator('.child h2', { hasText: 'Leo' }).waitFor();
+      const leoSection = page.locator('.child', { has: page.locator('h2', { hasText: 'Leo' }) });
+      await leoSection.locator('.child-edit summary').click();
+      await leoSection.locator('input[name="nickname"]').fill('Leon');
+      await leoSection.getByRole('radio', { name: 'Red' }).check();
+      await leoSection.getByRole('button', { name: 'Save changes' }).click();
+      await page.locator('.child h2', { hasText: 'Leon' }).waitFor();
+      const profiles = await readStore<{ id: string; nickname: string; avatar: string }>(page, 'profiles');
+      expect(
+        profiles
+          .map(({ nickname, avatar }) => ({ nickname, avatar }))
+          .sort((x, y) => x.nickname.localeCompare(y.nickname)),
+      ).toEqual([
+        { nickname: 'Leon', avatar: 'pip-red' },
+        { nickname: 'Mia', avatar: 'pip-yellow' },
+      ]);
+
+      // scripted play over two of the family's days
+      const playAs = async (lesson: string, seed: number, script: (play: Activity) => Promise<void>) => {
+        await page.goto(`${base}/lessons/${lesson}/?seed=${seed}`);
+        // the picker, the first time in this visit; then straight to "Tap Pip to start"
+        await page.locator('#pip-start:not([disabled]), #picker-choices [data-pick]').first().waitFor();
+        if (await page.locator('#picker').isVisible())
+          await page.getByRole('button', { name: 'Mia', exact: true }).click();
+        await start(page);
+        const activity = baselinePath.activities.find((item) => item.id === lesson) as Activity;
+        const events = await readStore<LearningEvidence>(page, 'events');
+        const seen = new Set(events.map((event) => event.item));
+        await script((await drawn(activity, seed, seen)).activity);
+      };
+      await page.clock.setFixedTime(new Date('2026-10-18T17:00:00.000Z'));
+      await playAs('count-three', 11, async (play) => {
+        await answer(page, String((await shownRound(page, play)).answer));
+        await page.locator('#next').click();
+        await answer(page, String((await shownRound(page, play)).answer));
+        await page.locator('#next').click();
+        const last = await shownRound(page, play);
+        await answer(page, choiceIds(last).find((id) => id !== String(last.answer)) as string, true);
+        await answer(page, String(last.answer));
+      });
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(3);
+      await playAs('spanish-colors', 0, async (play) => {
+        await answer(page, String((await shownRound(page, play)).answer));
+      });
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(4);
+      await page.clock.setFixedTime(new Date('2026-10-19T17:00:00.000Z'));
+      await playAs('count-three', 12, async (play) => {
+        await playToEnd(page, play);
+      });
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(7);
+      await playAs('compare-groups', 0, async (play) => {
+        for (let i = 0; i < 3; i++) await page.locator('#hint').click();
+        await answer(page, String((await shownRound(page, play)).answer));
+      });
+      await expect.poll(async () => (await readStore(page, 'events')).length).toBe(8);
+
+      await openProgressPage(page);
+      const mia = page.locator('.child', { has: page.locator('h2', { hasText: 'Mia' }) });
+      await mia.locator('[data-objective="count-three"]').first().waitFor();
+      const state = (objective: string) =>
+        mia.locator(`.objective[data-objective="${objective}"] .state`).textContent();
+      expect(await state('count-three')).toBe('Got it on new examples');
+      expect(await state('compare-groups')).toBe('Getting there with help');
+      expect(await state('spanish-colors')).toBe('Practising');
+      expect(await mia.locator('.objective[data-objective="spanish-colors"] .tag').textContent()).toBe(
+        'Listening practice',
+      );
+      expect(
+        await mia.locator('.objective[data-objective="count-three"] .objective-when').textContent(),
+      ).toBe('Last practised 19 October 2026');
+      expect(
+        await mia.locator('.objective[data-objective="spanish-colors"] .objective-when').textContent(),
+      ).toBe('Last practised 18 October 2026');
+      // practised first, most recent first; the rest under "Not tried yet"
+      expect(
+        await mia
+          .locator('.objectives > .objective')
+          .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('data-objective'))),
+      ).toEqual(['count-three', 'compare-groups', 'spanish-colors']);
+      expect(await mia.locator('.not-tried summary').textContent()).toBe(
+        `Not tried yet (${baselinePath.activities.length - 3})`,
+      );
+      expect(await mia.locator('.not-tried [data-objective="spanish-hello"] .tag').textContent()).toBe(
+        'Listening practice',
+      );
+      await mia.locator('.objective[data-objective="count-three"] .try-together summary').click();
+      expect(
+        await mia.locator('.objective[data-objective="count-three"] .try-together p').textContent(),
+      ).toBe(countThree.offlineActivity);
+      const leon = page.locator('.child', { has: page.locator('h2', { hasText: 'Leon' }) });
+      expect(await leon.locator('.child-summary').textContent()).toContain('No practice saved yet.');
+      // never a percentage, score or ranking
+      const text = (await page.locator('#progress-area').textContent()) ?? '';
+      expect(text).not.toMatch(/%|\bscored?\b|\brank|\bgrade [A-F]\b|\d+\s*\/\s*\d+/i);
+      await page.locator('.state-key summary').click();
+      expect(await page.locator('.state-key').textContent()).toContain('never recorded');
+      expect(await noHorizontalScroll(page)).toBe(true);
+      if (shots)
+        await page.screenshot({
+          path: join(shots, `p31-progress-${device}.png`),
+          fullPage: true,
+          animations: 'disabled',
+          style: '.skip{display:none}',
+        });
+
+      // export: everything on this device, as JSON
+      const downloadEvent = page.waitForEvent('download');
+      await page.getByRole('button', { name: 'Download progress (JSON)' }).click();
+      const download = await downloadEvent;
+      expect(download.suggestedFilename()).toBe('wwm-learning-progress.json');
+      const exported = JSON.parse(await readFile(await download.path(), 'utf8'));
+      expect(exported.format).toBe('wwm-learning-device-export/1');
+      expect(exported.profiles).toHaveLength(2);
+      expect(exported.events).toHaveLength(8);
+      for (const event of exported.events) expect(evidenceSchema.parse(event)).toEqual(event);
+      expect(JSON.stringify(exported.events)).not.toContain('Mia');
+
+      // delete one child (with confirmation), then everything
+      await leon.locator('.child-edit summary').click();
+      await leon.getByRole('button', { name: 'Delete Leon' }).first().click();
+      await leon.getByRole('button', { name: 'Keep Leon' }).click();
+      expect(await page.locator('.child h2', { hasText: 'Leon' }).count()).toBe(1);
+      await leon.getByRole('button', { name: 'Delete Leon' }).first().click();
+      await leon.locator('[data-confirm-delete]').click();
+      await expect.poll(() => page.locator('.child h2', { hasText: 'Leon' }).count()).toBe(0);
+      expect((await readStore(page, 'events')).length).toBe(8);
+      await page.getByRole('button', { name: 'Delete progress on this device' }).click();
+      await page.getByRole('button', { name: 'Delete everything' }).click();
+      await expect.poll(() => page.locator('.child').count()).toBe(0);
+      expect(await page.locator('#device-feedback').textContent()).toContain('Deleted every child');
+      expect(await readStore(page, 'profiles')).toEqual([]);
+      expect(await readStore(page, 'events')).toEqual([]);
+      expect(await readStore(page, 'outbox')).toEqual([]);
+      expect(errors).toEqual([]);
+      await context.close();
+    });
+  }
+
+  it('voices fresh examples with browser speech: they have no studio clips', async () => {
+    const { context, page, errors } = await open({
+      viewport: { width: 390, height: 844 },
+      hasTouch: true,
+      isMobile: true,
+    });
+    // serve every clip as a short silent WAV (open() aborts them; this route takes over)
+    const rate = 8000;
+    const samples = rate / 10;
+    const wav = Buffer.alloc(44 + samples * 2);
+    wav.write('RIFF', 0);
+    wav.writeUInt32LE(36 + samples * 2, 4);
+    wav.write('WAVEfmt ', 8);
+    wav.writeUInt32LE(16, 16);
+    wav.writeUInt16LE(1, 20);
+    wav.writeUInt16LE(1, 22);
+    wav.writeUInt32LE(rate, 24);
+    wav.writeUInt32LE(rate * 2, 28);
+    wav.writeUInt16LE(2, 32);
+    wav.writeUInt16LE(16, 34);
+    wav.write('data', 36);
+    wav.writeUInt32LE(samples * 2, 40);
+    await context.unroute('**/*.mp3');
+    const clips: string[] = [];
+    await context.route('**/*.mp3', (route) => {
+      clips.push(route.request().url());
+      return route.fulfill({ status: 200, contentType: 'audio/wav', body: wav });
+    });
+    await page.goto(`${base}/lessons/compare-groups/?seed=0`);
+    await start(page);
+    const play = (await drawn(compare, 0)).activity;
+    for (const id of ['r1', 'r2', 'r3', 'r4']) {
+      await answer(page, String((play.rounds.find((item) => item.id === id) as Round).answer));
+      await page.locator('#next').click();
+    }
+    const fresh = play.rounds.find((item) => item.id === 'fresh-2') as Round;
+    await answer(page, String((play.rounds.find((item) => item.id === 'fresh-1') as Round).answer));
+    await page.locator('#next').click();
+    // fresh-2's prompt and success line have no clip: browser speech says them
+    await expect.poll(() => spoken(page), { timeout: 10_000 }).toContain(fresh.prompt);
+    await answer(page, String(fresh.answer));
+    await expect.poll(() => spoken(page), { timeout: 10_000 }).toContain(fresh.success);
+    // the written rounds asked for their clips (a clip cut short by a quick tap may still fall back to speech)
+    expect(clips.length).toBeGreaterThan(0);
+    expect(errors).toEqual([]);
+    await context.close();
+  });
+
+  it('without IndexedDB (private browsing): lessons play, nothing is saved, and Progress says so', async () => {
+    for (const block of ['missing', 'throws'] as const) {
+      const { context, page, errors } = await open({ viewport: { width: 1440, height: 900 } });
+      await context.addInitScript((mode) => {
+        if (mode === 'missing')
+          Object.defineProperty(window, 'indexedDB', { value: undefined, configurable: true });
+        else
+          IDBFactory.prototype.open = () => {
+            throw new DOMException('The user denied permission to access the database.', 'SecurityError');
+          };
+      }, block);
+      await page.goto(`${base}/lessons/compare-groups/?seed=0`);
+      await start(page);
+      expect(await page.locator('#picker').isVisible()).toBe(false);
+      expect(await page.locator('#player-bar').isVisible()).toBe(false);
+      await playToEnd(page, (await drawn(compare, 0)).activity);
+      expect(await page.locator('#end').isVisible()).toBe(true);
+      await openProgressPage(page);
+      expect(await page.locator('#progress-unavailable').isVisible()).toBe(true);
+      expect(await page.locator('#progress-unavailable').textContent()).toContain(
+        'Lessons still work; nothing is saved.',
+      );
+      expect(await page.locator('#add-child').isVisible()).toBe(false);
+      expect(errors).toEqual([]);
+      await context.close();
+    }
   });
 });

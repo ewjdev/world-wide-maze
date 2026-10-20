@@ -7,6 +7,7 @@ export default defineConfig({
     rolldownOptions: {
       input: [
         fileURLToPath(new URL('./index.html', import.meta.url)),
+        fileURLToPath(new URL('./progress/index.html', import.meta.url)),
         ...baselinePath.activities.map((activity) =>
           fileURLToPath(new URL(`./lessons/${activity.id}/index.html`, import.meta.url)),
         ),

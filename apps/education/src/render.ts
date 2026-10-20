@@ -14,6 +14,7 @@ import {
   learningScript,
   levelsFor,
   neutralLabels,
+  numberWord,
   type Orientation,
   preschoolActivities,
   type Round,
@@ -27,6 +28,7 @@ import {
   type Theme,
   wordsOf,
 } from '@wwm/learning';
+import { holdButtonHtml } from './hold.ts';
 
 export function escapeHtml(value: string): string {
   return value
@@ -178,7 +180,10 @@ export function inputHintHtml(
 
 /** How the path list describes an activity's length. */
 export function roundSummary(activity: Activity): string {
-  const total = requiredRounds(activity) + (activity.rounds.some((round) => round.optional) ? 1 : 0);
+  const total =
+    requiredRounds(activity) +
+    (activity.fresh?.count ?? 0) +
+    (activity.rounds.some((round) => round.optional) ? 1 : 0);
   if (total <= 1) return 'One quick question with Pip';
   return `${total}-round challenge${activity.tools.includes('match') ? ' with the match tool' : ''}`;
 }
@@ -262,7 +267,7 @@ export function skyIslandsArt(theme: Theme): string {
 const MUTE_ICON =
   '<svg class="icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="waves" d="M16 9c1.3 1.6 1.3 4.4 0 6M18.5 6.5c2.7 3 2.7 8 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="slash" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
-function shell(
+export function shell(
   title: string,
   content: string,
   path: LearningPath,
@@ -274,7 +279,7 @@ function shell(
 <body${options.bodyClass ? ` class="${options.bodyClass}"` : ''}>
 <!-- THESIS: a visible learning path and a large, direct activity canvas. OWN-WORLD: inherited WWM Figtree/Unbounded, fog-white, the Sky Islands theme (Pip, gems, islands, bridge) drawn from the learning document. STORY: choose, explore, understand, personalize. FIRST VIEWPORT: path introduction alongside six ordered stops; lessons lead with Pip, the question, and the scene. FORM: established WWM system, parent workspace and child activity canvas. FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, and DESIGN.md -->
 <a class="skip" href="#main">Skip to content</a>
-<header class="site-header"><a class="wordmark" href="/"><span class="brand-shapes" aria-hidden="true"><i></i><i></i><i></i></span>WWM <span>Learning</span></a><nav aria-label="Main navigation"><a href="/">Learning path</a><a href="/#personalize">For parents</a></nav></header>
+<header class="site-header"><a class="wordmark" href="/"><span class="brand-shapes" aria-hidden="true"><i></i><i></i><i></i></span>WWM <span>Learning</span></a><nav aria-label="Main navigation"><a href="/">Learning path</a><a href="/#personalize">For parents</a><a href="/progress/">Progress</a></nav></header>
 <main id="main">${content}</main>
 <footer><p>Small discoveries. Shared adventures.</p><p>Original pilot material · Ages 4–6 · English</p><p class="small">Adult-guided practice. Educator review and family testing are still ahead.</p></footer>
 ${learningScript(path)}
@@ -352,6 +357,14 @@ export function homePage(path: LearningPath): string {
   );
 }
 
+/** Fresh examples (Phase 31): rounds drawn new for each play-through, after the rounds above. */
+export function freshNoteHtml(activity: Activity): string {
+  const count = activity.fresh?.count;
+  if (!count) return '';
+  const rounds = count === 1 ? 'one new example' : `${numberWord(count)} new examples`;
+  return `<p class="fresh-note" data-fresh="${count}"><strong>Then ${rounds}.</strong> Pip draws ${count === 1 ? 'it' : 'them'} fresh for each play-through, like the rounds above but with different pictures, so you can see whether the idea holds on something new.</p>`;
+}
+
 /** Grown-up notes: goal, interpretation, what every round checks (with its prompt, hints and answer). */
 function parentNotesHtml(path: LearningPath, activity: Activity): string {
   return `<details class="parent-notes" id="parent-notes"><summary>For grown-ups: what this teaches</summary>
@@ -364,7 +377,7 @@ function parentNotesHtml(path: LearningPath, activity: Activity): string {
           (round, index) =>
             `<li data-learning-round="${round.id}" data-learning-kind="${round.kind}"><p class="round-check"><strong>${escapeHtml(roundCheck(activity, round, index))}</strong></p><p>Question: <span data-learning-field="prompt">${escapeHtml(round.prompt)}</span></p><p>Help, step by step:</p><ol class="hint-ladder">${round.hints.map((hint) => `<li data-learning-field="hint">${escapeHtml(hint)}</li>`).join('')}</ol><p>Answer: ${escapeHtml(answerLabel(round))}. <span data-learning-field="explanation">${escapeHtml(round.success)}</span></p></li>`,
         )
-        .join('')}</ol>
+        .join('')}</ol>${freshNoteHtml(activity)}
       <h3>Try it away from the screen</h3><p data-learning-field="offline">${escapeHtml(activity.offlineActivity)}</p>
       <p class="small">One play-through is practice, not an assessment of mastery.</p>
     </details>`;
@@ -385,6 +398,10 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
     `<div class="lesson-layout">
   <div class="lesson-bar"><a class="back" href="/">← <span>All activities</span></a><h1 class="lesson-title"><span class="lesson-count">${index + 1} of ${path.activities.length} · </span>${escapeHtml(activity.title)}</h1><button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute ${pip}" title="Mute ${pip}" disabled>${MUTE_ICON}</button></div>
   <article class="activity" data-learning-activity="${activity.id}" data-learning-kinds="${[...new Set(activity.rounds.map((round) => round.kind))].join(' ')}">
+    <section class="picker" id="picker" aria-labelledby="picker-heading" hidden>
+      <h2 class="picker-heading" id="picker-heading">Who’s playing?</h2>
+      <div class="picker-choices" id="picker-choices" role="group" aria-labelledby="picker-heading"></div>
+    </section>
     <section class="intro" id="intro">
       <button class="pip-start" id="pip-start" type="button" disabled>${spriteMarkup(theme, 'pip', 132, 'pip-sprite')}<span class="pip-start-label">Tap ${pip} to start</span></button>
       <p class="introduction" data-learning-field="introduction">${escapeHtml(activity.introduction)}</p>
@@ -412,6 +429,7 @@ export function lessonPage(path: LearningPath, activity: Activity): string {
     </section>
   </article>
   <p id="lesson-version" class="small lesson-version">Original learning path</p>
+  <div class="player-bar" id="player-bar" hidden><p class="small" id="player-status"></p>${holdButtonHtml('switch-player', 'Switch who’s playing', 'secondary player-switch')}</div>
   ${parentNotesHtml(path, activity)}
   <nav class="lesson-nav" aria-label="Activity navigation"><a class="secondary" href="/">Choose another activity</a>${preschoolActivities.some((item) => item.id === activity.id) ? `<a class="secondary" download href="/lesson-packs/${activity.id}.html">Download this lesson for the maze</a>` : ''}${next ? `<a class="secondary" href="/lessons/${next.id}/">Skip to the next activity →</a>` : ''}</nav>
   <noscript><p class="small">Pip’s voice and the answer buttons need JavaScript. You can still read the question, look at the islands together, and open the grown-up notes.</p></noscript>
