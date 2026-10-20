@@ -413,8 +413,17 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
     problems.push(`${where}: R2 STAGES is ${r2.bucket_name}, config says ${c.r2}`);
   if (obj.browser?.binding !== 'BROWSER') problems.push(`${where}: no browser binding BROWSER`);
   const doNames = (obj.durable_objects?.bindings ?? []).map((b) => b.name).sort();
-  if (doNames.join() !== 'BUDGET,BUILD_JOB,JEV_CONTROL,LIMITER,ROOM')
-    problems.push(`${where}: DO bindings must be BUDGET, ROOM, BUILD_JOB, LIMITER, JEV_CONTROL`);
+  if (doNames.join() !== 'BUDGET,BUILD_JOB,JEV_CONTROL,LESSON_DRAFT_AGENT,LIMITER,ROOM')
+    problems.push(
+      `${where}: DO bindings must be BUDGET, ROOM, BUILD_JOB, LIMITER, JEV_CONTROL, LESSON_DRAFT_AGENT`,
+    );
+  // Phase 31 M4: lesson drafts need their Workflow; Previews never run them.
+  if (
+    !(obj.workflows ?? []).some((w) => w.binding === 'LESSON_DRAFT' && w.class_name === 'LessonDraftWorkflow')
+  )
+    problems.push(`${where}: no Workflow binding LESSON_DRAFT`);
+  if (target === 'previews' && vars.LESSON_DRAFTS !== 'off')
+    problems.push(`${where}.vars.LESSON_DRAFTS must be "off"`);
   for (const rl of RATE_LIMITERS) {
     const b = (obj.ratelimits ?? []).find((x) => x.name === rl);
     if (!b) problems.push(`${where}: no rate limit binding ${rl}`);

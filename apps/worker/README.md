@@ -112,6 +112,40 @@ SSE (`delta`… → `citations` → `done`, or `error`). Code: `src/routes/docen
   kill switch KV `kill:docent` or `DOCENT_PROVIDER=off`; one `docent answer` log line per answer with provider,
   model, outcome, input/output tokens and latency (no question text, no IP).
 
+## Lesson drafts (Phase 31 M4, contracts §10.5 CCR-31-4)
+Operator-only authoring of open-vocabulary bank items (today: English missing-letter spelling,
+`little-word-builders`). Code: `src/lesson-drafts/`. Operator guide: [docs/education/lesson-drafts.md](../../docs/education/lesson-drafts.md).
+- **Endpoints.** `/api/admin/lessons/*`, mounted under the admin router, so the Access JWT, the `ADMIN_EMAILS`
+  allowlist and same-origin writes are checked first (503/401/403, failing closed). Then `LESSON_DRAFTS` must be
+  `on`, or every endpoint is 404. List and create (`GET`/`POST /`), read a draft (`GET /:id`), the next turn
+  (`POST /:id/messages {text, count?, drop?}`), a revision (`GET /:id/revisions/:hash`) and its preview
+  (`…/preview`), `POST /:id/review {decision, note, revision, acknowledgeFlags?}`, and `GET /:id/export`.
+- **`LessonDraftAgent`** (`agent.ts`, Agents SDK, binding `LESSON_DRAFT_AGENT`, migration `v5`): one Durable Object
+  per draft. Its SQLite (`records.ts`) holds the draft, the transcript and every revision by content hash. The
+  instance `draft-index` keeps the draft list. The Worker never routes `/agents/*`, and the agent refuses HTTP and
+  WebSocket connections of its own.
+- **`LESSON_DRAFT` Workflow** (`workflow.ts`, steps in `pipeline.ts`): one instance per operator message
+  (`<draft>-t<turn>`). `generate` and `repair-1/2` are billed and run once (no step retries; a resumed instance
+  replays their stored replies). `context`, `validate-N`, `assemble`, `save-revision` and `ready-for-review` are
+  safe to re-run. Validation (`validate.ts`) is `roundSchema`, `roundIssues` and the objective's checks from
+  `@wwm/learning` (`AUTHORING_OBJECTIVES`: the reviewed word list, real-word distractor flags), plus freshness
+  against the lesson, the bank so far and earlier drops. The prompt carries the bank so far as an exclusion list.
+- **Provider** (`config.ts`, `providers.ts`): the docent's pattern. Claude through AI Gateway
+  (`LESSON_DRAFT_MODEL`, default `claude-sonnet-5-5`; `LESSON_DRAFT_MAX_TOKENS` 8000), the offline mock in
+  development (`LESSON_DRAFT_PROVIDER=auto` without gateway config, or `mock`), nothing in a deployed environment
+  without the gateway. Secrets are the docent's (`ANTHROPIC_API_KEY` or `AI_GATEWAY_TOKEN`). Gateway turns are
+  capped by `LESSON_DRAFT_DAILY_LIMIT` (20 per rolling 24 h, `Limiter` DO); mock turns are free.
+- **Safety.** Model output is parsed only as JSON and validated. Previews go through `portablePage()`
+  (`@wwm/education/render`), which escapes every string, and are served with `default-src 'none'` and `sandbox`.
+  Nothing reaches a child until an operator approves, the export is imported with `pnpm learning:bank import`,
+  reviewed in git and deployed.
+- **Config.** `LESSON_DRAFTS=on` locally (mock), `off` in production and Previews. Previews bind a separate Workflow
+  name (`wwm-lesson-draft-preview`) and `check-deploy-config.mjs` requires `LESSON_DRAFTS=off` there.
+- **Tests.** `lesson-drafts-pipeline` (valid output, repair, giving up after two repairs, no re-billing when a run
+  resumes before any step), `lesson-drafts-routes` (fails closed), `lesson-drafts-records` (records, preview
+  escaping, export → import), and `lesson-drafts.workerd` (agent + Workflow + routes in workerd with the mock,
+  through approval and export; test-only Worker in `test/lesson-drafts-runtime/`).
+
 ## Retention (task 9)
 A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS` (30): their stage JSON, textures, capture bundle, and D1 rows. It handles at most 200 runs per tick. Curated runs are the `run_id`s in Phase 10's `curated` table. KV cache entries expire on their own after 7 days.
 

@@ -3,10 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Phase 31 lesson authoring experiments: model-written example rounds through Cloudflare AI Gateway, checked against @wwm/learning.",
+  "description": "Phase 31 lesson authoring: the item-bank spike and the bank import CLI. Model-written rounds go through Cloudflare AI Gateway and are checked against @wwm/learning.",
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
-    "spike": "node src/spike.ts"
+    "spike": "node src/spike.ts",
+    "bank": "node src/bank.ts",
+    "draft-smoke": "node src/draft-smoke.ts"
   },
   "dependencies": {
     "@wwm/learning": "workspace:*"

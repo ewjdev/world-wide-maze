@@ -1,0 +1,92 @@
+/* Lesson drafts (Phase 31 M4): the capture workbench's paper, ink and teal, applied to a chat and a review. */
+.admin-lessons code {
+  font-size: 0.9em;
+  overflow-wrap: anywhere;
+}
+.admin-lessons-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  margin: 0 0 1.5rem;
+}
+.admin-lessons-facts dt {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.admin-lessons-facts dd {
+  margin: 0;
+  color: var(--ink-2);
+}
+.admin-lessons-new form,
+.admin-lessons-message {
+  display: grid;
+  gap: 0.75rem;
+  margin-block: 0.75rem 1.25rem;
+}
+.admin-lessons-message fieldset {
+  border: 1px solid var(--rule);
+  padding: 0.5rem 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1.25rem;
+}
+.admin-lessons-message legend {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.admin-lessons-message fieldset .admin-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 400;
+}
+.admin-lessons-chat li[data-role="agent"] {
+  background: var(--paper);
+  padding-inline: 0.75rem;
+}
+.admin-lessons-chat p {
+  white-space: pre-wrap;
+}
+.admin-lessons-revision {
+  display: block;
+  margin-bottom: 1rem;
+}
+.admin-lessons-revision-report h4 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1rem;
+}
+.admin-lessons-flags {
+  padding: 0.75rem 1rem;
+  background: var(--pending-paper, #fff0d0);
+  color: var(--pending-ink, #765011);
+}
+.admin-lessons-flags ul,
+.admin-lessons-revision-report [role="alert"] ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.admin-lessons-items li {
+  display: grid;
+  gap: 0.25rem;
+}
+.admin-lessons-items span {
+  font-size: 0.9rem;
+  overflow-wrap: anywhere;
+}
+.admin-lessons-issue {
+  color: #8d2e20;
+}
+.admin-lessons-items pre {
+  max-height: 16rem;
+  overflow: auto;
+  font-size: 0.8rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.admin-lessons-preview {
+  display: block;
+  width: 100%;
+  height: min(70vh, 48rem);
+  border: 1px solid var(--rule);
+  background: var(--panel);
+}

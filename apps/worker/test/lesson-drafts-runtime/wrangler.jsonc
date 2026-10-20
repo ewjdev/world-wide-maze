@@ -1,0 +1,19 @@
+// Test-only Worker for test/lesson-drafts.workerd.test.ts: the real agent, Workflow and routes in workerd, with the
+// mock provider and a fixed operator identity in place of Cloudflare Access. Never deployed.
+{
+  "name": "lesson-drafts-runtime-test",
+  "main": "worker.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "vars": { "WWM_ENV": "development", "LESSON_DRAFTS": "on", "LESSON_DRAFT_PROVIDER": "mock" },
+  "durable_objects": {
+    "bindings": [
+      { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" },
+      { "name": "LIMITER", "class_name": "Limiter" }
+    ]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["LessonDraftAgent", "Limiter"] }],
+  "workflows": [
+    { "name": "lesson-draft-test", "binding": "LESSON_DRAFT", "class_name": "LessonDraftWorkflow" }
+  ]
+}

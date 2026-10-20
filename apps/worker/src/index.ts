@@ -13,6 +13,8 @@ import { clientIp, withSecurityHeaders } from './security.ts';
 export { Budget } from './budget.ts';
 export { BuildJob } from './build-job.ts';
 export { JevControl } from './jev/control.ts';
+export { LessonDraftAgent } from './lesson-drafts/agent.ts';
+export { LessonDraftWorkflow } from './lesson-drafts/workflow.ts';
 export { Limiter } from './limiter.ts';
 export { Room } from './room.ts';
 
