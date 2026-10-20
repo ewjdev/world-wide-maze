@@ -262,7 +262,7 @@ export function skyIslandsArt(theme: Theme): string {
 const MUTE_ICON =
   '<svg class="icon" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="waves" d="M16 9c1.3 1.6 1.3 4.4 0 6M18.5 6.5c2.7 3 2.7 8 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path class="slash" d="M16 9l6 6M22 9l-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 
-function shell(
+export function shell(
   title: string,
   content: string,
   path: LearningPath,
