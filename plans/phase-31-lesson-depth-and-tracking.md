@@ -1,6 +1,6 @@
 # Phase 31: Lesson depth and parent progress tracking
 
-**Status:** Planned on 2026-10-19 with the owner. M0 (item-bank spike) and M1 (`@wwm/learning` objectives, banks, generators, evidence and progress) are done. The owner approved starting M1 on 2026-10-19, which applied CCR-31-1 and CCR-31-2. CCR-31-3 (accounts and sync) and CCR-31-4 (lesson drafts) are fixed in [contracts §10.5](contracts.md) and `@wwm/learning` `sync.ts`, so M2–M4 can run in parallel. Owner decisions not yet made use the plan's defaults: passkeys plus an email link, 24-month inactivity deletion, and `LEARNING_ACCOUNTS=off` in production until the privacy review.
+**Status:** M0–M5 built and merged on `claude/phase-31-lesson-depth-tracking` (2026-10-20). Owner gates remain open: infrastructure setup, privacy review, vocabulary review, educator review and child/parent testing (see Acceptance). Earlier status: planned on 2026-10-19 with the owner; M0 (item-bank spike) and M1 (`@wwm/learning` objectives, banks, generators, evidence and progress) done first. The owner approved starting M1 on 2026-10-19, which applied CCR-31-1 and CCR-31-2. CCR-31-3 (accounts and sync) and CCR-31-4 (lesson drafts) are fixed in [contracts §10.5](contracts.md) and `@wwm/learning` `sync.ts`, so M2–M4 can run in parallel. Owner decisions not yet made use the plan's defaults: passkeys plus an email link, 24-month inactivity deletion, and `LEARNING_ACCOUNTS=off` in production until the privacy review.
 **Audience:** Children aged 4–6 playing with a grown-up, and the grown-ups who follow their progress.
 **Platform:** Cloudflare only (Workers, Durable Objects, D1, Workflows, Agents SDK, AI Gateway, Email Service, Turnstile, Access). Vercel-based ideas, such as fx0/libfx, are ported to Cloudflare primitives, not adopted.
 
@@ -155,10 +155,10 @@ Agent tools: the schema validator and `playIssues()`, the objective checks, `por
 |---|---|---|
 | M0 | Item-bank spike (`tools/lesson-draft`) | Done 2026-10-19; see evidence |
 | M1 | CCR-31-1/2 in `@wwm/learning`: objectives, banks, `fresh`, objective checks, generators for compare, difference, count and colour, evidence and `objectiveProgress()` | Done 2026-10-19: `test/depth.test.ts` covers generator determinism and layout fit, checks on every generated round, fresh drawing, evidence and progress rules |
-| M2 | Local tracking: IndexedDB evidence and outbox, lesson page emits evidence, profile picker, parent Progress page (local) | Browser e2e on desktop and mobile Chromium. No change to child-surface screenshots except the picker |
-| M3 | Accounts and sync: D1 database, `FamilyRecords` DO, passkey and magic link, pairing, export and delete, Turnstile | Worker integration tests in workerd (dedupe, revocation, cross-family isolation, deletion completeness). Privacy review recorded |
-| M4 | Authoring agent: Agents SDK + Workflow, review-queue integration | One open-vocabulary bank (spelling) approved through the workbench end to end |
-| M5 | Maze emits the same evidence (`surface: 'maze'`) | Falls and scores provably absent from evidence; game e2e |
+| M2 | Local tracking: IndexedDB evidence and outbox, lesson page emits evidence, profile picker, parent Progress page (local) | Done 2026-10-20 ([build log](../docs/build-log/phase-31-m2.md)): 29 Chromium e2e on desktop and mobile |
+| M3 | Accounts and sync: D1 database, `FamilyRecords` DO, passkey and magic link, pairing, export and delete, Turnstile | Built 2026-10-20 ([build log](../docs/build-log/phase-31-m3.md)): workerd integration tests and an account e2e pass. **Open:** owner infrastructure setup and the privacy review before `allowlist`/`on` |
+| M4 | Authoring agent: Agents SDK + Workflow, review-queue integration | Built 2026-10-20 ([build log](../docs/build-log/phase-31-m4.md)), including one real gateway smoke test. **Open:** owner vocabulary review, then one spelling bank approved, imported and merged |
+| M5 | Maze emits the same evidence (`surface: 'maze'`) | Done 2026-10-20 ([build log](../docs/build-log/phase-31-m5.md)): unit proof that falls and score never affect evidence; 5 Chromium e2e |
 
 ## Acceptance (human gates, checked by the orchestrator)
 

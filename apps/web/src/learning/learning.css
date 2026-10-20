@@ -608,6 +608,120 @@
   color: var(--go);
 }
 
+.wwm-lpanel__player {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.wwm-lpanel__avatar {
+  display: inline-grid;
+  flex: none;
+}
+.wwm-lpanel__avatar svg {
+  display: block;
+}
+
+/* ── Phase 31 M5: who's playing (the lesson page's picker, in the game's plate language) ── */
+
+.wwm-lpick {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: 24px 16px;
+  background: radial-gradient(ellipse at 50% 55%, rgba(248, 248, 248, 0.72), rgba(248, 248, 248, 0.92));
+  backdrop-filter: blur(3px);
+  animation: wwm-fade 300ms var(--ease) both;
+}
+.wwm-lpick__card {
+  --cut: 18px;
+  display: grid;
+  justify-items: center;
+  gap: 24px;
+  max-width: min(760px, 100%);
+  padding: 28px clamp(20px, 4vw, 44px) 32px;
+  background:
+    linear-gradient(90deg, var(--blue) 0 38%, var(--yellow) 38% 52%, var(--green) 52% 70%, var(--teal) 70%)
+    top / 100% 6px no-repeat,
+    var(--paper);
+  clip-path: polygon(
+    var(--cut) 0,
+    100% 0,
+    100% calc(100% - var(--cut)),
+    calc(100% - var(--cut)) 100%,
+    0 100%,
+    0 var(--cut)
+  );
+}
+.wwm-lpick__frame {
+  max-width: 100%;
+  filter: var(--shadow);
+  animation: wwm-lgate-in 460ms var(--ease) both;
+}
+.wwm-lpick__title {
+  margin: 0;
+  font: 800 clamp(24px, 3.4vw, 36px) / 1.1 var(--display);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+.wwm-lpick__choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+.wwm-lpick__choice {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  min-width: 152px;
+  min-height: 172px;
+  padding: 16px 20px 12px;
+  border: 2px solid #cbd8e2;
+  border-radius: 28px;
+  background: #e7eef5;
+  cursor: pointer;
+  transition:
+    background 150ms var(--ease),
+    border-color 150ms var(--ease);
+}
+.wwm-lpick__choice:hover {
+  background: #dce8f2;
+  border-color: var(--blue);
+}
+.wwm-lpick__choice svg {
+  display: block;
+  overflow: visible;
+  transition: transform 120ms var(--ease);
+}
+.wwm-lpick__choice:active svg {
+  transform: translateY(2px);
+}
+@media (max-width: 640px) {
+  .wwm-lpick__card {
+    gap: 16px;
+    padding: 22px 14px 24px;
+  }
+  .wwm-lpick__choices {
+    gap: 12px;
+  }
+  .wwm-lpick__choice {
+    min-width: 136px;
+    min-height: 150px;
+    padding: 12px 14px 8px;
+  }
+  .wwm-lpick__choice svg {
+    width: 92px;
+    height: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wwm-lgate,
   .wwm-lgate__frame,
@@ -615,8 +729,15 @@
   .wwm-lgate__pip,
   .wwm-lhud,
   .wwm-lmission,
+  .wwm-lpick,
+  .wwm-lpick__frame,
+  .wwm-lpick__choice,
+  .wwm-lpick__choice svg,
   .wwm-hold-btn__fill {
     animation: none !important;
     transition: none !important;
+  }
+  .wwm-lpick__choice:active svg {
+    transform: none;
   }
 }

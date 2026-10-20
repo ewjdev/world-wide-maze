@@ -21,7 +21,7 @@ One **evidence event** per round the child solves (`LearningEvidence`, `packages
 - the lesson, objective and round id, and the item's content hash
 - whether the item was new to this child, and where it came from (written lesson, bank or generator)
 - whether it was solved first try or after a retry, and the highest hint step used (0 none, 1 nudge, 2 strategy, 3 worked example)
-- the surface (`lesson`), the way the child answered (tap, letter key, number key or arrows; pressing an answer button from the keyboard or with assistive technology counts as a tap)
+- the surface (`lesson`, or `maze` for a Pip gate in the game), the way the child answered (tap, letter key, number key or arrows; pressing an answer button from the keyboard or with assistive technology counts as a tap)
 - a duration bucket (under 10 s, 30 s or 2 min, or longer) and the time to the minute
 - an opaque, random profile id (never the nickname)
 
@@ -32,7 +32,7 @@ The events, the children's profiles and an **outbox** (events not yet sent to an
 - Names beyond the nickname a grown-up types. The help text asks for a nickname, not a full name. There is no birth date, photo, school or location.
 - Anything the child says. There is no microphone, recording or speech recognition, and speaking practice is never scored.
 - Wrong answers as a list, free text, tap positions, device details, IP addresses or URLs.
-- Maze falls, game scores or anything from the game. The game (M5) will add the same evidence with `surface: 'maze'`, and still no falls or scores.
+- Maze falls, game scores or anything else from the game besides solved Pip-gate rounds. The game records those with `surface: 'maze'` (see [Maze](#maze)).
 
 ## What Progress shows
 
@@ -61,7 +61,16 @@ In **Progress → On this device**:
 
 Clearing the browser's site data for the lessons' origin does the same. In a private window, or with site storage turned off, lessons still work, nothing is saved, and Progress says so.
 
+## Maze
+
+Phase 31 M5. The game (`/play/…?learn=<activity>`, or a learning page loaded with "Load a learning page…") records the same evidence as the lesson page, in the same store. The game and the lessons share an origin, so it's the same IndexedDB database, and in the same browser tab the same remembered pick.
+
+- **Who's playing:** the same rules as the lesson page. With no children nothing is asked or saved; one child is chosen silently. With two or more, the picture-only picker shows while the maze builds, unless a child was already picked in this tab. A child picks by tap or click, or with the arrow keys and Enter; the paired phone can't pick. "Hi, <nickname>!" uses the browser's own voice only, and not when the game is muted. On the site-select screen, the Pip gates panel says who practice is saved for. With two or more children it also offers **Switch who's playing**: press and hold for 2 seconds, or hold W.
+- **Fresh examples:** each game draws its own fresh examples for the child playing, as the lesson page does. Levels whose steps are "every round" (Explore, Gated, Goal only) get a Pip gate for each fresh round, after the written rounds. Levels with their own step list, such as Missions, leave fresh rounds out. Every baseline lesson fits the 8 gates a stage can hold (at most 6 required rounds with fresh examples). If a future lesson needs more, the extra rounds are asked on the "Before you roll" card at the start of a stage.
+- **Evidence:** one event per round solved on a gate card, with `surface: 'maze'`. Input is how the child answered: tap or click, letter key, number key, arrows and Enter (or a gamepad), or the phone's tilt and JUMP. Duration is the time the round was on the card; the maze is paused then.
+- **Never evidence:** falls, respawns, retries, gems, the score, the stage timer, missions, locks, a gate closed with "Later" or "Skip", and the grown-ups' override. Learning runs are still never ranked or submitted.
+- **Without storage:** if IndexedDB is missing or refuses (some private windows), the lesson plays and nothing is saved. Without Web Crypto (an insecure origin), only the written rounds play and nothing is saved.
+
 ## Next
 
 - **M3** adds optional parent accounts: "Sign in to keep progress across devices" mounts in Progress's `#account-slot`, and a sync client sends the outbox (`outbox()`/`markSynced()`) to `POST /api/learning/events`.
-- **M5** has the maze use the same store and picker, and record `surface: 'maze'` evidence.

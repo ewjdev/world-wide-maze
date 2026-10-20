@@ -560,3 +560,9 @@ Further rules:
 - **Agent:** an Agents SDK `LessonDraftAgent` Durable Object per draft.
 - **Workflow:** `LESSON_DRAFT` (generate, validate, repair at most twice, ready for review) through AI Gateway `wwm`.
 - **Output:** an approved bank is exported as JSON for `pnpm learning:bank import`, which validates and writes it into `packages/learning`. Nothing reaches a child until the import is committed and deployed.
+
+**Resolutions (orchestrator, 2026-10-20):**
+- **CCR-31-4a (accepted):** `LessonDraftAgent` extends the Agents SDK base `Agent`, not `AIChatAgent`. Its transcript is plain text, and model calls use the docent's AI Gateway provider.
+- **CCR-31-4b (accepted):** the workbench wire types live in `@wwm/learning` (`reviewed-banks.ts`) with the rest of the education contract.
+- **CCR-31-5 (applied):** `AVATAR_LOOKS` and `avatarSvg` moved to `@wwm/learning` (`avatars.ts`), so the lesson page and the maze draw the same avatar from one copy.
+- **Migrations:** Durable Object migration tags are `v5` for `LessonDraftAgent` and `v6` for `FamilyRecords`.

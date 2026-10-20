@@ -180,5 +180,5 @@ An item is `roundHash(round)`: SHA-256 over what the child sees and hears, witho
 
 - **Objectives:** one per activity, named after it.
 - **Banks:** generated banks for `count-three`, `count-five`, `compare-groups` and `spanish-colors`.
-- **Fresh examples:** `count-three`, `count-five`, `compare-groups` and `spanish-colors` each ask for two (M2). The lesson page plays them; the game plays the written rounds until M5.
+- **Fresh examples:** `count-three`, `count-five`, `compare-groups` and `spanish-colors` each ask for two (M2). The lesson page (M2) and the maze (M5) both play them.
 - **Family drafts:** drafts made against 3.1.0 apply unchanged.

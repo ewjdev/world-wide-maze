@@ -1,3 +1,4 @@
+export * from './avatars.ts';
 export * from './banks.ts';
 export * from './baseline.ts';
 export * from './bridge-runtime.ts';

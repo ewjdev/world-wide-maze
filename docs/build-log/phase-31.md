@@ -28,9 +28,23 @@
   - Family drafts from 3.1.0 still apply.
 - **Design change in M1:** fresh examples are declared on the activity (`activity.fresh`), not as a level step. The lesson page plays them without levels, and the expanded activity is an ordinary `Activity`.
 
+- **M2–M5 (orchestrated, 2026-10-19/20):**
+  - The orchestrator fixed CCR-31-3/4 in contracts §10.5 and `@wwm/learning` `sync.ts`. Four sub-agents (Claude Code, Claude Opus 5.5) each worked in their own git worktree: M2, M3 and M4 in parallel, then M5 once M2 had merged. Hand-offs: [M2](phase-31-m2.md), [M3](phase-31-m3.md), [M4](phase-31-m4.md), [M5](phase-31-m5.md).
+  - The orchestrator merged them in the order M2, M4, M3, M5 and did the integration work:
+    - Durable Object migration tags `v5` (`LessonDraftAgent`) and `v6` (`FamilyRecords`).
+    - The account code reads M2's store, so a paired device's token lives in IndexedDB.
+    - The Progress page syncs and shows every device's events, and mirrors profile edits.
+    - The lesson page syncs when a lesson ends.
+    - CCR-31-5: one shared avatar drawing in `@wwm/learning`.
+    - The deploy guard refuses placeholder `LEARNING_DB` ids; `provision.mjs` creates the learning databases; CI applies their migrations.
+
 ## Attempts that failed
 - M0: none. The first gateway call through `env.AI.gateway('wwm').run({ provider: 'anthropic', … })` worked under `wrangler dev` with the existing login.
 - M1: drawing two fresh examples for `compare-groups` exceeded the 8-round activity limit (seven written rounds). Activities now allow 8 written rounds plus 3 `fresh-` rounds.
+
+- Integration: after M2's store took over the device token, M3's account e2e still read it from `localStorage`. The test now reads it from the store.
+- Integration: adding the `LEARNING_DB` guard made the infra tests fail, because they assert that the committed config is deployable. The learning databases are now part of provisioning. The committed-config test allows exactly the two pending placeholders until the owner provisions them.
+- Shared checkout: another session switched the main checkout's branch mid-M1, so an M1 commit landed on its branch. It was moved back, and Phase 31 continued in dedicated worktrees.
 
 ## Manual interventions
 None.
