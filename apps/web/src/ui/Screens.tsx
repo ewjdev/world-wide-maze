@@ -9,13 +9,14 @@ import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import { type CatalogEntry, FIXTURES, PRACTICE } from '../game/catalog.ts';
 import { Game } from '../game/game.ts';
+import { PORTAL_WINDOWS_ENABLED } from '../game/portal-preview.ts';
 import { normalizeInputUrl } from '../game/stages.ts';
 import { touchCapable } from '../input/capability.ts';
 import { LearningNotice, LearningPanel } from '../learning/LearningPanel.tsx';
 import { LearningPicker } from '../learning/LearningPicker.tsx';
 import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { useGame, useView } from './GameApp.tsx';
-import { JourneyTrail } from './Journey.tsx';
+import { JourneyTrail, TravelWindow } from './Journey.tsx';
 import { useJourneyT } from './journey-strings.ts';
 import { PlayLayer } from './Play.tsx';
 import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
@@ -71,10 +72,13 @@ export function Screens({ homeTitle = false }: { homeTitle?: boolean }) {
     'timeup',
     'gameover',
   ].includes(v.phase);
+  // Portal windows: the travel window replaces the veil while it is up (play → building → intro)
+  const travelWindow = PORTAL_WINDOWS_ENABLED && (!!v.travel?.handoff || !!v.arrival);
   return (
     <>
-      {menuPhase && v.phase !== 'title' && <div className="wwm-veil" aria-hidden="true" />}
+      {menuPhase && v.phase !== 'title' && !travelWindow && <div className="wwm-veil" aria-hidden="true" />}
       <PlayLayer />
+      {PORTAL_WINDOWS_ENABLED && <TravelWindow travel={v.travel} arrival={v.arrival} />}
       {screen && (
         <main className={`wwm-screen wwm-screen--${v.phase}`} data-screen={v.phase} key={v.phase}>
           {screen}
@@ -512,7 +516,7 @@ function Building() {
   const travel = v.travel;
   return (
     <section
-      className="wwm-panel wwm-building"
+      className={`wwm-panel wwm-building${v.arrival ? ' wwm-building--leaving' : ''}`}
       aria-labelledby="build-h"
       aria-busy="true"
       data-testid="building"

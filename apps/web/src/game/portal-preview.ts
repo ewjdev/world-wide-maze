@@ -93,6 +93,8 @@ export type PreviewShow = (portalId: number, preview: ImageBitmap | 'postcard') 
 
 export interface PreviewSources {
   fixture(entry: CatalogEntry): Promise<ImageBitmap | null>;
+  /** The full-size picture the travel window grows (top-anchored). */
+  fixtureUrl?(entry: CatalogEntry): Promise<string | null>;
 }
 
 /**
@@ -104,8 +106,10 @@ export class PortalPreviews {
   readonly #sources: PreviewSources;
   #ac: AbortController | null = null;
   #states = new Map<number, PreviewState>();
+  /** Full-resolution source per ready portal, for the travel window (fixture asset URLs: never revoked). */
+  #urls = new Map<number, string>();
 
-  constructor(sources: PreviewSources = { fixture: fixturePicture }) {
+  constructor(sources: PreviewSources = { fixture: fixturePicture, fixtureUrl: fixtureScreenshotUrl }) {
     this.#sources = sources;
   }
 
@@ -124,8 +128,11 @@ export class PortalPreviews {
       }
       this.#states.set(p.id, 'looking-up');
       void this.#sources.fixture(entry).then(
-        (img) => {
+        async (img) => {
           if (ac.signal.aborted) return;
+          const url = img ? await this.#sources.fixtureUrl?.(entry).catch(() => null) : null;
+          if (ac.signal.aborted) return;
+          if (img && url) this.#urls.set(p.id, url);
           this.#states.set(p.id, img ? 'ready' : 'postcard');
           if (img && current()) show(p.id, img);
         },
@@ -141,6 +148,12 @@ export class PortalPreviews {
     this.#ac?.abort();
     this.#ac = null;
     this.#states.clear();
+    this.#urls.clear();
+  }
+
+  /** The full-resolution picture of portal `id` for the travel window, or null (the window shows the postcard). */
+  source(id: number): string | null {
+    return this.#urls.get(id) ?? null;
   }
 
   /** e2e / debug: each link portal's state. */
