@@ -10,6 +10,7 @@ import { skyIslands } from './theme.ts';
 import manifest from './voice-manifest.json' with { type: 'json' };
 import './migrate.ts';
 import { preschoolActivities } from './preschool.ts';
+import { reviewedBanks } from './reviewed-banks.ts';
 
 const token = (shape: Token['shape'], color: Token['color'] = 'blue'): Token => ({ shape, color });
 const gems = (count: number): Token[] => Array.from({ length: count }, () => token('gem', 'teal'));
@@ -420,5 +421,5 @@ export const baselinePath = parseLearningPath({
   ...(voice ? { voice } : {}),
   activities: allActivities.map((activity) => ({ ...activity, objectives: [activity.id] })),
   objectives,
-  banks,
+  banks: [...banks, ...reviewedBanks], // Phase 31 M4: banks imported with `pnpm learning:bank import`
 });
