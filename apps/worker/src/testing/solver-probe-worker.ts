@@ -11,7 +11,7 @@ import { decodePng } from '../image/png.ts';
 
 // the production config binds these Durable Object classes, so the entry must export them
 export { Budget } from '../budget.ts';
-export { BuildJob, JevControl, Limiter, Room } from '../index.ts';
+export { BuildJob, FamilyRecords, JevControl, Limiter, Room } from '../index.ts';
 
 function b64(s: string): Uint8Array {
   const bin = atob(s);

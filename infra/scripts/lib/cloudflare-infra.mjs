@@ -412,8 +412,9 @@ export function checkDeployConfig(target, wrangler, migrations, cfg) {
   else if (r2.bucket_name !== c.r2)
     problems.push(`${where}: R2 STAGES is ${r2.bucket_name}, config says ${c.r2}`);
   if (obj.browser?.binding !== 'BROWSER') problems.push(`${where}: no browser binding BROWSER`);
-  const doNames = (obj.durable_objects?.bindings ?? []).map((b) => b.name).sort();
-  if (doNames.join() !== 'BUDGET,BUILD_JOB,JEV_CONTROL,LIMITER,ROOM')
+  // Required DO bindings must all be present; later phases may add their own (Phase 31: FAMILY_RECORDS).
+  const doNames = new Set((obj.durable_objects?.bindings ?? []).map((b) => b.name));
+  if (!['BUDGET', 'BUILD_JOB', 'JEV_CONTROL', 'LIMITER', 'ROOM'].every((name) => doNames.has(name)))
     problems.push(`${where}: DO bindings must be BUDGET, ROOM, BUILD_JOB, LIMITER, JEV_CONTROL`);
   for (const rl of RATE_LIMITERS) {
     const b = (obj.ratelimits ?? []).find((x) => x.name === rl);
