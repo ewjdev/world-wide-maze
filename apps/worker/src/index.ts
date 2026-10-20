@@ -3,6 +3,7 @@
  */
 import { budget, controlsOn, reserveCost } from './budget-client.ts';
 import { createServices } from './config.ts';
+import { sweepLearningRecords } from './learning-records/retention.ts';
 import { createApp } from './router.ts';
 import { serveAdminPage } from './routes/admin-page.ts';
 import { serveLearningPage } from './routes/learning-page.ts';
@@ -13,6 +14,7 @@ import { clientIp, withSecurityHeaders } from './security.ts';
 export { Budget } from './budget.ts';
 export { BuildJob } from './build-job.ts';
 export { JevControl } from './jev/control.ts';
+export { FamilyRecords } from './learning-records/family-records.ts';
 export { LessonDraftAgent } from './lesson-drafts/agent.ts';
 export { LessonDraftWorkflow } from './lesson-drafts/workflow.ts';
 export { Limiter } from './limiter.ts';
@@ -71,6 +73,11 @@ export default {
 
   // Retention (task 9): delete non-curated runs older than RETENTION_DAYS.
   async scheduled(_controller, env, _ctx) {
+    // Phase 31 M3: learning-records retention (24 months inactive) and expired tokens. Never blocks the rest.
+    const learning = await sweepLearningRecords(env).catch(() => ({ families: -1, expired: -1 }));
+    console.log(
+      JSON.stringify({ level: 'info', svc: 'wwm-learning', msg: 'learning retention sweep', ...learning }),
+    );
     await budget(env).sweep();
     const { store, settings, log } = createServices(env, { requestId: 'cron' });
     const r = await store.sweep(settings.retentionDays);

@@ -21,6 +21,7 @@ export * from './schema.ts';
 export * from './script.ts';
 export * from './session.ts';
 export * from './sync.ts';
+export * from './sync-client.ts';
 export * from './theme.ts';
 export * from './vocabulary.ts';
 export * from './voice.ts';

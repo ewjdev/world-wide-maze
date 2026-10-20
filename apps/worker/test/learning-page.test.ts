@@ -41,4 +41,16 @@ describe('published learning pages', () => {
     fetch.mockImplementation(async () => new Response('missing', { status: 404 }));
     expect((await serveLearningPage(request('/learn/missing'), { ASSETS: { fetch } }))?.status).toBe(404);
   });
+  it('lets only the family account pages load Turnstile', async () => {
+    const fetch = vi.fn(
+      async () => new Response('<h1>Account</h1>', { headers: { 'content-type': 'text/html' } }),
+    );
+    const account = await serveLearningPage(request('/learn/account/verify'), { ASSETS: { fetch } });
+    const csp = account?.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain("script-src 'self' https://challenges.cloudflare.com 'wasm-unsafe-eval'");
+    expect(csp).toContain('frame-src https://challenges.cloudflare.com;');
+    expect(csp).toContain("frame-ancestors 'none'");
+    const lesson = await serveLearningPage(request('/learn/lessons/spanish-hello/'), { ASSETS: { fetch } });
+    expect(lesson?.headers.get('content-security-policy')).not.toContain('challenges.cloudflare.com');
+  });
 });

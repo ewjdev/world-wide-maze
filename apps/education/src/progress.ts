@@ -1,7 +1,8 @@
 /**
  * The grown-ups' Progress page (Phase 31 M2), behind the press-and-hold gate: each child's practice from this
  * device's store as one plain-language state per objective, profile management, a JSON download and deletion.
- * Nothing here makes a network call; M3 adds the optional account in `#account-slot`.
+ * Nothing about a child leaves the device without a family account. The page asks the Worker whether one is
+ * signed in; if so, `#account-slot` syncs (Phase 31 M3).
  */
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
@@ -14,7 +15,15 @@ import {
   objectiveProgress,
   type Profile,
   profileSchema,
+  type SessionResponse,
 } from '@wwm/learning';
+import {
+  accountSession,
+  mountAccountSlot,
+  progressEvents,
+  pushProfile,
+  removeProfile,
+} from './account-sync.ts';
 import { holdToActivate } from './hold.ts';
 import { type Avatar, type DeviceProgress, openProgress, pickedThisVisit, rememberPick } from './profiles.ts';
 import { childHtml, DEVICE_EXPORT_FORMAT, DEVICE_ONLY } from './progress-render.ts';
@@ -36,6 +45,8 @@ const deviceFeedback = element('#device-feedback');
 let progress: DeviceProgress | null = null;
 let profiles: Profile[] = [];
 
+/** The family account, when signed in or linked (Phase 31 M3); null keeps everything on this device. */
+let session: SessionResponse | null = null;
 const byName = (x: Profile, y: Profile) => x.nickname.localeCompare(y.nickname) || x.id.localeCompare(y.id);
 
 /** A friendly message for a nickname the profile schema rejects. */
@@ -86,7 +97,7 @@ async function render(message?: string): Promise<void> {
         childHtml(
           path,
           profile,
-          objectiveProgress(await store.events(profile.id), objectives, { timeZone }),
+          objectiveProgress(await progressEvents(store, profile.id, session), objectives, { timeZone }),
           {
             timeZone,
             picker: profiles.length > 1,
@@ -99,9 +110,15 @@ async function render(message?: string): Promise<void> {
     addPanel.open = !profiles.length;
     selectAvatar(addForm, 'new-avatar', freeAvatar());
     element<HTMLButtonElement>('#download-progress').disabled = !profiles.length;
+    const saved =
+      session?.as === 'parent'
+        ? 'Saved on this device and in your family account.'
+        : session?.as === 'device'
+          ? 'Saved on this device and sent to your family account.'
+          : DEVICE_ONLY;
     element('#device-status').textContent = profiles.length
-      ? DEVICE_ONLY
-      : `${DEVICE_ONLY} No children added yet: add a nickname below to start saving practice. Lessons work without one, and then nothing is saved.`;
+      ? saved
+      : `${saved} No children added yet: add a nickname below to start saving practice. Lessons work without one, and then nothing is saved.`;
     if (message !== undefined) deviceFeedback.textContent = message;
   } catch {
     unavailable();
@@ -128,8 +145,11 @@ async function open(): Promise<void> {
     unavailable();
     return;
   }
+  session = await accountSession();
   await render();
   element<HTMLHeadingElement>('#progress-title').scrollIntoView({ block: 'nearest' });
+  // Signed in: sync once, then redraw with every device's practice.
+  void mountAccountSlot(element('#account-slot'), progress.store, () => void render());
 }
 
 // ── adding, editing and deleting children ─────────────────────────────────────────────────────────────────
@@ -142,7 +162,9 @@ addForm.addEventListener('submit', async (event) => {
   showError(addForm, problem);
   if (problem) return;
   try {
-    await progress.store.saveProfile({ id: newProfileId(), nickname, avatar });
+    const profile = { id: newProfileId(), nickname, avatar };
+    await progress.store.saveProfile(profile);
+    void pushProfile(profile);
     addForm.reset();
     await render(`Added ${nickname}. Practice in lessons on this device is now saved for ${nickname}.`);
   } catch {
@@ -165,6 +187,7 @@ children.addEventListener('submit', async (event) => {
   if (problem) return;
   try {
     await progress.store.saveProfile({ ...profile, nickname, avatar });
+    void pushProfile({ ...profile, nickname, avatar });
     await render(`Saved ${nickname}’s changes.`);
   } catch {
     showError(form, 'This browser couldn’t save the change. Try again.');
@@ -190,6 +213,7 @@ children.addEventListener('click', async (event) => {
   } else {
     try {
       await progress.store.deleteProfile(id);
+      void removeProfile(id);
       if (pickedThisVisit() === id) rememberPick(null);
       await render(`Deleted ${profile.nickname} and their practice from this device.`);
       deviceFeedback.focus();

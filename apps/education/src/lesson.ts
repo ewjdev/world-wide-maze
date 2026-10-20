@@ -53,6 +53,7 @@ import {
   step,
   withPractice,
 } from '@wwm/learning';
+import { syncNow } from './account-sync.ts';
 import { holdToActivate } from './hold.ts';
 import {
   avatarSvg,
@@ -558,6 +559,8 @@ function dispatch(event: LessonEvent, mode: InputMode = 'tap'): void {
   updateControls();
 
   if (state.phase === 'done') {
+    // With a family account, send this lesson's practice now; without one this is a no-op.
+    if (progress) void syncNow(progress.store).catch(() => {});
     const pip = end.querySelector('[data-pip]');
     pip?.classList.remove('is-happy');
     void pip?.getBoundingClientRect();

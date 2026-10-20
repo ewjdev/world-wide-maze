@@ -178,10 +178,15 @@ describe('deploy config (wrangler.jsonc)', () => {
     // every top-level var is redeclared (vars are inherited neither by environments nor by Previews)
     expect(Object.keys(target.vars).sort()).toEqual(Object.keys(cfg.vars).sort());
     expect(target.ratelimits.map((r) => r.name).sort()).toEqual([
+      'LEARNING_AUTH_LIMITER',
+      'LEARNING_EVENTS_LIMITER',
       'READ_LIMITER',
       'ROOM_CREATE_LIMITER',
       'ROOM_WS_LIMITER',
     ]);
+    // Phase 31 M3: family accounts stay off until the privacy review; deployed mail is never the dev mock.
+    expect(target.vars.LEARNING_ACCOUNTS).toBe('off');
+    expect(target.vars.LEARNING_EMAIL_MODE).toBe('send');
   });
   test('production serves the web app with the API first', () => {
     // Home and log are static assets so the emergency dynamic block preserves both.

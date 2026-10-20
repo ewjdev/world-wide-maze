@@ -80,7 +80,16 @@
     "LESSON_DRAFT_PROVIDER": "auto",
     "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
     "LESSON_DRAFT_MAX_TOKENS": "8000",
-    "LESSON_DRAFT_DAILY_LIMIT": "20"
+    "LESSON_DRAFT_DAILY_LIMIT": "20",
+    // Phase 31 M3 learning accounts (contracts §10.5). LEARNING_ACCOUNTS: "off" (every /api/learning/* is 404),
+    // "allowlist" (sign-in only for the LEARNING_ALLOWED_EMAILS secret) or "on". Secrets: TURNSTILE_SECRET,
+    // LEARNING_ALLOWED_EMAILS (docs/launch/learning-accounts-setup.md).
+    "LEARNING_ACCOUNTS": "on",
+    "LEARNING_ORIGIN": "http://localhost:5174",
+    "LEARNING_RP_ID": "localhost",
+    // "mock" (development only: messages go to a local mailbox, never sent) or "send" (the LEARNING_MAIL binding).
+    "LEARNING_EMAIL_MODE": "mock",
+    "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
     // Secrets (not vars): IP_HASH_SALT, ANTHROPIC_API_KEY. Locally: apps/worker/.dev.vars (see .dev.vars.example).
   },
 
@@ -94,8 +103,18 @@
       "database_name": "wwm",
       "database_id": "00000000-0000-0000-0000-000000000000",
       "migrations_dir": "migrations"
+    },
+    // Phase 31 M3: parents, passkeys, sessions, sign-in links, pair codes, devices (migrations-learning/).
+    {
+      "binding": "LEARNING_DB",
+      "database_name": "wwm-learning-records",
+      "database_id": "00000000-0000-0000-0000-000000000003",
+      "migrations_dir": "migrations-learning"
     }
   ],
+
+  // Phase 31 M3: sign-in links. LEARNING_EMAIL_MODE "mock" never calls it in development.
+  "send_email": [{ "name": "LEARNING_MAIL" }],
 
   // Run cache (`run:<normUrl>:<difficulty>:<builderVersion>`), in-flight job dedupe, opt-out list.
   "kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000000" }],
@@ -110,7 +129,10 @@
   "ratelimits": [
     { "name": "READ_LIMITER", "namespace_id": "7001", "simple": { "limit": 100, "period": 60 } },
     { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7002", "simple": { "limit": 30, "period": 60 } },
-    { "name": "ROOM_WS_LIMITER", "namespace_id": "7003", "simple": { "limit": 120, "period": 60 } }
+    { "name": "ROOM_WS_LIMITER", "namespace_id": "7003", "simple": { "limit": 120, "period": 60 } },
+    // Phase 31 M3: /api/learning/auth/* and devices/claim per IP; events per family.
+    { "name": "LEARNING_AUTH_LIMITER", "namespace_id": "7010", "simple": { "limit": 20, "period": 60 } },
+    { "name": "LEARNING_EVENTS_LIMITER", "namespace_id": "7011", "simple": { "limit": 60, "period": 60 } }
   ],
 
   "durable_objects": {
@@ -124,7 +146,9 @@
       { "name": "LIMITER", "class_name": "Limiter" },
       { "name": "JEV_CONTROL", "class_name": "JevControl" },
       // Phase 31 M4: one Agents SDK agent per lesson draft (transcript and revisions), plus the draft index.
-      { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
+      { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" },
+      // Phase 31 M3: one per family: child profiles and learning events (src/learning-records/family-records.ts).
+      { "name": "FAMILY_RECORDS", "class_name": "FamilyRecords" }
     ]
   },
   "migrations": [
@@ -132,13 +156,14 @@
     { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
     { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
     { "tag": "v4", "new_sqlite_classes": ["Budget"] },
-    { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] }
+    { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] },
+    { "tag": "v6", "new_sqlite_classes": ["FamilyRecords"] }
   ],
   // Phase 31 M4: generate → validate → repair (≤ 2) → ready for review, one instance per operator message.
   "workflows": [
     { "name": "wwm-lesson-draft", "binding": "LESSON_DRAFT", "class_name": "LessonDraftWorkflow" }
   ],
-  // Retention sweep (task 9): daily at 03:17 UTC.
+  // Retention sweep (task 9), plus the Phase 31 learning-records purge (24 months inactive, expired tokens).
   "triggers": { "crons": ["17 */4 * * *"] },
 
   // ── Deploy target (Phase 12 → Phase 17). Named-environment keys are NOT inherited from the top level, so every
@@ -207,7 +232,13 @@
         "LESSON_DRAFT_PROVIDER": "auto",
         "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
         "LESSON_DRAFT_MAX_TOKENS": "8000",
-        "LESSON_DRAFT_DAILY_LIMIT": "20"
+        "LESSON_DRAFT_DAILY_LIMIT": "20",
+        // Phase 31 M3: stays "off" (or "allowlist") until the privacy review is recorded (contracts §10.5).
+        "LEARNING_ACCOUNTS": "off",
+        "LEARNING_ORIGIN": "https://wwm.ewj.dev",
+        "LEARNING_RP_ID": "wwm.ewj.dev",
+        "LEARNING_EMAIL_MODE": "send",
+        "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
       },
       "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages" }],
       "d1_databases": [
@@ -216,14 +247,25 @@
           "database_name": "wwm",
           "database_id": "68d408cd-47b7-4313-a361-09fbe3996a35",
           "migrations_dir": "migrations"
+        },
+        // Phase 31 M3: PLACEHOLDER id. The owner runs `wrangler d1 create wwm-learning-records` and pastes the id
+        // here before this deploys (docs/launch/learning-accounts-setup.md).
+        {
+          "binding": "LEARNING_DB",
+          "database_name": "wwm-learning-records",
+          "database_id": "00000000-0000-0000-0000-000000000004",
+          "migrations_dir": "migrations-learning"
         }
       ],
+      "send_email": [{ "name": "LEARNING_MAIL" }],
       "kv_namespaces": [{ "binding": "CACHE", "id": "fcf10fbc42ef404391736d38c6117739" }],
       "browser": { "binding": "BROWSER" },
       "ratelimits": [
         { "name": "READ_LIMITER", "namespace_id": "7201", "simple": { "limit": 100, "period": 60 } },
         { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7202", "simple": { "limit": 30, "period": 60 } },
-        { "name": "ROOM_WS_LIMITER", "namespace_id": "7203", "simple": { "limit": 120, "period": 60 } }
+        { "name": "ROOM_WS_LIMITER", "namespace_id": "7203", "simple": { "limit": 120, "period": 60 } },
+        { "name": "LEARNING_AUTH_LIMITER", "namespace_id": "7210", "simple": { "limit": 20, "period": 60 } },
+        { "name": "LEARNING_EVENTS_LIMITER", "namespace_id": "7211", "simple": { "limit": 60, "period": 60 } }
       ],
       // Durable Object classes and migrations stay here; every Preview automatically gets its own DO namespaces
       // and storage (rooms, build jobs and limiter counters never mix with production).
@@ -234,7 +276,8 @@
           { "name": "BUDGET", "class_name": "Budget" },
           { "name": "LIMITER", "class_name": "Limiter" },
           { "name": "JEV_CONTROL", "class_name": "JevControl" },
-          { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
+          { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" },
+          { "name": "FAMILY_RECORDS", "class_name": "FamilyRecords" }
         ]
       },
       "migrations": [
@@ -242,7 +285,8 @@
         { "tag": "v2", "new_sqlite_classes": ["BuildJob", "Limiter"] },
         { "tag": "v3", "new_sqlite_classes": ["JevControl"] },
         { "tag": "v4", "new_sqlite_classes": ["Budget"] },
-        { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] }
+        { "tag": "v5", "new_sqlite_classes": ["LessonDraftAgent"] },
+        { "tag": "v6", "new_sqlite_classes": ["FamilyRecords"] }
       ],
       "workflows": [
         { "name": "wwm-lesson-draft", "binding": "LESSON_DRAFT", "class_name": "LessonDraftWorkflow" }
@@ -299,7 +343,13 @@
           "LESSON_DRAFT_PROVIDER": "mock",
           "LESSON_DRAFT_MODEL": "claude-sonnet-5-5",
           "LESSON_DRAFT_MAX_TOKENS": "8000",
-          "LESSON_DRAFT_DAILY_LIMIT": "20"
+          "LESSON_DRAFT_DAILY_LIMIT": "20",
+          // Phase 31 M3: off on Previews. Empty origin/RP id fail closed (passkeys refuse) if a Preview turns it on.
+          "LEARNING_ACCOUNTS": "off",
+          "LEARNING_ORIGIN": "",
+          "LEARNING_RP_ID": "",
+          "LEARNING_EMAIL_MODE": "send",
+          "LEARNING_EMAIL_FROM": "learn@wwm.ewj.dev"
         },
         "r2_buckets": [{ "binding": "STAGES", "bucket_name": "wwm-stages-preview" }],
         "d1_databases": [
@@ -308,14 +358,32 @@
             "database_name": "wwm-preview",
             "database_id": "fd5ce3d4-5df4-442c-97fd-50e266ecd7a5",
             "migrations_dir": "migrations"
+          },
+          // Phase 31 M3: PLACEHOLDER id for `wwm-learning-records-preview` (owner creates it; never production's).
+          {
+            "binding": "LEARNING_DB",
+            "database_name": "wwm-learning-records-preview",
+            "database_id": "00000000-0000-0000-0000-000000000005",
+            "migrations_dir": "migrations-learning"
           }
         ],
+        "send_email": [{ "name": "LEARNING_MAIL" }],
         "kv_namespaces": [{ "binding": "CACHE", "id": "dae2b404a2df454cae5b348f46860a4f" }],
         "browser": { "binding": "BROWSER" },
         "ratelimits": [
           { "name": "READ_LIMITER", "namespace_id": "7301", "simple": { "limit": 100, "period": 60 } },
           { "name": "ROOM_CREATE_LIMITER", "namespace_id": "7302", "simple": { "limit": 30, "period": 60 } },
-          { "name": "ROOM_WS_LIMITER", "namespace_id": "7303", "simple": { "limit": 120, "period": 60 } }
+          { "name": "ROOM_WS_LIMITER", "namespace_id": "7303", "simple": { "limit": 120, "period": 60 } },
+          {
+            "name": "LEARNING_AUTH_LIMITER",
+            "namespace_id": "7310",
+            "simple": { "limit": 20, "period": 60 }
+          },
+          {
+            "name": "LEARNING_EVENTS_LIMITER",
+            "namespace_id": "7311",
+            "simple": { "limit": 60, "period": 60 }
+          }
         ],
         // Bindings only (the code reads env.ROOM etc.); classes/migrations come from above, storage is per Preview.
         "durable_objects": {
@@ -325,7 +393,8 @@
             { "name": "BUDGET", "class_name": "Budget" },
             { "name": "LIMITER", "class_name": "Limiter" },
             { "name": "JEV_CONTROL", "class_name": "JevControl" },
-            { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" }
+            { "name": "LESSON_DRAFT_AGENT", "class_name": "LessonDraftAgent" },
+            { "name": "FAMILY_RECORDS", "class_name": "FamilyRecords" }
           ]
         },
         // Previews keep lesson drafts off (LESSON_DRAFTS) and use a separate Workflow name.

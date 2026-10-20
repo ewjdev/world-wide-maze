@@ -146,6 +146,43 @@ Operator-only authoring of open-vocabulary bank items (today: English missing-le
   escaping, export → import), and `lesson-drafts.workerd` (agent + Workflow + routes in workerd with the mock,
   through approval and export; test-only Worker in `test/lesson-drafts-runtime/`).
 
+## Learning accounts (Phase 31 M3, contracts §10.5)
+Parent accounts, child devices and progress sync for the education app, under `/api/learning/*`. Code:
+`src/learning-records/` (`routes.ts` the Hono sub-app, `accounts.ts` the D1 index, `family-records.ts` the
+`FamilyRecords` Durable Object, `passkeys.ts`, `mailer.ts`, `turnstile.ts`, `retention.ts`, `config.ts`). Owner
+setup: [docs/launch/learning-accounts-setup.md](../../docs/launch/learning-accounts-setup.md). Draft privacy notice:
+[docs/launch/learning-privacy.md](../../docs/launch/learning-privacy.md).
+- **Gate.** `LEARNING_ACCOUNTS`: `off` (default; production and previews) → every path is `404 LEARNING_UNAVAILABLE`;
+  `allowlist` → sign-in only for the comma-separated `LEARNING_ALLOWED_EMAILS` secret; `on` (local dev).
+- **Storage.** D1 `LEARNING_DB` (`wwm-learning-records`, `migrations-learning/`): parents (normalized email, consent
+  version and time, last activity), passkeys (public keys), sessions, one-use sign-in links, WebAuthn challenges,
+  pair codes, devices. Every token and code is stored as its SHA-256 only. Each family's profiles and events live
+  in its own SQLite `FamilyRecords` object (named by the family id); events are deduplicated by id, events for a
+  profile the family doesn't have are rejected `UNKNOWN_PROFILE`, deleting a profile deletes its events, and
+  deleting the family runs `deleteAll()`.
+- **Sign-in.** `POST auth/email` checks Turnstile and always answers `202 {}`; the account lookup and the email
+  happen after the response (`waitUntil`), so the answer can't reveal whether an account exists. A new email gets
+  a link (`/learn/account/verify#token=…`, 15 minutes, one use) only if the request carried consent; otherwise an
+  email explaining how to sign up. Passkeys (`@simplewebauthn/server`, verified in workerd by the integration
+  test's software authenticator) use `LEARNING_RP_ID` and `LEARNING_ORIGIN`. Session cookie
+  `wwm_learning_session` (HttpOnly, Secure, SameSite=Lax, Path=/api/learning), 30 days, rolled daily.
+- **Devices.** Pair codes are 6 characters from `A-HJ-NP-Z2-9`, 10 minutes, one use; claiming returns a bearer
+  token. A device can read profiles and send events, nothing else. Revoking deletes the row, so the token stops
+  at once.
+- **Abuse.** `LEARNING_AUTH_LIMITER` (20/min per IP on `auth/*` and `devices/claim`), `LEARNING_EVENTS_LIMITER`
+  (60 batches/min per family), and 5 sign-in emails per address per hour (`Limiter` DO). Cookie-bearing (and
+  cookie-setting) changes must carry an allowed `Origin` (CSRF).
+- **Privacy.** No request body, email, nickname or token is logged; errors log only the route pattern and error
+  name. No telemetry. Every response is `Cache-Control: no-store`.
+- **Email.** `LEARNING_EMAIL_MODE=send` uses the `LEARNING_MAIL` `send_email` binding from `LEARNING_EMAIL_FROM`.
+  `mock` (development only) writes to a KV mailbox read by `GET /api/learning/dev/mailbox?to=` (404 elsewhere).
+  Without `TURNSTILE_SECRET`, development uses Cloudflare's always-pass test secret (answered locally); deployed
+  environments refuse test secrets and return `503` for email sign-in until a real secret is set.
+- **Retention.** The existing cron also deletes families inactive for 24 months (D1 rows and the object's
+  storage) and expired sessions, links, challenges and pair codes.
+- **Tests.** `test/learning-records.integration.test.ts` (every endpoint and rule, real workerd),
+  `test/learning-records-gate.integration.test.ts` (off/allowlist/on, Turnstile), `test/learning-records-config.test.ts`.
+
 ## Retention (task 9)
 A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS` (30): their stage JSON, textures, capture bundle, and D1 rows. It handles at most 200 runs per tick. Curated runs are the `run_id`s in Phase 10's `curated` table. KV cache entries expire on their own after 7 days.
 
@@ -155,7 +192,7 @@ A daily cron (`17 3 * * *`) deletes non-curated runs older than `RETENTION_DAYS`
 - Routes live in `src/routes/<name>.ts` as `Hono<AppEnv>` sub-apps, one registration line each in `src/router.ts`. Phase 06 adds `app.route('/api/rooms', roomsRoutes)`.
 
 ## Commands
-- `pnpm --filter @wwm/worker dev` applies the local D1 migrations, then starts `wrangler dev` on :8787 with local R2/D1/KV/DO/rate limits and local Browser Run Chrome.
+- `pnpm --filter @wwm/worker dev` applies the local D1 migrations (`wwm` and `wwm-learning-records`), then starts `wrangler dev` on :8787 with local R2/D1/KV/DO/rate limits and local Browser Run Chrome.
   - Sidecar alternative: `pnpm --filter @wwm/worker capture-sidecar`, then `wrangler dev --var CAPTURE_BACKEND:sidecar --var CAPTURE_SIDECAR_URL:http://127.0.0.1:8788`.
 - `pnpm --filter @wwm/worker smoke http://localhost:8787 [url…]` drives a running Worker end to end. It defaults to the fixture URLs.
 - `pnpm --filter @wwm/worker bench [slug…]` measures cold capture+build timings on the fixture URLs with local Chromium.

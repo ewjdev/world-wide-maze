@@ -9,3 +9,8 @@ IP_HASH_SALT=change-me-to-32-random-characters
 # AI_GATEWAY_ID=wwm-docent
 # ANTHROPIC_API_KEY=sk-ant-...
 # AI_GATEWAY_TOKEN=...   # authenticated gateway (cf-aig-authorization); alone = keys stored in the gateway (BYOK)
+
+# Phase 31 learning accounts (optional locally). Without TURNSTILE_SECRET, `pnpm dev` uses Cloudflare's always-pass
+# test secret, and sign-in links go to the mock mailbox (GET /api/learning/dev/mailbox?to=<email>).
+# TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# LEARNING_ALLOWED_EMAILS=you@example.org,other@example.org   # read only when LEARNING_ACCOUNTS=allowlist

@@ -37,8 +37,16 @@ const RAW_CONFIG = JSON.parse(read('../../../infra/cloudflare.config.json'));
 const cfg = loadInfraConfig(RAW_CONFIG);
 
 const IDS = {
-  production: { d1: '11111111-2222-4333-8444-555555555555', kv: 'a'.repeat(32) },
-  previews: { d1: '66666666-7777-4888-9999-000000000000', kv: 'b'.repeat(32) },
+  production: {
+    d1: '11111111-2222-4333-8444-555555555555',
+    kv: 'a'.repeat(32),
+    learningD1: '12121212-3434-4565-8787-909090909090',
+  },
+  previews: {
+    d1: '66666666-7777-4888-9999-000000000000',
+    kv: 'b'.repeat(32),
+    learningD1: '76767676-8989-4a1a-9b2b-c3c3c3c3c3c3',
+  },
   accountId: 'c'.repeat(32),
 };
 /** The repo config after a successful `provision --apply` with a domain set. */
@@ -150,7 +158,8 @@ describe('plan', () => {
     expect(row('previews', 'r2')?.action).toBe('create');
     expect(row('previews', 'kv')).toMatchObject({ action: 'exists', id: 'kvp' });
     expect(row('production', 'aiGateway')?.action).toBe('manual');
-    expect(plan).toHaveLength(7); // 3 data stores × 2 targets + 1 shared AI Gateway
+    expect(row('production', 'learningD1')).toMatchObject({ action: 'create', name: 'wwm-learning-records' });
+    expect(plan).toHaveLength(9); // 4 data stores × 2 targets + 1 shared AI Gateway
     expect(formatPlan(plan)[0]).toMatch(/ok .*production D1 +wwm {2}\(prod-uuid\)/);
   });
   test('with an API token, gateways are diffed too; a shared gateway is planned once', () => {
@@ -170,11 +179,17 @@ describe('plan', () => {
 });
 
 describe('id patching + deploy checks', () => {
-  test('the committed config is provisioned (2026-09-25): both targets pass the deploy checks', () => {
+  test('the committed config is provisioned (2026-09-25), except the Phase 31 learning databases', () => {
     const w = parseJsonc(WRANGLER);
     const m = parseJsonc(MIGRATIONS);
-    expect(checkDeployConfig('production', w, m, cfg).problems).toEqual([]);
-    expect(checkDeployConfig('previews', w, m, cfg).problems).toEqual([]);
+    // Until the owner runs `provision --apply` for the learning-records databases
+    // (docs/launch/learning-accounts-setup.md), the deploy guard must refuse exactly those placeholders.
+    const pending = (where: string) =>
+      `${where}: LEARNING_DB has a placeholder database_id (create it: docs/launch/learning-accounts-setup.md)`;
+    const allowed = (problems: string[], where: string) =>
+      problems.filter((problem) => problem !== pending(where));
+    expect(allowed(checkDeployConfig('production', w, m, cfg).problems, 'env.production')).toEqual([]);
+    expect(allowed(checkDeployConfig('previews', w, m, cfg).problems, 'env.production.previews')).toEqual([]);
   });
   test.each(['workers_dev', 'preview_urls'])(
     'production refuses public alternate hosts through %s',
@@ -200,7 +215,10 @@ describe('id patching + deploy checks', () => {
     const top = (t: string) => JSON.stringify({ ...(parseJsonc(t) as object), env: null });
     expect(top(w.text)).toBe(top(WRANGLER));
     expect(w.changed.map((x) => x.path)).toContain('env.production.previews.d1_databases.0.database_id');
-    expect(m.changed.map((x) => x.path)).toEqual(['d1_databases.0.database_id']);
+    expect(m.changed.map((x) => x.path)).toEqual([
+      'd1_databases.0.database_id',
+      'd1_databases.1.database_id',
+    ]);
     // idempotent: a second run changes nothing
     const again = buildPatches(wc, mc, c, IDS);
     expect(patchJsonc(w.text, again.wrangler).changed).toEqual([]);
@@ -221,6 +239,7 @@ describe('id patching + deploy checks', () => {
       "env.production.previews: KV CACHE shares production's id",
       'env.production.previews.triggers: not allowed in previews (keep it at the env level)',
       'wrangler.preview-migrations.jsonc must point at the same database as the previews DB binding',
+      'wrangler.preview-migrations.jsonc must point at the same database as the previews LEARNING_DB binding',
     ]);
     void m;
   });
