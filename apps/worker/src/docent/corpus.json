@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "dc06701591908057",
+  "hash": "b343e27a94bda5b2",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -33,7 +33,6 @@
     "docs/build-log/phase-06-device-test.md",
     "docs/build-log/phase-06.md",
     "docs/build-log/phase-07.md",
-    "docs/build-log/phase-08-mobile-layout.md",
     "docs/build-log/phase-08-playtest.md",
     "docs/build-log/phase-08.md",
     "docs/build-log/phase-09-builder-issues.md",
@@ -62,6 +61,7 @@
     "docs/build-log/phase-27-race-mazes.md",
     "docs/build-log/phase-28-race-bends-turbo-lives.md",
     "docs/build-log/phase-29-race-elevation-flow.md",
+    "docs/build-log/phase-31-m3.md",
     "docs/build-log/phase-31.md",
     "docs/build-log/race-review/course-review.json",
     "docs/build-log/race-review/ghost-performance-headless.json",
@@ -1490,23 +1490,6 @@
       "url": "/log#phase-07",
       "kind": "build-log",
       "text": "## Remaining defects / follow-ups\n- **The builder is a STUB.** It centres `handmade-simple` in each slice. Wire `@wwm/stage-builder` at the Phase 03 merge (a one-function change in `src/builder.ts`), then re-run `bench` and look at `build.<i>` against `cpu_ms`.\n- **Browser Run session reuse is unverified.** The local emulator limitation is described above. Check for `browser session reused` in the logs after enablement.\n- **Texture transfer dominates Browser Run timings.** If production shows the same, capture slice 0's texture first and store and emit `done` before the rest, or lower the WebP quality (85 today).\n- **Residual SSRF risks:**\n  - DNS-rebinding TOCTOU between our DoH check and Chromium's own resolver.\n  - `preconnect` and DNS prefetch.\n  - Pages that depend on Web Workers render without them.\n- **Chatty log line.** `@cloudflare/playwright` prints a `Websocket error … Network connection lost` object on every disconnect in local dev. It is harmless, but noisy.\n- **Phase 10's `curated` columns are assumed** to be `run_id, title, url, thumb, stars, position`. Align them at merge."
-    },
-    {
-      "id": "docs/build-log/phase-08-mobile-layout.md",
-      "title": "Mobile game layout repair — October 19, 2026 · Verification",
-      "path": "docs/build-log/phase-08-mobile-layout.md",
-      "url": "/log#phase-08-mobile-layout",
-      "kind": "build-log",
-      "text": "The site chooser after Start created a 469px horizontal scroll area in a 390px phone viewport. Its grid's intrinsic sizing widened the heading, URL form, lesson loader and practice card together.\n\nThe game shell now constrains menu grids to their available width. Phone layouts stack the Transform action and practice card, wrap long button labels, and keep touch targets at least 44px high. Menu scrolling starts below the persistent settings bar and respects safe-area insets. Settings and pause panels scroll in short viewports. Pause and Race panels sit above the joystick deck, and ranking name fields remain inside their panel in WebKit.\n\n## Verification\n- `CI=1 pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- `CI=1 WWM_LAYOUT_BROWSER=webkit pnpm exec vitest run apps/web/test/mobile-layout.e2e.test.ts`: 2 passed.\n- English and Japanese chooser layouts: 320×568, 390×844, 430×932, 768×1024, 844×390 and 1440×900.\n- Instructions, invalid URL feedback, built-in lesson loading, the last site's vertical scroll reachability, short-landscape settings, practice pause/resume, results, rankings and Race entry. Pause and Race action checks include hit testing above the joystick deck.\n- Final 390px WebKit chooser: `clientWidth = scrollWidth = 390`.\n- Workspace typechecks, web typecheck, web production build, changed-file Biome checks and `git diff --check` passed.\n- The mechanical design detector reported the existing colored thumbnail stripe; the incumbent visual treatment was retained.\n\n`pnpm check` stopped at formatting errors in unrelated learning-package files being edited concurrently. A separate full-suite run encountered extension E2E timeouts and a Vite hot-reload context error during workspace edits; it was stopped after those failures. Full-repository acceptance is not established by this change. Other work was preserved.\n\nThese are browser-emulation receipts, not physical iPhone/Android qualification. No production deployment was performed."
-    },
-    {
-      "id": "docs/build-log/phase-08-mobile-layout.md#saved-review-images",
-      "title": "Mobile game layout repair — October 19, 2026 › Saved review images",
-      "path": "docs/build-log/phase-08-mobile-layout.md",
-      "anchor": "saved-review-images",
-      "url": "/log#phase-08-mobile-layout",
-      "kind": "build-log",
-      "text": "## Saved review images\n- [Phone chooser](assets/mobile-layout/select-390.png)\n- [Phone practice card](assets/mobile-layout/practice-390.png)\n\nThe regression suite can save its full screenshot matrix with `WWM_LAYOUT_SHOTS=/tmp/wwm-mobile-layout` and can select WebKit with `WWM_LAYOUT_BROWSER=webkit` (requires the Playwright WebKit browser)."
     },
     {
       "id": "docs/build-log/phase-08-playtest.md",
@@ -3510,6 +3493,86 @@
       "url": "/log#phase-29-race-elevation-flow",
       "kind": "build-log",
       "text": "## Beta review limits\nAutomated driving establishes traversal, deterministic replay and visible rendering. It does not establish human flow, optimal route choice or physical-phone handling. Most ten-maze reference routes take about a minute; Sky Weave remains roughly 77–79 seconds and one Skipping Stones route is about 73 seconds. The four earlier courses remain short introductions (about 13–25 seconds). Higher-speed racing and aggressive turbo strategies need beta playtesting; the conservative completion driver does not spend turbo on most maze routes.\n\nStatic validation does not exhaustively detect bridge-to-bridge intersections. Actual traversal caught and resolved the observed Skipping Stones overlap; future junction edits still require collision and browser verification.\n\nThe original HTML and maze specifications remain base authoring inputs. The explicit elevation design pass produces the current playable courses; run it after rebuilding base fixtures. Reproduction commands and the distinction between frozen course identity and physics compatibility are documented in [the elevation review README](../../fixtures/race/elevation-review/README.md). This work is local and has not been deployed."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync · Key instructions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "**Date:** October 19, 2026, about 22:50–23:40 PT (America/Los_Angeles).\n**Agent:** Claude Code (Claude Opus 5.5), a phase sub-agent in the worktree `p31-m3-accounts-sync` (branch\n`claude/p31-m3-accounts-sync`). M2 (device progress) and M4 (lesson drafts) ran in parallel in their own worktrees.\n**Plan:** [plans/phase-31-lesson-depth-and-tracking.md](../../plans/phase-31-lesson-depth-and-tracking.md) §6–7.\n**Contract:** [plans/contracts.md](../../plans/contracts.md) §10.5 (CCR-31-3), implemented as written. No new CCR.\n\n## Key instructions\n- Implement every `/api/learning/*` endpoint in contracts §10.5.\n- Storage: a new D1 database `wwm-learning-records` (`LEARNING_DB`) and a SQLite `FamilyRecords` Durable Object per\n  family.\n- Sign-in: email links (Turnstile, consent, 15 minutes, one use) and passkeys.\n- Devices: pairing (6 characters, 10 minutes, one use) with revocable bearer tokens.\n- Rate limits, export, deletion and 24-month retention.\n- Privacy: no body, email or nickname logging, no telemetry, `no-store`. A same-origin check on cookie requests.\n- The gate `LEARNING_ACCOUNTS`: `off` by default and in production and previews, `on` in local dev.\n- Also build a typed client with `syncOutbox`, the account UI in the education app (plugging into M2's slot), a\n  draft privacy notice, owner setup steps, and tests: real workerd integration, client units, and a browser e2e\n  if feasible.\n- Load the `durable-objects`, `cloudflare-email-service`, `workers-best-practices` and `wrangler` skills first.\n- Don't touch remote Cloudflare resources, deploy, send real email or use real secrets."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## What changed (N: new, not a 2013 feature)\n- **Worker (N)** in `apps/worker/src/learning-records/`:\n  - **Routes:** `routes.ts` is one Hono sub-app, mounted with one line in `router.ts`. `index.ts` exports\n    `FamilyRecords`, and the existing cron calls `sweepLearningRecords` first, wrapped so it can never block the\n    other sweeps.\n  - **Storage:** `accounts.ts` holds the D1 queries (every token is SHA-256 only). `family-records.ts` is the DO:\n    `INSERT OR IGNORE` dedupe, `UNKNOWN_PROFILE`, a profile deletion that cascades in one `transactionSync`,\n    `(at, id)` cursor paging, and `deleteAll()`.\n  - **Sign-in:** `passkeys.ts` uses `@simplewebauthn/server` 14, with one-use challenges in D1. `mailer.ts` sends\n    through the `send_email` binding, with a development-only KV mock mailbox. `turnstile.ts` calls siteverify;\n    in development it answers Cloudflare's test secrets locally.\n  - **Configuration:** `config.ts` fails closed. Deployed Workers refuse test secrets, the mock mailbox and\n    `http://` origins.\n- **Config:**\n  - `wrangler.jsonc` adds to every environment: the `LEARNING_DB` binding (placeholder ids for production and\n    previews), `FAMILY_RECORDS` (migration tag `v5`), `LEARNING_MAIL`, `LEARNING_AUTH_LIMITER` and\n    `LEARNING_EVENTS_LIMITER` (namespaces 7010/7011, 7210/7211, 7310/7311), and five vars. The cron is reused.\n  - `worker-configuration.d.ts` was regenerated.\n  - `migrations-learning/0001_learning_records.sql`.\n  - The dev scripts apply both databases' migrations.\n- **No enumeration:** `POST auth/email` validates the request and Turnstile, then answers `202 {}`. The account\n  lookup, the allow-list check, the per-address limit (5 an hour, `Limiter` DO) and the email all run in\n  `waitUntil`, so neither the answer nor its timing depends on whether the account exists."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature~2",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- **No silent sign-up:** a new address without consent gets an email explaining how to sign up, with no link.\n- **Client (N):** `packages/learning/src/sync-client.ts`:\n  - `createSyncClient()` covers every endpoint and raises `LearningApiError` with the `LEARNING_*` code or\n    `NETWORK`.\n  - `syncOutbox()` sends batches of at most 200 and marks accepted and duplicate ids synced. It keeps rejected\n    ids and skips past them, so they can't block newer events. It backs off on 429 (honouring `Retry-After`),\n    offline and 5xx.\n  - `uploadLocalProgress()`.\n- **UI (N):** `apps/education/src/account*.ts` and `account.css`. These pages are generated: `/account/` and\n  `/account/verify` (served at `/learn/account/…`).\n  - Email sign-in with Turnstile and the consent box, and a passkey sign-in (`@simplewebauthn/browser`).\n  - \"Add a child's device\": a code plus a QR code drawn with `uqr`, the same way the game draws its pairing QR.\n    The QR opens `/learn/account/#pair=CODE`, which prefills the claim form.\n  - The device list with Remove, \"Send this device's practice now\", the JSON export, and delete with typed\n    `DELETE`.\n  - A privacy summary on the page.\n  - `account-sync.ts` is the API for M2's Progress page: `mountAccountSlot`, `syncNow`, `progressProfiles`,\n    `progressEvents`, `pushProfile` and `removeProfile`.\n- **Small edits outside the owned paths, needed to keep `pnpm check` green or the pages working:**\n  - `render.ts` exports `shell`. M2 made the identical change.\n  - `generate.ts` and `vite.config.ts`: the account pages, a dev `/api` proxy, and a dev `/learn/` prefix.\n  - `apps/education/.gitignore`.\n  - `routes/learning-page.ts`: `/learn/account/*` CSP allows `https://challenges.cloudflare.com` (script and\n    frame) only.\n  - `testing/solver-probe-worker.ts`: exports `FamilyRecords`, since the probe uses the same config."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#what-changed-n-new-not-a-2013-feature~3",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › What changed (N: new, not a 2013 feature) (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "what-changed-n-new-not-a-2013-feature",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- `infra/scripts/lib/cloudflare-infra.mjs`: the required DO bindings are now checked as a subset, not an exact\n    list.\n  - `test/security.test.ts`: the expected limiter list, plus `LEARNING_ACCOUNTS` `off` and email mode `send` in\n    production and previews.\n- **Docs:**\n  - [learning-privacy.md](../launch/learning-privacy.md): a DRAFT, not legal advice, with a reviewer checklist\n    covering COPPA, GDPR/UK and operations.\n  - [learning-accounts-setup.md](../launch/learning-accounts-setup.md): the owner steps.\n  - The `apps/worker/README.md` section and `.dev.vars.example`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#decisions",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Decisions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "decisions",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Decisions\n- **WebAuthn:** `@simplewebauthn/server` runs in workerd. Proof: the integration test builds `none`-attestation\n  ES256 credentials with a software authenticator (`test/learning-records-authenticator.ts`, a minimal CBOR\n  encoder and a DER signature). It registers and signs in through the real Worker, and is refused for replayed\n  challenges and wrong origins. In the browser e2e, Chromium's CDP virtual authenticator does the same through\n  `@simplewebauthn/browser`.\n  - The cost is about 0.7 MB of unminified bundle (asn1/x509, for attestation formats this app doesn't need). The\n    Worker upload is 17.5 MB raw and 5.5 MB gzip in the dry run.\n- **CSRF:** a mutating request that carries the cookie, or that sets one (`email/verify`, `passkey/login/verify`),\n  must send an allowed `Origin`: the Worker's own, `LEARNING_ORIGIN`, or (development only) a loopback Vite proxy.\n  Bearer-only device requests need none.\n- **Devices read the family's profiles** (needed for the child's picker on a linked tablet) and send events. Only\n  a parent reads events, the export or devices.\n- **Turnstile in dev:** without a site key, the Vite dev build sends the documented dummy token and the\n  development Worker answers the always-pass test secret locally. So nothing needs the network."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#attempts-that-failed",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Attempts that failed · Manual interventions",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "attempts-that-failed",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Attempts that failed\n- **Node strip-only TypeScript:** the first `LearningApiError` used constructor parameter properties.\n  `apps/education/vite.config.ts` imports `@wwm/learning` under Node's strip-only TypeScript, which rejects them,\n  so Vitest couldn't load the project. Rewritten with plain fields.\n- **Gate test in a deployed environment:** an integration test that set `WWM_ENV=preview` got `429` from the\n  existing global cost ingress (cost controls are always on outside development). The fail-closed checks moved\n  to unit tests of `learningConfig()` instead.\n- **The existing tests needed the new bindings:**\n  - The solver probe Worker (its own entry, same `wrangler.jsonc`) timed out until it exported `FamilyRecords`.\n  - `security.test.ts` and the deploy guard both expected exact binding lists.\n- **Small fixes:**\n  - The e2e needed `wrangler` as an education devDependency.\n  - Biome rejected a local named `escape` (it shadows a global), and an optional chain in a test.\n\n## Manual interventions\nNone."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#test-evidence",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Test evidence",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Test evidence\n- **`pnpm check`** (typecheck, Biome, Vitest; Chromium installed) is green after `pnpm docent:index`: 162 test\n  files passed and 6 skipped; 1,731 tests passed and 44 skipped. The 49 new tests below all ran, none skipped.\n- **`apps/worker/test/learning-records.integration.test.ts`** has 19 tests in real workerd with D1, Durable\n  Objects, KV and rate limits. It covers:\n  - the anonymous session and `no-store`;\n  - consent required, with version and time recorded, and normalized email;\n  - the cookie attributes, the 30-day `Max-Age`, and hash-only storage;\n  - one-use, 15-minute links and an expired link;\n  - identical answers for existing, new and consent-less addresses;\n  - profiles: upsert, patch, validation, and devices read-only;\n  - pair codes: alphabet, 10 minutes, one use, expiry;\n  - events: dedupe, `UNKNOWN_PROFILE`, `INVALID`, size bounds, parent-only reads, and 604-event paging;\n  - the profile deletion cascade;\n  - cross-family isolation (session and device, read and write, export);\n  - revocation;\n  - CSRF (foreign, missing and `null` Origin; `Sec-Fetch-Site`);\n  - passkey register and login, with replay and wrong origin;\n  - sign-out;\n  - export completeness;\n  - deletion completeness (every D1 table and DO `sqlite_master` empty);\n  - the retention cron;\n  - rate limits (per IP and per family);\n  - logs free of emails and nicknames.\n- **A mutation check:** disabling the DO's profile check made 4 of the 19 fail (isolation, cascade, events,\n  profiles).\n- **The other test files:**\n  - `learning-records-gate.integration.test.ts`: 4 tests (off, allowlist, on, Turnstile failure).\n  - `learning-records-config.test.ts`: 6 tests.\n  - `learning-page.test.ts`: the CSP for account pages.\n- **`packages/learning/test/sync-client.test.ts`:** 9 tests, with a fake fetch and an in-memory `ProgressStore`."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#test-evidence~2",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Test evidence (continued)",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "test-evidence",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "- **`apps/education/test/account.test.ts`:** 5 tests (the page HTML, and the helpers with and without an account).\n- **`apps/education/test/account.e2e.test.ts`:** Chromium, workerd behind the education Vite dev server. It walks\n  through:\n  1. the email link via the mock mailbox;\n  2. adding a passkey (virtual authenticator), then signing out and back in with it;\n  3. the pair code and QR;\n  4. a second browser context opening the QR link and linking itself;\n  5. the tablet sending events (and being refused progress reads), and the parent seeing them;\n  6. the device list and the JSON export;\n  7. revocation and typed-confirmation delete;\n  8. and, in a second test, a used link explaining itself.\n\nScreenshots at 1280 wide and 390×844 were reviewed by hand (`WWM_ACCOUNT_SHOTS`, not committed)."
+    },
+    {
+      "id": "docs/build-log/phase-31-m3.md#remaining-defects-and-follow-ups",
+      "title": "Phase 31 M3: Parent accounts, child devices and progress sync › Remaining defects and follow-ups",
+      "path": "docs/build-log/phase-31-m3.md",
+      "anchor": "remaining-defects-and-follow-ups",
+      "url": "/log#phase-31-m3",
+      "kind": "build-log",
+      "text": "## Remaining defects and follow-ups\n- **Merge blocker for automatic deploys:** the production and preview `LEARNING_DB` ids are placeholders. The owner\n  must create the databases first (setup doc step 1), or merge with those entries removed.\n- **CI:**\n  - The CI deploy doesn't apply `migrations-learning/` yet.\n  - The web build needs `VITE_TURNSTILE_SITE_KEY`. Both are owner or orchestrator edits to `ci.yml`.\n- **Until M2's store is wired in, nothing is uploaded:** `account.ts` registers no `ProgressStore` (there is a\n  marked MERGE POINT), and the device token falls back to `localStorage`. The e2e therefore sends the tablet's\n  events through the API directly.\n- **The Progress page:** M2's page still has to call `mountAccountSlot` and `progressEvents`, and\n  `pushProfile`/`removeProfile` on edits. A profile deleted locally while signed out comes back from the family on\n  the next sync.\n- **Profiles a linked device made itself:** a device can't create profiles. Events for a device-only profile stay\n  in its outbox (`UNKNOWN_PROFILE`) until a parent signs in on that device or the profile is created from the\n  parent side.\n- **Bundle size:** `@wwm/learning` is imported from its root, which adds about 130 KB unminified to the Worker\n  (the baseline path is parsed at load). A `./sync` subpath export would avoid it.\n- **Unverified on real Cloudflare:** Email Service delivery and Turnstile siteverify (only the documented local\n  test-secret path and a fake fetch were exercised); and whether a `send_email` binding without an onboarded\n  domain blocks a deploy.\n- **The privacy review, COPPA consent method and educator review** are human gates (plan \"Acceptance\")."
     },
     {
       "id": "docs/build-log/phase-31.md",

@@ -193,7 +193,7 @@ describe('createSyncClient', () => {
     const init = fetch.mock.calls[13]?.[1];
     expect(JSON.parse(String(init?.body))).toEqual({ code: 'ABC234', label: 'Tablet' });
     expect(init?.credentials).toBe('same-origin');
-    expect((init?.headers as Record<string, string>).authorization).toBe('Bearer tok');
+    expect((init?.headers as Record<string, string> | undefined)?.authorization).toBe('Bearer tok');
     expect(JSON.parse(String(fetch.mock.calls[2]?.[1]?.body))).toEqual({ token: 't'.repeat(43) });
   });
 
