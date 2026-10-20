@@ -9,11 +9,17 @@
  * Usage: node src/spike.ts [--runs 3] [--model claude-sonnet-5-5]
  */
 import { type ChildProcess, spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type Activity, baselinePath, type Round, roundSchema } from '@wwm/learning';
+import {
+  type Activity,
+  baselinePath,
+  type Round,
+  roundSchema,
+  spellingFlags,
+  spellingIssues,
+} from '@wwm/learning';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '../../..');
@@ -36,11 +42,6 @@ const SPANISH_COLORS: Record<string, string> = {
   verde: 'green',
   amarillo: 'yellow',
 };
-const dictionary = new Set(
-  readFileSync('/usr/share/dict/words', 'utf8')
-    .split('\n')
-    .map((word) => word.trim().toLowerCase()),
-);
 
 interface Objective {
   activityId: string;
@@ -67,43 +68,10 @@ const objectives: Objective[] = [
       'Hints: a nudge, a strategy that involves the grown-up, then a worked example naming the letter.',
       'Vary which position is blank (first, middle, last).',
     ].join(' '),
-    check(round) {
-      if (round.kind !== 'choose') return ['Must be a choose round.'];
-      const issues: string[] = [];
-      const text = round.stimulusText ?? '';
-      const parts = text.split(' ');
-      if (!/^([A-Z_] ){2}[A-Z_]$/.test(text) || parts.filter((part) => part === '_').length !== 1)
-        issues.push('stimulusText must be three capital letters separated by spaces with exactly one "_".');
-      if (round.stimulus.length) issues.push('Use stimulusText, not picture stimulus.');
-      if (round.practice?.language !== 'en-US') issues.push('practice must be en-US.');
-      const answer = round.options.find((option) => option.id === round.answer);
-      if (!answer || !/^[A-Z]$/.test(answer.label))
-        issues.push('The answer option must be one capital letter.');
-      for (const option of round.options) {
-        if (!/^[A-Z]$/.test(option.label) || option.id !== option.label.toLowerCase())
-          issues.push(`Option "${option.label}" must be one capital letter with a lowercase id.`);
-        if (option.tokens.length) issues.push('Letter options have no tokens.');
-      }
-      const word = text.replace('_', answer?.label ?? '?').replaceAll(' ', '');
-      if (round.practice && round.practice.text.toUpperCase() !== word)
-        issues.push(`practice.text must be the completed word "${word}".`);
-      if (!dictionary.has(word.toLowerCase())) issues.push(`"${word}" is not an English word.`);
-      if (!round.hints.at(-1)?.includes(answer?.label ?? '?'))
-        issues.push('The last hint must name the letter.');
-      return issues;
-    },
-    notes(round) {
-      if (round.kind !== 'choose' || !round.stimulusText) return [];
-      const others = round.options
-        .filter((option) => option.id !== round.answer)
-        .map((option) => round.stimulusText?.replace('_', option.label).replaceAll(' ', '') ?? '')
-        .filter((word) => dictionary.has(word.toLowerCase()));
-      return others.length
-        ? [
-            `A distractor also spells a word (${others.join(', ')}); the meaning sentence and audio must decide.`,
-          ]
-        : [];
-    },
+    // M4 moved these checks into @wwm/learning: the word must be on the reviewed list (it replaced the
+    // /usr/share/dict/words check the October 19 run used), and real-word distractors are flagged.
+    check: (round) => spellingIssues(round),
+    notes: spellingFlags,
     signature: (round) =>
       round.kind === 'choose' ? `${round.practice?.text.toUpperCase()}|${round.stimulusText}` : '',
   },
