@@ -1,6 +1,6 @@
 # Phase 31: Lesson depth and parent progress tracking
 
-**Status:** Planned on 2026-10-19 with the owner. M0 (item-bank spike) and M1 (`@wwm/learning` objectives, banks, generators, evidence and progress) are done. The owner approved starting M1 on 2026-10-19, which applied CCR-31-1 and CCR-31-2. CCR-31-3 (accounts and sync API) and CCR-31-4 (authoring agent) remain proposals.
+**Status:** Planned on 2026-10-19 with the owner. M0 (item-bank spike) and M1 (`@wwm/learning` objectives, banks, generators, evidence and progress) are done. The owner approved starting M1 on 2026-10-19, which applied CCR-31-1 and CCR-31-2. CCR-31-3 (accounts and sync) and CCR-31-4 (lesson drafts) are fixed in [contracts §10.5](contracts.md) and `@wwm/learning` `sync.ts`, so M2–M4 can run in parallel. Owner decisions not yet made use the plan's defaults: passkeys plus an email link, 24-month inactivity deletion, and `LEARNING_ACCOUNTS=off` in production until the privacy review.
 **Audience:** Children aged 4–6 playing with a grown-up, and the grown-ups who follow their progress.
 **Platform:** Cloudflare only (Workers, Durable Objects, D1, Workflows, Agents SDK, AI Gateway, Email Service, Turnstile, Access). Vercel-based ideas, such as fx0/libfx, are ported to Cloudflare primitives, not adopted.
 
@@ -107,7 +107,7 @@ There's no percentage, score or ranking. The page states that this reflects prac
 | Offline | Events are written to IndexedDB first (an outbox in the Phase 23 store) and synced in batches when online. |
 | Rate limits and cost | The existing rate-limit bindings and cost budgets. |
 
-Proposed endpoints (contracts §10.x when approved):
+Endpoints (authoritative version: contracts §10.5):
 
 | Endpoint | Purpose |
 |---|---|
