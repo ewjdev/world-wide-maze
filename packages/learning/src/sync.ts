@@ -92,7 +92,10 @@ export const emailSignInSchema = z
   .object({
     email: z.string().trim().toLowerCase().email().max(254),
     /** Required to create a family; ignored for an existing account. */
-    consent: z.object({ version: z.literal(CONSENT_VERSION), parent: z.literal(true) }).strict().optional(),
+    consent: z
+      .object({ version: z.literal(CONSENT_VERSION), parent: z.literal(true) })
+      .strict()
+      .optional(),
     turnstile: z.string().min(1).max(4096),
   })
   .strict();
