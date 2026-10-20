@@ -1,6 +1,7 @@
 export * from './banks.ts';
 export * from './baseline.ts';
 export * from './bridge-runtime.ts';
+export * from './browser-store.ts';
 export * from './checkpoint.ts';
 export * from './checks.ts';
 export * from './evidence.ts';

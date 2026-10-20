@@ -391,7 +391,8 @@ const voice = manifest.voiceId ? { provider: 'elevenlabs' as const, ...manifest 
 const allActivities = [...activities, ...preschoolActivities];
 /**
  * Phase 31 (3.2.0): one objective per activity for now, named after it, until educator review groups them.
- * Parametric objectives get generated banks; activities don't ask for fresh examples until a consumer plays them.
+ * Parametric objectives get generated banks. Activities with a bank ask for two fresh examples (Phase 31 M2:
+ * the lesson page plays them; the game plays the written rounds until M5).
  */
 const objectives = allActivities.map((activity) => ({ id: activity.id, statement: activity.objective }));
 const banks: Bank[] = [
@@ -418,7 +419,13 @@ export const baselinePath = parseLearningPath({
   theme: skyIslands,
   play: { shuffle: 'positions', input: ['tap', 'arrows', 'tilt'] },
   ...(voice ? { voice } : {}),
-  activities: allActivities.map((activity) => ({ ...activity, objectives: [activity.id] })),
+  activities: allActivities.map((activity) => ({
+    ...activity,
+    objectives: [activity.id],
+    ...(banks.some((bank) => bank.objective === activity.id)
+      ? { fresh: { objective: activity.id, count: 2 } }
+      : {}),
+  })),
   objectives,
   banks,
 });
