@@ -181,7 +181,7 @@ Every milestone ends with `pnpm check` green, an entry appended to `docs/build-l
 | M1 | Window shader, atlas, postcard, fixture previews (production quality) | M0 | done: PR #54, checked by the user on the iPhone (2026-10-20) |
 | M2 | Push-through, `TravelWindow`, matched cut | M1 | done: PR #55, merged with M0–M1 through #52 at the user's request (2026-10-20) |
 | M3 | Previews of built sites from the service (CCR-PW-1) | M1 (the M3 worker work can run in parallel with M2) | done: PR #56, live in production (contract 0.3.7, 2026-10-21) |
-| M4 | Device validation, preview-environment rollout, showcase clip | M2, M3 | in progress: production measured (2 of 11 runs approved; median miss wait about 20.6 s); `?perf` readout for the iPhone; awaiting the user's sign-off |
+| M4 | Device validation, preview-environment rollout, showcase clip | M2, M3 | done: user sign-off on the iPhone (2026-10-21); tilt travel hang fixed; production enabled (PR #57) |
 | M5 | `og:image` previews and telemetry (CCR-PW-2) | M4 decision gate | pending |
 
 **M0 — First look on a preview branch.** The `/dev/engine` sandbox exists only in dev builds (`import.meta.env.DEV` in [routes.tsx](../apps/web/src/routes.tsx)), so it can't be the look test on a deployed preview. M0 puts a first-cut window in the real game instead, behind the flag.

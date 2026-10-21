@@ -228,3 +228,11 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
   - A stalled clock (`timeScale = 0` after the prompt): the status shows and the watchdog still starts the build.
   - The way out: paused, window gone, trail unchanged.
   - Green locally and in CI mode, together with `portal.e2e` and `mobile-tilt.e2e` (22 passed, 1 skipped by the #36 quarantine).
+
+### M4 completed (2026-10-21)
+- **iPhone check:** on the branch preview with `?perf`, the user read **60 fps, worst frame 19 ms, tier 0, 35 draw calls, WebGPU** on the iPhone 17 Pro. The travel window was up over GOV.UK, and the screenshot was taken during the hang, before the fix. That's one reading, not a full profile, but it leaves plenty of frame-time headroom for Option B's ideas.
+- **Hang fix:** the user retested after the tilt travel fix and **signed off** ("This work looks good, merge and deploy to production").
+- **Production:** `VITE_PORTAL_WINDOWS_ENABLED: "true"` is now set in the `deploy-production` build step. Rollback: set it to `"false"` and redeploy. The `kill:portal-previews` KV key stops built-site lookups without a deploy (runbook §5.1a).
+- **Expectation:** production has 2 approved runs, so most portals show their postcard. The tear, the travel window and the cut into the intro apply to every portal.
+- **Branch preview:** the Worker `wwm-preview-portal-windows` is deleted after the production deploy (plan §9.1). The manual preview workflow recreates it for later work.
+- **Not done:** an Android check (no device on hand) and the LinkedIn hero clip, which the user records.
