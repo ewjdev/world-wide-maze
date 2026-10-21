@@ -31,6 +31,14 @@ did before publication). Night 1 is the original overnight claim and stays the p
 are shown after it. Lines and tests for an earlier stretch are taken at its closing commit
 (`sources/tests-<id>.json` for the Vitest counts).
 
+## Since launch, and drift
+The clock stays a fixed measurement of the launch build. Work after its snapshot is listed in
+`content/build-story/since-launch.json` (rendered on `/log` as "Since launch", each entry with its build logs and
+whether it is live). `pnpm record:drift` (`src/cli/drift.ts`, checks in `src/record.ts`) reports where that list,
+`docs/facts/whats-built.md` and the docent corpus lag the repository; with `--base <ref>` it also flags product code
+changed without a build-log update. CI runs it on every PR as the non-blocking `build-record` job and keeps a sticky
+comment. The `build-record` skill (`.claude/skills/build-record/`) walks through fixing each finding.
+
 ## Stale commit ids fail the tests
 `test/content.test.ts` checks that every commit `timeline.json`, `bugs.json`, the draft and the test sources cite
 exists. It skips only in a shallow clone. After a history rewrite, map old ids with `.git/filter-repo/commit-map`.

@@ -6,6 +6,7 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { describe, expect, test } from 'vitest';
+import { SINCE_LAUNCH_FILE, type SinceLaunch } from '../src/record.ts';
 import { readRepo, TIMELINE_FILE } from '../src/repo.ts';
 import { buildTimeline } from '../src/timeline.ts';
 import type { Timeline } from '../src/types.ts';
@@ -177,5 +178,29 @@ describe('bugs.json', () => {
     if (!o?.diff || shallow) return;
     const show = source(o.evidence.file);
     for (const line of o.diff) expect(show).toContain(line);
+  });
+});
+
+/**
+ * Shape only. Whether the list is complete (every later log in an entry, `after` = the clock's snapshot) is drift,
+ * reported by `pnpm record:drift` and the non-blocking CI job, not failed here.
+ */
+describe('since-launch.json', () => {
+  const since = JSON.parse(read(SINCE_LAUNCH_FILE)) as SinceLaunch;
+  test('entries are complete, with unique ids and a known status', () => {
+    expect(since.entries.length).toBeGreaterThan(0);
+    expect(new Set(since.entries.map((e) => e.id)).size).toBe(since.entries.length);
+    for (const e of since.entries) {
+      expect(e.id, e.id).toMatch(/^[a-z0-9-]+$/);
+      for (const k of ['title', 'summary', 'statusNote'] as const)
+        expect(e[k].trim(), `${e.id}.${k}`).not.toBe('');
+      expect(['live', 'paused', 'switched-off', 'operator-only']).toContain(e.status);
+      expect(e.logs.length + (e.docs?.length ?? 0), `${e.id} cites no record`).toBeGreaterThan(0);
+      for (const d of e.docs ?? []) expect(existsSync(join(repo, d)), d).toBe(true);
+      if (e.href) expect(e.href).toMatch(/^\//);
+    }
+  });
+  test('never claims a speed-up', () => {
+    expect(read(SINCE_LAUNCH_FILE)).not.toMatch(/\d+\s*[×x]\s*faster|times faster|faster than/i);
   });
 });

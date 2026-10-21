@@ -11,7 +11,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "collect": "node src/cli/collect.ts",
     "build": "node src/cli/build.ts",
-    "social": "node src/cli/social.ts"
+    "social": "node src/cli/social.ts",
+    "drift": "node src/cli/drift.ts"
   },
   "devDependencies": {
     "playwright": "^1.63.0"

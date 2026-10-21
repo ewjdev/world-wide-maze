@@ -2,6 +2,7 @@
 # to `main`, and everything that deploys `needs:` that single check job.
 #
 #   pull_request opened / synchronize / reopened → check → preview (Worker Preview `pr-<N>`, smoke test, sticky comment)
+#                                                → build-record (drift report and sticky comment; never blocks)
 #   pull_request closed                          → preview-cleanup (`wrangler preview delete`)
 #   push to main (every merged PR)               → check → deploy-production (D1 migrations, `wrangler deploy`, smoke)
 #   workflow_dispatch on main                    → check → deploy-production (re-deploy the current main by hand)
@@ -84,6 +85,53 @@ jobs:
             sleep 1
           done
           WWM_EDUCATION_E2E_BASE=http://127.0.0.1:4174 pnpm vitest run --project @wwm/education education.e2e
+
+  # ── Build record drift: never blocks. Reports where /log's "Since launch" list, docs/facts/whats-built.md and the
+  # docent corpus lag the change (tools/build-story/src/record.ts), as warning annotations, the job summary and a
+  # sticky PR comment. The script exits 0 whatever it finds; the steps tolerate API errors. Nothing `needs:` it.
+  build-record:
+    if: github.event_name == 'pull_request' && github.event.action != 'closed'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    continue-on-error: true
+    permissions:
+      contents: read
+      pull-requests: write # the sticky comment
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # the build clock's snapshot commit and the PR's merge base
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+
+      - name: Check the build record
+        id: drift
+        env:
+          BASE: origin/${{ github.base_ref }}
+        run: node tools/build-story/src/cli/drift.ts --base "$BASE" --github --out /tmp/build-record.md
+
+      # Posted only when something is out of sync; an earlier comment is updated (to "in sync" once fixed).
+      - name: Sticky PR comment
+        if: steps.drift.outcome == 'success' && github.event.pull_request.head.repo.full_name == github.repository
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          DRIFT: ${{ steps.drift.outputs.drift }}
+        run: |
+          marker='<!-- wwm-build-record -->'
+          id="$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\" and (.body | contains(\"$marker\"))) | .id" | tail -n 1)"
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@/tmp/build-record.md > /dev/null
+          elif [ "$DRIFT" = 'true' ]; then
+            gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@/tmp/build-record.md > /dev/null
+          fi
 
   # ── PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
   # (wrangler.jsonc env.production.previews).
