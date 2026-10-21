@@ -1,11 +1,13 @@
 /**
  * Capture/stage API (contracts §7): POST /stages, GET /jobs/:id (SSE), GET /stages/:id, GET
- * /stages/:id/texture, GET /runs/:id, GET /curated. Mounted at `/api` by the router.
+ * /stages/:id/texture, GET /runs/:id, GET /curated, POST /portals/previews (§10.6). Mounted at `/api` by the router.
  */
 import {
   CreateStageRequestSchema,
   type CreateStageResponse,
   type CuratedResponse,
+  PortalPreviewsRequestSchema,
+  type PortalPreviewsResponse,
   type RunResponse,
 } from '@wwm/schema';
 import { Hono, type MiddlewareHandler } from 'hono';
@@ -15,7 +17,13 @@ import { defaultSeed, runCacheKey } from '../ids.ts';
 import type { JobParams } from '../pipeline.ts';
 import { checkUrl, checkUrlStatic } from '../policy/url-policy.ts';
 import { scheduleRefresh } from '../refresh.ts';
-import { BodyTooLargeError, MAX_STAGE_REQUEST_BYTES, readJsonCapped, tooLarge } from '../security.ts';
+import {
+  BodyTooLargeError,
+  MAX_PORTAL_PREVIEW_BYTES,
+  MAX_STAGE_REQUEST_BYTES,
+  readJsonCapped,
+  tooLarge,
+} from '../security.ts';
 
 const HEX64 = /^[0-9a-f]{64}$/;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -149,6 +157,47 @@ stagesRoutes.get('/jobs/:jobId', async (c) => {
   const jobId = c.req.param('jobId');
   if (!UUID.test(jobId)) return notFound('job');
   return c.env.BUILD_JOB.get(c.env.BUILD_JOB.idFromName(jobId)).fetch(c.req.raw);
+});
+
+/**
+ * Portal previews (contracts §10.6, CCR-PW-1): which link-portal targets already have a servable run, so a portal
+ * can show that page. Read-only: no build admission, claim, refresh, budget or cache write. Per URL, the run
+ * `POST /api/stages` would reuse wins (D3), else the newest servable run for that page; `canServeRun` decides.
+ */
+stagesRoutes.post('/portals/previews', async (c) => {
+  const { store, policy, builder } = c.get('services');
+  let raw: unknown;
+  try {
+    raw = await readJsonCapped(c.req.raw, MAX_PORTAL_PREVIEW_BYTES);
+  } catch (e) {
+    if (e instanceof BodyTooLargeError) return tooLarge(e);
+    throw e;
+  }
+  const body = PortalPreviewsRequestSchema.safeParse(raw);
+  if (!body.success)
+    return Response.json(
+      { error: 'bad request', message: body.error.issues[0]?.message ?? 'invalid body' },
+      { status: 400 },
+    );
+  const killed = (await c.env.CACHE.get('kill:portal-previews')) !== null;
+  const preview = async (input: string): Promise<string | null> => {
+    if (killed) return null;
+    const stat = checkUrlStatic(input, policy);
+    if (!stat.ok) return null;
+    if (policy.isOptedOut && (await policy.isOptedOut(stat.host))) return null;
+    const url = stat.url;
+    const exact = await store.catalog.peekVariant(await runCacheKey(url, 'normal', builder.version), {
+      url,
+      difficulty: 'normal',
+      seed: defaultSeed(url),
+      builderVersion: builder.version,
+    });
+    const runId = exact ?? (await store.catalog.newestServableRun(url));
+    return runId ? store.catalog.firstStageId(runId) : null;
+  };
+  const items: PortalPreviewsResponse['items'] = [];
+  for (const url of body.data.urls) items.push({ url, stageId: await preview(url) });
+  return c.json<PortalPreviewsResponse>({ items }, 200, { 'cache-control': REVOCABLE });
 });
 
 /** Cache only the immutable artifact behind a fresh catalog authorization on every request.

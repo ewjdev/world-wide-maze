@@ -167,6 +167,52 @@ export class Catalog {
     return row.run_id;
   }
 
+  /**
+   * Portal previews (CCR-PW-1): the run `resolveVariant` would return for `cacheKey`, read-only. Same two lookups
+   * and the same `canServeRun` check, but it never writes the `url_variants` pointer, the case's cache key or KV,
+   * and doesn't probe R2 (a missing texture just makes the client fall back to the postcard).
+   */
+  async peekVariant(
+    cacheKey: string,
+    legacy: { url: string; difficulty: string; seed: number; builderVersion: string },
+  ): Promise<string | null> {
+    let row = await this.env.DB.prepare('SELECT run_id FROM url_variants WHERE cache_key=?')
+      .bind(cacheKey)
+      .first<{ run_id: string }>();
+    row ??=
+      await this.env.DB.prepare(`SELECT r.run_id FROM runs r JOIN moderation_cases m ON m.run_id=r.run_id
+        WHERE r.url=? AND r.difficulty=? AND r.seed=? AND r.builder_version=? AND m.status='approved'
+        AND m.artifacts_available=1 ORDER BY r.created_at DESC LIMIT 1`)
+        .bind(normalizeTargetUrl(legacy.url), legacy.difficulty, legacy.seed, legacy.builderVersion)
+        .first<{ run_id: string }>();
+    return row && (await this.canServeRun(row.run_id)) ? row.run_id : null;
+  }
+
+  /**
+   * Portal previews: the newest approved, complete run whose page (or submitted URL) is `url`, at any difficulty,
+   * seed or builder version, if it may be served. One indexed candidate query; `canServeRun` keeps the rules.
+   * The unary `+` keeps SQLite off the low-selectivity status index, so the two URL indexes serve the OR.
+   */
+  async newestServableRun(url: string): Promise<string | null> {
+    const row =
+      await this.env.DB.prepare(`SELECT r.run_id FROM moderation_cases m JOIN runs r ON r.run_id=m.run_id
+        WHERE (m.url=?1 OR m.submitted_url=?1) AND +m.status='approved' AND +m.artifacts_available=1
+        AND r.status IN ('complete','partial')
+        AND EXISTS (SELECT 1 FROM stages s WHERE s.run_id=r.run_id AND s.slice_index=0)
+        ORDER BY r.created_at DESC LIMIT 1`)
+        .bind(url)
+        .first<{ run_id: string }>();
+    return row && (await this.canServeRun(row.run_id)) ? row.run_id : null;
+  }
+
+  /** Slice 0's stage id of a run. */
+  async firstStageId(runId: string): Promise<string | null> {
+    const row = await this.env.DB.prepare('SELECT stage_id FROM stages WHERE run_id=? AND slice_index=0')
+      .bind(runId)
+      .first<{ stage_id: string }>();
+    return row?.stage_id ?? null;
+  }
+
   async pendingVariant(cacheKey: string): Promise<string | null> {
     const row =
       await this.env.DB.prepare(`SELECT m.run_id FROM moderation_cases m JOIN runs r ON r.run_id=m.run_id WHERE m.cache_key=? AND m.status='pending_review'

@@ -69,7 +69,7 @@ import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
-import { PORTAL_WINDOWS_ENABLED, PortalPreviews } from './portal-preview.ts';
+import { apiPreviewService, PORTAL_WINDOWS_ENABLED, PortalPreviews } from './portal-preview.ts';
 import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
@@ -432,6 +432,8 @@ export class Game {
    * for it (with a timeout), so neither the old world vanishing nor the new one in chase view shows around it.
    */
   #cover: { promise: Promise<void>; resolve: () => void } | null = null;
+  /** Portal windows: the travelled portal's `blob:` picture, the game's to revoke once the window is done. */
+  #travelBlob: string | null = null;
   /** e2e: when the travel window covered the screen, and when the next world started loading (performance.now). */
   #travelTiming: { coveredAt: number | null; loadAt: number | null } = { coveredAt: null, loadAt: null };
   /** The timer was running when the portal prompt paused it. */
@@ -734,6 +736,7 @@ export class Game {
     this.#disposed = true;
     this.#previews.stop();
     this.#releaseCover();
+    this.#releaseTravelBlob();
     this.#cancelGhostPreparation();
     this.#ghostClient.dispose();
     this.#attractAbort?.abort();
@@ -831,6 +834,7 @@ export class Game {
     // Portal windows: the window only lives through building → intro
     if (to !== 'building' && to !== 'intro') {
       this.#releaseCover();
+      this.#releaseTravelBlob();
       if (this.#view.arrival) this.#set({ arrival: null });
     }
     const e = this.#engine;
@@ -1795,6 +1799,7 @@ export class Game {
         got.stage,
         (id, img) => this.#engine?.setPortalPreview(id, img),
         () => this.#stage() === got.stage && !this.#disposed,
+        apiPreviewService(this.#opts.origin, () => this.#probeApi().then(() => this.#api === 'online')),
       );
     this.#progress('world', 100);
     // Portal windows: the window develops the arrival and settles it onto the intro's page before BUILT
@@ -1869,6 +1874,7 @@ export class Game {
     void done.then(() => {
       // a skipped intro ends the travel window too (normally it finished 0.25 s into the intro)
       if (this.#view.arrival) this.#set({ arrival: null });
+      this.#releaseTravelBlob();
       if (
         this.#view.phase !== 'intro' ||
         build !== this.#buildAbort ||
@@ -2374,6 +2380,12 @@ export class Game {
   /** Portal windows: the window has cut to the intro and faded out. */
   travelWindowDone(): void {
     if (this.#view.arrival) this.#set({ arrival: null });
+    this.#releaseTravelBlob();
+  }
+
+  #releaseTravelBlob(): void {
+    if (this.#travelBlob) URL.revokeObjectURL(this.#travelBlob);
+    this.#travelBlob = null;
   }
 
   #travelHandoff(handoff: ScreenRect | 'full'): void {
@@ -2419,7 +2431,9 @@ export class Game {
     const target: JourneyStop = { host: pr.host, title: pr.label, url: pr.href, ref: null, via: 'portal' };
     this.#travelling = true;
     const windows = PORTAL_WINDOWS_ENABLED;
-    const src = windows ? this.#previews.source(pr.id) : null;
+    const src = windows ? this.#previews.take(pr.id) : null;
+    this.#releaseTravelBlob();
+    if (src?.startsWith('blob:')) this.#travelBlob = src;
     this.#set({
       portal: null,
       result: null,

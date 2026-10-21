@@ -161,7 +161,11 @@ await clearPorts();
 writeFileSync(PIDFILE, String(process.pid));
 
 console.log('[dev:phone] starting web + worker (pnpm dev)…');
-const dev = run('pnpm', ['dev'], { env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' } });
+// A phone gets tilt controls, as in the preview and production builds (the flag is opt-in even under
+// `pnpm dev`, and without it a portrait phone falls back to the joystick deck). `VITE_MOBILE_TILT_ENABLED=false` opts out.
+const dev = run('pnpm', ['dev'], {
+  env: { VITE_MOBILE_TILT_ENABLED: 'true', ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
+});
 // Vite prints e.g. "Local:   http://localhost:5173/" (it picks the next free port if 5173 is busy).
 const [, port] = await waitFor(dev, /Local:\s+http:\/\/localhost:(\d+)/, 'the web dev server');
 await waitFor(dev, /Ready on http:\/\/(localhost|127\.0\.0\.1):\d+/, 'the worker dev server', 60_000).catch(

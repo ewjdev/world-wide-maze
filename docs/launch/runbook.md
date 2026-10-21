@@ -76,6 +76,20 @@ pnpm exec wrangler kv key delete --binding CACHE "kill:capture" --env production
 sites is paused…"; cached URLs still return 200 — docs/launch/evidence/kill-switch.txt.) The permanent form is the
 var `CAPTURE_ENABLED = "0"` in `wrangler.jsonc` + deploy.
 
+### 5.1a Portal previews → kill switch
+Link portals show pictures of sites already built through the read-only `POST /api/portals/previews` (contracts
+§10.6). To stop them, without a deploy, set this key. Every lookup then answers `null`, D1 isn't queried, and portals fall back to
+their postcards. Travel is unaffected.
+```sh
+cd apps/worker
+pnpm exec wrangler kv key put --binding CACHE "kill:portal-previews" "on <date> <reason>" --env production --remote
+# undo:
+pnpm exec wrangler kv key delete --binding CACHE "kill:portal-previews" --env production --remote
+```
+The pictures themselves come from `GET /api/stages/:id/texture`, which re-checks moderation on every request, so
+a takedown removes a preview on the next stage load even without the switch. Turning the whole feature off is the
+build flag `VITE_PORTAL_WINDOWS_ENABLED` (plans/portal-windows-execution.md §9).
+
 ### 5.2 Takedown / opt-out request
 Follow docs/launch/legal-drafts/takedown.md (operator procedure). The opt-out is enforced before the cache
 lookup, so it applies at once to cached runs too.

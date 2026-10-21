@@ -8,11 +8,12 @@
  *     it (no veil), the next world loads only once it covers the screen, and it cuts into the intro and unmounts;
  *     score, spares and the trail carry over. Cancel mid-travel and a failed build leave cleanly; reduced motion
  *     completes the same journey with crossfades.
+ *  4. M3: with the service answering (mocked), a link to a site already built there shows that site's texture.
  *  All stay inside the draw-call budget with no page errors.
  *
  * Needs Playwright Chromium; skipped locally without it, required in CI.
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { type Browser, chromium, type Page } from 'playwright';
 import { createServer, type ViteDevServer } from 'vite';
@@ -79,7 +80,10 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
    * Open `stage` and reach play. `intros: 'skip'` skips every intro through the test hook; `'first'` skips only
    * this first one by hand, so a travel's arrival plays its real intro (the window cuts into it).
    */
-  async function play(stage: string, o: { intros?: 'skip' | 'first'; reducedMotion?: boolean } = {}) {
+  async function play(
+    stage: string,
+    o: { intros?: 'skip' | 'first'; reducedMotion?: boolean; online?: (page: Page) => Promise<void> } = {},
+  ) {
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
       reducedMotion: o.reducedMotion ? 'reduce' : 'no-preference',
@@ -104,7 +108,8 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
       if (m.type() === 'error' && !SOFTWARE_GL_NOISE.test(text) && !KNOWN_TRAVEL_NOISE.test(text))
         problems.push(`[console] ${text}`);
     });
-    await page.goto(`${base}/play/${stage}?offline=1`);
+    if (o.online) await o.online(page);
+    await page.goto(`${base}/play/${stage}${o.online ? '' : '?offline=1'}`);
     if (o.intros === 'first') {
       await page.waitForFunction(() => document.body.dataset.phase === 'intro', null, { timeout: 90_000 });
       await page.waitForFunction(
@@ -236,4 +241,36 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
     expect(problems).toEqual([]);
     await ctx.close();
   }, 180_000);
+
+  test('M3: a site already built on the service shows its texture (mocked lookup + texture)', async () => {
+    const W3 = 'https://www.w3.org/';
+    const STAGE = 'c3'.repeat(32);
+    const lookups: unknown[] = [];
+    const png = readFileSync(
+      new URL('../../../fixtures/captures/portal-hub/screenshot.png', import.meta.url),
+    );
+    const { page, ctx } = await play('fixture-portal-hub', {
+      online: async (p) => {
+        await p.route('**/api/health', (r) => r.fulfill({ json: { ok: true } }));
+        await p.route('**/api/portals/previews', async (r) => {
+          const body = r.request().postDataJSON() as { urls: string[] };
+          lookups.push(body);
+          await r.fulfill({
+            json: { items: body.urls.map((url) => ({ url, stageId: url === W3 ? STAGE : null })) },
+          });
+        });
+        await p.route(`**/api/stages/${STAGE}/texture`, (r) =>
+          r.fulfill({ status: 200, contentType: 'image/png', body: png }),
+        );
+        await p.route('**/api/scores/**', (r) => r.fulfill({ json: { entries: [] } }));
+      },
+    });
+    await expect
+      .poll(async () => (await state(page)).portalPreviews, { timeout: 30_000 })
+      .toEqual({ 0: 'ready', 1: 'ready', 2: 'ready', 3: 'ready' });
+    // one batched lookup, for the one link that isn't a bundled fixture
+    expect(lookups).toEqual([{ urls: [W3] }]);
+    expect(problems).toEqual([]);
+    await ctx.close();
+  }, 120_000);
 });
