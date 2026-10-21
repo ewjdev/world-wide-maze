@@ -1,7 +1,8 @@
 /**
  * Portal windows (N; plans/portal-windows-execution.md): pictures of each portal's destination for the engine's
- * tear windows. M0 has one source, the offline fixtures: a portal whose target is a bundled capture shows that
- * page's top square. Every other portal keeps the Phase 13 vortex.
+ * tear windows. One source so far, the offline fixtures: a portal whose target is a bundled capture shows that
+ * page's top square. Every other link portal shows the postcard (host colour and monogram) until M3 adds pictures
+ * of sites already built on the service.
  *
  * Behind `VITE_PORTAL_WINDOWS_ENABLED`, which needs an explicit `'true'` even in development (like tilt).
  */
@@ -38,8 +39,8 @@ export function topSquare(width: number, height: number): { sx: number; sy: numb
  * Decode only the top square of a fixture screenshot, already downscaled. Fixture screenshots reach
  * 2560 × 12000 px, so decoding the whole page for a 384 px picture would waste tens of MB.
  */
-async function decodeTop(url: string, signal: AbortSignal): Promise<ImageBitmap | null> {
-  const res = await fetch(url, { signal });
+async function decodeTop(url: string): Promise<ImageBitmap | null> {
+  const res = await fetch(url);
   if (!res.ok) return null;
   const blob = await res.blob();
   const size = pngSize(new Uint8Array(await blob.slice(0, 24).arrayBuffer()));
@@ -55,14 +56,13 @@ async function decodeTop(url: string, signal: AbortSignal): Promise<ImageBitmap 
 /** Decoded pictures by fixture slug. There are only a handful of fixtures, so this never needs evicting. */
 const cache = new Map<string, Promise<ImageBitmap | null>>();
 
-function fixturePicture(entry: CatalogEntry): Promise<ImageBitmap | null> {
+/** A fixture's picture, decoded once per session. A failure isn't cached, so a later stage load can try again. */
+export function fixturePicture(entry: CatalogEntry): Promise<ImageBitmap | null> {
   let p = cache.get(entry.slug);
   if (!p) {
-    const ac = new AbortController();
     p = fixtureScreenshotUrl(entry)
-      .then((url) => (url ? decodeTop(url, ac.signal) : null))
+      .then((url) => (url ? decodeTop(url) : null))
       .catch(() => null);
-    // a failure isn't cached, so the next stage load can try again
     void p.then((b) => {
       if (!b) cache.delete(entry.slug);
     });
@@ -71,7 +71,7 @@ function fixturePicture(entry: CatalogEntry): Promise<ImageBitmap | null> {
   return p;
 }
 
-/** The link portals that can show a picture now (M0: those whose target is a bundled fixture). */
+/** The link portals that can show a picture now (M0–M2: those whose target is a bundled fixture). */
 export function previewablePortals(stage: StageData): { id: number; entry: CatalogEntry }[] {
   const out: { id: number; entry: CatalogEntry }[] = [];
   for (const p of stage.portals ?? []) {
@@ -83,17 +83,81 @@ export function previewablePortals(stage: StageData): { id: number; entry: Catal
 }
 
 /**
- * Give every previewable portal of `stage` its picture. `show` is called only while `current()` is still true,
- * so a picture that arrives after the stage changed is dropped. The engine copies the picture into its atlas and
- * keeps no reference; the cached bitmap stays here for the next load of the same fixture.
+ * Per portal: `looking-up` while its picture is being fetched (the postcard shows meanwhile), then `ready` (the
+ * picture shows) or `postcard` (none exists or it failed; no retry within the stage). Plan §6.2.
  */
-export function loadPortalPreviews(
-  stage: StageData,
-  show: (portalId: number, image: ImageBitmap) => void,
-  current: () => boolean,
-): void {
-  for (const { id, entry } of previewablePortals(stage))
-    void fixturePicture(entry).then((img) => {
-      if (img && current()) show(id, img);
-    });
+export type PreviewState = 'looking-up' | 'ready' | 'postcard';
+
+/** What the loader hands the engine for a portal (`Engine.setPortalPreview`). */
+export type PreviewShow = (portalId: number, preview: ImageBitmap | 'postcard') => void;
+
+export interface PreviewSources {
+  fixture(entry: CatalogEntry): Promise<ImageBitmap | null>;
+  /** The full-size picture the travel window grows (top-anchored). */
+  fixtureUrl?(entry: CatalogEntry): Promise<string | null>;
+}
+
+/**
+ * The pictures for one loaded stage at a time. `start` aborts the previous stage's work, so a late picture never
+ * lands on another stage; `show` is also gated by `current()` (the title's attract stage reuses the engine without
+ * changing the played stage). Pip gates are never touched: they keep the Phase 13 gate look.
+ */
+export class PortalPreviews {
+  readonly #sources: PreviewSources;
+  #ac: AbortController | null = null;
+  #states = new Map<number, PreviewState>();
+  /** Full-resolution source per ready portal, for the travel window (fixture asset URLs: never revoked). */
+  #urls = new Map<number, string>();
+
+  constructor(sources: PreviewSources = { fixture: fixturePicture, fixtureUrl: fixtureScreenshotUrl }) {
+    this.#sources = sources;
+  }
+
+  start(stage: StageData, show: PreviewShow, current: () => boolean = () => true): void {
+    this.stop();
+    const ac = new AbortController();
+    this.#ac = ac;
+    const fixtures = new Map(previewablePortals(stage).map((p) => [p.id, p.entry]));
+    for (const p of stage.portals ?? []) {
+      if (isLearningHref(p.href)) continue;
+      const entry = fixtures.get(p.id);
+      show(p.id, 'postcard');
+      if (!entry) {
+        this.#states.set(p.id, 'postcard');
+        continue;
+      }
+      this.#states.set(p.id, 'looking-up');
+      void this.#sources.fixture(entry).then(
+        async (img) => {
+          if (ac.signal.aborted) return;
+          const url = img ? await this.#sources.fixtureUrl?.(entry).catch(() => null) : null;
+          if (ac.signal.aborted) return;
+          if (img && url) this.#urls.set(p.id, url);
+          this.#states.set(p.id, img ? 'ready' : 'postcard');
+          if (img && current()) show(p.id, img);
+        },
+        () => {
+          if (!ac.signal.aborted) this.#states.set(p.id, 'postcard');
+        },
+      );
+    }
+  }
+
+  /** Leave the stage: pending pictures are dropped. Cached pictures stay for the next load. */
+  stop(): void {
+    this.#ac?.abort();
+    this.#ac = null;
+    this.#states.clear();
+    this.#urls.clear();
+  }
+
+  /** The full-resolution picture of portal `id` for the travel window, or null (the window shows the postcard). */
+  source(id: number): string | null {
+    return this.#urls.get(id) ?? null;
+  }
+
+  /** e2e / debug: each link portal's state. */
+  states(): Record<number, PreviewState> {
+    return Object.fromEntries(this.#states);
+  }
 }

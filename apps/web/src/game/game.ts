@@ -9,7 +9,13 @@
  *
  * Labels: E = evidenced 2013 behaviour, R = reconstructed, N = new (see docs/reference/fidelity-spec.md).
  */
-import { createEngine, type Engine, type QualitySetting } from '@wwm/engine';
+import {
+  createEngine,
+  type Engine,
+  type QualitySetting,
+  type ScreenRect,
+  type StageImage,
+} from '@wwm/engine';
 import {
   GamepadInputSource,
   type HostConnection,
@@ -63,7 +69,7 @@ import { InputRecording, SavedRecording } from './input-recording.ts';
 import { fixtureFor, hostOf, type JourneyStop } from './journey.ts';
 import type { BoardSource, GameBoards } from './leaderboard.ts';
 import { type GameEvent, HOLD_ON_DISCONNECT, IN_STAGE, transition } from './machine.ts';
-import { loadPortalPreviews, PORTAL_WINDOWS_ENABLED } from './portal-preview.ts';
+import { PORTAL_WINDOWS_ENABLED, PortalPreviews } from './portal-preview.ts';
 import { RenderCadence, type TitleMotion } from './render-cadence.ts';
 import {
   addScore,
@@ -113,6 +119,27 @@ export interface PortalPrompt {
   href: string;
   /** The capture service is unreachable (and the target isn't an offline fixture): travel is unavailable. */
   offline: boolean;
+}
+
+/** Phase 13 travel; the portal-windows fields are null with the flag off. */
+export interface TravelView {
+  label: string;
+  host: string;
+  href: string;
+  /** Portal windows: a full-resolution picture of the destination (top-anchored), or null for the postcard. */
+  preview: { src: string } | null;
+  /** Portal windows: where the window starts growing (the gate disc on screen), `'full'` without one. */
+  handoff: ScreenRect | 'full' | null;
+}
+
+/** Portal windows: the loaded destination, cut into the intro's upright page. */
+export interface ArrivalView {
+  /** The texture the engine just loaded (the window shows exactly this before the cut). Owned by the game. */
+  image: StageImage;
+  /** The upright page on screen at intro t = 0; null if it can't be computed (crossfade instead). */
+  cut: ScreenRect | null;
+  /** The window showed a picture while travelling (else the postcard: the arrival "develops" in). */
+  hadPreview: boolean;
 }
 
 export interface GameView {
@@ -174,7 +201,12 @@ export interface GameView {
   /** Phase 13: the portal prompt (play is paused while it shows). */
   portal: PortalPrompt | null;
   /** Phase 13: travelling through a portal (the gate animation, then the build of the linked site). */
-  travel: { label: string; host: string; href: string } | null;
+  travel: TravelView | null;
+  /**
+   * Portal windows (N): the arrival half of the travel window, after the new stage loaded. It outlives `travel`
+   * (which clears on entering the intro) until the window has cut to the intro (`travelWindowDone`).
+   */
+  arrival: ArrivalView | null;
   /** Phase 13: the sites this session rolled through, in order (a web journey once a portal was taken). */
   journey: JourneyStop[];
   /**
@@ -298,6 +330,10 @@ const CALIBRATE_TIMEOUT_SEC = 15; // E
 const CONNECTED_SHOW_SEC = 1.4; // N (2013: 4 s)
 const TUTORIAL_STEP_SEC = 3; // E
 const MIN_BUILD_SEC = 2.2; // N (2013: ≥ 5 s)
+/** Portal windows: the window's develop (0.4 s) + cut tween (0.35 s) + a beat, between loadStage and BUILT. */
+const ARRIVAL_SEC = 0.85;
+/** Portal windows: never wait longer than this for the window to cover the screen before loading. */
+const COVER_TIMEOUT_MS = 2500;
 
 type Timer = { at: number; fn: () => void; phase: GamePhase | null };
 
@@ -389,6 +425,15 @@ export class Game {
   /** The capture service answers `/api/health` (probed once per session when a stage has portals). */
   #api: 'unknown' | 'online' | 'offline' = 'unknown';
   #apiProbe: Promise<void> | null = null;
+  /** Portal windows: the destination pictures of the loaded stage's link portals. */
+  readonly #previews = new PortalPreviews();
+  /**
+   * Portal windows: resolved by the travel window once it covers the screen. The next stage's `loadStage` waits
+   * for it (with a timeout), so neither the old world vanishing nor the new one in chase view shows around it.
+   */
+  #cover: { promise: Promise<void>; resolve: () => void } | null = null;
+  /** e2e: when the travel window covered the screen, and when the next world started loading (performance.now). */
+  #travelTiming: { coveredAt: number | null; loadAt: number | null } = { coveredAt: null, loadAt: null };
   /** The timer was running when the portal prompt paused it. */
   #portalTimer = false;
   #portalAt = 0;
@@ -471,6 +516,7 @@ export class Game {
       firstRun: this.#get(HOWTO_KEY) !== '1',
       portal: null,
       travel: null,
+      arrival: null,
       journey: [],
       learningRun: false,
     };
@@ -686,6 +732,8 @@ export class Game {
 
   dispose(): void {
     this.#disposed = true;
+    this.#previews.stop();
+    this.#releaseCover();
     this.#cancelGhostPreparation();
     this.#ghostClient.dispose();
     this.#attractAbort?.abort();
@@ -780,6 +828,11 @@ export class Game {
   }
 
   #enter(to: GamePhase, from: GamePhase): void {
+    // Portal windows: the window only lives through building → intro
+    if (to !== 'building' && to !== 'intro') {
+      this.#releaseCover();
+      if (this.#view.arrival) this.#set({ arrival: null });
+    }
     const e = this.#engine;
     const d = this.#driver;
     // Cross-phase tutorial/presentation delays belong to this attempt, never its replacement.
@@ -1640,6 +1693,17 @@ export class Game {
       got.image.close();
       return;
     }
+    // Portal windows: a travel arrival waits until the window covers the screen before swapping the world
+    const arriving = PORTAL_WINDOWS_ENABLED && !!this.#view.travel;
+    const cover = arriving ? this.#cover?.promise : undefined;
+    if (cover) {
+      await Promise.race([cover, new Promise<void>((r) => setTimeout(r, COVER_TIMEOUT_MS))]);
+      if (ac.signal.aborted || this.#disposed || this.#buildAbort !== ac) {
+        got.image.close();
+        return;
+      }
+    }
+    if (arriving) this.#travelTiming.loadAt = performance.now();
     this.#progress('world', 94);
     this.#endGhost();
     let d: SimDriver;
@@ -1725,15 +1789,24 @@ export class Game {
     // Phase 22: draw the lesson's locks (done steps open, their gates used)
     if (learningRun) for (const id of this.learning.stageReady(got.stage)) this.#dismissedPortals.add(id);
     this.#applyPortalStates(got.stage);
-    // Portal windows (N): pictures of the destinations, behind the flag
+    // Portal windows (N): pictures of the destinations (or postcards), behind the flag
     if (PORTAL_WINDOWS_ENABLED)
-      loadPortalPreviews(
+      this.#previews.start(
         got.stage,
         (id, img) => this.#engine?.setPortalPreview(id, img),
         () => this.#stage() === got.stage && !this.#disposed,
       );
     this.#progress('world', 100);
-    const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0));
+    // Portal windows: the window develops the arrival and settles it onto the intro's page before BUILT
+    if (arriving)
+      this.#set({
+        arrival: {
+          image: got.image,
+          cut: e.introPageScreenRect(),
+          hadPreview: !!this.#view.travel?.preview,
+        },
+      });
+    const wait = Math.max(0, MIN_BUILD_SEC - (this.#clock - t0), arriving ? ARRIVAL_SEC : 0);
     this.#after(wait, () => {
       if (!ac.signal.aborted && !this.#disposed && this.#buildAbort === ac) this.#send({ type: 'BUILT' });
     });
@@ -1787,10 +1860,15 @@ export class Game {
     this.#music('opening');
     const mode = this.#firstStageOfVisit ? 'full' : 'fast';
     this.#firstStageOfVisit = false;
+    // Portal windows: the cut target as of now (a rotation during the build moved it)
+    const arrival = this.#view.arrival;
+    if (arrival) this.#set({ arrival: { ...arrival, cut: e.introPageScreenRect() } });
     const done = e.playIntro({ mode });
     this.#after(0.4, () => this.#set({ introSkippable: true }));
     if (this.#opts.test?.skipIntro) this.#after(0.05, () => e.skipIntro());
     void done.then(() => {
+      // a skipped intro ends the travel window too (normally it finished 0.25 s into the intro)
+      if (this.#view.arrival) this.#set({ arrival: null });
       if (
         this.#view.phase !== 'intro' ||
         build !== this.#buildAbort ||
@@ -2287,6 +2365,27 @@ export class Game {
       });
   }
 
+  /** Portal windows: the travel window's mask now covers the screen; the next world may load under it. */
+  travelWindowCovered(): void {
+    this.#travelTiming.coveredAt ??= performance.now();
+    this.#cover?.resolve();
+  }
+
+  /** Portal windows: the window has cut to the intro and faded out. */
+  travelWindowDone(): void {
+    if (this.#view.arrival) this.#set({ arrival: null });
+  }
+
+  #travelHandoff(handoff: ScreenRect | 'full'): void {
+    const tr = this.#view.travel;
+    if (tr && !tr.handoff) this.#set({ travel: { ...tr, handoff } });
+  }
+
+  #releaseCover(): void {
+    this.#cover?.resolve();
+    this.#cover = null;
+  }
+
   /** "Stay here": decline this link for the stage and let the ball pass through it. */
   stayHere(): void {
     if (this.#view.portal) telemetry.track({ name: 'portal_selected', action: 'stay' });
@@ -2319,13 +2418,31 @@ export class Game {
     const j = this.#view.journey;
     const target: JourneyStop = { host: pr.host, title: pr.label, url: pr.href, ref: null, via: 'portal' };
     this.#travelling = true;
+    const windows = PORTAL_WINDOWS_ENABLED;
+    const src = windows ? this.#previews.source(pr.id) : null;
     this.#set({
       portal: null,
       result: null,
-      travel: { label: pr.label, host: pr.host, href: pr.href },
+      travel: {
+        label: pr.label,
+        host: pr.host,
+        href: pr.href,
+        preview: src ? { src } : null,
+        handoff: null,
+      },
+      arrival: null,
       journey: [...j, target],
       build: { step: 'queued', pct: 2, label: pr.label },
     });
+    this.#releaseCover();
+    this.#travelTiming = { coveredAt: null, loadAt: null };
+    if (windows && !this.#opts.reducedMotion) {
+      let resolve!: () => void;
+      const promise = new Promise<void>((r) => {
+        resolve = r;
+      });
+      this.#cover = { promise, resolve };
+    }
     this.#buildAbort?.abort();
     const ac = new AbortController();
     this.#buildAbort = ac;
@@ -2340,8 +2457,14 @@ export class Game {
       (err) => ({ err }),
     );
     const t0 = this.#clock;
-    const gate = this.#engine?.playPortal(pr.id) ?? Promise.resolve();
+    const gate =
+      this.#engine?.playPortal(
+        pr.id,
+        windows ? { onHandoff: (rect) => this.#travelHandoff(rect) } : undefined,
+      ) ?? Promise.resolve();
     void gate.then(async () => {
+      // the gate never reached a third of the view (off screen, reduced motion): the window opens full screen
+      if (windows && this.#view.travel && !this.#view.travel.handoff) this.#travelHandoff('full');
       if (ac.signal.aborted || this.#disposed || this.#view.phase !== 'play') return;
       if (!this.#send({ type: 'TRAVEL' })) return;
       const o = await outcome;
@@ -2797,6 +2920,8 @@ export class Game {
       learning: this.learning.debug(),
       learningRun: this.#view.learningRun,
       api: this.#api,
+      portalPreviews: this.#previews.states(),
+      travelTiming: { ...this.#travelTiming },
       engine: this.#engine?.stats() ?? null,
     };
   }

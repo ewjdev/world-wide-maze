@@ -10,6 +10,7 @@ import { useEffect, useRef, useSyncExternalStore } from 'react';
 import { useTranslation } from 'react-i18next';
 import { formatCode, QrCode } from '../controller/index.ts';
 import type { SignKind } from '../game/game.ts';
+import { PORTAL_WINDOWS_ENABLED } from '../game/portal-preview.ts';
 import { MotionOptions, MotionSetup, TiltControls } from '../input/TiltControls.tsx';
 import { TouchControls } from '../input/TouchControls.tsx';
 import { LearningGateCard } from '../learning/LearningGateCard.tsx';
@@ -93,7 +94,7 @@ export function PlayLayer() {
       {hudVisible && <JourneyHud />}
       {hudVisible && <LearningHud />}
       {v.phase === 'play' && v.portal && !v.travel && <PortalPromptCard prompt={v.portal} />}
-      {v.phase === 'play' && v.travel && <TravelIris host={v.travel.host} />}
+      {v.phase === 'play' && v.travel && !PORTAL_WINDOWS_ENABLED && <TravelIris host={v.travel.host} />}
       {(v.phase === 'play' || v.phase === 'intro') && <LearningGateCard />}
       {v.countdown !== null && v.countdown >= 0 && <Countdown n={v.countdown} />}
       {v.phase === 'paused' && <MapMenu />}

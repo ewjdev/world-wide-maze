@@ -40,6 +40,7 @@ import {
   type IntroMode,
   type IntroTimeline,
   introCameraKeys,
+  introPageRect,
   introTimeline,
   pageFoldAngle,
   progress,
@@ -81,7 +82,7 @@ import {
   OPENING_SEC,
 } from './world/locks.ts';
 import { Particles } from './world/particles.ts';
-import { buildPortals, type PortalState, type Portals } from './world/portals.ts';
+import { buildPortals, GATE_R, type PortalPreview, type PortalState, type Portals } from './world/portals.ts';
 import { createSharedUniforms, type N } from './world/shared.ts';
 import { makeStageImages } from './world/stage-images.ts';
 import {
@@ -93,6 +94,14 @@ import {
 
 export type ViewMode = 'chase' | 'map' | 'intro';
 export type StageImage = ImageBitmap | HTMLImageElement | HTMLCanvasElement | OffscreenCanvas;
+
+/** A rectangle on screen, in CSS px relative to the canvas box. */
+export interface ScreenRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
 
 export interface EngineOptions {
   canvas: HTMLCanvasElement;
@@ -168,15 +177,21 @@ export interface Engine {
   setPortalState(portalId: number, state: PortalState): void;
   /**
    * Portal windows (N; plans/portal-windows-execution.md): show `image` (its top square) inside portal `id`, seen
-   * through a ragged tear; `null` restores the vortex. Draws into the stage's preview atlas synchronously and never
-   * keeps `image`, so the caller may close it on return. No-op with no stage or an unknown id; reset by `loadStage`.
+   * through a ragged tear, or `'postcard'` (the host colour and monogram under a slow vortex); `null` restores the
+   * Phase 13 vortex. Draws into the stage's preview atlas synchronously and never keeps `image`, so the caller may
+   * close it on return. No-op with no stage or an unknown id; reset by `loadStage`.
    */
-  setPortalPreview(portalId: number, image: StageImage | null): void;
+  setPortalPreview(portalId: number, image: PortalPreview): void;
   /**
    * Phase 13 (N): travel through a portal. The ball spirals into the gate and shrinks away while the gate surges
    * and the camera glides up to it. Resolves when the ball is gone (≈ 1.6 s); the next `loadStage` resets it.
    */
-  playPortal(portalId: number): Promise<void>;
+  playPortal(portalId: number, opts?: { onHandoff?: (rect: ScreenRect) => void }): Promise<void>;
+  /**
+   * Portal windows (N): after `loadStage`, where the upright page will be on screen at intro t = 0 (CSS px of the
+   * canvas box). Null with no stage. Call it when the cut starts, so a resize during the build is respected.
+   */
+  introPageScreenRect(): ScreenRect | null;
   /**
    * Phase 22 (N; contracts §10.4): draw a learning run's runtime locks. Call after `loadStage`; replaces the previous
    * set (`[]` clears it). Every lock starts `closed`: a gate of bars in `color` across the bridge / lift entry with a
@@ -417,6 +432,11 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     t0: number;
     dur: number;
   } | null = null;
+  /**
+   * Portal windows: fire `fire` once, the first frame the travelling gate's disc spans a third of the canvas's
+   * shorter side (the DOM window takes over from there).
+   */
+  let portalHandoff: { center: Vector3; surgeAt: number; fire: (rect: ScreenRect) => void } | null = null;
 
   const control: ControlState = { tiltX: 0, tiltZ: 0, power: false };
   let powerGlow = 0;
@@ -537,6 +557,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     beacon.set(null, time);
     ballScale = 1;
     portalWatch = null;
+    portalHandoff = null;
     particles.clear();
     ballOverride = null;
     goalWatch = false;
@@ -657,7 +678,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
         goal = buildGoal(s.source.title, u, stageBin);
         goal.group.position.copy(goalWorld);
         stageRoot.add(goal.group);
-        portals = buildPortals(s, u, stageBin);
+        portals = buildPortals(s, u, stageBin, { reducedMotion });
         if (portals) stageRoot.add(portals.mesh);
 
         bg = buildBackground(stageCenter, low - GROUND_BELOW_LOWEST_M, low, u, stageBin);
@@ -964,23 +985,27 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       portals?.setPreview(id, image);
     },
 
-    async playPortal(id) {
+    async playPortal(id, o) {
       const center = portals?.centers.get(id);
       if (!stage || !ball || !portals || !center) return;
       const P = portals;
       P.surge(id, time);
       P.pulse(id, time);
       const from = ballPos.clone();
-      // camera: glide to a spot in front of the gate on the ball's side, looking into it
+      // camera: glide to a spot in front of the gate on the ball's side, looking into it. With a handoff
+      // (portal windows) it pushes on to just short of the disc, which then fills the view; the DOM window
+      // draws "through". Reduced motion keeps the Phase 13 distance.
+      const push = !!o?.onHandoff && !reducedMotion;
       const side = camPos.clone().sub(center).setY(0);
       if (side.lengthSq() < 1e-4) side.set(0, 0, 1);
-      side.setLength(3.6);
+      side.setLength(push ? 1.9 : 3.6);
+      if (o?.onHandoff) portalHandoff = { center: center.clone(), surgeAt: time, fire: o.onHandoff };
       portalWatch = {
         from: camPos.clone(),
         to: center
           .clone()
           .add(side)
-          .add(new Vector3(0, 0.7, 0)),
+          .add(new Vector3(0, push ? 0.3 : 0.7, 0)),
         fromLook: camTarget.clone(),
         look: center.clone(),
         t0: time,
@@ -1022,6 +1047,15 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       );
       await wait(dur + 0.35);
       ballVisible = false;
+      portalHandoff = null;
+    },
+
+    introPageScreenRect() {
+      if (!stage) return null;
+      const w = canvas.clientWidth || canvas.width;
+      const h = canvas.clientHeight || canvas.height;
+      if (!w || !h) return null;
+      return introPageRect(stageSize.w, stageSize.d, camera.fov, w, h);
     },
 
     setLocks(specs) {
@@ -1341,6 +1375,7 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
     ballVisible = true;
     goalWatch = false;
     portalWatch = null;
+    portalHandoff = null;
     ballScale = 1;
     chase.holdPosition = false;
     if (resetCamera) {
@@ -1547,6 +1582,25 @@ export async function createEngine(opts: EngineOptions): Promise<Engine> {
       camera.lookAt(camTarget);
     }
     camera.updateMatrixWorld();
+    if (portalHandoff) checkPortalHandoff(portalHandoff);
+  }
+
+  /** Portal windows: the gate disc's on-screen size this frame; hand off once it spans ⅓ of the shorter side. */
+  function checkPortalHandoff(h: NonNullable<typeof portalHandoff>) {
+    const w = canvas.clientWidth || canvas.width;
+    const hh = canvas.clientHeight || canvas.height;
+    if (!w || !hh) return;
+    const dist = camera.position.distanceTo(h.center);
+    const v = h.center.clone().project(camera);
+    if (dist < 1e-3 || v.z > 1) return;
+    // the gate surges up to 1.45× over 1.2 s (portals.ts)
+    const radius = GATE_R * (1 + 0.45 * Math.min(1, (time - h.surgeAt) / 1.2));
+    const diameter = (radius / dist / Math.tan((camera.fov * Math.PI) / 360)) * hh;
+    if (diameter < Math.min(w, hh) / 3) return;
+    portalHandoff = null;
+    const cx = ((v.x + 1) / 2) * w;
+    const cy = ((1 - v.y) / 2) * hh;
+    h.fire({ x: cx - diameter / 2, y: cy - diameter / 2, width: diameter, height: diameter });
   }
 
   // unused-but-exported tier info keeps tree-shaking honest in the sandbox
