@@ -215,6 +215,30 @@
 
 /* ── portal windows: the travel window (N) ────────────────────────────── */
 
+.wwm-twin__status {
+  position: absolute;
+  z-index: 2;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: max-content;
+  max-width: min(86vw, 420px);
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: var(--paper, #fff);
+  border-left: 6px solid var(--pc);
+  box-shadow: 0 6px 24px rgba(32, 38, 45, 0.18);
+  font: 700 15px / 1.35 var(--display);
+  text-align: center;
+  pointer-events: auto;
+  animation: wwm-fade 300ms ease both;
+}
+.wwm-twin__status p {
+  margin: 0;
+  font: inherit;
+}
 .wwm-building--leaving {
   opacity: 0;
   transition: opacity 250ms ease;

@@ -178,7 +178,7 @@ jobs:
           # Same-device touch play (plans/mobile-browser-game-execution.md); production sets it explicitly too.
           VITE_MOBILE_CONTROLS_ENABLED: "true"
           VITE_MOBILE_TILT_ENABLED: "true"
-          # Portal windows (plans/portal-windows-execution.md §9.1): previews only until the M4 sign-off.
+          # Portal windows (plans/portal-windows-execution.md §9.1), as in production since the M4 sign-off.
           VITE_PORTAL_WINDOWS_ENABLED: "true"
           VITE_PREVIEW_COMMIT: ${{ github.sha }}
 
@@ -361,6 +361,9 @@ jobs:
           VITE_MOBILE_CONTROLS_ENABLED: "true"
           VITE_MOBILE_TILT_ENABLED: "true"
           VITE_RACE_ENABLED: "true"
+          # Portal windows (plans/portal-windows-execution.md), signed off by the user on 2026-10-21 (M4).
+          # Roll back by setting "false" and redeploying; the kill:portal-previews KV key stops built-site lookups.
+          VITE_PORTAL_WINDOWS_ENABLED: "true"
           # Phase 31: the public Turnstile site key for /learn/account/ email sign-in (widget `wwm-learning`).
           VITE_TURNSTILE_SITE_KEY: ${{ vars.VITE_TURNSTILE_SITE_KEY }}
 

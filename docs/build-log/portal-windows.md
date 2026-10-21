@@ -187,3 +187,52 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
 
 ### Attempts that failed and why
 - **Status index chosen:** the first candidate query let SQLite pick the `status` index (every approved case) over the URL indexes. The index-plan test caught it; the unary `+` fixed it with no migration.
+
+## M4: device validation and the production decision (in progress, 2026-10-21)
+
+Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-windows/m4`.
+
+### State at the start
+- **M3 in production:** M3 merged (#56) and is live in production. `wwm.ewj.dev/api/health` reports contract `0.3.7`, and `POST /api/portals/previews` answers `200` with `private, no-store` (a w3.org lookup gives `null`). The client feature is still off in production (`VITE_PORTAL_WINDOWS_ENABLED` is unset there).
+- **First deploy attempt:** the first run on `main` failed `check` on an unrelated test (`learning-records.integration` "rate limits…", `expected 200 to be 429`), so production was skipped. A re-run of the failed job passed and deployed.
+- **Phone testing so far:** the user tested M0–M3 on the iPhone through the branch preview and the `dev:phone` tunnel. The tunnel first showed the joystick deck because `dev:phone` didn't set `VITE_MOBILE_TILT_ENABLED`; that's fixed in #56.
+
+### The inputs for Option B (measured)
+- **Preview availability in production:** the production catalog (read-only `SELECT`s on D1 `wwm`) holds **11 runs: 2 approved, 9 pending review**. Only 2 pages on the live site can show a built-site preview today. Production has no curated runs. Under manual moderation (Q2), M3 previews will almost always be postcards in production until more pages are approved.
+- **The wait on a cache miss:** time to slice 0 (`runs.timings_json.slice0`) across all 11 production builds was 6.1, 16.3, 17.1, 18.2, 20.0, 20.6, 20.8, 21.2, 24.4, 25.4 and 39.7 s. That's a **median of about 20.6 s**, mostly capture (setup, navigate, extract plus screenshot, textures, about 11–18 s) and store (about 3–7 s). Today the travel window covers that wait on the destination picture or postcard. Option B (start the build when the ball nears a portal) would hide most of it.
+- **iPhone frame-time headroom:** this needs the device. A `?perf` readout (dev and preview builds only) now shows average FPS, the worst frame, the quality tier, draw calls and the backend, timed with `requestAnimationFrame`. The user reads it on the branch preview (below).
+
+### Added
+- `apps/web/src/ui/PerfReadout.tsx` and its test, mounted from `Screens` with `?perf`. It is never shown in a production build (gated on `import.meta.env.DEV` or `VITE_PREVIEW_COMMIT`).
+
+### Still to do in M4
+- The iPhone frame-time reading through `?perf`, and Android if available. The hero clip for the LinkedIn series.
+- **The user's sign-off on the feel**, then enabling `VITE_PORTAL_WINDOWS_ENABLED` in the `deploy-production` build step, deleting the branch preview Worker, and the M5 go/no-go. Given 2 approved pages, M5 or the bulk approval of portal targets noted in plan §11 would be the way to make built-site previews common.
+
+### Fix: travel hung with tilt controls (the user's iPhone report, 2026-10-21)
+- **Symptom:** on the iPhone (tilt controls), rolling into a GOV.UK portal and pressing Travel covered the screen with the destination, and then nothing happened: no build, no error. The FPS readout kept running (it has its own `requestAnimationFrame` loop). The missing top bar showed the game was still in `play`.
+- **Cause (pre-existing, Phase 13 + tilt):**
+  - Travel waits for `engine.playPortal`, whose 1.6 s animation runs on the game clock.
+  - In tilt mode, `Game.#frame` freezes that clock whenever tilt can't "advance" (`blocked` → `gdt = 0`). `canAdvance` requires the game to own input, and it never does while `view.travel` is set.
+  - So **every travel in tilt mode froze**, flag on or off. With the flag off it would have hung under the Phase 13 iris instead.
+  - Tilt has been on in production since #49, so tilt players there had the same hang.
+  - Earlier tests drove the keyboard or joystick, not tilt.
+- **Reproduced first:** a new tilt-mode browser test (a phone context, synthetic orientation events and the real motion setup, as in `mobile-tilt.e2e.test.ts`) timed out before `building`.
+- **Fixes:**
+  - **Clock:** the clock no longer freezes while travelling (`!v.travel` in `blocked`). The simulation is paused anyway, and the gate animation, the window and the build's timers need it.
+  - **Watchdog:** `travelPortal` races the gate animation with a 3 s wall-clock timer. If it ever stalls again, the build still starts, and the console says so.
+  - **Window opens anyway:** if the gate hasn't handed off within 1.5 s of wall time, the travel window opens full screen. A stall still shows where you're going.
+  - **Status, always:** while the window is up and the build hasn't started, it shows "Opening the portal to <host>…". After 8 s it says the portal isn't opening, with **Back to the maze** (`Game.leaveTravel()`): the build is abandoned, the stop is dropped from the trail, and the game pauses in the current maze.
+- **Tests (now 10 in `portal-windows.e2e.test.ts`):**
+  - The tilt travel reaching `building` and then the intro.
+  - A stalled clock (`timeScale = 0` after the prompt): the status shows and the watchdog still starts the build.
+  - The way out: paused, window gone, trail unchanged.
+  - Green locally and in CI mode, together with `portal.e2e` and `mobile-tilt.e2e` (22 passed, 1 skipped by the #36 quarantine).
+
+### M4 completed (2026-10-21)
+- **iPhone check:** on the branch preview with `?perf`, the user read **60 fps, worst frame 19 ms, tier 0, 35 draw calls, WebGPU** on the iPhone 17 Pro. The travel window was up over GOV.UK, and the screenshot was taken during the hang, before the fix. That's one reading, not a full profile, but it leaves plenty of frame-time headroom for Option B's ideas.
+- **Hang fix:** the user retested after the tilt travel fix and **signed off** ("This work looks good, merge and deploy to production").
+- **Production:** `VITE_PORTAL_WINDOWS_ENABLED: "true"` is now set in the `deploy-production` build step. Rollback: set it to `"false"` and redeploy. The `kill:portal-previews` KV key stops built-site lookups without a deploy (runbook §5.1a).
+- **Expectation:** production has 2 approved runs, so most portals show their postcard. The tear, the travel window and the cut into the intro apply to every portal.
+- **Branch preview:** the Worker `wwm-preview-portal-windows` is deleted after the production deploy (plan §9.1). The manual preview workflow recreates it for later work.
+- **Not done:** an Android check (no device on hand) and the LinkedIn hero clip, which the user records.

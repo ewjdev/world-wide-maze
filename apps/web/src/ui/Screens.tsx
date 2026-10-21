@@ -18,6 +18,7 @@ import { SelectHint } from '../local-capture/SelectHint.tsx';
 import { useGame, useView } from './GameApp.tsx';
 import { JourneyTrail, TravelWindow } from './Journey.tsx';
 import { useJourneyT } from './journey-strings.ts';
+import { PERF_READOUT, PerfReadout } from './PerfReadout.tsx';
 import { PlayLayer } from './Play.tsx';
 import { Facets, Icon, Logo, Stars, TiltRing, useSiteTitle } from './parts.tsx';
 import { RankingScreen, ResultScreen } from './Result.tsx';
@@ -79,6 +80,7 @@ export function Screens({ homeTitle = false }: { homeTitle?: boolean }) {
       {menuPhase && v.phase !== 'title' && !travelWindow && <div className="wwm-veil" aria-hidden="true" />}
       <PlayLayer />
       {PORTAL_WINDOWS_ENABLED && <TravelWindow travel={v.travel} arrival={v.arrival} />}
+      {PERF_READOUT && <PerfReadout />}
       {screen && (
         <main className={`wwm-screen wwm-screen--${v.phase}`} data-screen={v.phase} key={v.phase}>
           {screen}
