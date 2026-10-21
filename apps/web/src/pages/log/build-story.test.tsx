@@ -4,8 +4,9 @@ import { renderToString } from 'react-dom/server';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { beforeAll, describe, expect, test } from 'vitest';
 import { renderRoute } from '../../../test/render-route.tsx';
+import { STATUS_LABEL } from './SinceLaunch.tsx';
 import { CARD_VARIANTS } from './SocialCard.tsx';
-import { BUGS, clock, dur, FIRST, fmtInt, hourTicks, LATER, runsByWave, TL } from './story.ts';
+import { BUGS, clock, dur, FIRST, fmtInt, hourTicks, LATER, runsByWave, SINCE, TL } from './story.ts';
 
 const decode = (html: string) =>
   html
@@ -101,6 +102,21 @@ describe('/log build story', () => {
     expect(html).toContain('2013 and 2026, side by side');
     expect(html).toContain('the original team’s effort was never published');
     expect(html).not.toMatch(/\d+\s*[×x]\s*faster|times faster|faster than/i);
+  });
+
+  test('“Since launch” lists every entry with its status and a link to each of its logs', () => {
+    expect(html).toContain('Since launch');
+    expect(SINCE.entries.length).toBeGreaterThan(0);
+    for (const e of SINCE.entries) {
+      expect(html).toContain(e.title);
+      expect(html).toContain(`>${STATUS_LABEL[e.status]}<`);
+      for (const slug of e.logs) expect(html).toContain(`href="#${slug}"`);
+    }
+  });
+
+  test('every log in the index has a readable label (no “Phase null”)', () => {
+    expect(html).toContain('lg-index__link');
+    expect(html).not.toMatch(/lg-index__link[^>]*>Phase null</);
   });
 
   test('the build record (Phase 10) is still there, below', () => {
