@@ -3,13 +3,14 @@
  * See README.md for the API, the yaw convention and the quality ladder.
  */
 export { CHASE, ChaseCamera, tiltQuaternion, wrapAngle, yawFromDirection } from './camera/chase.ts';
-export { type IntroMode, type IntroTimeline, introTimeline } from './camera/intro.ts';
+export { type IntroMode, type IntroTimeline, introPageRect, introTimeline } from './camera/intro.ts';
 export {
   type ControlState,
   createEngine,
   type Engine,
   type EngineOptions,
   type EngineStats,
+  type ScreenRect,
   type StageImage,
   type ViewMode,
 } from './engine.ts';

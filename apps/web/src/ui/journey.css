@@ -213,6 +213,137 @@
   }
 }
 
+/* ── portal windows: the travel window (N) ────────────────────────────── */
+
+.wwm-building--leaving {
+  opacity: 0;
+  transition: opacity 250ms ease;
+}
+
+.wwm-twin {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition: opacity var(--out) ease;
+}
+.wwm-twin--out {
+  opacity: 0;
+}
+.wwm-twin__mask {
+  position: absolute;
+  inset: 0;
+  background: var(--fog);
+}
+.wwm-twin__dest {
+  position: absolute;
+  inset: 0;
+  transition: opacity 300ms ease;
+}
+.wwm-twin__dest--gone {
+  opacity: 0;
+  /* only once the arrival is fully in (develop 400 ms), so the fog never shows through */
+  transition-delay: 420ms;
+}
+/* the destination page, top-anchored across the view, sinking into the portal colour at the edge */
+.wwm-twin__pic {
+  position: absolute;
+  inset: 0;
+  background: var(--fog) top center / 100% auto no-repeat;
+}
+.wwm-twin__pic::after,
+.wwm-twin__card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at 50% 50%,
+    transparent 55%,
+    color-mix(in srgb, var(--pc) 45%, transparent) 100%
+  );
+}
+/* the postcard: the host colour as a field, the monogram, a slow vortex */
+.wwm-twin__card {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 18px;
+  overflow: hidden;
+  background: radial-gradient(circle at 50% 50%, var(--pc) 0 50%, #20262d 120%);
+}
+.wwm-twin__card::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  margin: -100vmax 0 0 -100vmax;
+  background:
+    radial-gradient(circle, #fff 0 2%, transparent 22%),
+    repeating-conic-gradient(from 0deg, rgba(255, 255, 255, 0.16) 0 10deg, rgba(255, 255, 255, 0) 10deg 30deg);
+  animation: wwm-spin 14s linear infinite;
+}
+.wwm-twin__card > * {
+  position: relative;
+}
+.wwm-twin__host {
+  font: 800 clamp(18px, 2.4vw, 28px) / 1 var(--display);
+  color: #fff;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25);
+}
+.wwm-twin__shot {
+  position: absolute;
+  display: block;
+}
+.wwm-twin__shot--idle {
+  opacity: 0;
+}
+.wwm-twin__shot--develop {
+  animation: wwm-twin-develop 400ms ease both;
+}
+.wwm-twin__shot--swap {
+  animation: wwm-fade 200ms ease both;
+}
+/* the tear's glow, following the mask's edge as it grows */
+.wwm-twin__ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 5px solid color-mix(in srgb, var(--pc) 80%, #fff);
+  box-shadow:
+    0 0 28px 12px color-mix(in srgb, var(--pc) 75%, transparent),
+    inset 0 0 26px 10px color-mix(in srgb, var(--pc) 55%, transparent);
+  animation: wwm-twin-wobble 900ms ease-in-out infinite alternate;
+}
+.wwm-twin--covered .wwm-twin__ring,
+.wwm-twin--develop .wwm-twin__ring,
+.wwm-twin--cut .wwm-twin__ring,
+.wwm-twin--out .wwm-twin__ring {
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+@keyframes wwm-twin-develop {
+  from {
+    opacity: 0;
+    filter: blur(10px) brightness(1.6);
+  }
+  to {
+    opacity: 1;
+    filter: none;
+  }
+}
+@keyframes wwm-twin-wobble {
+  from {
+    transform: rotate(0deg) scale(1);
+  }
+  to {
+    transform: rotate(8deg) scale(1.03);
+  }
+}
+
 /* ── the trail ────────────────────────────────────────────────────────── */
 
 .wwm-trail {
@@ -364,6 +495,13 @@
   .wwm-iris__disc {
     clip-path: circle(71% at 50% 50%);
     animation: wwm-fade 400ms 900ms both !important;
+  }
+  .wwm-twin__card::before,
+  .wwm-twin__ring {
+    animation: none !important;
+  }
+  .wwm-twin__shot--develop {
+    animation: wwm-fade 300ms both !important;
   }
 }
 

@@ -78,3 +78,55 @@ The plan offered "one noise octave at low tiers". No quality tier lowers shader 
 
 ### Attempts that failed and why
 - None in this milestone.
+
+## M2: push-through, the travel window and the cut into the intro (2026-10-20)
+
+Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-windows/m2`, stacked on `portal-windows/m1`. The user checked M1 on the iPhone first.
+
+### What was built
+- **Engine (additive):**
+  - **`playPortal(id, { onHandoff })`:** with a handoff, the camera glide pushes on to 1.9 m in front of the gate (Phase 13: 3.6 m), unless reduced motion is on. The first frame the gate's disc spans a third of the canvas's shorter side, it reports the disc's on-screen rectangle once.
+  - **`introPageScreenRect()`:** where the upright page sits at intro t = 0. It uses a closed form, `introPageRect`, because key 0 looks head-on from `fitDistance × INTRO_FIT_MARGIN`. That margin is now a named constant shared with the camera keys.
+- **Game:**
+  - **State:** `view.travel` gains `preview` (the fixture screenshot URL) and `handoff` (a rect, or `'full'` when the gate never got big enough). A new `view.arrival` holds the loaded image and the cut rect, and outlives `travel`, which still clears on entering the intro, as the input gates expect.
+  - **Waiting for cover:** `#playLoaded` waits for the window to cover the screen before swapping the world, with a 2.5 s timeout so a build can never hang. It records `travelTiming` for the tests.
+  - **Arrival:** after the load it sets `arrival`, and BUILT waits at least 0.85 s (develop and cut). `#startIntro` refreshes the cut rect.
+  - **Cleanup:** leaving building or intro, the end of the intro, and dispose all clear it.
+- **UI:**
+  - **`TravelWindow`** (`ui/Journey.tsx`, `ui/journey.css`), mounted from `Screens` so it survives play → building → intro.
+  - **Grow:** a `clip-path` circle grows from the handoff rect to full screen (600 ms) with a glowing ring in the portal colour. Inside is the destination page top-anchored, or the postcard (monogram, host and a slow conic vortex).
+  - **Covered:** `travelWindowCovered()` fires when it reaches full screen. The building panel sits on the window, and the veil is suppressed.
+  - **Arrival:** the loaded texture (exactly what the engine shows) replaces the preview (200 ms), or develops in after a postcard (400 ms). It then tweens onto the intro's page rect over the fog colour, and the window fades out (250 ms) as the intro starts, then calls `travelWindowDone()`.
+  - **Reduced motion:** opacity fades only.
+  - **Flag off:** `TravelIris` is unchanged.
+
+### Verified
+- **`apps/web/test/portal-windows.e2e.test.ts`:** 6 tests, the 2 from M1 and 4 new.
+  - The journey: the window grows from the gate; no veil and the building panel visible; `loadAt ≥ coveredAt`; the stage changes; the window unmounts while the intro is still playing; score, spares and the trail (`start` then `portal`) carried.
+  - Cancel while building leaves the window cleanly.
+  - A failed build: the destination's capture is blocked, giving the error screen, a closed window, and the trail without the stop.
+  - Reduced motion.
+- **Runs:** green locally on WebGPU, and **three serial CI-mode runs** (`CI=true`, WebGL2/SwiftShader, low tier) passed, with no quarantine. The flag-off `portal.e2e.test.ts` still passes in CI mode. Its travel test stays under #36.
+- **Engine:** `introPageRect` equals a real `PerspectiveCamera` projecting the upright page's corners from intro key 0, in landscape (1280 × 800) and portrait (390 × 844).
+- **Screen sequences:** desktop (portal-hub to example.com) and portrait phone size (portal-hub to Wikipedia). The picture is never interrupted, and the cut lands on the intro's upright page.
+
+### Screenshots (reviewed) — `docs/build-log/assets/portal-windows/`
+- `m2-handoff-from-gate.jpg`: the window starting from the gate disc, with the glowing ring.
+- `m2-window-covering-build.jpg`: full screen, "Rolling to example.com" on the destination.
+- `m2-cut-onto-intro-page.jpg`: the arrival settled on the intro's page rect.
+- `m2-phone-window.jpg` and `m2-phone-into-intro.jpg`: portrait, Wikipedia full screen, then fading into the 3D intro.
+
+### Found, pre-existing (not fixed here)
+- **WebGPU travel error:** Phase 13 travel on WebGPU logs one uncaptured `GPUValidationError: [Invalid Texture] … CreateView` per travel. It reproduces on untouched `origin/main` (a temporary worktree with only the `portal-hub` fixture and catalog entry copied in) and with the flag off. The new tests ignore exactly that message, with a comment. It needs its own fix.
+- **`mobile-layout.e2e`:** still fails only on this Mac (font metrics), as in M0.
+
+### Known limits
+- **Portrait jump:** the preview (the full page across the width) and the arrival (the stage's slice texture) are framed slightly differently. On a portrait phone the 200 ms crossfade shows a small vertical jump. Aligning them is possible later. The plan already expects a newer capture to differ.
+- **Ring vs tear:** the DOM ring is a smooth glow, while the 3D tear is ragged. They meet for about a frame at the handoff.
+
+### Attempts that failed and why
+- **Window measured too early:** it measured its container while still rendering nothing, so the view was 1 × 1 px and the arrival canvas collapsed. The blank frame in the first sequence was this. It now measures when it opens and on every resize (`ResizeObserver`).
+- **Window never handed back:** the fade-out timer lived in the effect that set the `out` stage, so changing the stage cancelled its own timer and the window stayed up. It now has its own effect, keyed on the stage. This was caught by the screen sequence, not by luck in the first run.
+- **Fog between picture and arrival:** the preview faded out (300 ms) while the arrival faded in (200 ms), so the fog showed through. The destination now fades only after the arrival is in (420 ms delay).
+- **Ring glow invisible:** the ring's mask also clipped its outer glow. It now uses a border with inner and outer shadows, and no mask.
+- **Shared problem list:** the failed-build test's expected `net::ERR_FAILED` messages leaked into the next test through the shared list. It is now cleared before each test.
