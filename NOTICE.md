@@ -32,6 +32,11 @@ want it removed, please open an issue.
 | `example-sparse` | example.com | https://example.com/ | IANA reserved example domain |
 | `image-gallery` | Wikimedia Commons: Picture of the day | https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day | Each image under its own free licence (CC / public domain) on Wikimedia Commons |
 
+### Test pages written for this repository
+| Fixture | Page | Source | Licence / terms |
+|---|---|---|---|
+| `portal-hub` | "Portal hub", a link-portal test page | `fixtures/pages/portal-hub/index.html` (this repository) | MIT, like the rest of the repository. It links to the Phase 02 fixtures above, whose screenshots appear inside its portal windows |
+
 ### Phase 09 evaluation set (`eval-*`)
 Generated from `tools/batch-eval/eval-captures.json`.
 

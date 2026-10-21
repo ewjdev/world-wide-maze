@@ -25,6 +25,7 @@ const LABELS: Record<string, string> = {
   'mdn-dark-docs': 'MDN docs, dark theme',
   'image-gallery': 'Wikimedia Commons: Picture of the day',
   'example-sparse': 'example.com',
+  'portal-hub': 'Portal hub (test page)',
 };
 
 export const FIXTURES: FixtureInfo[] = Object.keys(CAPTURES)

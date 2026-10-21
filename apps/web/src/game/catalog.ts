@@ -62,9 +62,17 @@ export const FIXTURES: CatalogEntry[] = [
 
 export const CATALOG: CatalogEntry[] = [PRACTICE, ...FIXTURES];
 
+/**
+ * Test-only fixtures (N; plans/portal-windows-execution.md): playable at `/play/fixture-<slug>` but never listed in
+ * the site picker. `portal-hub` is a page written for this repo whose links all lead to other fixtures.
+ */
+export const TEST_FIXTURES: CatalogEntry[] = [
+  fx('portal-hub', 'Portal hub', 'https://wwm.ewj.dev/fixtures/portal-hub/', 1, 986),
+];
+
 export function catalogEntry(id: string): CatalogEntry | undefined {
   if (id === 'handmade-simple') return PRACTICE;
-  return CATALOG.find((c) => c.id === id);
+  return CATALOG.find((c) => c.id === id) ?? TEST_FIXTURES.find((c) => c.id === id);
 }
 
 /** The stage the title screen orbits (attract mode) before Phase 09's solver ghost exists. */
