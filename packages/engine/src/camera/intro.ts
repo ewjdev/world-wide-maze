@@ -176,6 +176,29 @@ export function fitDistance(w: number, h: number, fovDeg: number, aspect: number
   return Math.max(h / 2 / t, w / 2 / (t * aspect));
 }
 
+/** Intro key 0 stands this much further back than an exact fit, so the page has a thin margin. */
+export const INTRO_FIT_MARGIN = 1.04;
+
+/**
+ * Portal windows (N): where the upright page sits on screen at intro t = 0, in CSS px of a `viewW × viewH` view.
+ * Key 0 looks head-on at the page centre from `fitDistance × INTRO_FIT_MARGIN`, so this is a closed form.
+ */
+export function introPageRect(
+  width: number,
+  depth: number,
+  fovDeg: number,
+  viewW: number,
+  viewH: number,
+): { x: number; y: number; width: number; height: number } {
+  const aspect = viewW / viewH;
+  const fit = fitDistance(width, depth, fovDeg, aspect) * INTRO_FIT_MARGIN;
+  const halfH = fit * Math.tan((fovDeg * Math.PI) / 360);
+  const halfW = halfH * aspect;
+  const w = (width / (2 * halfW)) * viewW;
+  const h = (depth / (2 * halfH)) * viewH;
+  return { x: (viewW - w) / 2, y: (viewH - h) / 2, width: w, height: h };
+}
+
 /**
  * The page hinges on its bottom edge (z = depth). Upright, it faces +Z; the camera starts head-on so the
  * site is instantly recognisable, then follows the fold down to an oblique overview.
@@ -189,7 +212,7 @@ export function introCameraKeys(g: IntroGeometry, tl: IntroTimeline): CamKey[] {
   const keys: CamKey[] = [];
   const W = g.width;
   const D = g.depth;
-  const fit = fitDistance(W, D, g.fovDeg, g.aspect) * 1.04;
+  const fit = fitDistance(W, D, g.fovDeg, g.aspect) * INTRO_FIT_MARGIN;
   const center = (phi: number) =>
     new Vector3(W / 2, g.pageY + (D / 2) * Math.sin(phi), D - (D / 2) * Math.cos(phi));
   // head-on, then follow the fold: camera elevation 0° → 52°, distance grows a little

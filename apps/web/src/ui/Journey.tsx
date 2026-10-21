@@ -3,8 +3,8 @@
  * result, ranking) and the "Share my web journey" link. The portal's colour (from its host, as in the engine)
  * carries through all of them, so a site keeps one colour from the gate to the share card.
  */
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
-import type { PortalPrompt } from '../game/game.ts';
+import { type CSSProperties, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import type { ArrivalView, PortalPrompt, TravelView } from '../game/game.ts';
 import { encodeJourney, hostColor, isJourney, type JourneyStop } from '../game/journey.ts';
 import { CardPreview } from '../ranking/ShareButton.tsx';
 import { cardImage, fetchCardFile, shareLink } from '../ranking/share.ts';
@@ -142,6 +142,190 @@ export function TravelIris({ host }: { host: string }) {
       </p>
     </div>
   );
+}
+
+// ── portal windows: the travel window ────────────────────────────────────────────────────────────────
+
+/** The scene's fog colour (engine FOG_COLOR): what surrounds the upright page at intro t = 0. */
+const FOG = '#f8f8f8';
+const GROW_MS = 600;
+const DEVELOP_MS = 400;
+const CUT_MS = 350;
+const OUT_MS = 250;
+
+type Box = { x: number; y: number; width: number; height: number };
+type Stage = 'grow' | 'covered' | 'develop' | 'cut' | 'out';
+
+/**
+ * Portal windows (N; plans/portal-windows-execution.md §6.3). Travel: from the gate's disc on screen (the engine's
+ * handoff), a ragged, glowing window onto the destination grows to full screen; the build happens inside it. The
+ * game loads the next world only once it covers the screen (`travelWindowCovered`). Arrival: the loaded page
+ * develops in (from the postcard) or replaces the preview, shrinks onto where the intro's upright page will be,
+ * and the whole window fades into the intro (`travelWindowDone`). Mounted from `Screens`, so it survives
+ * play → building → intro; decorative (`aria-hidden`): the building panel carries the status.
+ */
+export function TravelWindow({
+  travel,
+  arrival,
+}: {
+  travel: TravelView | null;
+  arrival: ArrivalView | null;
+}) {
+  const g = useGame();
+  const v = useView();
+  const root = useRef<HTMLDivElement>(null);
+  const shot = useRef<HTMLCanvasElement>(null);
+  const [stage, setStage] = useState<Stage>('grow');
+  const [grown, setGrown] = useState(false);
+  const [view, setView] = useState({ w: 1, h: 1 });
+  const reduced = useReducedMotion();
+  // what the window keeps showing after `travel` clears at the intro
+  const kept = useRef<{ host: string; src: string | null; from: Box | 'full' }>(null);
+  if (travel?.handoff)
+    kept.current = { host: travel.host, src: travel.preview?.src ?? null, from: travel.handoff };
+  const k = kept.current;
+  const open = !!k;
+
+  // the box the canvas fills (rects are canvas-relative), measured once the window opens and on every resize
+  useLayoutEffect(() => {
+    const el = open ? root.current?.parentElement : null;
+    if (!el) return;
+    const measure = () => setView({ w: el.clientWidth || 1, h: el.clientHeight || 1 });
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [open]);
+
+  // grow: one frame at the gate's size, then transition to full
+  useEffect(() => {
+    if (!open) return;
+    let id = requestAnimationFrame(() => {
+      id = requestAnimationFrame(() => setGrown(true));
+    });
+    return () => cancelAnimationFrame(id);
+  }, [open]);
+  useEffect(() => {
+    if (!grown || stage !== 'grow') return;
+    const t = setTimeout(
+      () => {
+        setStage('covered');
+        g.travelWindowCovered();
+      },
+      reduced ? 300 : GROW_MS,
+    );
+    return () => clearTimeout(t);
+  }, [grown, stage, g, reduced]);
+
+  // arrival: draw the loaded texture (exactly what the engine shows), develop, then cut onto the page
+  useEffect(() => {
+    if (!arrival || !shot.current) return;
+    const c = shot.current;
+    const img = arrival.image as CanvasImageSource & { width: number; height: number };
+    c.width = img.width;
+    c.height = img.height;
+    c.getContext('2d')?.drawImage(img, 0, 0);
+    setStage('develop');
+    const t = setTimeout(() => setStage('cut'), reduced ? 0 : arrival.hadPreview ? 200 : DEVELOP_MS);
+    return () => clearTimeout(t);
+  }, [arrival, reduced]);
+
+  // the intro has started: fade into it, then hand back (its own effect, so changing stage can't cancel it)
+  useEffect(() => {
+    if (arrival && v.phase === 'intro' && stage !== 'out') setStage('out');
+  }, [arrival, v.phase, stage]);
+  useEffect(() => {
+    if (stage !== 'out') return;
+    const t = setTimeout(() => g.travelWindowDone(), OUT_MS);
+    return () => clearTimeout(t);
+  }, [stage, g]);
+
+  if (!k || (!travel && !arrival)) return null;
+
+  const { w, h } = view;
+  const from = k.from === 'full' ? null : k.from;
+  const cx = from ? from.x + from.width / 2 : w / 2;
+  const cy = from ? from.y + from.height / 2 : h / 2;
+  const rFull = Math.hypot(Math.max(cx, w - cx), Math.max(cy, h - cy)) + 40;
+  const r0 = from ? from.width / 2 : reduced ? rFull : rFull * 0.15;
+  const r = grown || reduced ? rFull : r0;
+  const growStyle = reduced ? 'none' : `clip-path ${GROW_MS}ms cubic-bezier(0.55, 0, 0.3, 1)`;
+
+  // the arrival picture: first the top of the page across the view, then the intro's upright page
+  let shotBox: Box = {
+    x: 0,
+    y: 0,
+    width: w,
+    height: arrival ? (w * arrival.image.height) / arrival.image.width : h,
+  };
+  const cut = arrival?.cut;
+  const cutUsable = !!cut && cut.width > 0 && cut.x > -cut.width && cut.x < w && cut.y < h;
+  if ((stage === 'cut' || stage === 'out') && cut && cutUsable) shotBox = cut;
+
+  return (
+    <div
+      ref={root}
+      className={`wwm-twin wwm-twin--${stage}`}
+      data-testid="travel-window"
+      data-from={from ? 'gate' : 'full'}
+      data-stage={stage}
+      data-motion={reduced ? 'reduced' : 'full'}
+      aria-hidden="true"
+      style={{ '--pc': hostColor(k.host), '--fog': FOG, '--out': `${OUT_MS}ms` } as Style}
+    >
+      <div
+        className="wwm-twin__mask"
+        style={{
+          clipPath: `circle(${r}px at ${cx}px ${cy}px)`,
+          transition: reduced ? 'opacity 300ms' : growStyle,
+          opacity: reduced && !grown ? 0 : 1,
+        }}
+      >
+        <div className={`wwm-twin__dest${arrival ? ' wwm-twin__dest--gone' : ''}`}>
+          {k.src ? (
+            <div className="wwm-twin__pic" style={{ backgroundImage: `url("${k.src}")` }} />
+          ) : (
+            <div className="wwm-twin__card">
+              <Mono host={k.host} size="xl" />
+              <span className="wwm-twin__host">{k.host}</span>
+            </div>
+          )}
+        </div>
+        <canvas
+          ref={shot}
+          className={`wwm-twin__shot ${!arrival ? 'wwm-twin__shot--idle' : arrival.hadPreview ? 'wwm-twin__shot--swap' : 'wwm-twin__shot--develop'}`}
+          style={{
+            left: shotBox.x,
+            top: shotBox.y,
+            width: shotBox.width,
+            height: shotBox.height,
+            transition: reduced
+              ? 'none'
+              : `left ${CUT_MS}ms ease, top ${CUT_MS}ms ease, width ${CUT_MS}ms ease, height ${CUT_MS}ms ease`,
+          }}
+        />
+      </div>
+      {!reduced && (
+        <span
+          className="wwm-twin__ring"
+          style={{
+            left: cx - r,
+            top: cy - r,
+            width: 2 * r,
+            height: 2 * r,
+            transition: `all ${GROW_MS}ms cubic-bezier(0.55, 0, 0.3, 1)`,
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function useReducedMotion(): boolean {
+  const [reduced] = useState(
+    () => typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  return reduced;
 }
 
 // ── the trail ─────────────────────────────────────────────────────────────────────────────────────────

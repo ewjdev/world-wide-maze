@@ -21,6 +21,7 @@ All pages were captured on **2026-09-25 (UTC)**. The exact timestamps are in eac
 | `govuk-card-grid` | card grid / sections (permissive alternative) | https://www.gov.uk/ | 1280×4550 | Open Government Licence v3.0 (crown copyright). The cookie banner was dismissed through the text fallback ("Reject additional cookies"). |
 | `mdn-dark-docs` | dark theme docs | https://developer.mozilla.org/en-US/docs/Web/API/Range/getClientRects | 1280×3671 | Captured with `--dark` (`prefers-color-scheme: dark`). Content is CC BY-SA 2.5 by Mozilla contributors. It includes 2 third-party ad banners (top and a purple footer band), which are not classified `adlike` because their markup has no ad hints. |
 | `example-sparse` | sparse landing | https://example.com/ | 1280×800 | IANA reserved example domain. It has 4 elements. |
+| `portal-hub` | link-portal test page (N) | written for this repo: `fixtures/pages/portal-hub/index.html` | 1280×986 | MIT. Captured on 2026-10-20 at DPR 2 from a local static server; `url` was then set to the canonical `https://wwm.ewj.dev/fixtures/portal-hub/`. Its four links lead to Wikipedia, GOV.UK and example.com (fixtures, so their portals travel offline) and w3.org (not a fixture). Test-only: playable at `/play/fixture-portal-hub`, not in the site picker. |
 | `image-gallery` | image-heavy | https://commons.wikimedia.org/wiki/Commons:Picture_of_the_day | 1280×6000 (capped) | Freely licensed Picture-of-the-day images (each under its own CC/PD license on Commons). The page changes daily. |
 
 ## Failed or replaced attempts
@@ -36,6 +37,15 @@ properties (valid bundle, 1280 wide, height ≤ 6000, elements inside the page).
 pnpm --filter @wwm/fixture-capture browsers   # once: installs Playwright Chromium
 pnpm fixture:capture https://en.wikipedia.org/wiki/Labyrinth wikipedia-article
 pnpm fixture:capture https://developer.mozilla.org/en-US/docs/Web/API/Range/getClientRects mdn-dark-docs --dark
+```
+
+`portal-hub` is our own page, so recapture it from a local server, then restore its canonical URL:
+
+```sh
+(cd fixtures/pages/portal-hub && python3 -m http.server 8799 --bind 127.0.0.1) &
+pnpm fixture:capture http://127.0.0.1:8799/ portal-hub
+# set "url" in fixtures/captures/portal-hub/capture.json back to https://wwm.ewj.dev/fixtures/portal-hub/,
+# then regenerate the builder golden: node tools/stage-debugger/src/cli/goldens.ts
 ```
 
 Other phases add files **only in their own subfolder** (for example `fixtures/replays/` in Phase 05).
