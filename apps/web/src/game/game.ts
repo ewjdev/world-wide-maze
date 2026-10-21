@@ -280,6 +280,8 @@ export interface GameTestHooks {
   noAutoPause?: boolean;
   /** Skip intros immediately. */
   skipIntro?: boolean;
+  /** Portal travel's wall-clock watchdog (ms; default `GATE_WATCHDOG_MS`), so e2e can hold the "opening" state. */
+  travelWatchdogMs?: number;
   /** Measurement (08b): keep the free-running physics worker even with an injected replay. */
   forceWorker?: boolean;
   /**
@@ -2514,7 +2516,7 @@ export class Game {
           if (this.#view.travel?.href === pr.href && this.#view.phase === 'play')
             console.warn('[wwm] the portal animation stalled; travelling anyway');
           r();
-        }, GATE_WATCHDOG_MS),
+        }, this.#opts.test?.travelWatchdogMs ?? GATE_WATCHDOG_MS),
       ),
     ]);
     void gate.then(async () => {

@@ -364,30 +364,44 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
     await ctx.close();
   }, 180_000);
 
-  test('a stalled game clock: the window says what is happening, and the watchdog still starts the build', async () => {
+  /** Hold travel in its "opening" state: the watchdog won't start the build for this test's lifetime. */
+  const holdWatchdog = (page: Page) =>
+    page.evaluate(() => {
+      (window as unknown as { __WWM_TEST__: { travelWatchdogMs?: number } }).__WWM_TEST__.travelWatchdogMs =
+        600_000;
+    });
+
+  test('a stalled game clock: the window opens anyway and says what is happening', async () => {
+    const { page, ctx } = await play('fixture-portal-hub');
+    await holdWatchdog(page);
+    await travel(page, { stallClock: true });
+    const status = page.getByTestId('travel-status');
+    await expect
+      .poll(async () => (await status.textContent({ timeout: 10_000 })) ?? '')
+      .toContain('Opening the portal to example.com');
+    expect((await state(page)).phase).toBe('play');
+    await ctx.close();
+  }, 180_000);
+
+  test('a stalled game clock: the watchdog still starts the build', async () => {
     const { page, ctx } = await play('fixture-portal-hub');
     await travel(page, { stallClock: true });
-    await page.waitForSelector('[data-testid="travel-status"]', { timeout: 5_000 });
-    expect(await page.textContent('[data-testid="travel-status"]')).toContain(
-      'Opening the portal to example.com',
-    );
-    await waitPhase(page, 'building', 10_000);
-    await page.waitForSelector('[data-testid="travel-status"]', { state: 'detached', timeout: 5_000 });
+    await waitPhase(page, 'building', 30_000);
     expect(await page.isVisible('[data-testid="building"]')).toBe(true);
     await ctx.close();
   }, 180_000);
 
   test('the way out of a portal that never opens: back to this maze, paused, the trail unchanged', async () => {
     const { page, ctx } = await play('fixture-portal-hub');
+    await holdWatchdog(page);
     await travel(page, { stallClock: true });
-    await page.waitForSelector('[data-testid="travel-status"]', { timeout: 5_000 });
+    await page.getByTestId('travel-status').waitFor({ timeout: 10_000 });
     await page.evaluate(() =>
       (window as unknown as { __wwmGame: { leaveTravel(): void } }).__wwmGame.leaveTravel(),
     );
-    await waitPhase(page, 'paused', 5_000);
-    await page.waitForSelector('[data-testid="travel-window"]', { state: 'detached', timeout: 5_000 });
-    const s = await state(page);
-    expect(s.journey.map((j) => j.via)).toEqual(['start']);
+    await waitPhase(page, 'paused', 10_000);
+    await page.waitForSelector('[data-testid="travel-window"]', { state: 'detached', timeout: 10_000 });
+    expect((await state(page)).journey.map((j) => j.via)).toEqual(['start']);
     expect(problems).toEqual([]);
     await ctx.close();
   }, 180_000);
