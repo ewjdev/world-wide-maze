@@ -1,13 +1,20 @@
 /**
  * Phase 16: the data behind the build story on /log. Every number shown comes from
  * content/build-story/timeline.json (built by tools/build-story from git, the build logs and the session record)
- * or is a verbatim quote from content/build-story/bugs.json. This module only formats.
+ * or is a verbatim quote from content/build-story/bugs.json. The "Since launch" list after the clock comes from
+ * content/build-story/since-launch.json. This module only formats.
  */
 import bugsJson from '../../../../../content/build-story/bugs.json';
+import sinceJson from '../../../../../content/build-story/since-launch.json';
 import timelineJson from '../../../../../content/build-story/timeline.json';
+import type { SinceLaunch, SinceLaunchStatus } from '../../../../../tools/build-story/src/record.ts';
 import type { Run, Segment, Timeline } from '../../../../../tools/build-story/src/types.ts';
 
 export const TL = timelineJson as unknown as Timeline;
+
+/** Work after the clock's snapshot (content/build-story/since-launch.json), shown in order. */
+export const SINCE = sinceJson as unknown as SinceLaunch;
+export type { SinceLaunchStatus };
 
 export interface Quote {
   file: string;

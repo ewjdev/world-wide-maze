@@ -1,7 +1,8 @@
 /**
  * /log: the build story (Phase 16) and the build record (Phase 10).
  * - Phase 16, on top: the build clock, the swimlane, the bug gallery and 2013 vs 2026, all from
- *   content/build-story/timeline.json and bugs.json (see story.ts). No productivity multipliers.
+ *   content/build-story/timeline.json and bugs.json (see story.ts). No productivity multipliers. Then "Since
+ *   launch": the work after the clock's snapshot, from content/build-story/since-launch.json.
  * - Phase 10, below: every docs/build-log/*.md unedited, with a summary table whose numbers come only from what
  *   the logs themselves state (see parse-log.ts).
  */
@@ -14,6 +15,7 @@ import { ASSETS } from './assets.ts';
 import { BugGallery } from './BugGallery.tsx';
 import { BuildClock } from './BuildClock.tsx';
 import { fmtClock, type LogFile, type LogSummary, modelOf, summarize, totals } from './parse-log.ts';
+import { SinceLaunch } from './SinceLaunch.tsx';
 import { CARD_VARIANTS, type CardVariant, SocialCard } from './SocialCard.tsx';
 import { Swimlane } from './Swimlane.tsx';
 import { ThenNow } from './ThenNow.tsx';
@@ -66,7 +68,8 @@ function BuildRecord() {
     const id = decodeURIComponent(location.hash.slice(1));
     if (id) document.getElementById(id)?.scrollIntoView();
   }, []);
-  const mains = summaries.filter((s) => !s.supplement);
+  // phase logs only: later non-phase logs (performance, portal windows…) are listed under “Since launch”
+  const mains = summaries.filter((s) => !s.supplement && s.phase);
   const span = t.span;
   const scale = (min: number) =>
     span ? ((min - span.startMin) / Math.max(1, span.endMin - span.startMin)) * 100 : 0;
@@ -84,6 +87,8 @@ function BuildRecord() {
       <Swimlane />
       <BugGallery />
       <ThenNow />
+      {/* After the clock's snapshot: content/build-story/since-launch.json. */}
+      <SinceLaunch />
 
       <section className="sc-section lg-head" aria-labelledby="record">
         <h2 className="sc-h2" id="record">
@@ -222,7 +227,7 @@ function BuildRecord() {
             {summaries.map((l) => (
               <li key={l.slug}>
                 <a href={`#${l.slug}`} className="lg-index__link" data-supplement={l.supplement}>
-                  {l.supplement ? l.title : `Phase ${l.phase}`}
+                  {l.phase && !l.supplement ? `Phase ${l.phase}` : l.title}
                 </a>
               </li>
             ))}

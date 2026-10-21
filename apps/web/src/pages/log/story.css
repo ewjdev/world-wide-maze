@@ -1068,6 +1068,51 @@ button.sl-row[aria-pressed="true"] {
   }
 }
 
+/* ── since launch (content/build-story/since-launch.json) ── */
+.sl .sl-list {
+  list-style: none;
+  margin: 1.75rem 0 0;
+  padding: 0;
+  border-top: 1px solid var(--ink);
+}
+.sl .sl-item {
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--rule);
+  scroll-margin-top: 4rem;
+}
+.sl .sl-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+.sl .sl-title {
+  margin: 0;
+  font: 600 1.0625rem / 1.35 var(--sans);
+}
+.sl .sl-status {
+  font: 600 0.75rem / 1 var(--sans);
+  padding: 0.2rem 0.45rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+.sl .sl-status[data-status="live"] {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+.sl .sl-summary {
+  margin: 0.4rem 0 0;
+  max-width: 46rem;
+  font: 400 0.9375rem / 1.55 var(--sans);
+}
+.sl .sl-meta {
+  margin: 0.35rem 0 0;
+  font: 400 0.8125rem / 1.5 var(--sans);
+  color: var(--muted);
+}
+
 /* the build record heading now sits below the story */
 .sc-section.lg-head {
   padding-top: 0;
