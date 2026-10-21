@@ -5,6 +5,7 @@ import type { StageData } from '@wwm/schema';
 import { describe, expect, test } from 'vitest';
 import {
   PortalPreviews,
+  type PreviewService,
   pngSize,
   portalWindowsEnabled,
   previewablePortals,
@@ -155,5 +156,132 @@ describe('PortalPreviews (the per-stage loader)', () => {
       (id) => shown.push(id),
     );
     expect(shown).toEqual([]);
+  });
+});
+
+describe('PortalPreviews with the capture service (M3)', () => {
+  const HUB = JSON.parse(
+    readFileSync(resolve(ROOT, 'fixtures/builder/portal-hub.normal.seed1.json'), 'utf8'),
+  ) as StageData;
+  const W3 = 'https://www.w3.org/';
+  const STAGE_W3 = 'c3'.repeat(32);
+  const flush = () => new Promise((r) => setTimeout(r, 0));
+  const pic = () => ({ close() {} }) as unknown as ImageBitmap;
+  /** Fixture pictures resolve; built-site textures decode to a fake bitmap. */
+  const sources = { fixture: async () => pic(), decode: async () => pic() };
+
+  function fakeService(
+    o: { online?: boolean; ids?: Record<string, string | null>; failTexture?: boolean } = {},
+  ) {
+    const calls = { lookup: [] as string[][], texture: [] as string[], online: 0 };
+    const service: PreviewService = {
+      async online() {
+        calls.online++;
+        return o.online ?? true;
+      },
+      async lookup(hrefs) {
+        calls.lookup.push(hrefs);
+        return hrefs.map((h) => o.ids?.[h] ?? null);
+      },
+      async texture(id) {
+        calls.texture.push(id);
+        if (o.failTexture) throw new Error('boom');
+        return new Blob(['webp'], { type: 'image/webp' });
+      },
+    };
+    return { service, calls };
+  }
+
+  test('a built site shows its texture: one batched lookup, one texture, a blob: URL for the travel window', async () => {
+    const { service, calls } = fakeService({ ids: { [W3]: STAGE_W3 } });
+    const previews = new PortalPreviews(sources);
+    const shown: [number, unknown][] = [];
+    previews.start(HUB, (id, p) => shown.push([id, p]), undefined, service);
+    expect(previews.states()[0]).toBe('looking-up');
+    await flush();
+    await flush();
+    expect(previews.states()).toEqual({ 0: 'ready', 1: 'ready', 2: 'ready', 3: 'ready' });
+    expect(calls.lookup).toEqual([[W3]]);
+    expect(calls.texture).toEqual([STAGE_W3]);
+    expect(previews.source(0)).toMatch(/^blob:/);
+    expect(shown.filter(([id, p]) => id === 0 && p !== 'postcard')).toHaveLength(1);
+  });
+
+  test('offline, an unknown site and a failed texture all leave the postcard', async () => {
+    for (const [o, lookups] of [
+      [{ online: false, ids: { [W3]: STAGE_W3 } }, 0],
+      [{ ids: {} }, 1],
+      [{ ids: { [W3]: STAGE_W3 }, failTexture: true }, 1],
+    ] as const) {
+      const { service, calls } = fakeService(o);
+      const previews = new PortalPreviews(sources);
+      previews.start(HUB, () => {}, undefined, service);
+      await flush();
+      await flush();
+      expect(previews.states()[0]).toBe('postcard');
+      expect(previews.source(0)).toBeNull();
+      expect(calls.lookup).toHaveLength(lookups);
+    }
+  });
+
+  test('a retry of the same stage reuses the texture without new requests', async () => {
+    const { service, calls } = fakeService({ ids: { [W3]: STAGE_W3 } });
+    const previews = new PortalPreviews(sources);
+    previews.start(HUB, () => {}, undefined, service);
+    await flush();
+    await flush();
+    previews.start(HUB, () => {}, undefined, service);
+    await flush();
+    await flush();
+    expect(previews.states()[0]).toBe('ready');
+    expect(calls.lookup).toHaveLength(1);
+    expect(calls.texture).toHaveLength(1);
+  });
+
+  test('leaving the stage revokes its blob: URLs, except the one taken by the travel', async () => {
+    const revoked: string[] = [];
+    const revoke = URL.revokeObjectURL;
+    URL.revokeObjectURL = (u: string) => {
+      revoked.push(u);
+      revoke(u);
+    };
+    try {
+      const { service } = fakeService({ ids: { [W3]: STAGE_W3 } });
+      const a = new PortalPreviews(sources);
+      a.start(HUB, () => {}, undefined, service);
+      await flush();
+      await flush();
+      const url = a.source(0) as string;
+      a.stop();
+      expect(revoked).toEqual([url]);
+      revoked.length = 0;
+      const b = new PortalPreviews(sources);
+      b.start(HUB, () => {}, undefined, fakeService({ ids: { [W3]: STAGE_W3 } }).service);
+      await flush();
+      await flush();
+      const taken = b.take(0);
+      expect(taken).toMatch(/^blob:/);
+      b.stop();
+      expect(revoked).toEqual([]); // fixture asset URLs and the taken blob are never revoked here
+    } finally {
+      URL.revokeObjectURL = revoke;
+    }
+  });
+
+  test('a stage change mid-lookup drops the result', async () => {
+    let release!: () => void;
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const { service } = fakeService({ ids: { [W3]: STAGE_W3 } });
+    const slow: PreviewService = { ...service, lookup: async (h, s) => (await gate, service.lookup(h, s)) };
+    const previews = new PortalPreviews(sources);
+    const shown: [number, unknown][] = [];
+    previews.start(HUB, (id, p) => shown.push([id, p]), undefined, slow);
+    previews.start({ ...HUB, stageId: 'other', portals: [] }, () => {}, undefined, slow);
+    release();
+    await flush();
+    await flush();
+    expect(shown.filter(([id, p]) => id === 0 && p !== 'postcard')).toEqual([]);
   });
 });

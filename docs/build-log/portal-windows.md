@@ -130,3 +130,60 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
 - **Fog between picture and arrival:** the preview faded out (300 ms) while the arrival faded in (200 ms), so the fog showed through. The destination now fades only after the arrival is in (420 ms delay).
 - **Ring glow invisible:** the ring's mask also clipped its outer glow. It now uses a border with inner and outer shadows, and no mask.
 - **Shared problem list:** the failed-build test's expected `net::ERR_FAILED` messages leaked into the next test through the shared list. It is now cleared before each test.
+
+## M3: previews of sites already built on the service (2026-10-20)
+
+Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-windows/m3`. The user asked to merge M0–M2 and continue.
+
+### What was built
+- **Contract (CCR-PW-1, user-approved):**
+  - `PortalPreviewsRequest` / `PortalPreviewsResponse` and their Zod schemas in `@wwm/schema`.
+  - `CONTRACT_VERSION` 0.3.6 → **0.3.7**, with a CHANGELOG entry.
+  - In `plans/contracts.md`: a §7 table row, a §9 resolutions entry and a new §10.6.
+- **Worker:**
+  - **Route:** `POST /api/portals/previews` under `stagesRoutes`, so it inherits the read limiter. The body is capped at 16 KiB (`MAX_PORTAL_PREVIEW_BYTES`) and checked with the schema.
+  - **Per URL:** a static URL policy check, then the opt-out. Next `catalog.peekVariant`, the run `POST /api/stages` would reuse (D3), else `catalog.newestServableRun`. The result is slice 0 via `firstStageId`.
+  - **Responses:** `private, no-store`. The `kill:portal-previews` KV key gives all `null` without touching D1.
+  - **Catalog:**
+    - `peekVariant` is `resolveVariant`'s lookups plus `canServeRun`, with **no writes** and no R2 probe.
+    - `newestServableRun` is one candidate query on `url` OR `submitted_url`, plus `canServeRun`. A unary `+` on `status` and `artifacts_available` keeps SQLite off the low-selectivity status index. `EXPLAIN QUERY PLAN` then shows a MULTI-INDEX OR over `moderation_cases_url` and `moderation_cases_submitted_url`, so no migration was needed.
+- **Web (`PortalPreviews`):**
+  - **Lookup:** after the health probe says online, one batched lookup for the link portals that aren't fixtures, then their textures. Each is decoded at 384 px wide for the atlas; its compressed Blob becomes a `blob:` URL for the travel window.
+  - **Retries:** a retry of the same stage reuses the Blobs without new requests.
+  - **Leaving a stage:** revokes its `blob:` URLs, except the one `take()` handed to the travel, which the game revokes when the window is done (or on cancel, error, leaving, or dispose).
+  - **Failures:** any non-200, offline or `?offline=1`, a malformed response, or a failed texture or decode gives the postcard.
+- **Runbook:** §5.1a documents `kill:portal-previews`.
+
+### Verified
+- **Worker (`apps/worker/test/portal-previews.test.ts`, production migrations in SQLite):**
+  - `peekVariant` with the pointer and with the legacy match, with no `url_variants`/`moderation_cases` writes.
+  - Newest-servable ordering, the `submitted_url` match, and pending runs never chosen.
+  - The index plan.
+  - The route:
+    - request order and echoed URLs;
+    - the exact variant wins over a newer run at another difficulty;
+    - the newest fallback after a builder upgrade;
+    - blocked URL, blocked submitted URL, opted-out host, pending and policy-refused URLs all `null`;
+    - the kill switch with no catalog calls;
+    - limits (0, 7, 2049 characters, junk, over the cap → 413, and 6 × 2,000-character URLs accepted);
+    - no build, claim, publish, resolve or record calls and no KV writes.
+- **Loader unit tests:** a built site shows its texture with one batched lookup; offline, an unknown site and a failed texture leave the postcard; a retry makes no new requests; `blob:` revocation except the taken one; a stage change mid-lookup drops the result.
+- **Browser (`portal-windows.e2e.test.ts`, now 7 tests):** with a mocked health, lookup and texture, the w3.org portal on `portal-hub` becomes `ready` after exactly one lookup, for that one URL.
+- **Local end to end** (`pnpm dev`, `MODERATION_MODE=test-allow`, real capture):
+  - Built `https://iana.org/domains/example`, which redirects to `www.iana.org/help/example-domains`, so it matched through `submitted_url`.
+  - The lookup gave its stage, and `null` for w3.org and a junk string, with `cache-control: private, no-store`.
+  - In the game, the example.com fixture's "Learn more" portal showed the IANA page. Travel was a cache hit (`POST /api/stages` returned the run, with no job) and arrived **6.3 s** after Travel, through the full window and cut.
+  - The kill switch, set and cleared through local KV, gave `null` and then the stage again.
+
+### Measured
+- **D1 statements:** 48 for a lookup of 6 URLs (8 per URL). The plan estimated up to about 54.
+- **Slice texture:** 301 KB (WebP) for the one real local capture. That's one sample, below the plan's ~400 KB threshold for a thumbnail derivative. More samples come in M4.
+- **Exact-variant hits:** in the local end-to-end, the lookup hit the exact variant (the page was built at default settings). In the route test, a builder upgrade fell back to the newest run, as designed.
+
+### Screenshots (reviewed) — `docs/build-log/assets/portal-windows/`
+- `m3-built-site-window.jpg`: example.com's "Learn more" portal showing the IANA page built on the local service (surging as the ball enters).
+- `m3-travel-built-site.jpg`: the travel window full screen on the built page.
+- `m3-into-intro.jpg`: the cut landing on the 3D intro's upright page.
+
+### Attempts that failed and why
+- **Status index chosen:** the first candidate query let SQLite pick the `status` index (every approved case) over the URL indexes. The index-plan test caught it; the unary `+` fixed it with no migration.

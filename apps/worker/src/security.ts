@@ -10,6 +10,8 @@
 
 /** Largest body `POST /api/stages` reads (`{url ≤ 2048 chars, difficulty, seed}`). */
 export const MAX_STAGE_REQUEST_BYTES = 8 * 1024;
+/** Largest `POST /api/portals/previews` body: `MAX_PORTALS` URLs of up to 2048 chars, plus JSON. */
+export const MAX_PORTAL_PREVIEW_BYTES = 16 * 1024;
 /** Largest telemetry batch (50 small events). */
 export const MAX_TELEMETRY_BYTES = 16 * 1024;
 

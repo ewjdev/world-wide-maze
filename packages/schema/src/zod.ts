@@ -4,7 +4,7 @@
  * test/types.test.ts asserts every schema infers exactly the hand-written contract type.
  */
 import { z } from 'zod';
-import { CAPTURE_LIMITS } from './constants.ts';
+import { CAPTURE_LIMITS, MAX_PORTALS } from './constants.ts';
 
 // Contract v0.2.7 (CCR-12-1): never probe `new Function` (a strict CSP reports the caught `eval` attempt as a
 // violation even though zod falls back to its interpreted path). Must run before the first parse; every
@@ -303,6 +303,13 @@ export const CreateStageRequestSchema = z.object({
   seed: z.int().min(0).max(0xffffffff).optional(),
 });
 const StageIdsSchema = z.array(z.string()).min(1);
+/** §10.6 (CCR-PW-1). */
+export const PortalPreviewsRequestSchema = z.object({
+  urls: z.array(z.string().min(1).max(2048)).min(1).max(MAX_PORTALS),
+});
+export const PortalPreviewsResponseSchema = z.object({
+  items: z.array(z.object({ url: z.string(), stageId: z.string().nullable() })),
+});
 export const CreateStageResponseSchema = z.union([
   z.object({ jobId: z.string() }),
   z.object({ runId: z.string(), stageIds: StageIdsSchema }),

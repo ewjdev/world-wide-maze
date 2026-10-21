@@ -450,6 +450,21 @@ export interface CreateStageRequest {
 /** `POST /api/stages` → `202 {jobId}` or `200 {runId, stageIds[]}` if cached. */
 export type CreateStageResponse = { jobId: string } | { runId: string; stageIds: string[] };
 
+/**
+ * §10.6 (CCR-PW-1) `POST /api/portals/previews`: which portal targets have already been built and may be shown.
+ * 1–`MAX_PORTALS` absolute URLs, each ≤ 2048 chars. Read-only: it never starts or reserves a build.
+ */
+export interface PortalPreviewsRequest {
+  urls: string[];
+}
+/**
+ * One item per requested URL, in request order, `url` echoed exactly as sent. `stageId` is slice 0 of a servable
+ * run for that page (preferring the run `POST /api/stages` would reuse), or null. Clients ignore unknown fields.
+ */
+export interface PortalPreviewsResponse {
+  items: { url: string; stageId: string | null }[];
+}
+
 /** `GET /api/jobs/:jobId` server-sent events. The SSE `event:` name is `type`; `data:` is the rest as JSON. */
 export type JobEvent =
   | { type: 'progress'; step: string; pct: number }

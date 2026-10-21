@@ -16,6 +16,8 @@ import type {
   Elevator,
   InputSample,
   JobEvent,
+  PortalPreviewsRequest,
+  PortalPreviewsResponse,
   RunResponse,
   ScoresResponse,
   SimEvent,
@@ -38,6 +40,10 @@ describe('Zod ⇔ TS types', () => {
     expectTypeOf<z.infer<typeof schema.ApiErrorSchema>>().toEqualTypeOf<ApiError>();
     expectTypeOf<z.infer<typeof schema.CreateStageRequestSchema>>().toEqualTypeOf<CreateStageRequest>();
     expectTypeOf<z.infer<typeof schema.CreateStageResponseSchema>>().toEqualTypeOf<CreateStageResponse>();
+    expectTypeOf<z.infer<typeof schema.PortalPreviewsRequestSchema>>().toEqualTypeOf<PortalPreviewsRequest>();
+    expectTypeOf<
+      z.infer<typeof schema.PortalPreviewsResponseSchema>
+    >().toEqualTypeOf<PortalPreviewsResponse>();
     expectTypeOf<z.infer<typeof schema.JobEventSchema>>().toEqualTypeOf<JobEvent>();
     expectTypeOf<z.infer<typeof schema.RunResponseSchema>>().toEqualTypeOf<RunResponse>();
     expectTypeOf<z.infer<typeof schema.CuratedResponseSchema>>().toEqualTypeOf<CuratedResponse>();
@@ -127,7 +133,7 @@ describe('contract surface', () => {
     });
     expect(schema.DEFAULT_VIEWPORT).toEqual({ width: 1280, height: 800 });
     expect(schema.BALL_RADIUS_PX).toBe(6.75);
-    expect(schema.CONTRACT_VERSION).toBe('0.3.6');
+    expect(schema.CONTRACT_VERSION).toBe('0.3.7');
     // Removed in 0.2.0.
     expect('OCEAN_Y_M' in schema).toBe(false);
     expect('MAX_TILT' in schema).toBe(false);
@@ -200,6 +206,22 @@ describe('contract surface', () => {
     expect(await schema.sha256Hex('abc')).toBe(
       'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad',
     );
+  });
+
+  test('portal previews (CCR-PW-1): 1 to MAX_PORTALS URLs of at most 2048 chars', () => {
+    const ok = (urls: unknown) => schema.PortalPreviewsRequestSchema.safeParse({ urls }).success;
+    expect(ok(['https://example.com/'])).toBe(true);
+    expect(ok(Array.from({ length: schema.MAX_PORTALS }, (_, i) => `https://e${i}.example/`))).toBe(true);
+    expect(ok([])).toBe(false);
+    expect(ok(Array.from({ length: schema.MAX_PORTALS + 1 }, (_, i) => `https://e${i}.example/`))).toBe(
+      false,
+    );
+    expect(ok([`https://example.com/${'a'.repeat(2048)}`])).toBe(false);
+    expect(ok([''])).toBe(false);
+    const res = schema.PortalPreviewsResponseSchema.parse({
+      items: [{ url: 'https://example.com/', stageId: null, later: 'ignored' }],
+    });
+    expect(res).toEqual({ items: [{ url: 'https://example.com/', stageId: null }] });
   });
 
   test('HTTP body schemas accept valid and reject invalid', () => {

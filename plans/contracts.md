@@ -267,6 +267,7 @@ export type GamePhase = 'title' | 'howto' | 'pairing' | 'calibrate' | 'select' |
 | `GET /api/stages/:stageId/texture` | image |
 | `GET /api/runs/:runId` | `{runId, url, title, stageIds[]}` (all slices of one page capture) |
 | `GET /api/curated` | `{runs: {runId, title, url, thumb, stars}[]}` |
+| `POST /api/portals/previews` | `{urls: string[1..MAX_PORTALS]}` → `{items: {url, stageId \| null}[]}` (§10.6, v0.3.7) |
 | `POST /api/rooms` | `{code}` |
 | `GET /api/rooms/:code/ws?role=host\|controller` | WebSocket upgrade |
 | `POST /api/scores` | `{kind:'stage', stageId, name, score, timeMs, replay?}` or `{kind:'run', runId?, name, totalScore, stages:[{stageId, score, timeMs}]}` → `{rank}` |
@@ -380,6 +381,9 @@ The WWMMM reference is fetched on demand to `reference/` (gitignored) by `pnpm r
 - **CCR-12b-2, accepted:** the host keeps its tokens in `sessionStorage`. A `#h=<hostToken>&p=<pairToken>` link lets another tab rejoin as host. `/p/<code>` without the host token gets 4401.
 - **CCR-12b-3, accepted:** a malformed token gets HTTP 400 before the WebSocket upgrade.
 - **Open:** the WS token travels in the query string and can appear in Cloudflare request logs. Options are log redaction or moving it to `Sec-WebSocket-Protocol` (a contract change). Decide before production.
+
+**v0.3.7, portal windows (orchestrator, 2026-10-20):**
+- **CCR-PW-1, approved by the user:** the read-only `POST /api/portals/previews` (§10.6). `StageData` and `Portal` are unchanged; previews are resolved at runtime. Plan: [portal-windows-execution.md](portal-windows-execution.md).
 
 ---
 
@@ -566,3 +570,22 @@ Further rules:
 - **CCR-31-4b (accepted):** the workbench wire types live in `@wwm/learning` (`reviewed-banks.ts`) with the rest of the education contract.
 - **CCR-31-5 (applied):** `AVATAR_LOOKS` and `avatarSvg` moved to `@wwm/learning` (`avatars.ts`), so the lesson page and the maze draw the same avatar from one copy.
 - **Migrations:** Durable Object migration tags are `v5` for `LessonDraftAgent` and `v6` for `FamilyRecords`.
+
+### 10.6 Portal previews (v0.3.7, CCR-PW-1, orchestrator, 2026-10-20)
+
+A link portal can show the page it leads to if that page has already been built and may be served. See [portal-windows-execution.md](portal-windows-execution.md) §5.
+
+- **`POST /api/portals/previews`:**
+  - **Request:** `PortalPreviewsRequest {urls}`: 1–`MAX_PORTALS` strings of at most 2,048 characters. The body is capped at 16 KiB.
+  - **Response:** `200 PortalPreviewsResponse {items: {url, stageId | null}[]}`, in request order, each `url` echoed exactly as sent.
+- **Resolution per URL:** the URL is normalized and checked statically, with no DNS, because nothing is fetched. The result is `null` if:
+  - it fails the URL policy;
+  - its host has opted out;
+  - no servable run exists.
+
+  Otherwise it is slice 0 of the run that `POST /api/stages` would reuse for `{url}` (default difficulty and seed, current builder), when that run is servable. If not, it is slice 0 of the newest servable run for that URL (`url` or `submitted_url`), at any difficulty, seed or builder version. "Servable" is exactly `Catalog.canServeRun`.
+- **Read-only:** it never admits, claims or refreshes a build and never writes a cache. Responses are `cache-control: private, no-store`.
+- **Errors:** `400 {error: 'bad request'}`, `413` over the cap, `403` cross-site and `429 RATE_LIMITED` (the read limiter). Clients treat any non-200 as "no previews".
+- **Kill switch:** the KV key `kill:portal-previews` in `CACHE` makes every item `null` (still `200`), without querying D1.
+- **Images:** the existing `GET /api/stages/:stageId/texture`.
+- **Compatibility:** items may gain optional fields later (CCR-PW-2), and clients ignore unknown fields.

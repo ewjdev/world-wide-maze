@@ -2,6 +2,10 @@
 
 Contract version = `CONTRACT_VERSION` in `src/constants.ts`. Only the orchestrator bumps it (after a Contract Change Request).
 
+## 0.3.7 (2026-10-20, portal windows)
+- CCR-PW-1: `PortalPreviewsRequest` / `PortalPreviewsResponse` and their Zod schemas for the read-only `POST /api/portals/previews` (contracts §10.6): which link-portal targets already have a servable run, as slice-0 stage ids.
+- `StageData`, `Portal` and every existing request/response shape are unchanged.
+
 ## 0.3.6 (2026-09-27, Race elevation)
 - Optional `Bridge.elevationProfile: 'smoothstep'` round-trips through the schema and selects one shared render/collider/camera surface, including straight unbanked ramps.
 - Trusted `validateStage(stage, { mode: 'race' })` enforces a 20-degree local surface limit and a 4 m maximum for connectors below 5-degree mean grade. Default Original/Education validation retains its existing slope limit.
