@@ -26,6 +26,9 @@ export const journeyEn = {
     rolling: 'Rolling to {{host}}',
     building: 'Rolling to {{host}}',
     body: 'Following the link. The next site is being captured and turned into its own maze.',
+    opening: 'Opening the portal to {{host}}…',
+    stuck: 'The portal isn’t opening. Your score is safe.',
+    leave: 'Back to the maze',
   },
   trail: {
     label: 'Your web journey',
@@ -81,6 +84,9 @@ export const journeyJa: typeof journeyEn = {
     rolling: '{{host}} へ転がっていきます',
     building: '{{host}} へ転がっていきます',
     body: 'リンクをたどっています。次のサイトをキャプチャして、新しい迷路にしています。',
+    opening: '{{host}} へのポータルを開いています…',
+    stuck: 'ポータルが開きません。スコアはそのままです。',
+    leave: '迷路に戻る',
   },
   trail: {
     label: 'あなたのウェブの旅',

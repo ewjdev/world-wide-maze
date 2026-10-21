@@ -53,6 +53,8 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
   beforeAll(async () => {
     // Vite reads VITE_* from process.env when the server is created.
     process.env.VITE_PORTAL_WINDOWS_ENABLED = 'true';
+    // tilt as in the preview and production builds (it only applies on touch devices: the phone test below)
+    process.env.VITE_MOBILE_TILT_ENABLED = 'true';
     process.env.WWM_API_URL = 'http://127.0.0.1:9';
     server = await createServer({
       root: WEB_ROOT,
@@ -82,7 +84,11 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
    */
   async function play(
     stage: string,
-    o: { intros?: 'skip' | 'first'; reducedMotion?: boolean; online?: (page: Page) => Promise<void> } = {},
+    o: {
+      intros?: 'skip' | 'first';
+      reducedMotion?: boolean;
+      online?: (page: Page) => Promise<void>;
+    } = {},
   ) {
     const ctx = await browser.newContext({
       viewport: { width: 1280, height: 800 },
@@ -129,7 +135,7 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
     p.waitForFunction((w) => document.body.dataset.phase === w, want, { timeout });
 
   /** Roll into portal-hub's example.com portal and press Travel; resolves once the window exists. */
-  async function travel(page: Page) {
+  async function travel(page: Page, o: { stallClock?: boolean } = {}) {
     await expect
       .poll(async () => (await state(page)).portalPreviews[TO_EXAMPLE], { timeout: 30_000 })
       .toBe('ready');
@@ -141,6 +147,12 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
       TO_EXAMPLE,
     );
     expect(rolled).toBe(true);
+    await page.waitForSelector('[data-testid="portal-travel"]', { timeout: 20_000 });
+    // stop the clock the gate animation runs on, the way tilt did before the 2026-10-21 fix
+    if (o.stallClock)
+      await page.evaluate(() => {
+        (window as unknown as { __WWM_TEST__: { timeScale?: number } }).__WWM_TEST__.timeScale = 0;
+      });
     await page.click('[data-testid="portal-travel"]', { timeout: 20_000 });
     await page.waitForSelector('[data-testid="travel-window"]', { timeout: 15_000 });
   }
@@ -273,4 +285,110 @@ describe.skipIf(!HAS_CHROMIUM)('portal windows e2e (Chromium, offline, flag on)'
     expect(problems).toEqual([]);
     await ctx.close();
   }, 120_000);
+
+  test('tilt controls on a phone: travel through a portal never hangs (the 2026-10-21 iPhone report)', async () => {
+    // A phone with synthetic orientation readings, as in mobile-tilt.e2e.test.ts. During travel the game owns no
+    // input, so tilt can't "advance"; that must not freeze the clock the portal animation and the build run on.
+    const ctx = await browser.newContext({
+      viewport: { width: 390, height: 844 },
+      hasTouch: true,
+      isMobile: true,
+    });
+    await browserEnv(ctx);
+    await ctx.addInitScript((ci) => {
+      localStorage.setItem('wwm.howtoSeen', '1');
+      localStorage.setItem('wwm.tutorialDone', '1');
+      (window as unknown as { __WWM_TEST__: unknown }).__WWM_TEST__ = {
+        ...ci,
+        skipIntro: true,
+        noAutoPause: true,
+      };
+      const granted = () => Promise.resolve('granted');
+      Object.defineProperty(DeviceOrientationEvent, 'requestPermission', {
+        value: granted,
+        configurable: true,
+      });
+      Object.defineProperty(DeviceMotionEvent, 'requestPermission', { value: granted, configurable: true });
+      const state = { beta: 0, gamma: 0 };
+      Object.assign(window, { __motion: state });
+      setInterval(() => {
+        const beta = (state.beta * Math.PI) / 180;
+        const gamma = (state.gamma * Math.PI) / 180;
+        window.dispatchEvent(
+          new DeviceOrientationEvent('deviceorientation', {
+            beta: state.beta,
+            gamma: state.gamma,
+            alpha: null,
+          }),
+        );
+        window.dispatchEvent(
+          new DeviceMotionEvent('devicemotion', {
+            accelerationIncludingGravity: {
+              x: -Math.cos(beta) * Math.sin(gamma) * 9.8,
+              y: Math.sin(beta) * 9.8,
+              z: Math.cos(beta) * Math.cos(gamma) * 9.8,
+            },
+            rotationRate: { alpha: 0, beta: 0, gamma: 0 },
+            interval: 50,
+          }),
+        );
+      }, 50);
+    }, CI_HOOKS);
+    const page = await ctx.newPage();
+    page.on('pageerror', (e) => problems.push(`[pageerror] ${e.message}`));
+    page.on('console', (m) => {
+      const text = m.text();
+      if (m.type() === 'error' && !SOFTWARE_GL_NOISE.test(text) && !KNOWN_TRAVEL_NOISE.test(text))
+        problems.push(`[console] ${text}`);
+    });
+    await page.goto(`${base}/play/fixture-portal-hub?offline=1`);
+    // the motion setup, as a player does it
+    await page.getByTestId('motion-enable').click();
+    await page.waitForFunction(
+      () => document.querySelector('[data-testid="motion-setup"]')?.getAttribute('data-state') === 'probing',
+    );
+    await page.waitForTimeout(120);
+    await page.evaluate(() =>
+      Object.assign((window as unknown as { __motion: object }).__motion, { beta: 8 }),
+    );
+    await page.getByTestId('motion-setup').waitFor({ state: 'hidden', timeout: 10_000 });
+    await page.waitForFunction(() => document.body.dataset.phase === 'play', null, { timeout: 90_000 });
+    expect((await page.evaluate(() => window.__wwmGame?.getView().inputMode)) ?? null).toBe('tilt');
+    await travel(page);
+    // the window covers, the build runs (the building panel shows), and the next maze's intro starts
+    await waitPhase(page, 'building', 15_000);
+    expect(await page.isVisible('[data-testid="building"]')).toBe(true);
+    await waitPhase(page, 'intro', 60_000);
+    expect((await state(page)).journey.map((j) => j.via)).toEqual(['start', 'portal']);
+    expect(problems).toEqual([]);
+    await ctx.close();
+  }, 180_000);
+
+  test('a stalled game clock: the window says what is happening, and the watchdog still starts the build', async () => {
+    const { page, ctx } = await play('fixture-portal-hub');
+    await travel(page, { stallClock: true });
+    await page.waitForSelector('[data-testid="travel-status"]', { timeout: 5_000 });
+    expect(await page.textContent('[data-testid="travel-status"]')).toContain(
+      'Opening the portal to example.com',
+    );
+    await waitPhase(page, 'building', 10_000);
+    await page.waitForSelector('[data-testid="travel-status"]', { state: 'detached', timeout: 5_000 });
+    expect(await page.isVisible('[data-testid="building"]')).toBe(true);
+    await ctx.close();
+  }, 180_000);
+
+  test('the way out of a portal that never opens: back to this maze, paused, the trail unchanged', async () => {
+    const { page, ctx } = await play('fixture-portal-hub');
+    await travel(page, { stallClock: true });
+    await page.waitForSelector('[data-testid="travel-status"]', { timeout: 5_000 });
+    await page.evaluate(() =>
+      (window as unknown as { __wwmGame: { leaveTravel(): void } }).__wwmGame.leaveTravel(),
+    );
+    await waitPhase(page, 'paused', 5_000);
+    await page.waitForSelector('[data-testid="travel-window"]', { state: 'detached', timeout: 5_000 });
+    const s = await state(page);
+    expect(s.journey.map((j) => j.via)).toEqual(['start']);
+    expect(problems).toEqual([]);
+    await ctx.close();
+  }, 180_000);
 });

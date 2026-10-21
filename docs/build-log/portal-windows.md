@@ -208,3 +208,23 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
 ### Still to do in M4
 - The iPhone frame-time reading through `?perf`, and Android if available. The hero clip for the LinkedIn series.
 - **The user's sign-off on the feel**, then enabling `VITE_PORTAL_WINDOWS_ENABLED` in the `deploy-production` build step, deleting the branch preview Worker, and the M5 go/no-go. Given 2 approved pages, M5 or the bulk approval of portal targets noted in plan §11 would be the way to make built-site previews common.
+
+### Fix: travel hung with tilt controls (the user's iPhone report, 2026-10-21)
+- **Symptom:** on the iPhone (tilt controls), rolling into a GOV.UK portal and pressing Travel covered the screen with the destination, and then nothing happened: no build, no error. The FPS readout kept running (it has its own `requestAnimationFrame` loop). The missing top bar showed the game was still in `play`.
+- **Cause (pre-existing, Phase 13 + tilt):**
+  - Travel waits for `engine.playPortal`, whose 1.6 s animation runs on the game clock.
+  - In tilt mode, `Game.#frame` freezes that clock whenever tilt can't "advance" (`blocked` → `gdt = 0`). `canAdvance` requires the game to own input, and it never does while `view.travel` is set.
+  - So **every travel in tilt mode froze**, flag on or off. With the flag off it would have hung under the Phase 13 iris instead.
+  - Tilt has been on in production since #49, so tilt players there had the same hang.
+  - Earlier tests drove the keyboard or joystick, not tilt.
+- **Reproduced first:** a new tilt-mode browser test (a phone context, synthetic orientation events and the real motion setup, as in `mobile-tilt.e2e.test.ts`) timed out before `building`.
+- **Fixes:**
+  - **Clock:** the clock no longer freezes while travelling (`!v.travel` in `blocked`). The simulation is paused anyway, and the gate animation, the window and the build's timers need it.
+  - **Watchdog:** `travelPortal` races the gate animation with a 3 s wall-clock timer. If it ever stalls again, the build still starts, and the console says so.
+  - **Window opens anyway:** if the gate hasn't handed off within 1.5 s of wall time, the travel window opens full screen. A stall still shows where you're going.
+  - **Status, always:** while the window is up and the build hasn't started, it shows "Opening the portal to <host>…". After 8 s it says the portal isn't opening, with **Back to the maze** (`Game.leaveTravel()`): the build is abandoned, the stop is dropped from the trail, and the game pauses in the current maze.
+- **Tests (now 10 in `portal-windows.e2e.test.ts`):**
+  - The tilt travel reaching `building` and then the intro.
+  - A stalled clock (`timeScale = 0` after the prompt): the status shows and the watchdog still starts the build.
+  - The way out: paused, window gone, trail unchanged.
+  - Green locally and in CI mode, together with `portal.e2e` and `mobile-tilt.e2e` (22 passed, 1 skipped by the #36 quarantine).

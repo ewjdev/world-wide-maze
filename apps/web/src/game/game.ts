@@ -332,6 +332,10 @@ const TUTORIAL_STEP_SEC = 3; // E
 const MIN_BUILD_SEC = 2.2; // N (2013: ≥ 5 s)
 /** Portal windows: the window's develop (0.4 s) + cut tween (0.35 s) + a beat, between loadStage and BUILT. */
 const ARRIVAL_SEC = 0.85;
+/** Portal windows: open the travel window full screen if the gate hasn't handed off by then (wall clock). */
+const HANDOFF_FALLBACK_MS = 1500;
+/** Phase 13 travel: never wait longer than this for the gate animation (1.6 s) before building. */
+const GATE_WATCHDOG_MS = 3000;
 /** Portal windows: never wait longer than this for the window to cover the screen before loading. */
 const COVER_TIMEOUT_MS = 2500;
 
@@ -2377,6 +2381,25 @@ export class Game {
     this.#cover?.resolve();
   }
 
+  /**
+   * The way out of a travel that never got going (the window's "Back to the maze", shown only if it is still
+   * opening after several seconds): abandon the build, drop the stop from the trail, and pause in this maze, whose
+   * menu restarts or quits as usual.
+   */
+  leaveTravel(): void {
+    if (!this.#view.travel || this.#view.phase !== 'play') return;
+    this.audio.play('click');
+    this.#buildAbort?.abort();
+    if (this.#travelling) {
+      this.#travelling = false;
+      this.#set({ journey: this.#view.journey.slice(0, -1) });
+    }
+    this.#releaseCover();
+    this.#releaseTravelBlob();
+    this.#set({ travel: null, arrival: null });
+    this.#send({ type: 'MENU' });
+  }
+
   /** Portal windows: the window has cut to the intro and faded out. */
   travelWindowDone(): void {
     if (this.#view.arrival) this.#set({ arrival: null });
@@ -2471,11 +2494,29 @@ export class Game {
       (err) => ({ err }),
     );
     const t0 = this.#clock;
-    const gate =
+    const animation =
       this.#engine?.playPortal(
         pr.id,
         windows ? { onHandoff: (rect) => this.#travelHandoff(rect) } : undefined,
       ) ?? Promise.resolve();
+    // Portal windows: if the gate never reaches a third of the view by then (it normally does in ~0.5 s), open the
+    // window full screen on the wall clock, so a stalled animation still shows where the player is going.
+    if (windows)
+      setTimeout(() => {
+        if (this.#view.travel?.href === pr.href && !this.#view.travel.handoff) this.#travelHandoff('full');
+      }, HANDOFF_FALLBACK_MS);
+    // A wall-clock watchdog: the gate animation runs on the game clock, so anything that ever stalls that clock
+    // (as tilt did, 2026-10-21) must not leave the player hanging at a covered screen. Normally it ends at 1.6 s.
+    const gate = Promise.race([
+      animation,
+      new Promise<void>((r) =>
+        setTimeout(() => {
+          if (this.#view.travel?.href === pr.href && this.#view.phase === 'play')
+            console.warn('[wwm] the portal animation stalled; travelling anyway');
+          r();
+        }, GATE_WATCHDOG_MS),
+      ),
+    ]);
     void gate.then(async () => {
       // the gate never reached a third of the view (off screen, reduced motion): the window opens full screen
       if (windows && this.#view.travel && !this.#view.travel.handoff) this.#travelHandoff('full');
@@ -2765,9 +2806,13 @@ export class Game {
       this.audio.setRoll(0, false);
     } else if (!hold && v.hold) this.#set({ hold: null, resumedFlash: this.#clock });
 
+    // Tilt that can't advance freezes the world, except while travelling through a portal: the game owns no input
+    // then (so tilt never "advances"), the sim is already paused, and the gate animation, the travel window and
+    // the build's timers run on this clock. Freezing it there hung every tilt travel (2026-10-21, iPhone).
     const blocked =
       v.phase === 'paused' ||
       (v.inputMode === 'tilt' &&
+        !v.travel &&
         !this.#canAdvanceMotion() &&
         (HOLD_ON_DISCONNECT.has(v.phase) || v.phase === 'timeup'));
     const gdt = hold || blocked ? 0 : dt;

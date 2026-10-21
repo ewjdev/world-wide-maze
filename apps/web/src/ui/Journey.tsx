@@ -152,6 +152,8 @@ const GROW_MS = 600;
 const DEVELOP_MS = 400;
 const CUT_MS = 350;
 const OUT_MS = 250;
+/** Still "opening" (no build started) this long after the window covered: say so, and offer a way out. */
+const STUCK_MS = 8000;
 
 type Box = { x: number; y: number; width: number; height: number };
 type Stage = 'grow' | 'covered' | 'develop' | 'cut' | 'out';
@@ -179,6 +181,16 @@ export function TravelWindow({
   const [grown, setGrown] = useState(false);
   const [view, setView] = useState({ w: 1, h: 1 });
   const reduced = useReducedMotion();
+  const { t } = useJourneyT();
+  // the window is up but the build hasn't started (phase still play): say what's happening, never a blank screen
+  const opening = !!travel && v.phase === 'play';
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    setStuck(false);
+    if (!opening) return;
+    const timer = setTimeout(() => setStuck(true), STUCK_MS);
+    return () => clearTimeout(timer);
+  }, [opening]);
   // what the window keeps showing after `travel` clears at the intro
   const kept = useRef<{ host: string; src: string | null; from: Box | 'full' }>(null);
   if (travel?.handoff)
@@ -270,10 +282,10 @@ export function TravelWindow({
       data-from={from ? 'gate' : 'full'}
       data-stage={stage}
       data-motion={reduced ? 'reduced' : 'full'}
-      aria-hidden="true"
       style={{ '--pc': hostColor(k.host), '--fog': FOG, '--out': `${OUT_MS}ms` } as Style}
     >
       <div
+        aria-hidden="true"
         className="wwm-twin__mask"
         style={{
           clipPath: `circle(${r}px at ${cx}px ${cy}px)`,
@@ -305,8 +317,28 @@ export function TravelWindow({
           }}
         />
       </div>
+      {opening && (stage === 'covered' || grown) && (
+        <div className="wwm-twin__status" role="status" aria-live="polite" data-testid="travel-status">
+          {stuck ? (
+            <>
+              <p>{t('journey.travel.stuck')}</p>
+              <button
+                type="button"
+                className="wwm-btn wwm-btn--small"
+                onClick={() => g.leaveTravel()}
+                data-testid="travel-leave"
+              >
+                {t('journey.travel.leave')}
+              </button>
+            </>
+          ) : (
+            <p>{t('journey.travel.opening', { host: k.host })}</p>
+          )}
+        </div>
+      )}
       {!reduced && (
         <span
+          aria-hidden="true"
           className="wwm-twin__ring"
           style={{
             left: cx - r,
