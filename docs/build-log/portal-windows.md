@@ -187,3 +187,24 @@ Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-window
 
 ### Attempts that failed and why
 - **Status index chosen:** the first candidate query let SQLite pick the `status` index (every approved case) over the URL indexes. The index-plan test caught it; the unary `+` fixed it with no migration.
+
+## M4: device validation and the production decision (in progress, 2026-10-21)
+
+Built in the main Claude Code session (Claude Opus 5.5) on branch `portal-windows/m4`.
+
+### State at the start
+- **M3 in production:** M3 merged (#56) and is live in production. `wwm.ewj.dev/api/health` reports contract `0.3.7`, and `POST /api/portals/previews` answers `200` with `private, no-store` (a w3.org lookup gives `null`). The client feature is still off in production (`VITE_PORTAL_WINDOWS_ENABLED` is unset there).
+- **First deploy attempt:** the first run on `main` failed `check` on an unrelated test (`learning-records.integration` "rate limits…", `expected 200 to be 429`), so production was skipped. A re-run of the failed job passed and deployed.
+- **Phone testing so far:** the user tested M0–M3 on the iPhone through the branch preview and the `dev:phone` tunnel. The tunnel first showed the joystick deck because `dev:phone` didn't set `VITE_MOBILE_TILT_ENABLED`; that's fixed in #56.
+
+### The inputs for Option B (measured)
+- **Preview availability in production:** the production catalog (read-only `SELECT`s on D1 `wwm`) holds **11 runs: 2 approved, 9 pending review**. Only 2 pages on the live site can show a built-site preview today. Production has no curated runs. Under manual moderation (Q2), M3 previews will almost always be postcards in production until more pages are approved.
+- **The wait on a cache miss:** time to slice 0 (`runs.timings_json.slice0`) across all 11 production builds was 6.1, 16.3, 17.1, 18.2, 20.0, 20.6, 20.8, 21.2, 24.4, 25.4 and 39.7 s. That's a **median of about 20.6 s**, mostly capture (setup, navigate, extract plus screenshot, textures, about 11–18 s) and store (about 3–7 s). Today the travel window covers that wait on the destination picture or postcard. Option B (start the build when the ball nears a portal) would hide most of it.
+- **iPhone frame-time headroom:** this needs the device. A `?perf` readout (dev and preview builds only) now shows average FPS, the worst frame, the quality tier, draw calls and the backend, timed with `requestAnimationFrame`. The user reads it on the branch preview (below).
+
+### Added
+- `apps/web/src/ui/PerfReadout.tsx` and its test, mounted from `Screens` with `?perf`. It is never shown in a production build (gated on `import.meta.env.DEV` or `VITE_PREVIEW_COMMIT`).
+
+### Still to do in M4
+- The iPhone frame-time reading through `?perf`, and Android if available. The hero clip for the LinkedIn series.
+- **The user's sign-off on the feel**, then enabling `VITE_PORTAL_WINDOWS_ENABLED` in the `deploy-production` build step, deleting the branch preview Worker, and the M5 go/no-go. Given 2 approved pages, M5 or the bulk approval of portal targets noted in plan §11 would be the way to make built-site previews common.
