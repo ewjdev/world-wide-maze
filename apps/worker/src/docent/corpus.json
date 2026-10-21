@@ -1,6 +1,6 @@
 {
   "format": 2,
-  "hash": "4939118c342a7592",
+  "hash": "7e813e5fe569c001",
   "files": [
     "RESEARCH.md",
     "docs/build-log/analytics.md",
@@ -4012,7 +4012,7 @@
       "anchor": "m4-completed-2026-10-21",
       "url": "/log#portal-windows",
       "kind": "build-log",
-      "text": "### M4 completed (2026-10-21)\n- **iPhone check:** on the branch preview with `?perf`, the user read **60 fps, worst frame 19 ms, tier 0, 35 draw calls, WebGPU** during travel to GOV.UK on the iPhone 17 Pro. That leaves plenty of frame-time headroom for Option B's ideas.\n- **Hang fix:** the user retested after the tilt travel fix and **signed off** (\"This work looks good, merge and deploy to production\").\n- **Production:** `VITE_PORTAL_WINDOWS_ENABLED: \"true\"` is now set in the `deploy-production` build step. Rollback: set it to `\"false\"` and redeploy. The `kill:portal-previews` KV key stops built-site lookups without a deploy (runbook §5.1a).\n- **Expectation:** production has 2 approved runs, so most portals show their postcard. The tear, the travel window and the cut into the intro apply to every portal.\n- **Branch preview:** the Worker `wwm-preview-portal-windows` is deleted after the production deploy (plan §9.1). The manual preview workflow recreates it for later work.\n- **Not done:** an Android check (no device on hand) and the LinkedIn hero clip, which the user records."
+      "text": "### M4 completed (2026-10-21)\n- **iPhone check:** on the branch preview with `?perf`, the user read **60 fps, worst frame 19 ms, tier 0, 35 draw calls, WebGPU** on the iPhone 17 Pro. The travel window was up over GOV.UK, and the screenshot was taken during the hang, before the fix. That's one reading, not a full profile, but it leaves plenty of frame-time headroom for Option B's ideas.\n- **Hang fix:** the user retested after the tilt travel fix and **signed off** (\"This work looks good, merge and deploy to production\").\n- **Production:** `VITE_PORTAL_WINDOWS_ENABLED: \"true\"` is now set in the `deploy-production` build step. Rollback: set it to `\"false\"` and redeploy. The `kill:portal-previews` KV key stops built-site lookups without a deploy (runbook §5.1a).\n- **Expectation:** production has 2 approved runs, so most portals show their postcard. The tear, the travel window and the cut into the intro apply to every portal.\n- **Branch preview:** the Worker `wwm-preview-portal-windows` is deleted after the production deploy (plan §9.1). The manual preview workflow recreates it for later work.\n- **Not done:** an Android check (no device on hand) and the LinkedIn hero clip, which the user records."
     },
     {
       "id": "docs/build-log/race-review/course-review.json",
