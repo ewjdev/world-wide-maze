@@ -62,9 +62,11 @@ jobs:
 
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
 
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
 
       # capture-script tests drive real Chromium; with CI=true they fail (not skip) if it is missing.
@@ -104,8 +106,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
 
       - name: Check the build record
@@ -152,8 +156,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
 
       - name: Names from infra/cloudflare.config.json
@@ -301,8 +307,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
       - name: Delete the Preview
         working-directory: apps/worker
@@ -339,8 +347,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
 
       - name: Names from infra/cloudflare.config.json
