@@ -23,8 +23,10 @@ jobs:
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v5
         with:
-          node-version: 24
+          node-version: 24.22.1
           cache: pnpm
+      - name: Update npm
+        run: npm install --global --ignore-scripts --no-audit --no-fund npm@12.2.1
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @wwm/fixture-capture exec playwright install --with-deps chromium
       # Browser correctness uses existing browser-env.ts: headless WebGL2 software fallback, no GPU timing claim.
