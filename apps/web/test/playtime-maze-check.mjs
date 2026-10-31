@@ -8,6 +8,8 @@ const browser = await chromium.launch({
 });
 try {
   const page = await browser.newPage();
+  // Install before navigation so the app's existing interval is controlled too.
+  await page.clock.install();
   await page.addInitScript(() => {
     localStorage.setItem('wwm.howtoSeen', '1');
     localStorage.setItem('wwm.tutorialDone', '1');
@@ -26,8 +28,11 @@ try {
   await page.getByLabel('Create a caregiver PIN').fill('4286');
   await page.getByLabel('Repeat your PIN').fill('4286');
   await page.getByRole('button', { name: 'Start a new session' }).click();
-  await page.clock.install();
   await page.clock.fastForward(301000);
+  assert.equal(
+    await page.evaluate(() => Date.now() >= JSON.parse(localStorage.getItem('wwm.playtime.v1')).endsAt),
+    true,
+  );
   await page.getByRole('heading', { name: 'Your adventure can rest' }).waitFor();
   const before = await page.evaluate(() => ({
     time: window.__wwmGame.getView().timeInt,
