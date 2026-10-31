@@ -6,7 +6,9 @@
   "description": "Game-independent learning documents, baseline activities, and reviewed family forks.",
   "exports": {
     ".": "./src/index.ts",
-    "./scene.css": "./src/scene.css"
+    "./scene.css": "./src/scene.css",
+    "./playtime": "./src/playtime.ts",
+    "./playtime-ui": "./src/playtime-ui.ts"
   },
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",

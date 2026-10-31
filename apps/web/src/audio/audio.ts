@@ -217,7 +217,7 @@ export class AudioManager {
       const ctx = new AudioContext({ latencyHint: 'interactive' });
       this.#ctx = ctx;
       this.#master = ctx.createGain();
-      this.#master.gain.value = this.#muted ? 0 : 0.8;
+      this.#master.gain.value = this.#muted ? 0 : this.#playtimeGain;
       this.#master.connect(ctx.destination);
       this.#musicBus = ctx.createGain();
       this.#musicBus.gain.value = 1;
@@ -247,6 +247,15 @@ export class AudioManager {
     for (const l of this.#listeners) l();
   }
 
+  #playtimeGain = 0.8;
+  setPlaytimeQuiet(phase: 'playing' | 'closing' | 'finished'): void {
+    const gain = phase === 'finished' ? 0 : phase === 'closing' ? 0.25 : 0.8;
+    if (gain === this.#playtimeGain) return;
+    this.#playtimeGain = gain;
+    if (this.#master && this.#ctx)
+      this.#master.gain.setTargetAtTime(this.#muted ? 0 : gain, this.#ctx.currentTime, 0.6);
+  }
+
   setMuted(m: boolean): void {
     if (this.#disposed) return;
     this.#pending = [];
@@ -257,7 +266,7 @@ export class AudioManager {
       // ignore
     }
     if (this.#master && this.#ctx)
-      this.#master.gain.setTargetAtTime(m ? 0 : 0.8, this.#ctx.currentTime, 0.03);
+      this.#master.gain.setTargetAtTime(m ? 0 : this.#playtimeGain, this.#ctx.currentTime, 0.03);
     for (const l of this.#listeners) l();
   }
 

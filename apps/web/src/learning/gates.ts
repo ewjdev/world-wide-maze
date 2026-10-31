@@ -61,6 +61,7 @@ import {
   type VoicePlayer,
   withPractice,
 } from '@wwm/learning';
+import { notePlaytime, playtimeBlocked, playtimeClosing, stopPlaytime } from '@wwm/learning/playtime';
 import type { LockSpec, StageData, Vec2 } from '@wwm/schema';
 import { learningHref, missionHref } from './href.ts';
 import { type LevelSummary, levelSummaries, pickLevel } from './levels.ts';
@@ -1400,6 +1401,7 @@ export class LearningGates {
 
   /** Answer with `choice` through `mode`, invited or not (tests; `choose` judges the input first). */
   answer(choice: string, mode: InputMode = 'tap'): void {
+    if (playtimeBlocked()) return;
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     const state = this.#state;
@@ -1409,7 +1411,10 @@ export class LearningGates {
     if (gate.cursor !== cursor) this.#set({ gate: { ...gate, cursor } });
     const s = step(lesson.activity, state, { type: 'answer', choice });
     if (s.state === state) return;
-    if (s.state.solved && !state.solved) this.#record(s.state, mode);
+    if (s.state.solved && !state.solved) {
+      this.#record(s.state, mode);
+      notePlaytime(`Practised in the maze: ${lesson.activity.title}`);
+    }
     const done = s.state.solved ? this.#roundStep(gate.round.id) : null;
     const extra = done !== null ? this.#complete(done) : [];
     this.#apply({ ...s, say: [...s.say, ...extra] });
@@ -1420,6 +1425,7 @@ export class LearningGates {
    * otherwise Pip nudges towards the invited input and the badges flash.
    */
   choose(choice: string, mode: InputMode): void {
+    if (playtimeBlocked()) return;
     const gate = this.#view.gate;
     if (gate?.mode !== 'round' || gate.state.solved || !gate.choices.includes(choice)) return;
     const tapOnly = !!this.#lesson?.path.family?.tapOnly;
@@ -1437,14 +1443,21 @@ export class LearningGates {
   }
 
   hint(): void {
+    if (playtimeBlocked()) return;
     this.#dispatch({ type: 'hint' });
   }
 
   match(): void {
+    if (playtimeBlocked()) return;
     this.#dispatch({ type: 'match' });
   }
 
   bonus(accept: boolean): void {
+    if (playtimeBlocked()) return;
+    if (playtimeClosing()) {
+      stopPlaytime();
+      return;
+    }
     this.#dispatch({ type: 'bonus', accept });
   }
 
@@ -1470,6 +1483,11 @@ export class LearningGates {
 
   /** After a solved round: its follow-up, the bonus / the finale, or roll on. */
   proceed(): void {
+    if (playtimeBlocked()) return;
+    if (playtimeClosing()) {
+      stopPlaytime();
+      return;
+    }
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     const state = this.#state;
@@ -1494,12 +1512,14 @@ export class LearningGates {
 
   /** Pip says the question (or the success, the offer, the finale) again. */
   replayPractice(): void {
+    if (playtimeBlocked()) return;
     const gate = this.#view.gate;
     if (!gate?.round.practice || !this.#lesson) return;
     this.#say([lineId.practice(this.#lesson.activity.id, gate.round.id)]);
   }
 
   replay(): void {
+    if (playtimeBlocked()) return;
     const lesson = this.#lesson;
     const gate = this.#view.gate;
     if (!lesson || !gate) return;
@@ -1512,6 +1532,11 @@ export class LearningGates {
 
   /** "Roll on!": the card closes and play resumes; Pip's line carries over into the maze. */
   rollOn(): void {
+    if (playtimeBlocked()) return;
+    if (playtimeClosing()) {
+      stopPlaytime();
+      return;
+    }
     const gate = this.#view.gate;
     if (!gate || (gate.mode === 'round' && !gate.state.solved)) return;
     this.#say([lineId.rollOn]);
@@ -1527,6 +1552,11 @@ export class LearningGates {
     if (!gate) return;
     this.#voice?.stop();
     this.#close(gate.gateId, gate.locking && !gate.state.solved ? 'later' : 'skipped');
+  }
+
+  /** Stop instructional audio without discarding the current question. */
+  quiet(): void {
+    this.#voice?.stop();
   }
 
   /** The game left the stage while the card was open (no resume). */
@@ -1559,6 +1589,7 @@ export class LearningGates {
 
   /** Window keydown while the card is open; true when handled. */
   key(ev: KeyboardEvent): boolean {
+    if (playtimeBlocked()) return false;
     const gate = this.#view.gate;
     if (!gate) return false;
     this.#keySeen = true;
