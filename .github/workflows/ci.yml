@@ -268,6 +268,22 @@ jobs:
           [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
           echo "url=${url%/}" >> "$GITHUB_OUTPUT"
 
+      - name: Wait for the expected static deployment to reach the host
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha' > /dev/null &&
+               curl --fail --silent "$URL/" > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "The expected static deployment did not become ready" >&2
+          exit 1
+
       - name: Smoke test
         id: smoke
         env:
