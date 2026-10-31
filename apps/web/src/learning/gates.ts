@@ -1376,7 +1376,7 @@ export class LearningGates {
   }
 
   #say(ids: readonly string[]): void {
-    if (ids.length === 0) return;
+    if (playtimeBlocked() || ids.length === 0) return;
     const lesson = this.#lesson;
     const state = this.#state;
     if (!lesson || !state) return;
