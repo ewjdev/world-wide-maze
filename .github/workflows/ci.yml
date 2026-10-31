@@ -1,12 +1,13 @@
 # The one pipeline (CI stability, Phase 17 follow-up): `pnpm check` runs exactly once per PR head and once per push
-# to `main`, and everything that deploys `needs:` that single check job.
+# to `main`. Production and automatic PR previews require that full check. Explicit static previews
+# have a separate validation gate and do not imply the PR is ready to merge.
 #
 #   pull_request opened / synchronize / reopened → check → preview (Worker Preview `pr-<N>`, smoke test, sticky comment)
 #                                                → build-record (drift report and sticky comment; never blocks)
 #   pull_request closed                          → preview-cleanup (`wrangler preview delete`)
 #   push to main (every merged PR)               → check → deploy-production (D1 migrations, `wrangler deploy`, smoke)
 #   workflow_dispatch on main                    → check → deploy-production (re-deploy the current main by hand)
-#   workflow_dispatch on a branch + deploy_preview → check → isolated static preview (explicit opt-in)
+#   workflow_dispatch on a branch + deploy_preview → preview-check → isolated static preview (explicit opt-in)
 #
 # Branch pushes without a PR run nothing: open a (draft) PR to get CI. There is no second trigger on `push` for PR
 # branches, so a PR push is never checked twice.
@@ -46,7 +47,7 @@ permissions: {}
 
 jobs:
   check:
-    if: github.event.action != 'closed'
+    if: github.event.action != 'closed' && !(github.event_name == 'workflow_dispatch' && inputs.deploy_preview)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     permissions:
@@ -85,6 +86,29 @@ jobs:
             sleep 1
           done
           WWM_EDUCATION_E2E_BASE=http://127.0.0.1:4174 pnpm vitest run --project @wwm/education education.e2e
+
+  # A static review host has no online-service bindings. Keep its gate explicit and
+  # independent from the full PR suite; never use this job to authorize production.
+  preview-check:
+    if: github.event_name == 'workflow_dispatch' && inputs.deploy_preview && github.ref != 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm --filter @wwm/education exec playwright install --with-deps chromium
+      - run: pnpm exec vitest run --project @wwm/learning --project @wwm/education
+      - run: pnpm exec vitest run --project @wwm/worker static-preview
+      - run: node infra/scripts/check-static-preview-config.mjs
 
   # ── Build record drift: never blocks. Reports where /log's "Since launch" list, docs/facts/whats-built.md and the
   # docent corpus lag the change (tools/build-story/src/record.ts), as warning annotations, the job summary and a
@@ -136,12 +160,14 @@ jobs:
   # ── PR Previews (Phase 17): one Cloudflare Worker Preview per pull request, under the production Worker `wwm`
   # (wrangler.jsonc env.production.previews).
   preview:
-    needs: check
+    needs: [check, preview-check]
     if: >-
+      always() && (
       (github.event_name == 'pull_request' && github.event.action != 'closed' &&
-       vars.WWM_PREVIEWS_ENABLED == 'true' &&
+       vars.WWM_PREVIEWS_ENABLED == 'true' && needs.check.result == 'success' &&
        github.event.pull_request.head.repo.full_name == github.repository) ||
-      (github.event_name == 'workflow_dispatch' && inputs.deploy_preview && github.ref != 'refs/heads/main')
+      (github.event_name == 'workflow_dispatch' && inputs.deploy_preview && github.ref != 'refs/heads/main' &&
+       needs.preview-check.result == 'success'))
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
@@ -181,6 +207,23 @@ jobs:
           # Portal windows (plans/portal-windows-execution.md §9.1), as in production since the M4 sign-off.
           VITE_PORTAL_WINDOWS_ENABLED: "true"
           VITE_PREVIEW_COMMIT: ${{ github.sha }}
+
+      - name: Install the static preview browser
+        if: github.event_name == 'workflow_dispatch'
+        run: pnpm --filter @wwm/web exec playwright install --with-deps chromium
+
+      - name: Exercise the built lessons and active maze before publishing
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          pnpm --filter @wwm/web exec vite preview --host 127.0.0.1 --port 4188 > /tmp/wwm-static-preview.log 2>&1 &
+          preview_pid=$!
+          trap 'kill "$preview_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4188/learn/ > /dev/null; then break; fi
+            sleep 1
+          done
+          node apps/web/test/playtime-browser.mjs
+          node apps/web/test/playtime-maze-check.mjs
 
       - name: Refuse placeholder ids / Previews bound to production data
         run: node infra/scripts/check-deploy-config.mjs previews
@@ -225,6 +268,22 @@ jobs:
           [[ "$url" =~ ^https://[A-Za-z0-9.-]+/?$ ]] || { echo "unexpected Preview URL: $url"; exit 1; }
           echo "url=${url%/}" >> "$GITHUB_OUTPUT"
 
+      - name: Wait for the expected static deployment to reach the host
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          URL: ${{ steps.preview.outputs.url }}
+          SHA: ${{ github.sha }}
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha' > /dev/null &&
+               curl --fail --silent "$URL/" > /dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "The expected static deployment did not become ready" >&2
+          exit 1
+
       - name: Smoke test
         id: smoke
         env:
@@ -237,6 +296,14 @@ jobs:
           URL: ${{ steps.preview.outputs.url }}
           SHA: ${{ github.sha }}
         run: curl --fail --silent "$URL/api/health" | jq -e --arg sha "$SHA" '.mode == "static" and .commit == $sha'
+
+      - name: Verify hosted lessons and maze share the limit
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          WWM_PLAYTIME_E2E_BASE: ${{ steps.preview.outputs.url }}
+        run: |
+          node apps/web/test/playtime-browser.mjs
+          node apps/web/test/playtime-maze-check.mjs
 
       - name: Sticky PR comment
         if: always() && github.event_name == 'pull_request' && steps.preview.outputs.url != ''

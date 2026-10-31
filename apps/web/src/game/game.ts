@@ -16,6 +16,7 @@ import {
   type ScreenRect,
   type StageImage,
 } from '@wwm/engine';
+import { notePlaytime, playtimeBlocked, playtimeClosing, stopPlaytime } from '@wwm/learning/playtime';
 import {
   GamepadInputSource,
   type HostConnection,
@@ -806,7 +807,13 @@ export class Game {
   // ── machine ───────────────────────────────────────────────────────────────────────────────────────────
 
   #send(ev: GameEvent): boolean {
+    if (playtimeBlocked()) return false;
     const from = this.#view.phase;
+    if (playtimeClosing() && (ev.type === 'CHOOSE' || ev.type === 'TRAVEL')) {
+      stopPlaytime();
+      return false;
+    }
+    if (ev.type === 'GOAL') notePlaytime('Reached a goal in the maze.');
     if (
       (ev.type === 'INTRO_DONE' || ev.type === 'GO' || ev.type === 'SPAWNED') &&
       !this.#canAdvanceMotion()
@@ -1192,7 +1199,7 @@ export class Game {
     };
   }
   #canAdvanceMotion(): boolean {
-    return this.#view.inputMode !== 'tilt' || canAdvance(this.#motionContext());
+    return !playtimeBlocked() && (this.#view.inputMode !== 'tilt' || canAdvance(this.#motionContext()));
   }
   #motionChanged(): void {
     if (this.#disposed) return;
@@ -2780,6 +2787,8 @@ export class Game {
 
   // ── frame ─────────────────────────────────────────────────────────────────────────────────────────────
 
+  #playtimeHeld = false;
+
   #frame = (now: number): void => {
     this.#raf = 0;
     if (this.#disposed || document.visibilityState !== 'visible') return;
@@ -2787,6 +2796,19 @@ export class Game {
     const e = this.#engine;
     const d = this.#driver;
     if (!e) return;
+    this.audio.setPlaytimeQuiet(playtimeBlocked() ? 'finished' : playtimeClosing() ? 'closing' : 'playing');
+    if (playtimeBlocked()) {
+      d?.setPaused(true);
+      if (!this.#playtimeHeld) this.learning.quiet();
+      this.#playtimeHeld = true;
+      this.#lastFrame = now;
+      this.audio.setRoll(0, false);
+      return;
+    }
+    if (this.#playtimeHeld) {
+      this.#playtimeHeld = false;
+      d?.setPaused(!this.#canAdvanceMotion() || !['play', 'falling'].includes(this.#view.phase));
+    }
     const scale = this.#opts.test?.timeScale ?? 1;
     const renderDt = Math.max(0, (now - this.#lastFrame) / 1000);
     const dt = Math.min(0.1, renderDt) * scale;

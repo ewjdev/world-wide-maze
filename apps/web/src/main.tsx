@@ -1,3 +1,4 @@
+import { mountPlaytime } from '@wwm/learning/playtime-ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router';
@@ -55,3 +56,5 @@ function showResting() {
 }
 window.addEventListener('wwm-services-resting', showResting);
 showResting();
+
+mountPlaytime();

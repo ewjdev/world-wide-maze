@@ -1,3 +1,4 @@
+import { mountPlaytime } from '@wwm/learning/playtime-ui';
 import '@fontsource-variable/figtree';
 import '@fontsource-variable/unbounded';
 import '@wwm/learning/scene.css';
@@ -206,3 +207,5 @@ element('#download-fork').addEventListener('click', () => {
   if (current.fork)
     download('family-version.json', JSON.stringify(current.fork.draft, null, 2), 'application/json');
 });
+
+mountPlaytime();

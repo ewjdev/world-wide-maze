@@ -1,3 +1,5 @@
+import { notePlaytime, playtimeBlocked, playtimeClosing, stopPlaytime } from '@wwm/learning/playtime';
+import { mountPlaytime } from '@wwm/learning/playtime-ui';
 /**
  * Enhances a generated lesson page: the shared state machine (`step`) decides what happens, Pip's voice plays
  * the lines it returns, and word cues light gems, draw match lines and pulse the choices Pip names on the
@@ -545,6 +547,11 @@ function applyShow(show: Show, event: LessonEvent): void {
 
 /** `mode` is how an answer was given (for evidence); a button pressed directly counts as a tap. */
 function dispatch(event: LessonEvent, mode: InputMode = 'tap'): void {
+  if (playtimeBlocked()) return;
+  if (playtimeClosing() && (event.type === 'next' || event.type === 'bonus' || event.type === 'start')) {
+    stopPlaytime();
+    return;
+  }
   const before = state;
   const result = step(lesson, state, event);
   if (result.state === before) return; // ignored: e.g. a tap on a locked (solved) round
@@ -555,7 +562,10 @@ function dispatch(event: LessonEvent, mode: InputMode = 'tap'): void {
     enterRound();
     if (state.phase === 'round') roundStartedAt = performance.now();
   }
-  if (event.type === 'answer' && state.solved && !before.solved) record(mode);
+  if (event.type === 'answer' && state.solved && !before.solved) {
+    record(mode);
+    notePlaytime(`${state.hintLevel >= 2 ? 'Practised together' : 'Practised'}: ${written.title}`);
+  }
   updateControls();
 
   if (state.phase === 'done') {
@@ -872,3 +882,12 @@ void (async () => {
   updateControls();
   if (picked) pipStart.focus({ preventScroll: true });
 })();
+
+mountPlaytime();
+
+let playtimeWasBlocked = false;
+window.addEventListener('wwm-playtime', () => {
+  const blocked = playtimeBlocked();
+  if (blocked && !playtimeWasBlocked) voice.stop();
+  playtimeWasBlocked = blocked;
+});
