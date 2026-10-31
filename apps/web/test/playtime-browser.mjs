@@ -19,6 +19,8 @@ try {
     await page.goto(`${base}/learn/lessons/count-three/`);
     await page.getByRole('button', { name: 'Grown-ups: playtime', exact: true }).click();
     await page.getByLabel('Create a caregiver PIN').fill('4286');
+    await page.clock.runFor(2000);
+    assert.equal(await page.getByLabel('Create a caregiver PIN').inputValue(), '4286');
     await page.getByLabel('Repeat your PIN').fill('4286');
     await page.screenshot({ path: `${shots}/setup-${width}.png` });
     await page.getByRole('button', { name: 'Start a new session' }).click();

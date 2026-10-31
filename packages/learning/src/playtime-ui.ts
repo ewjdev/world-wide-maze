@@ -64,6 +64,8 @@ export function mountPlaytime(): void {
         100,
       );
     }
+    // Timer ticks must not replace a caregiver's in-progress form or focused control.
+    if (settings && dialog.open && content.querySelector('form')) return;
     if (settings) {
       content.innerHTML = `<h2 id="pt-title">A little time to play</h2><p>Choose the whole session, including a quiet final minute. The clock keeps going through lessons, maze play and pauses.</p><form><label>Playtime<select name="minutes"><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option></select></label><label>${record ? 'Caregiver PIN' : 'Create a caregiver PIN'}<input name="pin" type="password" inputmode="numeric" pattern="[0-9]{4,8}" minlength="4" maxlength="8" required autocomplete="off"></label>${record ? '' : '<label>Repeat your PIN<input name="confirm" type="password" inputmode="numeric" required autocomplete="off"></label>'}<p class="pt-error" role="alert"></p><button type="submit">Start a new session</button><button type="button" data-pt="cancel">Cancel</button></form><p class="pt-note">For this browser on this site. Choose a PIN your child does not know. Clearing browser storage removes this local control. Keep your PIN private when setting up.</p>`;
       const form = content.querySelector('form') as HTMLFormElement;

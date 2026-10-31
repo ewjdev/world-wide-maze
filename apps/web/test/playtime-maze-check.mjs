@@ -24,6 +24,8 @@ try {
   await page.waitForFunction(() => window.__wwmGame?.phase === 'play');
   await page.getByRole('button', { name: 'Grown-ups: playtime', exact: true }).click();
   await page.getByLabel('Create a caregiver PIN').fill('4286');
+  await page.waitForTimeout(1500);
+  assert.equal(await page.getByLabel('Create a caregiver PIN').inputValue(), '4286');
   await page.getByLabel('Repeat your PIN').fill('4286');
   await page.getByRole('button', { name: 'Start a new session' }).click();
   await page.waitForFunction(() => document.documentElement.dataset.playtime === 'playing');
