@@ -129,3 +129,17 @@ html[data-playtime="finished"] .pip-sprite {
     width: 100%;
   }
 }
+/* The lower edge belongs to maze steering, pause and ghost controls. */
+body.wwm-body .pt-bar {
+  top: 80px;
+  bottom: auto;
+  left: auto;
+  right: 12px;
+  max-width: min(320px, calc(100vw - 24px));
+  flex-direction: column;
+  align-items: flex-end;
+}
+body.wwm-body .pt-status {
+  box-sizing: border-box;
+  width: 100%;
+}
